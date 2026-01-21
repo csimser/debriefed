@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'
+
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
@@ -164,8 +166,8 @@ Return ONLY valid JSON, no markdown or explanation. If you cannot find any bulle
 // Extract text from PDF using pdf-parse
 async function extractTextFromPDF(base64Data: string): Promise<string> {
   try {
-    // Dynamic import for pdf-parse (it has issues with static import in Next.js)
-    const pdfParse = (await import('pdf-parse')).default
+    // Use require for pdf-parse (works better with Next.js)
+    const pdfParse = require('pdf-parse/lib/pdf-parse.js')
 
     // Convert base64 to buffer
     const buffer = Buffer.from(base64Data, 'base64')
