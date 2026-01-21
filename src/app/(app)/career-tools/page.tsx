@@ -1,0 +1,61 @@
+import { createClient } from '@/lib/supabase/server'
+import { CareerToolsHub } from '@/components/career-tools/CareerToolsHub'
+
+export default async function CareerToolsPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  // All user data is in the profiles table
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('user_id', user?.id)
+    .single()
+
+  const { data: usage } = await supabase
+    .from('usage')
+    .select('cover_letters')
+    .eq('user_id', user?.id)
+    .single()
+
+  const { data: experiences } = await supabase
+    .from('experience')
+    .select('*, experience_bullets(*)')
+    .eq('user_id', user?.id)
+    .order('sort_order')
+    .limit(3)
+
+  const { data: skills } = await supabase
+    .from('skills')
+    .select('name')
+    .eq('user_id', user?.id)
+
+  const { data: certifications } = await supabase
+    .from('certifications')
+    .select('*')
+    .eq('user_id', user?.id)
+
+  const { data: education } = await supabase
+    .from('education')
+    .select('*')
+    .eq('user_id', user?.id)
+
+  // Pro users (pro or basic tier) get unlimited access
+  const isPaidTier = profile?.tier === 'pro' || profile?.tier === 'basic'
+
+  return (
+    <div className="animate-fade-in">
+      <CareerToolsHub
+        userId={user?.id || ''}
+        userPlan={profile?.tier || 'free'}
+        userProfile={profile || {}}
+        experiences={(experiences || []).map(exp => ({ ...exp, bullets: exp.experience_bullets || [] }))}
+        skills={skills?.map(s => s.name) || []}
+        certifications={certifications || []}
+        education={education || []}
+        coverLetterUsage={usage?.cover_letters || 0}
+        coverLetterLimit={isPaidTier ? 999 : 1}
+      />
+    </div>
+  )
+}

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm install:*)",
+      "Bash(grep:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(find:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx tsx:*)",
+      "Bash(curl -s -w \"\\\\nHTTP_STATUS:%{http_code}\" -u \"chris.simser@gmail.com:QK5mRqjxDRMsRyw\" -H \"Accept: application/json\" \"https://services.onetcenter.org/ws/online/search?keyword=manager\")",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(ls:*)",
+      "Bash(pkill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(xargs kill:*)",
+      "Bash(timeout 5 npm run lint:*)",
+      "Bash(tree -L 2 -I \"node_modules|.next\" /home/fiveftslim/projects/debriefedfinal/debriefed/src:*)"
+    ]
+  }
+}
