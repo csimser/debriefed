@@ -27,7 +27,7 @@ export default async function JobMatchPage() {
   const isPaidTier = profile?.tier === 'pro' || profile?.tier === 'basic'
 
   return (
-    <div className="h-[calc(100vh-120px)] -m-8 animate-fade-in">
+    <div className="h-full -m-8">
       <JobMatchWorkspace
         userId={user?.id || ''}
         userPlan={profile?.tier || 'free'}
