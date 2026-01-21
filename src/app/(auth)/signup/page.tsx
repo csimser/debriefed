@@ -3,12 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { BetaCodeInput } from '@/components/beta/BetaCodeInput'
 import { BRANCHES, PAYGRADES, getRankFromPaygrade, getValidPaygradesForBranch } from '@/lib/constants/military'
 
 export default function SignupPage() {
@@ -19,13 +16,11 @@ export default function SignupPage() {
     lastName: '',
     branch: '',
     paygrade: '',
+    betaCode: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [betaCode, setBetaCode] = useState('')
-  const [betaPlan, setBetaPlan] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   // Get valid paygrades for selected branch
   const validPaygrades = getValidPaygradesForBranch(formData.branch)
@@ -55,6 +50,7 @@ export default function SignupPage() {
     const lastNameInput = form.querySelector<HTMLInputElement>('input[name="family-name"]')
     const branchSelect = form.querySelector<HTMLSelectElement>('select[name="branch"]')
     const paygradeSelect = form.querySelector<HTMLSelectElement>('select[name="paygrade"]')
+    const betaCodeInput = form.querySelector<HTMLInputElement>('input[name="beta-code"]')
 
     // Use form values, falling back to state (state should match unless autofill bypassed onChange)
     const email = emailInput?.value || formData.email
@@ -63,50 +59,49 @@ export default function SignupPage() {
     const lastName = lastNameInput?.value || formData.lastName
     const branch = branchSelect?.value || formData.branch
     const paygrade = paygradeSelect?.value || formData.paygrade
+    const betaCode = betaCodeInput?.value || formData.betaCode
 
-    // Validate required fields
-    if (!email || !password || !firstName || !lastName || !branch || !paygrade) {
-      setError('Please fill in all required fields')
+    // Validate required fields (including beta code)
+    if (!email || !password || !firstName || !lastName || !branch || !paygrade || !betaCode) {
+      setError('Please fill in all required fields including beta code')
       setLoading(false)
       return
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          first_name: firstName,
-          last_name: lastName,
-          full_name: `${firstName} ${lastName}`.trim(),
+    try {
+      // Call server-side signup API which validates beta code before creating account
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
+          lastName,
           branch,
           paygrade,
-        },
-      },
-    })
+          betaCode,
+        }),
+      })
 
-    // Supabase returns a user with identities = [] if email already exists
-    if (data?.user && data.user.identities?.length === 0) {
-      setError('An account with this email already exists. Please sign in instead.')
-      setLoading(false)
-      return
-    }
+      const data = await response.json()
 
-    if (error) {
-      // Check for various "already exists" error messages
-      if (error.message.includes('already registered') ||
-          error.message.includes('already exists') ||
-          error.message.includes('already been registered')) {
-        setError('An account with this email already exists. Please sign in instead.')
-      } else {
-        setError(error.message)
+      if (!data.success) {
+        // Handle specific error messages
+        if (data.error.includes('already exists')) {
+          setError('An account with this email already exists. Please sign in instead.')
+        } else {
+          setError(data.error)
+        }
+        setLoading(false)
+        return
       }
-      setLoading(false)
-    } else {
-      // Beta code is stored in localStorage by BetaCodeInput component
-      // It will be redeemed when user reaches dashboard after email verification
-      // Redirect to verify email page with email param
+
+      // Success - redirect to verify email page
       router.push(`/verify-email?email=${encodeURIComponent(email)}`)
+    } catch (err) {
+      setError('Registration failed. Please try again.')
+      setLoading(false)
     }
   }
 
@@ -213,20 +208,18 @@ export default function SignupPage() {
               </div>
             )}
 
-            {/* Beta Code (Optional) */}
-            <div className="space-y-2">
-              <label className="block font-heading text-xs font-semibold uppercase tracking-wider text-text-muted">
-                Beta Code (Optional)
-              </label>
-              <BetaCodeInput
-                mode="validate"
-                onCodeChange={(code) => setBetaCode(code)}
-                onValidCode={(plan) => setBetaPlan(plan)}
-              />
-              {betaPlan && (
-                <Badge variant="gold">Will unlock: {betaPlan.toUpperCase()}</Badge>
-              )}
-            </div>
+            {/* Beta Code (Required) */}
+            <Input
+              id="signup-betacode"
+              label="Beta Code"
+              type="text"
+              name="beta-code"
+              value={formData.betaCode}
+              onChange={(e) => setFormData({ ...formData, betaCode: e.target.value.toUpperCase() })}
+              placeholder="BETA-XXXXXXXX"
+              className="font-mono uppercase"
+              required
+            />
 
             {error && (
               <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
