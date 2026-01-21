@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
@@ -53,7 +53,7 @@ const STATUS_OPTIONS = [
 
 type SortField = 'email' | 'first_name' | 'tier' | 'created_at'
 
-export default function AdminUsersPage() {
+function UsersPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -475,5 +475,38 @@ export default function AdminUsersPage() {
         </div>
       )}
     </div>
+  )
+}
+
+function UsersLoadingFallback() {
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-3xl font-bold uppercase tracking-wider">
+            Users
+          </h1>
+          <p className="text-text-muted">Loading...</p>
+        </div>
+      </div>
+      <Card className="p-4">
+        <div className="h-10 bg-bg-secondary rounded animate-pulse" />
+      </Card>
+      <Card className="overflow-hidden">
+        <div className="p-4 space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-12 bg-bg-secondary rounded animate-pulse" />
+          ))}
+        </div>
+      </Card>
+    </div>
+  )
+}
+
+export default function AdminUsersPage() {
+  return (
+    <Suspense fallback={<UsersLoadingFallback />}>
+      <UsersPageContent />
+    </Suspense>
   )
 }

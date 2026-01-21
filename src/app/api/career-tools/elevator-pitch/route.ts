@@ -370,7 +370,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Target role is required' }, { status: 400 })
     }
 
-    const { profile, experiences, certifications, skills } = profileData || {}
+    const { profile: userProfile, experiences, certifications, skills } = profileData || {}
 
     const systemPrompt = buildSystemPrompt()
     const userPrompt = buildUserPrompt({
@@ -382,7 +382,7 @@ export async function POST(request: NextRequest) {
       achievementAngle: achievementAngle || 'efficiency',
       includeCallToAction: includeCallToAction !== false,
       mentionVeteranStatus: mentionVeteranStatus !== false,
-      profile: profile || {},
+      profile: userProfile || {},
       experiences: experiences || [],
       certifications: certifications || [],
       skills: skills || []

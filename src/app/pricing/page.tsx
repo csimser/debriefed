@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function PricingPage() {
+function PricingContent() {
   const searchParams = useSearchParams();
   const paymentStatus = searchParams.get('payment');
   const [loading, setLoading] = useState<'core' | 'full' | null>(null);
@@ -59,43 +59,7 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-primary flex flex-col">
-      {/* Status Bar */}
-      <div className="bg-bg-secondary border-b border-border px-8 py-2.5 flex items-center justify-between font-mono text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-status-green animate-pulse" />
-          <span className="text-status-green">SYSTEMS OPERATIONAL</span>
-        </div>
-        <div className="text-text-muted">
-          <span>BETA v1.0</span>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="bg-bg-secondary border-b border-border px-4 md:px-8 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 py-4">
-          <div className="w-9 h-9 border-2 border-gold flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 text-gold">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <path d="M9 9h6M9 13h6M9 17h4"/>
-            </svg>
-          </div>
-          <span className="font-heading text-xl md:text-2xl font-bold tracking-wider uppercase">Debriefed</span>
-        </Link>
-
-        <div className="flex items-center gap-2 md:gap-3">
-          <Link href="/help" className="hidden md:block px-5 py-2.5 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text transition-colors">
-            Help
-          </Link>
-          <Link href="/login" className="hidden md:block px-5 py-2.5 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text border border-border hover:border-border-bright rounded transition-all">
-            Sign In
-          </Link>
-          <Link href="/signup" className="px-4 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
-            Begin Mission
-          </Link>
-        </div>
-      </nav>
-
+    <>
       {/* Payment Status Messages */}
       {paymentStatus === 'cancelled' && (
         <div className="bg-status-amber/10 border-b border-status-amber/30 px-4 py-3 text-center">
@@ -228,7 +192,7 @@ export default function PricingPage() {
           Full tier includes daily rate limits to ensure fair usage. Need enterprise access? Contact us.
         </p>
       </section>
-    </div>
+    </>
   );
 }
 
@@ -265,5 +229,83 @@ function PricingFeature({
       </span>
       {limit && <span className="font-mono text-[11px] text-text-dim">{limit}</span>}
     </li>
+  );
+}
+
+function PricingLoadingFallback() {
+  return (
+    <section className="flex-1 bg-bg-secondary px-4 md:px-20 py-12 md:py-24">
+      <div className="text-center mb-10 md:mb-16">
+        <div className="inline-block font-mono text-[11px] uppercase tracking-wider text-gold bg-gold-dim px-4 py-2 mb-6">
+          Simple Pricing
+        </div>
+        <h1 className="font-heading text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4">
+          Choose Your Mission Package
+        </h1>
+        <p className="text-base md:text-lg text-text-muted max-w-xl mx-auto">
+          Start free, upgrade when you need more. No subscriptions - just straightforward access during your transition.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-bg-primary border border-border p-8 animate-pulse">
+            <div className="h-8 bg-bg-secondary rounded mb-4" />
+            <div className="h-4 bg-bg-secondary rounded mb-6 w-2/3" />
+            <div className="h-12 bg-bg-secondary rounded mb-6" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((j) => (
+                <div key={j} className="h-4 bg-bg-secondary rounded" />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <div className="min-h-screen bg-bg-primary flex flex-col">
+      {/* Status Bar */}
+      <div className="bg-bg-secondary border-b border-border px-8 py-2.5 flex items-center justify-between font-mono text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-status-green animate-pulse" />
+          <span className="text-status-green">SYSTEMS OPERATIONAL</span>
+        </div>
+        <div className="text-text-muted">
+          <span>BETA v1.0</span>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="bg-bg-secondary border-b border-border px-4 md:px-8 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3 py-4">
+          <div className="w-9 h-9 border-2 border-gold flex items-center justify-center">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 text-gold">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M9 9h6M9 13h6M9 17h4"/>
+            </svg>
+          </div>
+          <span className="font-heading text-xl md:text-2xl font-bold tracking-wider uppercase">Debriefed</span>
+        </Link>
+
+        <div className="flex items-center gap-2 md:gap-3">
+          <Link href="/help" className="hidden md:block px-5 py-2.5 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text transition-colors">
+            Help
+          </Link>
+          <Link href="/login" className="hidden md:block px-5 py-2.5 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text border border-border hover:border-border-bright rounded transition-all">
+            Sign In
+          </Link>
+          <Link href="/signup" className="px-4 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
+            Begin Mission
+          </Link>
+        </div>
+      </nav>
+
+      <Suspense fallback={<PricingLoadingFallback />}>
+        <PricingContent />
+      </Suspense>
+    </div>
   );
 }
