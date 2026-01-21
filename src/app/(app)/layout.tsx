@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { MobileNav } from '@/components/layout/MobileNav'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { AnnouncementBanner } from '@/components/layout/AnnouncementBanner'
 import { BetaCodeRedeemerWrapper } from '@/components/beta/BetaCodeRedeemerWrapper'
@@ -66,29 +65,24 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {/* Beta Code Redeemer - checks for pending codes from signup */}
       <BetaCodeRedeemerWrapper userId={user.id} />
 
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <Sidebar
-          user={sidebarUser}
-          tier={profile?.tier || 'free'}
-          isAdmin={profile?.is_admin || false}
-        />
-      </div>
+      {/* Sidebar - handles desktop, tablet, and mobile states internally */}
+      <Sidebar
+        user={sidebarUser}
+        tier={profile?.tier || 'free'}
+        isAdmin={profile?.is_admin || false}
+      />
 
-      {/* Mobile Nav */}
-      <MobileNav user={profile} />
-
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Announcement Banner */}
         <AnnouncementBanner />
 
-        {/* Desktop Status Bar */}
+        {/* Status Bar - visible on tablet and desktop */}
         <div className="hidden md:block">
           <StatusBar />
         </div>
 
         {/* Main Content - add top padding on mobile for fixed header */}
-        <main className="flex-1 p-4 md:p-8 overflow-auto pt-16 md:pt-8">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto pt-16 md:pt-4">
           {children}
         </main>
       </div>
