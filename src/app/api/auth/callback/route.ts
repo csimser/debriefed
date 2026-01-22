@@ -88,7 +88,33 @@ export async function POST(request: Request) {
       }
       return NextResponse.json({ success: true, redirect: '/onboarding', isNewUser: true })
     } else {
-      // Existing user - track IP for login
+      // Profile exists (likely created by database trigger)
+      const metadata = user.user_metadata || {}
+      const betaCodeUsed = metadata.beta_code_used === true
+
+      // If user signed up with beta code, update their tier (trigger created profile with 'free')
+      if (betaCodeUsed && (type === 'signup' || type === 'email')) {
+        const planExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+
+        await supabase
+          .from('profiles')
+          .update({
+            tier: 'full',
+            subscription_tier: 'full',
+            plan: 'full',
+            plan_expires_at: planExpiresAt,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id)
+
+        // Track IP for new signup
+        await trackUserIP(user.id, ip, userAgent, 'signup')
+
+        // Redirect to login with confirmed message
+        return NextResponse.json({ success: true, redirect: '/login?confirmed=true', isNewUser: true })
+      }
+
+      // Regular login - track IP
       await trackUserIP(user.id, ip, userAgent, 'login')
 
       // Check if onboarding is complete
@@ -203,7 +229,33 @@ export async function GET(request: Request) {
       }
       return NextResponse.redirect(`${origin}/onboarding`)
     } else {
-      // Existing user - track IP for login
+      // Profile exists (likely created by database trigger)
+      const metadata = user.user_metadata || {}
+      const betaCodeUsed = metadata.beta_code_used === true
+
+      // If user signed up with beta code, update their tier (trigger created profile with 'free')
+      if (betaCodeUsed && (type === 'signup' || type === 'email')) {
+        const planExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+
+        await supabase
+          .from('profiles')
+          .update({
+            tier: 'full',
+            subscription_tier: 'full',
+            plan: 'full',
+            plan_expires_at: planExpiresAt,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id)
+
+        // Track IP for new signup
+        await trackUserIP(user.id, ip, userAgent, 'signup')
+
+        // Redirect to login with confirmed message
+        return NextResponse.redirect(`${origin}/login?confirmed=true`)
+      }
+
+      // Regular login - track IP
       await trackUserIP(user.id, ip, userAgent, 'login')
 
       // Check if onboarding is complete
