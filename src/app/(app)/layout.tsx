@@ -21,7 +21,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single()
 
   // Check if plan has expired and revert to free if so
-  if (profile && profile.subscription_tier !== 'free' && profile.plan_expires_at) {
+  if (profile && profile.tier !== 'free' && profile.plan_expires_at) {
     const expiresAt = new Date(profile.plan_expires_at)
     const now = new Date()
 
@@ -31,6 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       await supabase
         .from('profiles')
         .update({
+          tier: 'free',
           subscription_tier: 'free',
           plan: 'free',
           plan_expires_at: null
@@ -40,6 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       // Update local profile object
       profile = {
         ...profile,
+        tier: 'free',
         subscription_tier: 'free',
         plan: 'free',
         plan_expires_at: null
@@ -69,6 +71,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <Sidebar
         user={sidebarUser}
         tier={profile?.tier || 'free'}
+        planExpiresAt={profile?.plan_expires_at || null}
         isAdmin={profile?.is_admin || false}
       />
 

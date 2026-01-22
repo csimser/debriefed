@@ -77,6 +77,7 @@ export async function POST(req: Request) {
     }
 
     // Step 2: Create the user account
+    // Include beta code info in metadata so callback can set tier
     const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
       email,
       password,
@@ -87,6 +88,9 @@ export async function POST(req: Request) {
           full_name: `${firstName} ${lastName}`.trim(),
           branch,
           paygrade,
+          // Store beta code usage for tier assignment during profile creation
+          beta_code_used: !!codeData,
+          beta_signup_at: codeData ? new Date().toISOString() : null,
         },
       },
     });

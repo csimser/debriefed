@@ -26,8 +26,8 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/reset-password`)
       }
 
-      // For email verification, redirect to dashboard
-      return NextResponse.redirect(`${origin}${next}`)
+      // For email verification, redirect to login with success message
+      return NextResponse.redirect(`${origin}/login?confirmed=true`)
     }
 
     console.error('OTP verification failed:', error.message)

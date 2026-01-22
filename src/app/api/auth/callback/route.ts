@@ -51,6 +51,13 @@ export async function POST(request: Request) {
       // Auto-populate rank from paygrade
       const rank = branch && paygrade ? getRankFromPaygrade(branch, paygrade) : ''
 
+      // Check if user signed up with a beta code - grant full tier for 48 hours
+      const betaCodeUsed = metadata.beta_code_used === true
+      const tier = betaCodeUsed ? 'full' : 'free'
+      const planExpiresAt = betaCodeUsed
+        ? new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+        : null
+
       await supabase
         .from('profiles')
         .insert({
@@ -62,6 +69,10 @@ export async function POST(request: Request) {
           branch,
           paygrade,
           rank,
+          tier: tier,
+          subscription_tier: tier,
+          plan: tier,
+          plan_expires_at: planExpiresAt,
           onboarding_step: 0,
           onboarding_completed: false,
           created_at: new Date().toISOString(),
@@ -71,9 +82,9 @@ export async function POST(request: Request) {
       // Track IP for new signup (detect duplicate accounts)
       await trackUserIP(user.id, ip, userAgent, 'signup')
 
-      // New user - redirect to verified page or onboarding
+      // New user - redirect to login with confirmed message
       if (type === 'signup' || type === 'email') {
-        return NextResponse.json({ success: true, redirect: '/auth/verified', isNewUser: true })
+        return NextResponse.json({ success: true, redirect: '/login?confirmed=true', isNewUser: true })
       }
       return NextResponse.json({ success: true, redirect: '/onboarding', isNewUser: true })
     } else {
@@ -155,6 +166,13 @@ export async function GET(request: Request) {
       const paygrade = metadata.paygrade || ''
       const rank = branch && paygrade ? getRankFromPaygrade(branch, paygrade) : ''
 
+      // Check if user signed up with a beta code - grant full tier for 48 hours
+      const betaCodeUsed = metadata.beta_code_used === true
+      const tier = betaCodeUsed ? 'full' : 'free'
+      const planExpiresAt = betaCodeUsed
+        ? new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+        : null
+
       await supabase
         .from('profiles')
         .insert({
@@ -166,6 +184,10 @@ export async function GET(request: Request) {
           branch,
           paygrade,
           rank,
+          tier: tier,
+          subscription_tier: tier,
+          plan: tier,
+          plan_expires_at: planExpiresAt,
           onboarding_step: 0,
           onboarding_completed: false,
           created_at: new Date().toISOString(),
@@ -175,9 +197,9 @@ export async function GET(request: Request) {
       // Track IP for new signup
       await trackUserIP(user.id, ip, userAgent, 'signup')
 
-      // New user - redirect to verified page or onboarding
+      // New user - redirect to login with confirmed message
       if (type === 'signup' || type === 'email') {
-        return NextResponse.redirect(`${origin}/auth/verified`)
+        return NextResponse.redirect(`${origin}/login?confirmed=true`)
       }
       return NextResponse.redirect(`${origin}/onboarding`)
     } else {

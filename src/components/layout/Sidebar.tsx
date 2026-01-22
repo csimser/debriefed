@@ -24,10 +24,11 @@ interface SidebarProps {
     rank?: string
   }
   tier?: string
+  planExpiresAt?: string | null
   isAdmin?: boolean
 }
 
-export function Sidebar({ user, tier = 'free', isAdmin = false }: SidebarProps) {
+export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = false }: SidebarProps) {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -108,7 +109,20 @@ export function Sidebar({ user, tier = 'free', isAdmin = false }: SidebarProps) 
   }
 
   const getTierLabel = () => {
-    switch (tier?.toLowerCase()) {
+    const tierName = tier?.toLowerCase()
+
+    // Check if this is a beta user with expiring access
+    if (tierName === 'full' && planExpiresAt) {
+      const expiresAt = new Date(planExpiresAt)
+      const now = new Date()
+      const hoursRemaining = Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60)))
+
+      if (hoursRemaining > 0) {
+        return `Full Tier (${hoursRemaining}h left)`
+      }
+    }
+
+    switch (tierName) {
       case 'full': return 'Full Tier'
       case 'core': return 'Core Tier'
       default: return 'Free Tier'
