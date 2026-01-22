@@ -78,10 +78,13 @@ export async function POST(req: Request) {
 
     // Step 2: Create the user account
     // Include beta code info in metadata so callback can set tier
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://getdebriefed.co';
+
     const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: `${siteUrl}/auth/callback?type=signup`,
         data: {
           first_name: firstName,
           last_name: lastName,
