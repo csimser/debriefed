@@ -92,11 +92,15 @@ export async function POST(request: Request) {
       const metadata = user.user_metadata || {}
       const betaCodeUsed = metadata.beta_code_used === true
 
+      console.log('Callback POST - Profile exists. User:', user.id, 'Type:', type, 'Beta code used:', betaCodeUsed)
+
       // If user signed up with beta code, update their tier (trigger created profile with 'free')
       if (betaCodeUsed && (type === 'signup' || type === 'email')) {
         const planExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
 
-        await supabase
+        console.log('Attempting to update profile to full tier for user:', user.id)
+
+        const { error: updateError } = await supabase
           .from('profiles')
           .update({
             tier: 'full',
@@ -106,6 +110,12 @@ export async function POST(request: Request) {
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', user.id)
+
+        if (updateError) {
+          console.error('Failed to update beta user profile tier:', updateError)
+        } else {
+          console.log('Successfully updated profile to full tier for user:', user.id)
+        }
 
         // Track IP for new signup
         await trackUserIP(user.id, ip, userAgent, 'signup')
@@ -233,11 +243,15 @@ export async function GET(request: Request) {
       const metadata = user.user_metadata || {}
       const betaCodeUsed = metadata.beta_code_used === true
 
+      console.log('Callback GET - Profile exists. User:', user.id, 'Type:', type, 'Beta code used:', betaCodeUsed)
+
       // If user signed up with beta code, update their tier (trigger created profile with 'free')
       if (betaCodeUsed && (type === 'signup' || type === 'email')) {
         const planExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
 
-        await supabase
+        console.log('GET handler - Attempting to update profile to full tier for user:', user.id)
+
+        const { error: updateError } = await supabase
           .from('profiles')
           .update({
             tier: 'full',
@@ -247,6 +261,12 @@ export async function GET(request: Request) {
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', user.id)
+
+        if (updateError) {
+          console.error('GET handler - Failed to update beta user profile tier:', updateError)
+        } else {
+          console.log('GET handler - Successfully updated profile to full tier for user:', user.id)
+        }
 
         // Track IP for new signup
         await trackUserIP(user.id, ip, userAgent, 'signup')
