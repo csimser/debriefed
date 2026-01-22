@@ -19,46 +19,61 @@ export async function POST(req: Request) {
       );
     }
 
-    // Beta code is REQUIRED
-    if (!betaCode || typeof betaCode !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'Beta code is required for registration' },
-        { status: 400 }
-      );
-    }
+    // Normalize email for comparison
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // Normalize beta code: trim whitespace and uppercase
-    const normalizedCode = betaCode.trim().toUpperCase();
+    // Check if this is an exempt email (admin bypass)
+    const isExemptEmail =
+      normalizedEmail === 'chris.simser@gmail.com' ||
+      normalizedEmail.includes('admin');
 
-    // Step 1: Validate beta code BEFORE creating account
-    const { data: codeData, error: codeError } = await supabaseAdmin
-      .from('beta_codes')
-      .select('id, code, used, revoked')
-      .ilike('code', normalizedCode)
-      .single();
+    let codeData: { id: string; code: string; used: boolean; revoked: boolean } | null = null;
 
-    if (codeError || !codeData) {
-      console.log('Beta code lookup failed:', codeError?.message || 'No matching code');
-      return NextResponse.json(
-        { success: false, error: 'Invalid or expired beta code' },
-        { status: 400 }
-      );
-    }
+    // Beta code validation (skip for exempt emails)
+    if (!isExemptEmail) {
+      // Beta code is REQUIRED for non-exempt emails
+      if (!betaCode || typeof betaCode !== 'string' || !betaCode.trim()) {
+        return NextResponse.json(
+          { success: false, error: 'Beta code is required for registration' },
+          { status: 400 }
+        );
+      }
 
-    // Check if code has been revoked
-    if (codeData.revoked) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid or expired beta code' },
-        { status: 400 }
-      );
-    }
+      // Normalize beta code: trim whitespace and uppercase
+      const normalizedCode = betaCode.trim().toUpperCase();
 
-    // Check if already used
-    if (codeData.used) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid or expired beta code' },
-        { status: 400 }
-      );
+      // Step 1: Validate beta code BEFORE creating account
+      const { data, error: codeError } = await supabaseAdmin
+        .from('beta_codes')
+        .select('id, code, used, revoked')
+        .ilike('code', normalizedCode)
+        .single();
+
+      if (codeError || !data) {
+        console.log('Beta code lookup failed:', codeError?.message || 'No matching code');
+        return NextResponse.json(
+          { success: false, error: 'Invalid or already used beta code' },
+          { status: 400 }
+        );
+      }
+
+      // Check if code has been revoked
+      if (data.revoked) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid or already used beta code' },
+          { status: 400 }
+        );
+      }
+
+      // Check if already used
+      if (data.used) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid or already used beta code' },
+          { status: 400 }
+        );
+      }
+
+      codeData = data;
     }
 
     // Step 2: Create the user account
@@ -107,20 +122,22 @@ export async function POST(req: Request) {
       );
     }
 
-    // Step 3: Mark beta code as used with the new user ID
-    const { error: updateError } = await supabaseAdmin
-      .from('beta_codes')
-      .update({
-        used: true,
-        used_by: authData.user.id,
-        used_at: new Date().toISOString()
-      })
-      .eq('id', codeData.id);
+    // Step 3: Mark beta code as used with the new user ID (only if beta code was used)
+    if (codeData) {
+      const { error: updateError } = await supabaseAdmin
+        .from('beta_codes')
+        .update({
+          used: true,
+          used_by: authData.user.id,
+          used_at: new Date().toISOString()
+        })
+        .eq('id', codeData.id);
 
-    if (updateError) {
-      console.error('Failed to mark beta code as used:', updateError);
-      // Account was created but code wasn't marked - log this but don't fail the signup
-      // The code is still effectively "used" since the account exists
+      if (updateError) {
+        console.error('Failed to mark beta code as used:', updateError);
+        // Account was created but code wasn't marked - log this but don't fail the signup
+        // The code is still effectively "used" since the account exists
+      }
     }
 
     return NextResponse.json({
