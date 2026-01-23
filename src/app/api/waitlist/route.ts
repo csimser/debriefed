@@ -109,16 +109,20 @@ export async function POST(req: Request) {
               <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                 <tr>
                   <td style="vertical-align: middle; padding-right: 12px;">
-                    <!-- Gold bordered square with document icon -->
-                    <div style="width: 40px; height: 40px; border: 2px solid #d4af37; border-radius: 4px; display: inline-block; text-align: center; line-height: 40px;">
-                      <table cellpadding="0" cellspacing="0" style="margin: 10px auto;">
-                        <tr><td style="width: 18px; height: 3px; background-color: #d4af37; border-radius: 1px;"></td></tr>
-                        <tr><td style="height: 4px;"></td></tr>
-                        <tr><td style="width: 18px; height: 3px; background-color: #d4af37; border-radius: 1px;"></td></tr>
-                        <tr><td style="height: 4px;"></td></tr>
-                        <tr><td style="width: 18px; height: 3px; background-color: #d4af37; border-radius: 1px;"></td></tr>
-                      </table>
-                    </div>
+                    <!-- Gold bordered square with document icon (table-based for email compatibility) -->
+                    <table cellpadding="0" cellspacing="0" border="0" style="border: 2px solid #d4af37; border-radius: 4px;">
+                      <tr>
+                        <td width="40" height="40" align="center" valign="middle" style="width: 40px; height: 40px;">
+                          <table cellpadding="0" cellspacing="0" border="0" align="center">
+                            <tr><td bgcolor="#d4af37" width="18" height="3" style="width: 18px; height: 3px; background-color: #d4af37; font-size: 1px; line-height: 1px;">&nbsp;</td></tr>
+                            <tr><td height="4" style="height: 4px; font-size: 1px; line-height: 1px;">&nbsp;</td></tr>
+                            <tr><td bgcolor="#d4af37" width="18" height="3" style="width: 18px; height: 3px; background-color: #d4af37; font-size: 1px; line-height: 1px;">&nbsp;</td></tr>
+                            <tr><td height="4" style="height: 4px; font-size: 1px; line-height: 1px;">&nbsp;</td></tr>
+                            <tr><td bgcolor="#d4af37" width="18" height="3" style="width: 18px; height: 3px; background-color: #d4af37; font-size: 1px; line-height: 1px;">&nbsp;</td></tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                   <td style="vertical-align: middle;">
                     <span style="font-size: 24px; font-weight: bold; color: #ffffff; letter-spacing: 4px;">DEBRIEFED</span>
