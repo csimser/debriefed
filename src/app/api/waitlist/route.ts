@@ -103,26 +103,42 @@ export async function POST(req: Request) {
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #111820; border: 1px solid #2d3748; border-radius: 8px;">
 
-          <!-- Header -->
+          <!-- Header with Logo -->
           <tr>
             <td style="padding: 40px 40px 20px 40px; text-align: center;">
-              <h1 style="margin: 0; font-size: 24px; font-weight: bold; color: #ffffff; letter-spacing: 2px;">
-                <span style="color: #d4af37;">[</span> DEBRIEFED <span style="color: #d4af37;">]</span>
-              </h1>
+              <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="vertical-align: middle; padding-right: 12px;">
+                    <!-- Gold bordered square with document icon -->
+                    <div style="width: 40px; height: 40px; border: 2px solid #d4af37; border-radius: 4px; display: inline-block; text-align: center; line-height: 40px;">
+                      <table cellpadding="0" cellspacing="0" style="margin: 10px auto;">
+                        <tr><td style="width: 18px; height: 3px; background-color: #d4af37; border-radius: 1px;"></td></tr>
+                        <tr><td style="height: 4px;"></td></tr>
+                        <tr><td style="width: 18px; height: 3px; background-color: #d4af37; border-radius: 1px;"></td></tr>
+                        <tr><td style="height: 4px;"></td></tr>
+                        <tr><td style="width: 18px; height: 3px; background-color: #d4af37; border-radius: 1px;"></td></tr>
+                      </table>
+                    </div>
+                  </td>
+                  <td style="vertical-align: middle;">
+                    <span style="font-size: 24px; font-weight: bold; color: #ffffff; letter-spacing: 4px;">DEBRIEFED</span>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
             <td style="padding: 20px 40px 40px 40px;">
-              <h2 style="margin: 0 0 20px 0; font-size: 20px; color: #d4af37;">You're on the list, ${first_name}.</h2>
+              <h2 style="margin: 0 0 20px 0; font-size: 20px; color: #d4af37;">Hey ${first_name},</h2>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #8b949e;">
-                Thanks for joining the Debriefed waitlist.
+                Thank you for signing up for the Debriefed waitlist. It means a lot that you're trusting us with something as important as your career transition.
               </p>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #8b949e;">
-                Debriefed helps translate your military experience into civilian-ready resumes. We turn MOS codes, EVAL bullets, and military jargon into language that hiring managers actually understand.
+                Debriefed translates your military experience into civilian-ready resumes — turning MOS codes, EVAL bullets, and military jargon into language that hiring managers actually understand. You'll also be able to see how your experience matches against real job postings, so you know exactly where you stand.
               </p>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #8b949e;">
@@ -130,11 +146,11 @@ export async function POST(req: Request) {
               </p>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #8b949e;">
-                Beta codes are limited, and not everyone will be selected. If you're chosen for beta access, you'll receive an email with your beta code and instructions to get started.
+                Beta codes are limited, and not everyone will be selected for this round. If you're chosen, you'll receive an email with your beta code and instructions to get started.
               </p>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #8b949e;">
-                If you're not selected for this round, we appreciate your interest — you'll be notified as soon as full site registration opens.
+                If you're not selected this time, don't worry — we'll notify you as soon as full registration opens so you can be among the first to join.
               </p>
 
               <!-- Summary of submission -->
@@ -149,8 +165,12 @@ export async function POST(req: Request) {
                 </p>
               </div>
 
-              <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #ffffff;">
-                Stand by.
+              <p style="margin: 0 0 8px 0; font-size: 16px; line-height: 1.6; color: #8b949e;">
+                Thanks again for being here. I'm grateful you're giving Debriefed a shot.
+              </p>
+
+              <p style="margin: 16px 0 0 0; font-size: 16px; line-height: 1.6; color: #ffffff;">
+                Chris
               </p>
             </td>
           </tr>
@@ -158,10 +178,7 @@ export async function POST(req: Request) {
           <!-- Footer -->
           <tr>
             <td style="padding: 20px 40px; border-top: 1px solid #2d3748; text-align: center;">
-              <p style="margin: 0 0 8px 0; font-size: 12px; color: #8b949e;">
-                Built by a 20-year Navy veteran who understands the transition.
-              </p>
-              <p style="margin: 0; font-size: 12px; color: #4a5568;">
+              <p style="margin: 0; font-size: 12px; color: #8b949e;">
                 Built by a veteran, for veterans.
               </p>
             </td>
