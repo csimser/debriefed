@@ -79,7 +79,8 @@ export default async function HomePage({
           <Link href="/login" className="hidden md:block px-5 py-2.5 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text border border-border hover:border-border-bright rounded transition-all">
             Sign In
           </Link>
-          <Link href="/signup" className="px-4 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
+          {/* TEMP: Redirect to waitlist */}
+          <Link href="/waitlist" className="px-4 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
             Begin Mission →
           </Link>
         </div>
@@ -149,7 +150,8 @@ export default async function HomePage({
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all text-center">
+            {/* TEMP: Redirect to waitlist */}
+            <Link href="/waitlist" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all text-center">
               Start Free →
             </Link>
             <Link href="/help" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider text-text-muted border border-border hover:border-border-bright hover:text-text rounded transition-all text-center">
@@ -248,9 +250,9 @@ export default async function HomePage({
           <div className="bg-bg-primary border border-border p-8 flex flex-col hover:border-border-bright transition-all">
             <div className="font-heading text-2xl font-bold uppercase mb-2">Free</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">Try before you commit</div>
+            {/* TEMP: Prices hidden during beta - original: $0 forever */}
             <div className="mb-6">
-              <span className="font-heading text-5xl font-bold text-status-green">$0</span>
-              <span className="text-sm text-text-muted ml-2">forever</span>
+              <span className="font-heading text-3xl font-bold text-status-green">Beta</span>
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Private Resume" limit="1" />
@@ -265,7 +267,8 @@ export default async function HomePage({
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="2" isLast />
             </ul>
-            <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
+            {/* TEMP: Redirect to waitlist */}
+            <Link href="/waitlist" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
               Get Started Free
             </Link>
           </div>
@@ -277,9 +280,9 @@ export default async function HomePage({
             </div>
             <div className="font-heading text-2xl font-bold uppercase mb-2">Core</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">Everything you need to land the job</div>
+            {/* TEMP: Prices hidden during beta - original: $35 / 30 days */}
             <div className="mb-6">
-              <span className="font-heading text-5xl font-bold text-gold">$35</span>
-              <span className="text-sm text-text-muted ml-2">30 days</span>
+              <span className="font-heading text-3xl font-bold text-gold">Coming Soon</span>
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Resumes (private + tailored)" limit="5" tooltip="Includes both private resumes and tailored resumes from Job Match" />
@@ -294,7 +297,8 @@ export default async function HomePage({
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
-            <Link href="/signup?plan=core" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all">
+            {/* TEMP: Redirect to waitlist */}
+            <Link href="/waitlist" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all">
               Get Core
             </Link>
           </div>
@@ -303,9 +307,9 @@ export default async function HomePage({
           <div className="bg-bg-primary border border-border p-8 flex flex-col hover:border-border-bright transition-all">
             <div className="font-heading text-2xl font-bold uppercase mb-2">Full</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">For serious job searches & SkillBridge</div>
+            {/* TEMP: Prices hidden during beta - original: $75 / 90 days */}
             <div className="mb-6">
-              <span className="font-heading text-5xl font-bold text-gold">$75</span>
-              <span className="text-sm text-text-muted ml-2">90 days</span>
+              <span className="font-heading text-3xl font-bold text-gold">Coming Soon</span>
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Resumes (private + tailored)" limit="30/mo" tooltip="Includes both private resumes and tailored resumes from Job Match" />
@@ -320,7 +324,8 @@ export default async function HomePage({
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
-            <Link href="/signup?plan=full" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
+            {/* TEMP: Redirect to waitlist */}
+            <Link href="/waitlist" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
               Get Full
             </Link>
           </div>

@@ -78,7 +78,7 @@ export default function AboutPage() {
               <h2 className="text-2xl font-heading text-white mb-6">Why I Built This</h2>
 
               <p className="text-text-muted leading-relaxed text-base mb-4">
-                I'm a Senior Chief Damage Controlman, E-8, retiring in the fall of 2026. I've got an MBA, PMP, and a bunch of cyber certs. I've trained sailors, led DC teams, and stood plenty of watches. None of that matters if I can't explain it to someone who's never been on a ship.
+                I'm a Senior Chief Damage Controlman, E-8, retiring in 2026. I've got an MBA, PMP, and a bunch of cyber certs. I've trained sailors, led DC teams, and stood plenty of watches. None of that matters if I can't explain it to someone who's never been on a ship.
               </p>
 
               <p className="text-text-muted leading-relaxed text-base mb-4">
@@ -169,7 +169,7 @@ export default function AboutPage() {
                 <p className="text-gold font-mono text-sm">Founder, Senior Chief Petty Officer</p>
                 <p className="text-text-muted mt-2">
                   20+ years U.S. Navy • Damage Controlman • MBA, PMP<br/>
-                  Retiring in the fall of 2026 • Gulf Coast
+                  Retiring in 2026 • Gulf Coast
                 </p>
               </div>
             </div>

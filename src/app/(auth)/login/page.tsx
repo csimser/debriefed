@@ -8,6 +8,12 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 
+// TEMP: Admin-only access during development
+const ALLOWED_EMAILS = [
+  'chris.simser@gmail.com',
+  'admin@debriefed.io',
+]
+
 function LoginForm() {
   const searchParams = useSearchParams()
   const confirmed = searchParams.get('confirmed') === 'true'
@@ -29,6 +35,13 @@ function LoginForm() {
     setError('')
     setShowResendConfirmation(false)
     setResendMessage('')
+
+    // TEMP: Admin-only access during development
+    if (!ALLOWED_EMAILS.includes(email.toLowerCase().trim())) {
+      setError('Access restricted during beta development.')
+      setLoading(false)
+      return
+    }
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 

@@ -2,8 +2,83 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
+import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary'
 
 const anthropic = new Anthropic()
+
+const EXTRACTION_PROMPT = `You are extracting achievement bullets from a military evaluation image. Be EXTREMELY aggressive about:
+
+1. REMOVING JUNK:
+- Delete ALL asterisks (*, **, ***, ****)
+- Delete ALL broken text fragments (random letters, partial words)
+- Delete page numbers, headers, footers, form labels
+- Delete signature blocks, dates, routing info
+- Delete ranking statements like "RANKED 1 OF 5" or "TOP 10%"
+- Delete any line under 30 characters
+- Delete anything that looks like OCR garbage
+
+2. FIX OCR ERRORS:
+The input may have OCR mistakes. Common issues to fix:
+- Letters misread (0/O, 1/I/l, S/5, rn/m, etc.)
+- Merged words or extra spaces
+- Garbled text that should be common military terms
+- Broken words from line wraps (rejoin them)
+
+3. TRANSLATING MILITARY JARGON:
+Replace these terms automatically:
+- "Sailor/Airman/Soldier/Marine" → "team member" or "professional"
+- "Command" → "organization" or "department"
+- "CO/XO/CMC" → "senior leadership" or "executive team"
+- "Watch" → "shift" or "operational coverage"
+- "Underway/deployment" → "operational period" or "field assignment"
+- "INSURV/inspection" → "federal compliance audit" or "regulatory inspection"
+- "Deckplate" → "frontline" or "hands-on"
+- "Ship/boat/vessel" → "facility" or "operation"
+- "Shipmate" → "colleague" or "team member"
+- "Mission" → "objective" or "project"
+- "Rate/rating/MOS" → "specialty" or "role"
+- "Quarterdeck" → "reception" or "main entrance"
+- "Liberty" → "time off"
+- "TAD/TDY" → "temporary assignment"
+- "PCS" → "relocation"
+- "Quals/qualifications" → "certifications"
+- "CPO Mess" / "Mess" → "senior leadership team"
+- "DCPO" / "LCPO" / "DIVO" → "department supervisor" or "division leader"
+- "3M" / "3M system" → "maintenance management system"
+- "CSMP" → "maintenance compliance program"
+- "ATG" / "AFLOAT" → "external training organization"
+- Ranks (SMC, SCPO, CPO, PO1, SSG, etc.) → "senior leader" or omit
+- All acronyms must be spelled out or translated to civilian equivalents
+
+4. REMOVE PROMOTION LANGUAGE:
+Remove phrases like:
+- "EP contender" / "select now" / "fast track"
+- "promote immediately" / "my #1 of X"
+- Any ranking or comparison statements
+
+5. OUTPUT REQUIREMENTS:
+- Return ONLY clean, civilian-ready bullets
+- Each bullet must start with a strong action verb
+- Each bullet must be a complete, professional sentence
+- Preserve ALL numbers, percentages, and dollar amounts
+- If you can't clean a bullet properly, skip it entirely
+- Write in active voice, results-focused
+- Suitable for civilian employers
+- Concise: 1-2 sentences max per bullet
+
+6. STAR FORMAT:
+Transform bullets into Situation-Task-Action-Result format where possible.
+
+## EXAMPLE TRANSFORMATIONS:
+
+BEFORE: "****Supervised 12 member DC team during INSURV prep--achieved ZERO discrepancies across 47 inspection items****"
+AFTER: "Led 12-member safety compliance team through rigorous federal inspection preparation, achieving zero deficiencies across 47 audited items and earning commendation from inspection authority"
+
+BEFORE: "Hand selected to represent the CPO Mess as DCPO, coordinated all deckplate training evolutions for 450+ Sailors"
+AFTER: "Selected by senior leadership to serve as department supervisor, coordinating all frontline training programs for 450+ personnel"
+
+BEFORE: "Maintained 100% CSMP compliance across 3 work centers--drove zone inspections achieving zone average of 98.5"
+AFTER: "Maintained 100% maintenance compliance across 3 departments, driving inspection scores to 98.5 average"`
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,65 +120,9 @@ export async function POST(request: NextRequest) {
             },
             {
               type: 'text',
-              text: `You are an expert at translating military performance evaluation bullets into civilian resume language.
+              text: `${EXTRACTION_PROMPT}
 
 This is a ${evalType || 'military evaluation'} document.
-
-## IMPORTANT RULES:
-
-### 1. FIX OCR ERRORS
-The input may have OCR mistakes. Common issues to fix:
-- Letters misread (0/O, 1/I/l, S/5, rn/m, etc.)
-- Merged words or extra spaces
-- Garbled text that should be common military terms
-- Broken words from line wraps (rejoin them)
-- Excessive asterisks (*, ***, ****) - remove them
-
-### 2. REMOVE ALL MILITARY JARGON
-Replace with civilian equivalents. Common translations:
-- "EP" / "Early Promote" / "Must Promote" → omit or say "top performer"
-- "CPO Mess" / "Mess" → "senior leadership team"
-- "DCPO" / "LCPO" / "DIVO" → "department supervisor" or "division leader"
-- "3M" / "3M system" → "maintenance management system"
-- "CSMP" → "maintenance compliance program"
-- "QA" / "QM" → "quality assurance"
-- "ATG" / "AFLOAT" → "external training organization"
-- Ranks (SMC, SCPO, CPO, PO1, SSG, etc.) → "senior leader" or omit
-- "Deckplate" → "hands-on" or "frontline"
-- "INSURV" → "federal inspection" or "readiness inspection"
-- "FITREP" / "NCOER" / "OER" / "EVAL" → omit (it's a performance evaluation)
-- "Liberty" → "leave" or omit
-- "TAD" / "TDY" → "temporary assignment"
-- "PCS" → "permanent relocation"
-- "LPO" → "team lead" or "supervisor"
-- "Work center" → "department" or "team"
-- "Billet" → "position" or "role"
-- "Quarterdeck" → "reception" or omit
-- "Shipmate" → "team member" or "colleague"
-
-### 3. REMOVE PROMOTION LANGUAGE
-Remove phrases like:
-- "EP contender" / "select now" / "fast track"
-- "promote immediately" / "my #1 of X"
-- Any ranking or comparison statements
-
-### 4. PRESERVE METRICS
-Keep all numbers, percentages, dollar amounts, and quantifiable achievements:
-- Budget amounts ($2.3M, $500K)
-- Personnel counts (12-member team, 45 Sailors)
-- Percentages (98% readiness, 100% compliance)
-- Time savings (reduced processing time by 40%)
-- Scores (achieved 98.5 on inspection)
-
-### 5. PROFESSIONAL CIVILIAN TONE
-- Write in active voice
-- Results-focused
-- Suitable for civilian employers
-- Concise: 1-2 sentences max per bullet
-- Remove fluff and excessive superlatives
-
-### 6. STAR FORMAT
-Transform bullets into Situation-Task-Action-Result format where possible.
 
 ## OUTPUT FORMAT:
 Return a JSON object with this exact structure:
@@ -123,16 +142,7 @@ Return a JSON object with this exact structure:
   "jobTitle": "Extracted job title/billet if visible" or null
 }
 
-## EXAMPLE TRANSFORMATIONS:
-
-BEFORE: "****Supervised 12 member DC team during INSURV prep--achieved ZERO discrepancies across 47 inspection items****"
-AFTER: "Led 12-member safety compliance team through rigorous federal inspection preparation, achieving zero deficiencies across 47 audited items and earning commendation from inspection authority"
-
-BEFORE: "Hand selected to represent the CPO Mess as DCPO, coordinated all deckplate training evolutions for 450+ Sailors"
-AFTER: "Selected by senior leadership to serve as department supervisor, coordinating all frontline training programs for 450+ personnel"
-
-BEFORE: "Maintained 100% CSMP compliance across 3 work centers--drove zone inspections achieving zone average of 98.5"
-AFTER: "Maintained 100% maintenance compliance across 3 departments, driving inspection scores to 98.5 average"
+If the image is too garbled to extract anything useful, return: {"error": "Unable to extract clean bullets from this document. Please try a clearer scan."}
 
 Return ONLY the JSON object, no other text or markdown formatting.`,
             },
@@ -153,6 +163,7 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
         translated: string
         metrics: string[]
         skills: string[]
+        unflaggedTerms?: string[]
       }>,
       evalPeriod: { startDate: null as string | null, endDate: null as string | null },
       jobTitle: null as string | null,
@@ -173,6 +184,12 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
       jsonText = jsonText.trim()
 
       const parsed = JSON.parse(jsonText)
+
+      // Check for error response
+      if (parsed.error) {
+        return NextResponse.json({ error: parsed.error, bullets: [] }, { status: 200 })
+      }
+
       if (parsed.bullets && Array.isArray(parsed.bullets)) {
         result = parsed
       }
@@ -192,7 +209,7 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
       }))
     }
 
-    // Clean bullets - remove any PII that might have slipped through
+    // Post-process bullets with our dictionary for any terms Claude missed
     result.bullets = result.bullets.map(bullet => {
       const cleanText = (text: string) => {
         // Remove SSN patterns (XXX-XX-XXXX)
@@ -210,12 +227,20 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
         return text.trim()
       }
 
+      const cleanedOriginal = cleanText(bullet.original || '')
+      const cleanedTranslated = cleanText(bullet.translated || '')
+
+      // Apply military dictionary translation
+      const { translated: processedOriginal, unflaggedTerms: originalUnflagged } = translateMilitaryToCivilian(cleanedOriginal)
+      const { translated: processedTranslated, unflaggedTerms: translatedUnflagged } = translateMilitaryToCivilian(cleanedTranslated)
+
       return {
         ...bullet,
-        original: cleanText(bullet.original || ''),
-        translated: cleanText(bullet.translated || ''),
+        original: processedOriginal,
+        translated: processedTranslated,
         metrics: bullet.metrics || [],
         skills: bullet.skills || [],
+        unflaggedTerms: [...new Set([...originalUnflagged, ...translatedUnflagged])],
       }
     }).filter(b => b.translated && b.translated.length > 10)
 

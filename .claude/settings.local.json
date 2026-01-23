@@ -16,7 +16,8 @@
       "Bash(npm run dev:*)",
       "Bash(xargs kill:*)",
       "Bash(timeout 5 npm run lint:*)",
-      "Bash(tree -L 2 -I \"node_modules|.next\" /home/fiveftslim/projects/debriefedfinal/debriefed/src:*)"
+      "Bash(tree -L 2 -I \"node_modules|.next\" /home/fiveftslim/projects/debriefedfinal/debriefed/src:*)",
+      "Bash(npm run lint:*)"
     ]
   }
 }
