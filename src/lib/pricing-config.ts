@@ -17,8 +17,7 @@ export type FeatureName =
   | 'linkedin_headline'
   | 'linkedin_summary'
   | 'linkedin_profile_analysis'
-  | 'linkedin_recommendations' // Paywalled for free tier
-  | 'elevator_pitch';
+  | 'linkedin_recommendations'; // Paywalled for free tier
 
 export type TemplateName = 'clean' | 'ats' | 'classic' | 'modern' | 'minimal' | 'federal';
 
@@ -34,14 +33,12 @@ export interface TierLimits {
   linkedin_summary: number;
   linkedin_profile_analysis: number;
   linkedin_recommendations: number;
-  elevator_pitch: number;
 }
 
 export interface TierFeatures {
   smart_apply_skills: boolean;
   linkedin_profile_analysis: boolean;
   linkedin_recommendations: boolean;
-  elevator_pitch: boolean;
 }
 
 export interface PricingTier {
@@ -73,14 +70,12 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
       linkedin_summary: 999999, // Unlimited - part of linkedin_score
       linkedin_profile_analysis: 999999, // Unlimited score
       linkedin_recommendations: 0, // PAYWALLED
-      elevator_pitch: 0, // PAYWALLED
     },
     templates: ['clean', 'ats'],
     features: {
       smart_apply_skills: true,
       linkedin_profile_analysis: true, // Can see score
       linkedin_recommendations: false, // Cannot see recommendations
-      elevator_pitch: false,
     },
   },
   core: {
@@ -101,14 +96,12 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
       linkedin_summary: 999999, // Unlimited
       linkedin_profile_analysis: 999999, // Unlimited
       linkedin_recommendations: 999999, // Unlimited
-      elevator_pitch: 3,
     },
     templates: ['clean', 'ats', 'classic', 'modern', 'minimal', 'federal'],
     features: {
       smart_apply_skills: true,
       linkedin_profile_analysis: true,
       linkedin_recommendations: true,
-      elevator_pitch: true,
     },
   },
   full: {
@@ -129,14 +122,12 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
       linkedin_summary: 999999, // Unlimited
       linkedin_profile_analysis: 999999, // Unlimited
       linkedin_recommendations: 999999, // Unlimited
-      elevator_pitch: 15, // Monthly limit
     },
     templates: ['clean', 'ats', 'classic', 'modern', 'minimal', 'federal'],
     features: {
       smart_apply_skills: true,
       linkedin_profile_analysis: true,
       linkedin_recommendations: true,
-      elevator_pitch: true,
     },
   },
 };
@@ -154,7 +145,6 @@ export const DAILY_RATE_LIMITS: TierLimits = {
   linkedin_summary: 999999,
   linkedin_profile_analysis: 999999,
   linkedin_recommendations: 999999,
-  elevator_pitch: 5,
 };
 
 // Admin emails that bypass all limits
@@ -177,7 +167,6 @@ export const FEATURE_DISPLAY_NAMES: Record<FeatureName, string> = {
   linkedin_summary: 'LinkedIn Summaries',
   linkedin_profile_analysis: 'LinkedIn Profile Score',
   linkedin_recommendations: 'LinkedIn Recommendations',
-  elevator_pitch: 'Elevator Pitches',
 };
 
 // Helper function to get tier by stripe price ID

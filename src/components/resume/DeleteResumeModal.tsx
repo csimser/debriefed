@@ -95,12 +95,15 @@ export function DeleteResumeModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-bg-card border border-border rounded-lg w-full max-w-md shadow-xl">
+    <div className="fixed inset-0 bg-black/60 flex items-end md:items-center justify-center z-50">
+      <div className="bg-bg-card border-t md:border border-border rounded-t-2xl md:rounded-lg w-full md:max-w-md shadow-xl md:mx-4">
+        {/* Mobile drag indicator */}
+        <div className="md:hidden w-12 h-1 bg-border rounded-full mx-auto mt-3" />
+
         {/* Header */}
-        <div className="p-6 border-b border-border">
+        <div className="p-4 md:p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-status-red/20 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-status-red/20 rounded-full flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5 text-status-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="3 6 5 6 21 6"/>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -116,7 +119,7 @@ export function DeleteResumeModal({
         </div>
 
         {/* Body */}
-        <div className="p-6">
+        <div className="p-4 md:p-6 max-h-[60vh] overflow-auto mobile-scroll">
           <p className="text-text mb-4">
             Are you sure you want to delete <strong className="text-gold">"{resume.name}"</strong>?
           </p>
@@ -174,20 +177,20 @@ export function DeleteResumeModal({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="p-6 border-t border-border flex gap-3">
+        {/* Footer - stack buttons on mobile */}
+        <div className="p-4 md:p-6 border-t border-border flex flex-col-reverse md:flex-row gap-3 safe-area-inset-bottom">
           <button
             onClick={handleClose}
-            className="flex-1 px-4 py-3 bg-bg-tertiary border border-border text-text rounded font-heading font-bold uppercase tracking-wider hover:bg-bg-hover transition-all"
+            className="flex-1 px-4 py-3.5 md:py-3 bg-bg-tertiary border border-border text-text rounded-lg md:rounded font-heading font-bold uppercase tracking-wider hover:bg-bg-hover active:bg-bg-hover transition-all min-h-[48px]"
           >
             Cancel
           </button>
           <button
             onClick={handleDelete}
             disabled={deleting || (requiresConfirmText && confirmText !== 'DELETE')}
-            className="flex-1 px-4 py-3 bg-status-red text-white rounded font-heading font-bold uppercase tracking-wider hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className="flex-1 px-4 py-3.5 md:py-3 bg-status-red text-white rounded-lg md:rounded font-heading font-bold uppercase tracking-wider hover:bg-red-600 active:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[48px]"
           >
-            {deleting ? 'Deleting...' : 'Delete Resume'}
+            {deleting ? 'Deleting...' : 'Delete'}
           </button>
         </div>
       </div>

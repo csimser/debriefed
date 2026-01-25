@@ -18,7 +18,9 @@
       "Bash(timeout 5 npm run lint:*)",
       "Bash(tree -L 2 -I \"node_modules|.next\" /home/fiveftslim/projects/debriefedfinal/debriefed/src:*)",
       "Bash(npm run lint:*)",
-      "Bash(/home/fiveftslim/projects/debriefedfinal/debriefed/src/app/\\\\\\(auth\\\\\\)/signup/page.tsx)"
+      "Bash(/home/fiveftslim/projects/debriefedfinal/debriefed/src/app/\\\\\\(auth\\\\\\)/signup/page.tsx)",
+      "Bash(npx next lint:*)",
+      "Bash(node -e:*)"
     ]
   }
 }

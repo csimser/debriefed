@@ -430,7 +430,6 @@ export async function resetUsageOnPurchase(
     'linkedin_summary',
     'linkedin_profile_analysis',
     'linkedin_recommendations',
-    'elevator_pitch',
   ];
 
   for (const feature of features) {
@@ -503,7 +502,6 @@ export async function getAllUsage(userId: string): Promise<Record<FeatureName, U
     'linkedin_summary',
     'linkedin_profile_analysis',
     'linkedin_recommendations',
-    'elevator_pitch',
   ];
 
   const usage: Partial<Record<FeatureName, UsageCheckResult>> = {};

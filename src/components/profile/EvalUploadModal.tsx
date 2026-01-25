@@ -445,22 +445,26 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-bg-card border border-border rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col shadow-xl">
+    <div className="fixed inset-0 bg-black/70 flex items-end md:items-center justify-center z-50 md:p-4">
+      {/* Full screen on mobile, centered modal on desktop */}
+      <div className="bg-bg-card border-t md:border border-border rounded-t-2xl md:rounded-lg w-full md:max-w-4xl h-[95vh] md:max-h-[90vh] flex flex-col shadow-xl">
         {/* Header */}
-        <div className="p-6 border-b border-border flex items-center justify-between">
-          <div>
-            <h2 className="font-heading text-xl font-bold">Upload Evaluation</h2>
-            <p className="text-sm text-text-muted mt-1">
+        <div className="p-4 md:p-6 border-b border-border flex items-center justify-between">
+          {/* Mobile drag indicator */}
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-border rounded-full md:hidden" />
+
+          <div className="pt-2 md:pt-0">
+            <h2 className="font-heading text-lg md:text-xl font-bold">Upload Evaluation</h2>
+            <p className="text-xs md:text-sm text-text-muted mt-1">
               {step === 'upload' && 'Select your evaluation file'}
-              {step === 'crop' && 'Crop to select ONLY the write-up section'}
+              {step === 'crop' && 'Crop to select the write-up section'}
               {step === 'processing' && 'Extracting text...'}
               {step === 'review' && 'Review extracted bullets'}
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 text-text-muted hover:text-text rounded transition-all"
+            className="p-3 md:p-2 text-text-muted hover:text-text rounded-lg transition-all min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18"/>
@@ -470,9 +474,9 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4 md:p-6 mobile-scroll">
           {/* Privacy Warning */}
-          <div className="mb-6 p-4 bg-status-red/10 border border-status-red/30 rounded-lg">
+          <div className="mb-4 md:mb-6 p-3 md:p-4 bg-status-red/10 border border-status-red/30 rounded-lg">
             <div className="flex items-start gap-3">
               <svg className="w-6 h-6 text-status-red flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -558,6 +562,17 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                 {!evalType && (
                   <p className="text-xs text-status-amber mt-2">Please select an evaluation type first</p>
                 )}
+              </div>
+
+              {/* PII Warning */}
+              <div className="bg-status-red-dim border border-status-red/20 rounded-lg p-4">
+                <p className="text-sm text-status-red font-medium mb-1">
+                  Important: Redact Sensitive Information
+                </p>
+                <p className="text-xs text-text-muted">
+                  Please redact any SSN, DODID, or EDIPI from your document before uploading.
+                  Documents containing these identifiers will be rejected for your security.
+                </p>
               </div>
             </div>
           )}
@@ -872,11 +887,11 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
           )}
         </div>
 
-        {/* Footer */}
-        <div className="p-6 border-t border-border flex gap-3">
+        {/* Footer - stack buttons on mobile */}
+        <div className="p-4 md:p-6 border-t border-border flex flex-col-reverse md:flex-row gap-3 safe-area-inset-bottom">
           <button
             onClick={handleClose}
-            className="px-6 py-3 bg-bg-tertiary border border-border rounded font-heading font-bold uppercase tracking-wider hover:bg-bg-hover transition-all"
+            className="w-full md:w-auto px-6 py-3.5 md:py-3 bg-bg-tertiary border border-border rounded-lg md:rounded font-heading font-bold uppercase tracking-wider hover:bg-bg-hover active:bg-bg-hover transition-all min-h-[48px]"
           >
             Cancel
           </button>
@@ -885,9 +900,9 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
             <button
               onClick={handleCropComplete}
               disabled={!cropArea || cropArea.width < 50 || cropArea.height < 50 || processing}
-              className="flex-1 px-6 py-3 bg-gold text-bg-primary rounded font-heading font-bold uppercase tracking-wider hover:bg-gold-bright disabled:opacity-50 transition-all"
+              className="flex-1 px-6 py-3.5 md:py-3 bg-gold text-bg-primary rounded-lg md:rounded font-heading font-bold uppercase tracking-wider text-sm hover:bg-gold-bright active:bg-gold-bright disabled:opacity-50 transition-all min-h-[48px]"
             >
-              {processing ? 'Processing...' : 'Extract Text from Selection'}
+              {processing ? 'Processing...' : 'Extract Text'}
             </button>
           )}
 
@@ -895,13 +910,13 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
             <button
               onClick={handleSaveBullets}
               disabled={acceptedBullets.length === 0 || savingToExperience}
-              className="flex-1 px-6 py-3 bg-gold text-bg-primary rounded font-heading font-bold uppercase tracking-wider hover:bg-gold-bright disabled:opacity-50 transition-all"
+              className="flex-1 px-6 py-3.5 md:py-3 bg-gold text-bg-primary rounded-lg md:rounded font-heading font-bold uppercase tracking-wider text-sm hover:bg-gold-bright active:bg-gold-bright disabled:opacity-50 transition-all min-h-[48px]"
             >
               {savingToExperience
                 ? 'Saving...'
                 : selectedExperience
-                  ? `Save ${acceptedBullets.length} Bullets to Experience`
-                  : `Continue with ${acceptedBullets.length} Bullets`
+                  ? `Save ${acceptedBullets.length} Bullets`
+                  : `Continue (${acceptedBullets.length})`
               }
             </button>
           )}

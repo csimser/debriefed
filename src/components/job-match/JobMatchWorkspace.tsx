@@ -26,6 +26,8 @@ export interface TailoredResume {
 
 export interface AnalysisResult {
   overallScore: number
+  assessmentLevel: 'Strong Candidate' | 'Competitive' | 'Needs Development' | 'Consider Other Roles'
+  competitivePosition: string
   categoryScores: {
     skills: number
     experience: number
@@ -34,14 +36,27 @@ export interface AnalysisResult {
     certifications: number
     clearance: number | null
   }
+  extractedRequirements?: {
+    requiredSkills: string[]
+    preferredSkills: string[]
+    requiredCertifications: string[]
+    preferredCertifications: string[]
+    requiredExperienceYears: number | null
+    requiredEducation: string | null
+    requiredClearance: string | null
+    keyPhrases: string[]
+  }
   categoryDetails: {
     skills: {
       required: string[]
+      preferred: string[]
       matched: string[]
-      missing: string[]
+      missingRequired: string[]
+      missingPreferred: string[]
+      missing?: string[] // legacy
       toHighlight: string[]
       toAdd: string[]
-      toRemove: string[]
+      toRemove?: string[]
     }
     education: {
       required: string
@@ -51,14 +66,18 @@ export interface AnalysisResult {
     }
     certifications: {
       required: string[]
+      preferred: string[]
       matched: string[]
-      missing: string[]
+      missingRequired: string[]
+      missingPreferred: string[]
+      missing?: string[] // legacy
       notes: string
     }
     experience: {
       requiredYears: number
       candidateYears: number
       meetsRequirement: boolean
+      gap?: number
       notes: string
     }
     clearance: {
@@ -67,6 +86,11 @@ export interface AnalysisResult {
       meetsRequirement: boolean
       notes: string
     } | null
+    keywords?: {
+      extracted: string[]
+      found: string[]
+      missing: string[]
+    }
   }
   bulletSuggestions: BulletSuggestion[]
   skillChanges: {
@@ -76,8 +100,15 @@ export interface AnalysisResult {
   }
   gaps: Gap[]
   strengths: string[]
-  priorityActions: string[]
+  priorityActions: PriorityAction[] | string[]
   assessment: string
+}
+
+export interface PriorityAction {
+  action: string
+  impact: string
+  difficulty: 'Easy' | 'Medium' | 'Hard'
+  timeframe: string
 }
 
 export interface BulletSuggestion {
@@ -88,12 +119,16 @@ export interface BulletSuggestion {
   keywordsAdded: string[]
   action: 'rewrite' | 'exclude' | 'keep'
   priority: 'high' | 'medium' | 'low'
+  estimatedImpact?: string
 }
 
 export interface Gap {
   category: string
   severity: 'high' | 'medium' | 'low'
+  item?: string
   description: string
+  canAddress?: boolean
+  addressSuggestion?: string
 }
 
 export function JobMatchWorkspace({
@@ -315,15 +350,28 @@ export function JobMatchWorkspace({
   }, [selectedResume])
 
   // Calculate current match score after tailoring
+  // INTENTIONALLY CONSERVATIVE - improvements should be realistic, not dramatic
   const calculateTailoredScore = useCallback((): number => {
     if (!analysis || !tailoredResume) return analysis?.overallScore || 0
 
-    const bulletImprovements = tailoredResume.appliedBullets.size * 2
-    const skillAdditions = tailoredResume.addedSkills.length * 3
-    const skillRemovals = tailoredResume.removedSkills.length * 1
+    const baseScore = analysis.overallScore || 0
 
-    const improvement = Math.min(bulletImprovements + skillAdditions + skillRemovals, 20)
-    return Math.min(95, (analysis?.overallScore || 0) + improvement)
+    // Each bullet rewrite = +1% (keywords help but don't transform a resume)
+    const bulletImprovements = tailoredResume.appliedBullets.size * 1
+
+    // Each skill addition = +1.5% (assuming it's a legit skill they have)
+    const skillAdditions = tailoredResume.addedSkills.length * 1.5
+
+    // Skill removals don't meaningfully improve match (just declutter)
+    const skillRemovals = 0
+
+    // Cap total improvement at 12% - you can't turn a 60% into a 90% with rewording
+    // Real improvements come from actually gaining qualifications
+    const maxImprovement = 12
+    const improvement = Math.min(bulletImprovements + skillAdditions + skillRemovals, maxImprovement)
+
+    // Never exceed 92% - 100% match is virtually impossible
+    return Math.min(92, Math.round(baseScore + improvement))
   }, [analysis, tailoredResume])
 
   const handleDownload = async () => {
@@ -391,23 +439,29 @@ export function JobMatchWorkspace({
     }
   }
 
-  // Score display helpers
+  // Score display helpers - HARSHER thresholds
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-status-green'
-    if (score >= 60) return 'text-status-amber'
+    if (score >= 65) return 'text-status-amber'
+    if (score >= 50) return 'text-gold'
     return 'text-status-red'
   }
 
   const getScoreBgColor = (score: number) => {
     if (score >= 80) return 'bg-status-green'
-    if (score >= 60) return 'bg-status-amber'
+    if (score >= 65) return 'bg-status-amber'
+    if (score >= 50) return 'bg-gold'
     return 'bg-status-red'
   }
 
   const getMatchLabel = (score: number) => {
-    if (score >= 80) return 'Excellent Match'
-    if (score >= 60) return 'Good Match'
-    return 'Needs Work'
+    // Use assessment level from analysis if available
+    if (analysis?.assessmentLevel) return analysis.assessmentLevel
+    // Fallback
+    if (score >= 80) return 'Strong Candidate'
+    if (score >= 65) return 'Competitive'
+    if (score >= 50) return 'Needs Development'
+    return 'Consider Other Roles'
   }
 
   const currentScore = calculateTailoredScore()
@@ -415,22 +469,22 @@ export function JobMatchWorkspace({
   const offset = circumference - (currentScore / 100) * circumference
 
   return (
-    <div className="h-full overflow-auto p-6 lg:p-8 animate-fade-in">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
+    <div className="h-full overflow-auto p-4 md:p-6 lg:p-8 animate-fade-in pb-8">
+      <div className="max-w-5xl mx-auto space-y-5 md:space-y-6">
+        {/* Page Header - responsive */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <h1 className="font-heading text-2xl font-bold uppercase tracking-wider flex items-center gap-3">
-              <span className="text-gold">◈</span> Job Match Analysis
+            <h1 className="font-heading text-xl md:text-2xl font-bold uppercase tracking-wider flex items-center gap-2 md:gap-3">
+              <span className="text-gold">◈</span> Job Match
             </h1>
             <p className="text-text-muted text-sm mt-1">
-              Analyze how well your resume matches a job posting and get tailored suggestions
+              Analyze how your resume matches a job posting
             </p>
           </div>
           {!isPro && (
-            <div className="text-right">
-              <div className="text-xs text-text-muted">Free analyses remaining</div>
-              <div className="font-mono text-lg font-bold text-gold">{remaining} / {usageLimit}</div>
+            <div className="flex items-center gap-2 md:text-right bg-bg-tertiary md:bg-transparent p-2 md:p-0 rounded-lg">
+              <div className="text-xs text-text-muted">Free analyses:</div>
+              <div className="font-mono text-base md:text-lg font-bold text-gold">{remaining} / {usageLimit}</div>
             </div>
           )}
         </div>
@@ -460,12 +514,13 @@ export function JobMatchWorkspace({
         {/* ═══════════════════════════════════════════════════════════════════════════
             SECTION 1: JOB POSTING INPUT
             ═══════════════════════════════════════════════════════════════════════════ */}
-        <Card className="p-6">
-          <h2 className="font-heading text-sm font-bold uppercase tracking-wider mb-6 flex items-center gap-2">
+        <Card className="p-4 md:p-6">
+          <h2 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 md:mb-6 flex items-center gap-2">
             <span className="text-gold">◈</span> Job Posting Details
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Stack vertically on mobile */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {/* Company Name */}
             <Input
               label="Company Name"
@@ -500,7 +555,7 @@ export function JobMatchWorkspace({
           </div>
 
           {/* Resume Selector */}
-          <div className="mt-6">
+          <div className="mt-5 md:mt-6">
             <label className="block font-heading text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
               Select Resume to Analyze
             </label>
@@ -510,10 +565,10 @@ export function JobMatchWorkspace({
                   <button
                     key={resume.id}
                     onClick={() => setSelectedResumeId(resume.id)}
-                    className={`p-4 rounded-lg text-left transition-all border ${
+                    className={`p-4 rounded-lg text-left transition-all border min-h-[60px] ${
                       selectedResumeId === resume.id
                         ? 'bg-gold-dim border-gold/30 ring-1 ring-gold/20'
-                        : 'bg-bg-tertiary hover:bg-bg-hover border-transparent hover:border-border'
+                        : 'bg-bg-tertiary hover:bg-bg-hover active:bg-bg-hover border-transparent hover:border-border'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -780,15 +835,25 @@ export function JobMatchWorkspace({
                       Priority Actions
                     </h3>
                     <div className="space-y-2">
-                      {analysis.priorityActions.map((action, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-start gap-3 p-3 bg-gold/10 border border-gold/20 rounded-lg"
-                        >
-                          <span className="font-mono text-gold font-bold text-sm">{idx + 1}</span>
-                          <span className="text-sm">{action}</span>
-                        </div>
-                      ))}
+                      {analysis.priorityActions.map((action, idx) => {
+                        const isObject = typeof action === 'object' && action !== null
+                        const actionText = isObject ? (action as any).action : action
+                        const impact = isObject ? (action as any).impact : null
+                        return (
+                          <div
+                            key={idx}
+                            className="flex items-start gap-3 p-3 bg-gold/10 border border-gold/20 rounded-lg"
+                          >
+                            <span className="font-mono text-gold font-bold text-sm">{idx + 1}</span>
+                            <div className="flex-1">
+                              <span className="text-sm">{actionText}</span>
+                              {impact && (
+                                <span className="ml-2 text-xs text-status-green">({impact})</span>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 )}

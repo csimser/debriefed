@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -15,6 +15,13 @@ interface CoverLetterToolProps {
   currentUsage: number
   usageLimit: number
   onBack: () => void
+}
+
+// Word count limits by length setting
+const WORD_LIMITS = {
+  brief: 200,
+  standard: 300,
+  detailed: 400,
 }
 
 export function CoverLetterTool({
@@ -51,6 +58,36 @@ export function CoverLetterTool({
   const [isDownloading, setIsDownloading] = useState(false)
 
   const remaining = usageLimit - currentUsage
+
+  // Calculate word count
+  const wordCount = useMemo(() => {
+    if (!coverLetter) return 0
+    return coverLetter.split(/\s+/).filter(w => w.length > 0).length
+  }, [coverLetter])
+
+  const wordLimit = WORD_LIMITS[coverLetterLength]
+  const isOverLimit = wordCount > wordLimit
+  const isNearLimit = wordCount > wordLimit * 0.9
+
+  // Format today's date
+  const formattedDate = useMemo(() => {
+    return new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+  }, [])
+
+  // Build applicant info for display
+  const applicantName = `${userProfile?.first_name || ''} ${userProfile?.last_name || ''}`.trim() || 'Your Name'
+  const applicantEmail = userProfile?.email || ''
+  const applicantPhone = userProfile?.phone || ''
+  const applicantCity = userProfile?.city || ''
+  const applicantState = userProfile?.state || ''
+  const applicantLinkedIn = userProfile?.linkedin_url || ''
+
+  // Contact line for preview
+  const contactParts = [applicantEmail, applicantPhone, [applicantCity, applicantState].filter(Boolean).join(', ')].filter(Boolean)
 
   // Extract achievements from experiences for selection
   const userAchievements = experiences
@@ -93,10 +130,14 @@ export function CoverLetterTool({
         : []
 
       // Sanitize data to avoid circular JSON references
-      // Only extract primitive values we actually need
       const safeProfile = userProfile ? {
         first_name: userProfile.first_name || '',
         last_name: userProfile.last_name || '',
+        email: userProfile.email || '',
+        phone: userProfile.phone || '',
+        city: userProfile.city || '',
+        state: userProfile.state || '',
+        linkedin_url: userProfile.linkedin_url || '',
         years_of_service: userProfile.years_of_service || '',
         branch: userProfile.branch || '',
         security_clearance: userProfile.security_clearance || '',
@@ -104,7 +145,7 @@ export function CoverLetterTool({
         rank: userProfile.rank || '',
       } : null
 
-      // Extract only what we need from experiences - no nested objects with refs
+      // Extract only what we need from experiences
       const safeExperiences = experiences?.map(exp => ({
         job_title: exp.job_title || exp.title || '',
         civilian_title: exp.civilian_title || '',
@@ -131,7 +172,6 @@ export function CoverLetterTool({
         experiences: safeExperiences,
         skills: safeSkills,
         hiringManagerName: hiringManagerName || '',
-        // Refinement options
         tone: coverLetterTone,
         length: coverLetterLength,
         targetIndustry,
@@ -141,26 +181,13 @@ export function CoverLetterTool({
         isRegenerate,
       }
 
-      console.log('Sending cover letter request:', {
-        company: jobData.company,
-        title: jobData.title,
-        tone: coverLetterTone,
-        length: coverLetterLength,
-        hasProfile: !!safeProfile,
-        experienceCount: safeExperiences.length,
-        skillCount: safeSkills.length,
-      })
-
       const res = await fetch('/api/generate-cover-letter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
       })
 
-      console.log('Response status:', res.status)
-
       const data = await res.json()
-      console.log('Response data:', data.error ? { error: data.error } : { hasLetter: !!data.coverLetter })
 
       if (!res.ok || data.error) {
         setError(data.error || `Server error (${res.status}). Please try again.`)
@@ -169,7 +196,6 @@ export function CoverLetterTool({
         if (data.validationIssues) {
           setValidationWarnings(data.validationIssues)
         }
-        // Show refinement panel after successful generation
         setShowRefinementPanel(true)
       } else {
         setError('No cover letter received. Please try again.')
@@ -234,18 +260,12 @@ export function CoverLetterTool({
     setIsDownloading(true)
 
     try {
-      const applicantName = `${userProfile?.first_name || ''} ${userProfile?.last_name || ''}`.trim() || 'Applicant'
       const companyName = jobData.company || 'Application'
       const safeCompanyName = companyName.replace(/[^a-zA-Z0-9-_\s]/g, '').replace(/\s+/g, '-')
 
       if (format === 'txt') {
         // Simple text download - handle locally
-        const today = new Date().toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-        const content = `${today}\n\n${coverLetter}`
+        const content = `${applicantName}\n${contactParts.join(' | ')}\n${applicantLinkedIn ? applicantLinkedIn + '\n' : ''}${'─'.repeat(60)}\n\n${formattedDate}\n\n${hiringManagerName ? hiringManagerName + '\n' : ''}${jobData.company}\n\nRE: ${jobData.title} Position\n\n${coverLetter}`
         const blob = new Blob([content], { type: 'text/plain' })
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -256,7 +276,7 @@ export function CoverLetterTool({
         document.body.removeChild(a)
         window.URL.revokeObjectURL(url)
       } else {
-        // PDF or DOCX - use API endpoint
+        // PDF or DOCX - use API endpoint with all contact info
         const response = await fetch('/api/export-cover-letter', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -264,7 +284,14 @@ export function CoverLetterTool({
             content: coverLetter,
             format,
             applicantName,
-            companyName,
+            applicantEmail,
+            applicantPhone,
+            applicantCity,
+            applicantState,
+            applicantLinkedIn,
+            companyName: jobData.company,
+            hiringManagerName: hiringManagerName || undefined,
+            jobTitle: jobData.title,
           }),
         })
 
@@ -281,9 +308,7 @@ export function CoverLetterTool({
         const url = window.URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-
         a.download = `Cover-Letter-${safeCompanyName}.${format}`
-
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
@@ -309,29 +334,92 @@ export function CoverLetterTool({
     setSelectedAchievements([])
   }
 
+  // Parse cover letter for preview
+  const parsedLetter = useMemo(() => {
+    if (!coverLetter) return null
+
+    const lines = coverLetter.split('\n')
+    let greeting = ''
+    let closing = ''
+    let signatureName = ''
+    const bodyParagraphs: string[] = []
+    let inBody = false
+    let currentParagraph = ''
+
+    for (const line of lines) {
+      const trimmed = line.trim()
+
+      if (trimmed.startsWith('Dear ')) {
+        greeting = trimmed
+        inBody = true
+      } else if (
+        trimmed.startsWith('Sincerely,') ||
+        trimmed.startsWith('Sincerely') ||
+        trimmed.startsWith('Best regards,') ||
+        trimmed.startsWith('Best,') ||
+        trimmed.startsWith('Regards,') ||
+        trimmed.startsWith('Respectfully,') ||
+        trimmed.startsWith('Thank you,')
+      ) {
+        if (currentParagraph.trim()) {
+          bodyParagraphs.push(currentParagraph.trim())
+          currentParagraph = ''
+        }
+        closing = trimmed.endsWith(',') ? trimmed : trimmed + ','
+        inBody = false
+      } else if (!inBody && closing && trimmed && !signatureName) {
+        signatureName = trimmed
+      } else if (inBody) {
+        if (trimmed === '') {
+          if (currentParagraph.trim()) {
+            bodyParagraphs.push(currentParagraph.trim())
+            currentParagraph = ''
+          }
+        } else {
+          currentParagraph += (currentParagraph ? ' ' : '') + trimmed
+        }
+      }
+    }
+
+    if (currentParagraph.trim()) {
+      bodyParagraphs.push(currentParagraph.trim())
+    }
+
+    return {
+      greeting: greeting || 'Dear Hiring Team,',
+      bodyParagraphs,
+      closing: closing || 'Sincerely,',
+      signatureName: signatureName || applicantName,
+    }
+  }, [coverLetter, applicantName])
+
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <button onClick={onBack} className="text-text-muted hover:text-text">
+    <div className="pb-4">
+      {/* Header - responsive */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-3">
+        <div className="flex items-center gap-3 md:gap-4">
+          <button
+            onClick={onBack}
+            className="text-text-muted hover:text-text p-2 -ml-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
             ← Back
           </button>
-          <h2 className="font-heading text-2xl font-bold uppercase tracking-wider">Cover Letter Generator</h2>
+          <h2 className="font-heading text-xl md:text-2xl font-bold uppercase tracking-wider">Cover Letter</h2>
         </div>
         <Badge variant={remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
           {remaining} Remaining
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Stack vertically on mobile, side-by-side on desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Input Form */}
-        <Card className="p-6">
+        <Card className="p-4 md:p-6">
           <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
             <span className="text-gold">◈</span> Job Details
           </h3>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             <Input
               label="Company Name"
               value={jobData.company}
@@ -358,7 +446,7 @@ export function CoverLetterTool({
                 className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
               <p className="text-xs text-text-dim">
-                Check the job posting or company LinkedIn for the hiring manager's name. Makes your letter more personal.
+                Check the job posting or company LinkedIn for the hiring manager's name.
               </p>
             </div>
 
@@ -376,17 +464,17 @@ export function CoverLetterTool({
           </div>
         </Card>
 
-        {/* Customization Options - BEFORE Generate */}
-        <Card className="p-6">
+        {/* Customization Options */}
+        <Card className="p-4 md:p-6">
           <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
             <span className="text-gold">◇</span> Customize Your Letter
           </h3>
 
-          <div className="space-y-4">
-            {/* Tone Selection */}
+          <div className="space-y-5">
+            {/* Tone Selection - stack on very small screens */}
             <div>
               <label className="block text-xs text-text-muted mb-2 uppercase tracking-wider">Tone</label>
-              <div className="flex gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {[
                   { id: 'professional', label: 'Professional', desc: 'Balanced and polished' },
                   { id: 'conversational', label: 'Conversational', desc: 'Warmer, personable' },
@@ -395,10 +483,10 @@ export function CoverLetterTool({
                   <button
                     key={tone.id}
                     onClick={() => setCoverLetterTone(tone.id as typeof coverLetterTone)}
-                    className={`flex-1 p-2 rounded-lg border text-sm transition-all ${
+                    className={`p-3 md:p-2 rounded-lg border text-xs md:text-sm transition-all min-h-[48px] ${
                       coverLetterTone === tone.id
                         ? 'border-gold bg-gold/10 text-text'
-                        : 'border-border bg-bg-secondary text-text-muted hover:border-gold/50'
+                        : 'border-border bg-bg-secondary text-text-muted hover:border-gold/50 active:bg-bg-tertiary'
                     }`}
                     title={tone.desc}
                   >
@@ -410,20 +498,22 @@ export function CoverLetterTool({
 
             {/* Length Selection */}
             <div>
-              <label className="block text-xs text-text-muted mb-2 uppercase tracking-wider">Length</label>
-              <div className="flex gap-2">
+              <label className="block text-xs text-text-muted mb-2 uppercase tracking-wider">
+                Length <span className="text-text-dim font-normal">({WORD_LIMITS[coverLetterLength]} word max)</span>
+              </label>
+              <div className="grid grid-cols-3 gap-2">
                 {[
-                  { id: 'brief', label: 'Brief', desc: '150-200 words' },
-                  { id: 'standard', label: 'Standard', desc: '250-300 words' },
-                  { id: 'detailed', label: 'Detailed', desc: '350-400 words' },
+                  { id: 'brief', label: 'Brief', desc: '~200 words' },
+                  { id: 'standard', label: 'Standard', desc: '~300 words' },
+                  { id: 'detailed', label: 'Detailed', desc: '~400 words' },
                 ].map((length) => (
                   <button
                     key={length.id}
                     onClick={() => setCoverLetterLength(length.id as typeof coverLetterLength)}
-                    className={`flex-1 p-2 rounded-lg border text-sm transition-all ${
+                    className={`p-3 md:p-2 rounded-lg border text-xs md:text-sm transition-all min-h-[48px] ${
                       coverLetterLength === length.id
                         ? 'border-gold bg-gold/10 text-text'
-                        : 'border-border bg-bg-secondary text-text-muted hover:border-gold/50'
+                        : 'border-border bg-bg-secondary text-text-muted hover:border-gold/50 active:bg-bg-tertiary'
                     }`}
                     title={length.desc}
                   >
@@ -446,10 +536,10 @@ export function CoverLetterTool({
                   <button
                     key={industry.id}
                     onClick={() => setTargetIndustry(industry.id as typeof targetIndustry)}
-                    className={`p-2 rounded-lg border text-sm transition-all ${
+                    className={`p-3 md:p-2 rounded-lg border text-xs md:text-sm transition-all min-h-[48px] ${
                       targetIndustry === industry.id
                         ? 'border-gold bg-gold/10 text-text'
-                        : 'border-border bg-bg-secondary text-text-muted hover:border-gold/50'
+                        : 'border-border bg-bg-secondary text-text-muted hover:border-gold/50 active:bg-bg-tertiary'
                     }`}
                     title={industry.desc}
                   >
@@ -526,34 +616,45 @@ export function CoverLetterTool({
         </Card>
       </div>
 
-      {/* Output Section - Full Width */}
+      {/* Output Section - Professional Preview */}
       {(coverLetter || generating) && (
-        <Card className="mt-6 p-6">
-          <div className="flex items-center justify-between mb-4">
+        <Card className="mt-4 md:mt-6 p-4 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-3">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
               <span className="text-gold">◫</span> Your Cover Letter
             </h3>
             {coverLetter && (
-              <div className="flex gap-2">
-                <Button size="sm" variant="secondary" onClick={handleCopy} disabled={isDownloading}>
-                  {copied ? '✓ Copied' : 'Copy'}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => handleDownload('docx')}
-                  disabled={isDownloading}
-                >
-                  {isDownloading ? '...' : 'DOCX'}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => handleDownload('pdf')}
-                  disabled={isDownloading}
-                >
-                  PDF
-                </Button>
+              <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
+                {/* Word count indicator */}
+                <div className={`text-xs font-mono ${
+                  isOverLimit ? 'text-status-red' : isNearLimit ? 'text-status-amber' : 'text-text-dim'
+                }`}>
+                  {wordCount}/{wordLimit} words
+                  {isOverLimit && ' (over limit!)'}
+                </div>
+                {/* Action buttons - full width on mobile */}
+                <div className="grid grid-cols-3 md:flex gap-2">
+                  <Button size="sm" variant="secondary" onClick={handleCopy} disabled={isDownloading} fullWidthMobile>
+                    {copied ? '✓' : 'Copy'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleDownload('docx')}
+                    disabled={isDownloading}
+                    fullWidthMobile
+                  >
+                    {isDownloading ? '...' : 'DOCX'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => handleDownload('pdf')}
+                    disabled={isDownloading}
+                    fullWidthMobile
+                  >
+                    PDF
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -566,11 +667,68 @@ export function CoverLetterTool({
                 <p className="text-xs text-text-dim mt-2">This may take 15-30 seconds</p>
               </div>
             </div>
-          ) : coverLetter ? (
+          ) : coverLetter && parsedLetter ? (
             <div className="space-y-4">
-              <div className="bg-bg-secondary rounded-lg p-6 max-h-[500px] overflow-auto">
-                <div className="prose prose-invert prose-sm max-w-none whitespace-pre-wrap">
-                  {coverLetter}
+              {/* Professional Letter Preview */}
+              <div className="bg-white text-gray-900 rounded-lg shadow-lg overflow-hidden">
+                <div className="p-8 md:p-12" style={{ fontFamily: 'Georgia, serif' }}>
+                  {/* Sender Header */}
+                  <div className="mb-2">
+                    <div className="text-base font-bold text-gray-900">{applicantName}</div>
+                    {contactParts.length > 0 && (
+                      <div className="text-xs text-gray-500 mt-1">{contactParts.join('  |  ')}</div>
+                    )}
+                    {applicantLinkedIn && (
+                      <div className="text-xs text-gray-500">{applicantLinkedIn}</div>
+                    )}
+                  </div>
+
+                  {/* Separator */}
+                  <div className="border-b border-gray-300 my-4"></div>
+
+                  {/* Date */}
+                  <div className="text-sm text-gray-700 mb-6">{formattedDate}</div>
+
+                  {/* Recipient Block */}
+                  <div className="mb-4 text-sm text-gray-700">
+                    {hiringManagerName && <div>{hiringManagerName}</div>}
+                    <div>{jobData.company}</div>
+                  </div>
+
+                  {/* RE: Line */}
+                  {jobData.title && (
+                    <div className="text-sm font-bold text-gray-900 mb-6">
+                      RE: {jobData.title} Position
+                    </div>
+                  )}
+
+                  {/* Greeting */}
+                  <div className="text-sm text-gray-700 mb-4">{parsedLetter.greeting}</div>
+
+                  {/* Body Paragraphs */}
+                  <div className="space-y-4">
+                    {parsedLetter.bodyParagraphs.map((para, idx) => (
+                      <p key={idx} className="text-sm text-gray-700 leading-relaxed text-justify">
+                        {para}
+                      </p>
+                    ))}
+                  </div>
+
+                  {/* Closing */}
+                  <div className="mt-6 text-sm text-gray-700">{parsedLetter.closing}</div>
+
+                  {/* Signature Space */}
+                  <div className="mt-8">
+                    <div className="text-sm font-bold text-gray-900">{parsedLetter.signatureName}</div>
+                  </div>
+                </div>
+
+                {/* One Page Indicator */}
+                <div className="bg-gray-100 px-8 py-2 text-xs text-gray-500 flex items-center justify-between border-t border-gray-200">
+                  <span>Preview • One Page Format</span>
+                  <span className={isOverLimit ? 'text-red-600 font-medium' : ''}>
+                    {wordCount} words {isOverLimit && '- exceeds limit'}
+                  </span>
                 </div>
               </div>
 
@@ -586,46 +744,43 @@ export function CoverLetterTool({
                 </div>
               )}
 
-              {/* Word count and quick actions */}
-              <div className="flex items-center justify-between">
-                <div className="text-xs text-text-dim">
-                  {coverLetter.split(/\s+/).length} words
-                </div>
-                <div className="flex gap-2">
+              {/* Quick actions - scrollable on mobile */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 -mx-1 px-1 mobile-scroll">
                   <button
                     onClick={() => handleQuickRefine('shorter')}
                     disabled={isRefining}
-                    className="px-3 py-1.5 text-xs bg-bg-secondary text-text-muted rounded-lg hover:bg-bg-tertiary transition-colors border border-border disabled:opacity-50"
+                    className="px-4 py-2.5 md:px-3 md:py-1.5 text-xs bg-bg-secondary text-text-muted rounded-lg hover:bg-bg-tertiary active:bg-bg-tertiary transition-colors border border-border disabled:opacity-50 whitespace-nowrap min-h-[44px] md:min-h-0"
                   >
-                    Make Shorter
+                    Shorter
                   </button>
                   <button
                     onClick={() => handleQuickRefine('stronger')}
                     disabled={isRefining}
-                    className="px-3 py-1.5 text-xs bg-bg-secondary text-text-muted rounded-lg hover:bg-bg-tertiary transition-colors border border-border disabled:opacity-50"
+                    className="px-4 py-2.5 md:px-3 md:py-1.5 text-xs bg-bg-secondary text-text-muted rounded-lg hover:bg-bg-tertiary active:bg-bg-tertiary transition-colors border border-border disabled:opacity-50 whitespace-nowrap min-h-[44px] md:min-h-0"
                   >
-                    Stronger Opening
+                    Stronger
                   </button>
                   <button
                     onClick={() => handleQuickRefine('numbers')}
                     disabled={isRefining}
-                    className="px-3 py-1.5 text-xs bg-bg-secondary text-text-muted rounded-lg hover:bg-bg-tertiary transition-colors border border-border disabled:opacity-50"
+                    className="px-4 py-2.5 md:px-3 md:py-1.5 text-xs bg-bg-secondary text-text-muted rounded-lg hover:bg-bg-tertiary active:bg-bg-tertiary transition-colors border border-border disabled:opacity-50 whitespace-nowrap min-h-[44px] md:min-h-0"
                   >
-                    Add Numbers
-                  </button>
-                  <button
-                    onClick={() => handleGenerate(true)}
-                    disabled={isRefining || generating}
-                    className="px-3 py-1.5 text-xs bg-gold/10 text-gold rounded-lg hover:bg-gold/20 transition-colors border border-gold/30 disabled:opacity-50"
-                  >
-                    {isRefining ? 'Regenerating...' : 'Regenerate'}
+                    + Numbers
                   </button>
                 </div>
+                <button
+                  onClick={() => handleGenerate(true)}
+                  disabled={isRefining || generating}
+                  className="w-full md:w-auto px-4 py-2.5 md:px-3 md:py-1.5 text-xs bg-gold/10 text-gold rounded-lg hover:bg-gold/20 active:bg-gold/20 transition-colors border border-gold/30 disabled:opacity-50 min-h-[44px] md:min-h-0"
+                >
+                  {isRefining ? 'Regenerating...' : 'Regenerate'}
+                </button>
               </div>
 
               <button
                 onClick={handleReset}
-                className="w-full py-2 text-sm text-text-muted hover:text-text transition-colors"
+                className="w-full py-3 md:py-2 text-sm text-text-muted hover:text-text active:text-text transition-colors min-h-[44px]"
               >
                 Start Over
               </button>
@@ -633,7 +788,6 @@ export function CoverLetterTool({
           ) : null}
         </Card>
       )}
-
     </div>
   )
 }

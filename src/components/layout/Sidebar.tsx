@@ -2,17 +2,27 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
-const navItems = [
+// Main nav items (shown in desktop sidebar and bottom nav on mobile)
+const mainNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: '◉' },
   { href: '/profile', label: 'My Profile', icon: '◎' },
   { href: '/resumes', label: 'My Resumes', icon: '◫' },
   { href: '/job-match', label: 'Job Match', icon: '◈' },
-  { href: '/career-tools', label: 'Career Tools', icon: '◇' },
+  { href: '/career-tools?tool=cover-letter', label: 'Cover Letter', icon: '✉' },
+  { href: '/career-tools?tool=linkedin', label: 'LinkedIn', icon: '◇' },
+]
+
+// Secondary nav items (shown in hamburger menu on mobile)
+const secondaryNavItems = [
+  { href: '/settings', label: 'Settings', icon: '⚙' },
   { href: '/help', label: 'Help', icon: '?' },
 ]
+
+// Combined for desktop sidebar
+const navItems = [...mainNavItems, ...secondaryNavItems]
 
 const STORAGE_KEY = 'sidebar-collapsed'
 
@@ -30,6 +40,8 @@ interface SidebarProps {
 
 export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = false }: SidebarProps) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const currentTool = searchParams.get('tool')
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
@@ -240,20 +252,64 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
 
         {/* Navigation */}
         <nav className="flex-1 p-4 overflow-auto">
-          <div className="space-y-1">
-            {navItems.map((item) => (
-              <NavItem
-                key={item.href}
-                href={item.href}
-                icon={item.icon}
-                label={item.label}
-                isActive={pathname === item.href}
-                isCollapsed={isCollapsed}
-                onClick={handleLinkClick}
-              />
-            ))}
+          {/* Mobile: Only show secondary nav items (Settings, Help) since main items are in bottom nav */}
+          <div className="md:hidden space-y-1">
+            <p className="text-xs text-text-dim uppercase tracking-wider px-4 py-2 font-heading">Menu</p>
+            {secondaryNavItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <NavItem
+                  key={item.href}
+                  href={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  isActive={isActive}
+                  isCollapsed={false}
+                  onClick={handleLinkClick}
+                />
+              )
+            })}
 
-            {/* Admin Link */}
+            {/* Admin Link on mobile */}
+            {isAdmin && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <NavItem
+                  href="/admin"
+                  icon="⚙"
+                  label="Admin"
+                  isActive={pathname?.startsWith('/admin') || false}
+                  isCollapsed={false}
+                  onClick={handleLinkClick}
+                  isAdmin
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Desktop: Show all nav items */}
+          <div className="hidden md:block space-y-1">
+            {navItems.map((item) => {
+              // Check if this nav item is active, accounting for query params
+              const [itemPath, itemQuery] = item.href.split('?')
+              const itemTool = itemQuery?.split('=')[1]
+              const isActive = itemTool
+                ? pathname === itemPath && currentTool === itemTool
+                : pathname === item.href && !currentTool
+
+              return (
+                <NavItem
+                  key={item.href}
+                  href={item.href}
+                  icon={item.icon}
+                  label={item.label}
+                  isActive={isActive}
+                  isCollapsed={isCollapsed}
+                  onClick={handleLinkClick}
+                />
+              )
+            })}
+
+            {/* Admin Link on desktop */}
             {isAdmin && (
               <div className="mt-4 pt-4 border-t border-border">
                 <NavItem

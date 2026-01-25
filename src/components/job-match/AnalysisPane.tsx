@@ -142,21 +142,41 @@ export function AnalysisPane({
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-status-green'
-    if (score >= 60) return 'text-status-amber'
+    if (score >= 65) return 'text-status-amber'
+    if (score >= 50) return 'text-gold'
     return 'text-status-red'
   }
 
   const getBarColor = (score: number) => {
     if (score >= 80) return 'bg-status-green'
-    if (score >= 60) return 'bg-status-amber'
+    if (score >= 65) return 'bg-status-amber'
+    if (score >= 50) return 'bg-gold'
     return 'bg-status-red'
   }
 
   const getMatchLabel = (score: number) => {
-    if (score >= 80) return 'Excellent Match'
-    if (score >= 60) return 'Good Match'
-    return 'Needs Work'
+    // Use assessment level from analysis if available
+    if (analysis?.assessmentLevel) return analysis.assessmentLevel
+    if (score >= 80) return 'Strong Candidate'
+    if (score >= 65) return 'Competitive'
+    if (score >= 50) return 'Needs Development'
+    return 'Consider Other Roles'
   }
+
+  const getAssessmentBadgeColor = (level: string) => {
+    switch (level) {
+      case 'Strong Candidate': return 'bg-status-green/20 text-status-green border-status-green/30'
+      case 'Competitive': return 'bg-status-amber/20 text-status-amber border-status-amber/30'
+      case 'Needs Development': return 'bg-gold/20 text-gold border-gold/30'
+      default: return 'bg-status-red/20 text-status-red border-status-red/30'
+    }
+  }
+
+  // Get missing required items count for summary
+  const missingRequiredCount = (analysis.categoryDetails?.skills?.missingRequired?.length || 0) +
+    (analysis.categoryDetails?.certifications?.missingRequired?.length || 0) +
+    (analysis.categoryDetails?.experience?.meetsRequirement === false ? 1 : 0) +
+    (analysis.categoryDetails?.clearance?.required && !analysis.categoryDetails?.clearance?.meetsRequirement ? 1 : 0)
 
   const handleApplyAll = () => {
     const count = onApplyAll()
@@ -302,7 +322,25 @@ export function AnalysisPane({
       {/* Tab Content */}
       <div className="flex-1 overflow-auto p-4">
         {activeTab === 'overview' && (
-          <div className="flex gap-6">
+          <div className="space-y-4">
+            {/* Assessment Banner */}
+            {analysis.assessmentLevel && (
+              <div className={`p-3 rounded-lg border flex items-center justify-between ${getAssessmentBadgeColor(analysis.assessmentLevel)}`}>
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold">{analysis.assessmentLevel}</span>
+                  {missingRequiredCount > 0 && (
+                    <span className="text-xs opacity-80">
+                      • {missingRequiredCount} required item{missingRequiredCount !== 1 ? 's' : ''} missing
+                    </span>
+                  )}
+                </div>
+                {analysis.competitivePosition && (
+                  <span className="text-xs opacity-80">{analysis.competitivePosition}</span>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-6">
             {/* Left: Score Circle + Categories */}
             <div className="w-52 flex-shrink-0">
               {/* Circular Score */}
@@ -334,6 +372,7 @@ export function AnalysisPane({
                   </div>
                 </div>
                 <div className="text-sm text-text-muted mt-2">{getMatchLabel(currentScore)}</div>
+                <div className="text-xs text-text-dim mt-1">Max possible: 92%</div>
               </div>
 
               {/* Category Breakdown */}
@@ -355,19 +394,55 @@ export function AnalysisPane({
 
             {/* Right: Priority Actions + Strengths + Gaps */}
             <div className="flex-1 space-y-4">
-              {/* Priority Actions */}
+              {/* Priority Actions with Impact Estimates */}
               {analysis.priorityActions?.length > 0 && (
                 <div>
                   <div className="text-xs font-semibold text-gold mb-2 uppercase tracking-wider">
                     Priority Actions
                   </div>
                   <div className="space-y-2">
-                    {analysis.priorityActions.map((action, idx) => (
-                      <div key={idx} className="flex items-start gap-2 p-2 bg-gold/10 rounded border border-gold/20">
-                        <span className="text-gold text-xs font-bold">{idx + 1}.</span>
-                        <span className="text-sm">{action}</span>
-                      </div>
-                    ))}
+                    {analysis.priorityActions.map((action, idx) => {
+                      // Handle both string and object formats
+                      const isObject = typeof action === 'object' && action !== null
+                      const actionText = isObject ? (action as any).action : action
+                      const impact = isObject ? (action as any).impact : null
+                      const difficulty = isObject ? (action as any).difficulty : null
+                      const timeframe = isObject ? (action as any).timeframe : null
+
+                      return (
+                        <div key={idx} className="p-3 bg-gold/10 rounded border border-gold/20">
+                          <div className="flex items-start gap-2">
+                            <span className="text-gold text-xs font-bold mt-0.5">{idx + 1}.</span>
+                            <div className="flex-1">
+                              <span className="text-sm">{actionText}</span>
+                              {(impact || difficulty || timeframe) && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {impact && (
+                                    <span className="text-[10px] px-2 py-0.5 bg-status-green/20 text-status-green rounded-full">
+                                      Impact: {impact}
+                                    </span>
+                                  )}
+                                  {difficulty && (
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                                      difficulty === 'Easy' ? 'bg-status-green/20 text-status-green' :
+                                      difficulty === 'Medium' ? 'bg-status-amber/20 text-status-amber' :
+                                      'bg-status-red/20 text-status-red'
+                                    }`}>
+                                      {difficulty}
+                                    </span>
+                                  )}
+                                  {timeframe && (
+                                    <span className="text-[10px] px-2 py-0.5 bg-bg-tertiary text-text-muted rounded-full">
+                                      {timeframe}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
@@ -467,7 +542,7 @@ export function AnalysisPane({
                     <div>
                       <div className="font-heading text-sm font-semibold mb-1">Unlock Smart Rewrites</div>
                       <p className="text-xs text-text-muted">
-                        Your resume is {analysis.overallScore}% matched — rewrites could push it to 90%+
+                        Your resume is {analysis.overallScore}% matched — rewrites could improve by up to 12%
                       </p>
                     </div>
                   </div>
@@ -478,33 +553,78 @@ export function AnalysisPane({
               )}
             </div>
           </div>
+          </div>
         )}
 
         {activeTab === 'details' && (
           <div className="space-y-4">
-            {/* Skills Analysis */}
+            {/* Skills Analysis - Now shows REQUIRED vs PREFERRED */}
             <DetailSection title="Skills Analysis" score={analysis.categoryScores?.skills}>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
+                {/* Matched Skills */}
                 <div>
-                  <div className="text-xs text-status-green font-semibold mb-2">Matched Skills ({analysis.categoryDetails?.skills?.matched?.length || 0})</div>
+                  <div className="text-xs text-status-green font-semibold mb-2 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-status-green"></span>
+                    Matched Skills ({analysis.categoryDetails?.skills?.matched?.length || 0})
+                  </div>
                   <div className="flex flex-wrap gap-1">
                     {analysis.categoryDetails?.skills?.matched?.map((skill, idx) => (
                       <span key={idx} className="px-2 py-0.5 text-xs bg-status-green/20 text-status-green rounded">
                         {skill}
                       </span>
-                    ))}
+                    )) || <span className="text-xs text-text-dim">None found</span>}
                   </div>
                 </div>
-                <div>
-                  <div className="text-xs text-status-amber font-semibold mb-2">Missing Skills ({analysis.categoryDetails?.skills?.missing?.length || 0})</div>
-                  <div className="flex flex-wrap gap-1">
-                    {analysis.categoryDetails?.skills?.missing?.map((skill, idx) => (
-                      <span key={idx} className="px-2 py-0.5 text-xs bg-status-amber/20 text-status-amber rounded">
-                        {skill}
-                      </span>
-                    ))}
+
+                {/* Missing REQUIRED Skills - RED FLAGS */}
+                {(analysis.categoryDetails?.skills?.missingRequired?.length || 0) > 0 && (
+                  <div>
+                    <div className="text-xs text-status-red font-semibold mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-status-red"></span>
+                      Missing REQUIRED Skills ({analysis.categoryDetails?.skills?.missingRequired?.length})
+                      <span className="text-[10px] font-normal px-1.5 py-0.5 bg-status-red/20 rounded">CRITICAL</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {analysis.categoryDetails?.skills?.missingRequired?.map((skill, idx) => (
+                        <span key={idx} className="px-2 py-0.5 text-xs bg-status-red/20 text-status-red rounded border border-status-red/30">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Missing PREFERRED Skills - YELLOW FLAGS */}
+                {(analysis.categoryDetails?.skills?.missingPreferred?.length || 0) > 0 && (
+                  <div>
+                    <div className="text-xs text-status-amber font-semibold mb-2 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-status-amber"></span>
+                      Missing Preferred Skills ({analysis.categoryDetails?.skills?.missingPreferred?.length})
+                      <span className="text-[10px] font-normal px-1.5 py-0.5 bg-status-amber/20 rounded">Nice to have</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {analysis.categoryDetails?.skills?.missingPreferred?.map((skill, idx) => (
+                        <span key={idx} className="px-2 py-0.5 text-xs bg-status-amber/20 text-status-amber rounded">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Legacy fallback for old missing array */}
+                {(!analysis.categoryDetails?.skills?.missingRequired?.length && !analysis.categoryDetails?.skills?.missingPreferred?.length && (analysis.categoryDetails?.skills?.missing?.length || 0) > 0) && (
+                  <div>
+                    <div className="text-xs text-status-amber font-semibold mb-2">Missing Skills ({analysis.categoryDetails?.skills?.missing?.length})</div>
+                    <div className="flex flex-wrap gap-1">
+                      {analysis.categoryDetails?.skills?.missing?.map((skill, idx) => (
+                        <span key={idx} className="px-2 py-0.5 text-xs bg-status-amber/20 text-status-amber rounded">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </DetailSection>
 
@@ -571,7 +691,7 @@ export function AnalysisPane({
               })()}
             </DetailSection>
 
-            {/* Certifications Analysis */}
+            {/* Certifications Analysis - Required vs Preferred */}
             <DetailSection title="Certifications" score={analysis.categoryScores?.certifications}>
               {(() => {
                 const certs = analysis.categoryDetails?.certifications
@@ -587,9 +707,13 @@ export function AnalysisPane({
                 }
 
                 return (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
+                    {/* Matched */}
                     <div>
-                      <div className="text-xs text-status-green font-semibold mb-2">Matched</div>
+                      <div className="text-xs text-status-green font-semibold mb-2 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-status-green"></span>
+                        Matched Certifications
+                      </div>
                       <div className="flex flex-wrap gap-1">
                         {(certs?.matched || []).map((cert, idx) => (
                           <span key={idx} className="px-2 py-0.5 text-xs bg-status-green/20 text-status-green rounded">
@@ -601,19 +725,59 @@ export function AnalysisPane({
                         )}
                       </div>
                     </div>
-                    <div>
-                      <div className="text-xs text-status-amber font-semibold mb-2">Missing</div>
-                      <div className="flex flex-wrap gap-1">
-                        {(certs?.missing || []).map((cert, idx) => (
-                          <span key={idx} className="px-2 py-0.5 text-xs bg-status-amber/20 text-status-amber rounded">
-                            {cert}
-                          </span>
-                        ))}
-                        {(!certs?.missing || certs.missing.length === 0) && (
-                          <span className="text-xs text-text-muted">None missing</span>
-                        )}
+
+                    {/* Missing REQUIRED */}
+                    {(certs?.missingRequired?.length || 0) > 0 && (
+                      <div>
+                        <div className="text-xs text-status-red font-semibold mb-2 flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-status-red"></span>
+                          Missing REQUIRED Certifications
+                          <span className="text-[10px] font-normal px-1.5 py-0.5 bg-status-red/20 rounded">CRITICAL</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {certs?.missingRequired?.map((cert, idx) => (
+                            <span key={idx} className="px-2 py-0.5 text-xs bg-status-red/20 text-status-red rounded border border-status-red/30">
+                              {cert}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Missing Preferred */}
+                    {(certs?.missingPreferred?.length || 0) > 0 && (
+                      <div>
+                        <div className="text-xs text-status-amber font-semibold mb-2 flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-status-amber"></span>
+                          Missing Preferred Certifications
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {certs?.missingPreferred?.map((cert, idx) => (
+                            <span key={idx} className="px-2 py-0.5 text-xs bg-status-amber/20 text-status-amber rounded">
+                              {cert}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Legacy fallback */}
+                    {(!certs?.missingRequired?.length && !certs?.missingPreferred?.length && (certs?.missing?.length || 0) > 0) && (
+                      <div>
+                        <div className="text-xs text-status-amber font-semibold mb-2">Missing</div>
+                        <div className="flex flex-wrap gap-1">
+                          {certs?.missing?.map((cert, idx) => (
+                            <span key={idx} className="px-2 py-0.5 text-xs bg-status-amber/20 text-status-amber rounded">
+                              {cert}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {certs?.notes && (
+                      <p className="text-xs text-text-muted mt-2 italic">{certs.notes}</p>
+                    )}
                   </div>
                 )
               })()}

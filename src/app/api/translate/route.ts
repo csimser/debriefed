@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { getOccupationContext } from '@/lib/onet-api'
-import { withAISecurity, secureSystemPrompt } from '@/lib/ai-endpoint-wrapper'
+import { withAISecurity, secureSystemPrompt, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -81,6 +81,10 @@ Return ONLY the translated bullet point, nothing else.`
     })
 
     const translated = (response.content[0] as { text: string }).text.trim()
+
+    // Track token usage
+    const tokensUsed = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0)
+    await logAPIUsage(ctx.userId, 'translate', tokensUsed, 'claude-sonnet-4-20250514')
 
     return NextResponse.json({
       original: bullet,

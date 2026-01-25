@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Card } from './Card'
 import { Button } from './Button'
 
@@ -22,18 +23,38 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md p-6">
-        <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-2">
+    <div
+      className="fixed inset-0 bg-black/60 flex items-end md:items-center justify-center z-50"
+      onClick={onCancel}
+    >
+      {/* Mobile: drawer from bottom, Desktop: centered modal */}
+      <Card
+        className="w-full max-w-md p-6 md:p-6 rounded-t-2xl md:rounded-lg md:mx-4 animate-fade-in safe-area-inset-bottom"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Drag indicator for mobile */}
+        <div className="md:hidden w-12 h-1 bg-border rounded-full mx-auto mb-4" />
+
+        <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-3">
           {title}
         </h2>
-        <p className="text-text-muted text-sm mb-6">{message}</p>
-        <div className="flex gap-3 justify-end">
-          <Button variant="ghost" onClick={onCancel}>
+        <p className="text-text-muted text-sm md:text-sm mb-6 leading-relaxed">{message}</p>
+
+        {/* Mobile: stacked full-width buttons, Desktop: inline */}
+        <div className="flex flex-col-reverse md:flex-row gap-3 md:justify-end">
+          <Button variant="ghost" onClick={onCancel} fullWidthMobile>
             {cancelLabel}
           </Button>
-          <Button variant={variant === 'danger' ? 'danger' : 'primary'} onClick={onConfirm}>
+          <Button variant={variant === 'danger' ? 'danger' : 'primary'} onClick={onConfirm} fullWidthMobile>
             {confirmLabel}
           </Button>
         </div>

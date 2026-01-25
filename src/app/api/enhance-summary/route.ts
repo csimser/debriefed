@@ -45,8 +45,8 @@ export async function POST(request: NextRequest) {
 
       const tierConfig = PRICING_TIERS[tier]
       const currentCount = usage?.ai_summaries || 0
-      // Use elevator_pitch limit as a proxy for AI summaries (both are AI text generation)
-      const limit = tierConfig.limits.elevator_pitch
+      // Use cover_letters limit as a proxy for AI summaries (both are AI text generation)
+      const limit = tierConfig.limits.cover_letters
 
       if (limit === 0) {
         return NextResponse.json({

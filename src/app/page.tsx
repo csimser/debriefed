@@ -216,11 +216,6 @@ export default async function HomePage({
               description="Generate optimized headlines and summaries, or get full profile analysis with skills recommendations."
             />
             <FeatureCard
-              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>}
-              title="Elevator Pitch"
-              description="Generate 30, 60, and 90-second networking pitches tailored to your background and target role."
-            />
-            <FeatureCard
               icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>}
               title="Smart Apply & Skills by Rank"
               description="Get skills recommendations based on your rank and experience level mapped to civilian equivalents."
@@ -263,7 +258,6 @@ export default async function HomePage({
               <PricingFeature label="Eval Uploads" limit="3" />
               <PricingFeature label="LinkedIn Profile Score" />
               <PricingFeature label="LinkedIn Recommendations" unavailable />
-              <PricingFeature label="Elevator Pitch Generator" unavailable />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="2" isLast />
             </ul>
@@ -293,11 +287,10 @@ export default async function HomePage({
               <PricingFeature label="Eval Uploads" limit="10" />
               <PricingFeature label="LinkedIn Profile Score" />
               <PricingFeature label="LinkedIn Recommendations" />
-              <PricingFeature label="Elevator Pitches" limit="3" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
-            
+
             <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all">
               Get Core
             </Link>
@@ -320,11 +313,10 @@ export default async function HomePage({
               <PricingFeature label="Eval Uploads" limit="30/mo" />
               <PricingFeature label="LinkedIn Profile Score" />
               <PricingFeature label="LinkedIn Recommendations" />
-              <PricingFeature label="Elevator Pitches" limit="15/mo" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
-            
+
             <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
               Get Full
             </Link>
@@ -336,6 +328,39 @@ export default async function HomePage({
           Full tier includes daily rate limits to ensure fair usage. Need enterprise access? Contact us.
         </p>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-bg-secondary border-t border-border px-4 md:px-8 py-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 border-2 border-gold flex items-center justify-center">
+                <span className="font-heading font-bold text-gold text-sm">D</span>
+              </div>
+              <span className="font-heading text-sm font-bold tracking-wider uppercase">Debriefed</span>
+            </div>
+
+            <div className="flex items-center gap-6 text-sm">
+              <Link href="/about" className="text-text-muted hover:text-gold transition-colors">
+                About
+              </Link>
+              <Link href="/help" className="text-text-muted hover:text-gold transition-colors">
+                Help
+              </Link>
+              <Link href="/privacy" className="text-text-muted hover:text-gold transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-text-muted hover:text-gold transition-colors">
+                Terms of Service
+              </Link>
+            </div>
+
+            <p className="text-xs text-text-muted">
+              &copy; {new Date().getFullYear()} Debriefed. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

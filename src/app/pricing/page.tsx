@@ -114,7 +114,6 @@ function PricingContent() {
                 tooltip="See your LinkedIn profile score and section breakdown. Upgrade to see specific recommendations."
               />
               <PricingFeature label="LinkedIn Recommendations" unavailable />
-              <PricingFeature label="Elevator Pitch Generator" unavailable />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="2" isLast />
             </ul>
@@ -143,7 +142,6 @@ function PricingContent() {
               <PricingFeature label="Eval Uploads" limit="10" />
               <PricingFeature label="LinkedIn Profile Score" />
               <PricingFeature label="LinkedIn Recommendations" />
-              <PricingFeature label="Elevator Pitches" limit="3" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
@@ -173,7 +171,6 @@ function PricingContent() {
               <PricingFeature label="Eval Uploads" limit="30/mo" />
               <PricingFeature label="LinkedIn Profile Score" />
               <PricingFeature label="LinkedIn Recommendations" />
-              <PricingFeature label="Elevator Pitches" limit="15/mo" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>

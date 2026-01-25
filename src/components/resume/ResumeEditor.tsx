@@ -259,20 +259,46 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
   }
 
   return (
-    <div className="flex h-full">
-      {/* Sidebar */}
-      <ResumeSidebar
-        resumes={resumes}
-        selectedId={selectedId}
-        onSelect={setSelectedId}
-        onCreate={handleCreate}
-        onDelete={handleDelete}
-        userPlan={userPlan}
-        usage={usage}
-      />
+    <div className="flex h-full flex-col md:flex-row">
+      {/* Sidebar - hidden on mobile, shown as top bar */}
+      <div className="hidden md:block">
+        <ResumeSidebar
+          resumes={resumes}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          onCreate={handleCreate}
+          onDelete={handleDelete}
+          userPlan={userPlan}
+          usage={usage}
+        />
+      </div>
+
+      {/* Mobile Resume Selector */}
+      <div className="md:hidden border-b border-border bg-bg-secondary p-3">
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedId || ''}
+            onChange={(e) => setSelectedId(e.target.value || null)}
+            className="flex-1 bg-bg-tertiary border border-border rounded-lg px-3 py-2.5 text-sm font-medium min-h-[44px]"
+          >
+            {resumes.map((resume) => (
+              <option key={resume.id} value={resume.id}>
+                {resume.name || 'Untitled'}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={handleCreate}
+            disabled={!canCreateNew}
+            className="bg-gold text-bg-primary px-4 py-2.5 rounded-lg font-heading text-sm font-bold uppercase tracking-wider min-h-[44px] disabled:opacity-50"
+          >
+            + New
+          </button>
+        </div>
+      </div>
 
       {/* Main Editor */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Toolbar */}
         <ResumeToolbar
           resumeId={selectedId}
@@ -290,20 +316,24 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
 
         {selectedId ? (
           <>
-            {/* Mobile View Tabs */}
-            <div className="md:hidden flex border-b border-border">
+            {/* Mobile View Tabs - larger touch targets */}
+            <div className="md:hidden flex border-b border-border bg-bg-secondary">
               <button
                 onClick={() => setMobileView('form')}
-                className={`flex-1 py-3 font-heading text-xs uppercase tracking-wider ${
-                  mobileView === 'form' ? 'text-gold border-b-2 border-gold' : 'text-text-muted'
+                className={`flex-1 py-4 font-heading text-sm uppercase tracking-wider transition-colors min-h-[52px] ${
+                  mobileView === 'form'
+                    ? 'text-gold border-b-2 border-gold bg-gold/5'
+                    : 'text-text-muted active:bg-bg-tertiary'
                 }`}
               >
-                Edit
+                Edit Resume
               </button>
               <button
                 onClick={() => setMobileView('preview')}
-                className={`flex-1 py-3 font-heading text-xs uppercase tracking-wider ${
-                  mobileView === 'preview' ? 'text-gold border-b-2 border-gold' : 'text-text-muted'
+                className={`flex-1 py-4 font-heading text-sm uppercase tracking-wider transition-colors min-h-[52px] ${
+                  mobileView === 'preview'
+                    ? 'text-gold border-b-2 border-gold bg-gold/5'
+                    : 'text-text-muted active:bg-bg-tertiary'
                 }`}
               >
                 Preview
@@ -312,7 +342,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
 
             <div className="flex-1 flex overflow-hidden">
               {/* Left: Form - hidden on mobile when preview is active */}
-              <div className={`w-full md:w-1/2 overflow-auto p-4 md:p-6 md:border-r border-border relative ${
+              <div className={`w-full md:w-1/2 overflow-auto p-4 md:p-6 md:border-r border-border relative mobile-scroll ${
                 mobileView === 'preview' ? 'hidden md:block' : ''
               }`}>
                 {/* Locked Overlay for Downloaded Free Tier Resumes */}
@@ -387,14 +417,20 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
               </div>
 
               {/* Right: Preview - hidden on mobile when form is active */}
-              <div className={`w-full md:w-1/2 overflow-auto bg-bg-tertiary p-4 md:p-6 ${
+              <div className={`w-full md:w-1/2 overflow-auto bg-bg-tertiary p-3 md:p-6 mobile-scroll ${
                 mobileView === 'form' ? 'hidden md:block' : ''
               }`}>
-                <ResumePreview
-                  template={currentResume.template}
-                  resumeType={currentResume.resume_type}
-                  content={currentResume.content}
-                />
+                {/* Mobile: Fit to width with pinch zoom */}
+                <div className="md:hidden mb-3 text-center">
+                  <p className="text-xs text-text-dim">Pinch to zoom | Scroll to see more</p>
+                </div>
+                <div className="pinch-zoom">
+                  <ResumePreview
+                    template={currentResume.template}
+                    resumeType={currentResume.resume_type}
+                    content={currentResume.content}
+                  />
+                </div>
               </div>
             </div>
           </>

@@ -334,8 +334,8 @@ export function ResumeEditPane({
                 {analysis?.categoryDetails?.certifications && (
                   <span className="text-xs text-text-muted">
                     {analysis.categoryDetails.certifications.matched?.length || 0} matched
-                    {analysis.categoryDetails.certifications.missing?.length > 0 &&
-                      ` • ${analysis.categoryDetails.certifications.missing.length} missing`}
+                    {((analysis.categoryDetails.certifications.missingRequired?.length || 0) + (analysis.categoryDetails.certifications.missingPreferred?.length || 0) + (analysis.categoryDetails.certifications.missing?.length || 0)) > 0 &&
+                      ` • ${(analysis.categoryDetails.certifications.missingRequired?.length || 0) + (analysis.categoryDetails.certifications.missingPreferred?.length || 0) + (analysis.categoryDetails.certifications.missing?.length || 0)} missing`}
                   </span>
                 )}
               </div>

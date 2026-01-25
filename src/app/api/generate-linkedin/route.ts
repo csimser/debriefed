@@ -119,17 +119,8 @@ export async function POST(request: NextRequest) {
 
       const tierConfig = PRICING_TIERS[tier]
       const currentCount = usage?.ai_summaries || 0
-      // Use elevator_pitch limit as a proxy for LinkedIn content generation
-      const limit = tierConfig.limits.elevator_pitch
-
-      if (limit === 0) {
-        return NextResponse.json({
-          error: 'LinkedIn content generation is available for Core and Full subscribers. Upgrade to unlock this feature.',
-          limitReached: true,
-          paywalled: true,
-          tier
-        }, { status: 403 })
-      }
+      // Use linkedin_summary limit for LinkedIn content generation
+      const limit = tierConfig.limits.linkedin_summary
 
       if (currentCount >= limit) {
         return NextResponse.json({

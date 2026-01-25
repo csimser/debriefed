@@ -72,7 +72,8 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
     <div className="space-y-6">
       {/* Contact Info */}
       <FormSection title="Contact Information" icon="◎">
-        <div className="grid grid-cols-2 gap-4">
+        {/* Stack vertically on mobile, 2 columns on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Name - Locked to profile */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">

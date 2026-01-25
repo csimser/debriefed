@@ -7,6 +7,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
 import { translateMilitaryToCivilian, cleanEvalText } from '@/lib/constants/military-dictionary'
+import { hasCriticalPII } from '@/lib/pii-scanner'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -195,6 +196,20 @@ Return ONLY valid JSON, no markdown or explanation. If the text is too garbled t
         bullets = parsed
       } else if (parsed.bullets && Array.isArray(parsed.bullets)) {
         bullets = parsed.bullets
+      }
+
+      // Scan extracted text for critical PII (SSN, DODID) BEFORE returning
+      const allText = bullets
+        .map((b: any) => `${b.original || ''} ${b.translated || ''}`)
+        .join(' ')
+
+      const piiCheck = hasCriticalPII(allText)
+      if (piiCheck.blocked) {
+        return NextResponse.json({
+          error: piiCheck.reason,
+          piiBlocked: true,
+          bullets: [],
+        }, { status: 400 })
       }
     } catch (err) {
       console.error('JSON parse error:', err)

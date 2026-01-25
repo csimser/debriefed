@@ -12,7 +12,6 @@ const TIER_LIMITS = {
     federal_downloads: 1,
     job_analyses: 3,
     cover_letters: 3,
-    elevator_pitches: 3,
     linkedin_analyses: 1,
   },
   core: {
@@ -20,7 +19,6 @@ const TIER_LIMITS = {
     federal_downloads: 999999,
     job_analyses: 20,
     cover_letters: 999999,
-    elevator_pitches: 999999,
     linkedin_analyses: 999999,
   },
   pro: {
@@ -28,7 +26,6 @@ const TIER_LIMITS = {
     federal_downloads: 999999,
     job_analyses: 999999,
     cover_letters: 999999,
-    elevator_pitches: 999999,
     linkedin_analyses: 999999,
   },
 }
@@ -178,11 +175,6 @@ export default async function DashboardPage() {
               label="Cover Letters"
               current={usage?.cover_letters || 0}
               limit={limits.cover_letters}
-            />
-            <UsageMeter
-              label="Elevator Pitches"
-              current={usage?.elevator_pitches || 0}
-              limit={limits.elevator_pitches}
             />
             <UsageMeter
               label="LinkedIn Analyses"

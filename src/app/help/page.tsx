@@ -15,7 +15,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: "What's the difference between Core and Full?",
-        a: 'Core ($35/30 days) gives you more resumes, cover letters, and job match analyses - perfect for an active job search. Full ($75/90 days) provides even higher limits plus extended access time, ideal for longer transition periods or career changers exploring multiple paths. Both unlock all premium features like the full LinkedIn Optimizer and Elevator Pitch generator.',
+        a: 'Core ($35/30 days) gives you more resumes, cover letters, and job match analyses - perfect for an active job search. Full ($75/90 days) provides even higher limits plus extended access time, ideal for longer transition periods or career changers exploring multiple paths. Both unlock all premium features like the full LinkedIn Optimizer.',
       },
       {
         q: 'How do I cancel or get a refund?',
@@ -172,18 +172,6 @@ const FEATURES = [
     title: 'LinkedIn Optimizer',
     description: 'Optimize your LinkedIn profile for recruiters.',
     details: 'Free: Generate optimized headlines and summaries from your military background. Premium: Upload your existing LinkedIn profile for comprehensive analysis with optimization suggestions, skills recommendations based on target roles, and keyword optimization to appear in more recruiter searches.',
-    link: '/career-tools',
-  },
-  {
-    id: 'elevator-pitch',
-    icon: (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-      </svg>
-    ),
-    title: 'Elevator Pitch',
-    description: 'Generate 30/60/90 second networking pitches.',
-    details: 'Networking events and job fairs require a compelling personal pitch. Our AI generates customized 30, 60, and 90-second elevator pitches based on your background and target role. Practice with timing guides and never stumble over "So, tell me about yourself" again.',
     link: '/career-tools',
   },
   {

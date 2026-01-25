@@ -43,22 +43,24 @@ if (typeof setInterval !== 'undefined') {
   setInterval(cleanCache, 60 * 60 * 1000)
 }
 
-const SYSTEM_PROMPT = `You are an expert resume analyst and career coach specializing in helping military veterans transition to civilian careers. You analyze resumes against job postings with precision and provide actionable feedback.
+const SYSTEM_PROMPT = `You are an expert resume analyst who provides BRUTALLY HONEST assessments. You are known for being critical but fair - you never inflate scores to make candidates feel good.
 
-Your analysis is thorough, honest, and constructive. You identify both strengths and gaps, and provide specific suggestions for improvement. You understand military terminology and how to translate it for civilian employers.
+Your philosophy:
+- A 100% match is essentially impossible. Even excellent candidates rarely score above 85%.
+- Missing a single REQUIRED qualification should significantly impact the score.
+- You evaluate based on what's explicitly stated, not what you assume.
+- You're helping candidates understand their REAL competitive position.
 
-You are meticulous about extracting requirements from job postings and matching them against candidate qualifications.`
+You understand military terminology and translate it appropriately, but you don't give bonus points for military service - you evaluate qualifications objectively.`
 
 // Fetch O*NET skills for a job title (runs in background, doesn't block)
 async function getOnetJobContext(jobTitle: string): Promise<string> {
   if (!jobTitle || jobTitle === 'Not specified') return ''
 
   try {
-    // Search for matching occupations
     const occupations = await searchOccupations(jobTitle, 3)
     if (!occupations || occupations.length === 0) return ''
 
-    // Get skills for the top match
     const topOccupation = occupations[0]
     const skills = await getOccupationSkills(topOccupation.code)
 
@@ -67,12 +69,11 @@ async function getOnetJobContext(jobTitle: string): Promise<string> {
       return `
 === O*NET OCCUPATION DATA ===
 Closest matching occupation: ${topOccupation.title} (${topOccupation.code})
-Key skills for this occupation: ${skillNames}
-Use this O*NET data to inform your skills matching - these are industry-standard skills for this type of role.
+Industry-standard skills: ${skillNames}
+Use this to validate your keyword extraction - these skills are commonly required for this role type.
 `
     }
   } catch (error) {
-    // Silently fail - O*NET is an enhancement, not required
     console.log('O*NET job context fetch failed, proceeding without')
   }
   return ''
@@ -143,13 +144,13 @@ export async function POST(request: NextRequest) {
     try {
       onetContext = await Promise.race([
         getOnetJobContext(jobPosting.title || ''),
-        new Promise<string>((resolve) => setTimeout(() => resolve(''), 3000)) // 3s timeout
+        new Promise<string>((resolve) => setTimeout(() => resolve(''), 3000))
       ])
     } catch {
       // Ignore O*NET failures
     }
 
-    const prompt = `Analyze this candidate's resume against the job posting and provide a comprehensive match analysis.
+    const prompt = `Analyze this resume against the job posting. Be CRITICAL and HONEST - do not inflate scores.
 
 === CANDIDATE PROFILE ===
 ${candidateProfile}
@@ -164,51 +165,100 @@ Description:
 ${jobPosting.description}
 ${onetContext}
 
-=== ANALYSIS INSTRUCTIONS ===
-Perform a comprehensive analysis covering:
+=== STEP 1: EXTRACT ALL REQUIREMENTS FROM JOB POSTING ===
 
-1. SKILLS MATCH - Extract ALL required/preferred skills from the job posting. Compare against candidate's skills.
-   - Calculate score: (matched skills / required skills) * 100
-   - If job lists no specific required skills, score = 100
-   - Consider transferable skills (leadership, management, communication apply broadly)
-   - Identify skills to HIGHLIGHT, ADD, or REMOVE
+Read the job posting carefully and extract EVERY requirement mentioned. Categorize as:
 
-2. EXPERIENCE/BULLETS - Analyze each bullet point against job requirements:
-   - Suggest rewording bullets to include job keywords naturally
-   - Mark bullets as "include" (relevant) or "exclude" (not relevant)
+**REQUIRED** (explicitly stated as required, must-have, essential, minimum qualifications):
+- Technical skills (specific tools, software, platforms, languages)
+- Certifications (PMP, Security+, AWS, etc.)
+- Education level (degree type and field)
+- Years of experience (exact number mentioned)
+- Security clearance level
+- Soft skills explicitly required
 
-3. CERTIFICATIONS - Check if job requires/prefers specific certifications:
-   - If NO certifications required in job posting: score = 100, meetsRequirement = true
-   - If certifications required: score = (matched / required) * 100
-   - Flag any missing required certifications
+**PREFERRED** (nice-to-have, preferred, desired, bonus, plus):
+- Any qualification marked as preferred
+- "Experience with X is a plus"
+- Advanced certifications beyond minimum
 
-4. EDUCATION - Check education requirements:
-   - If NO education requirement specified: score = 100, meetsRequirement = true
-   - If requirement exists: compare candidate's highest degree
-   - meetsRequirement = true if candidate meets or exceeds
+If a requirement is ambiguous, classify it as REQUIRED (be conservative).
 
-5. YEARS OF EXPERIENCE:
-   - If job does NOT specify years required: requiredYears = 0, score = 100, meetsRequirement = true
-   - If job specifies years: score = min(100, (candidateYears / requiredYears) * 100)
-   - meetsRequirement = true if candidateYears >= requiredYears
+=== STEP 2: SCORING METHODOLOGY (FOLLOW EXACTLY) ===
 
-6. SECURITY CLEARANCE - CRITICAL LOGIC:
-   - If job does NOT require clearance: required = null, score = 100, meetsRequirement = true
-   - If job requires clearance AND candidate has it or higher: score = 100, meetsRequirement = true
-   - If job requires clearance AND candidate lacks it: score = 0, meetsRequirement = false
-   - Clearance hierarchy: None < Public Trust < Secret < Top Secret < TS/SCI
+**SKILLS SCORE (30% weight):**
+- Count REQUIRED technical skills from job posting
+- Count how many the candidate has
+- Score = (matched_required / total_required) * 70 + (matched_preferred / total_preferred) * 30
+- Missing even ONE required skill = cap at 80%
+- Missing 3+ required skills = cap at 60%
 
-7. WEIGHTED MATCH SCORE - Calculate final score:
-   - Skills: 30%
-   - Experience: 25%
-   - Keywords: 20%
-   - Education: 10%
-   - Certifications: 10%
-   - Clearance: 5% (only if required, otherwise exclude from calculation)
+**EXPERIENCE SCORE (25% weight):**
+- If job requires X years and candidate has >= X: score = 100
+- If candidate has X-1 to X-2 years: score = 70
+- If candidate has < X-2 years: score = 40
+- If no requirement specified: score = 85 (benefit of doubt, but not 100)
 
-Return ONLY a valid JSON object with this exact structure:
+**KEYWORDS SCORE (20% weight):**
+- Extract actual phrases/terms from job posting
+- Check for exact or near-exact matches in resume
+- Score = (keywords_found / keywords_extracted) * 100
+- Be strict - "project management" doesn't match "managed projects"
+
+**EDUCATION SCORE (10% weight):**
+- Meets or exceeds requirement: 100
+- One level below (e.g., Bachelor's when Master's required): 60
+- Two levels below: 30
+- No requirement stated: 85
+
+**CERTIFICATIONS SCORE (10% weight):**
+- Has all required: 100
+- Missing one required: 50
+- Missing multiple required: 20
+- No certs required: 100
+- Has preferred certs: bonus up to +10 on base score
+
+**CLEARANCE SCORE (5% weight, only if required):**
+- Has required or higher: 100
+- Can obtain (no disqualifiers): 60
+- Cannot obtain: 0
+- Not required: exclude from calculation
+
+**OVERALL SCORE CALCULATION:**
+weighted_average = (skills*0.30) + (experience*0.25) + (keywords*0.20) + (education*0.10) + (certifications*0.10) + (clearance*0.05 if applicable)
+
+Then apply penalties:
+- Missing ANY required skill: -5 from overall
+- Missing required certification: -10 from overall
+- Experience gap > 2 years: -10 from overall
+- Missing required clearance: -20 from overall
+
+Final score = max(weighted_average - total_penalties, 15)
+Cap final score at 92 (100% is virtually impossible)
+
+=== STEP 3: ASSESSMENT CATEGORIES ===
+
+Based on final score:
+- 80-92%: "Strong Candidate" - Very competitive, minor gaps only
+- 65-79%: "Competitive" - Good foundation, addressable gaps
+- 50-64%: "Needs Development" - Significant gaps, consider gaining qualifications
+- Below 50%: "Consider Other Roles" - Major qualification gaps
+
+=== STEP 4: SUGGESTIONS WITH IMPACT ===
+
+For each suggestion, estimate realistic impact:
+- Adding a missing REQUIRED skill to resume: +2-4%
+- Rewriting a bullet to include keywords: +1-2%
+- Adding a certification (if you have it): +3-5%
+- These are cumulative but total improvement from suggestions is capped at +15%
+
+=== OUTPUT FORMAT ===
+
+Return ONLY valid JSON with this exact structure:
+
 {
-  "overallScore": <number 0-100>,
+  "overallScore": <number 15-92, be harsh>,
+  "assessmentLevel": "Strong Candidate" | "Competitive" | "Needs Development" | "Consider Other Roles",
   "categoryScores": {
     "skills": <number 0-100>,
     "experience": <number 0-100>,
@@ -217,38 +267,57 @@ Return ONLY a valid JSON object with this exact structure:
     "certifications": <number 0-100>,
     "clearance": <number 0-100 or null if not required>
   },
+  "extractedRequirements": {
+    "requiredSkills": ["skill1", "skill2"],
+    "preferredSkills": ["skill3"],
+    "requiredCertifications": ["cert1"],
+    "preferredCertifications": ["cert2"],
+    "requiredExperienceYears": <number or null>,
+    "requiredEducation": "Bachelor's in X" | null,
+    "requiredClearance": "Secret" | null,
+    "keyPhrases": ["phrase from job posting", "another key term"]
+  },
   "categoryDetails": {
     "skills": {
-      "required": ["skill1", "skill2"],
-      "matched": ["skill1"],
-      "missing": ["skill2"],
-      "toHighlight": ["skill1"],
-      "toAdd": ["skill2"],
-      "toRemove": ["irrelevant_skill"]
+      "required": ["from job posting"],
+      "preferred": ["from job posting"],
+      "matched": ["candidate has these"],
+      "missingRequired": ["CRITICAL - candidate lacks"],
+      "missingPreferred": ["nice to have"],
+      "toHighlight": ["candidate has, should emphasize"],
+      "toAdd": ["candidate might have, add if true"]
     },
     "education": {
-      "required": "Bachelor's degree or equivalent",
-      "candidateLevel": "Bachelor's",
-      "meetsRequirement": true,
-      "notes": "Candidate meets education requirement"
+      "required": "Bachelor's degree in Computer Science or related field",
+      "candidateLevel": "Bachelor's in Business Administration",
+      "meetsRequirement": false,
+      "notes": "Related field requirement may be flexible"
     },
     "certifications": {
-      "required": ["PMP", "CAPM"],
-      "matched": ["PMP"],
-      "missing": ["CAPM"],
-      "notes": "Has PMP which is primary requirement"
+      "required": ["PMP"],
+      "preferred": ["CAPM", "Agile"],
+      "matched": [],
+      "missingRequired": ["PMP"],
+      "missingPreferred": ["CAPM", "Agile"],
+      "notes": "Missing required PMP certification is a significant gap"
     },
     "experience": {
       "requiredYears": 5,
-      "candidateYears": 8,
-      "meetsRequirement": true,
-      "notes": "Exceeds experience requirement"
+      "candidateYears": 3,
+      "meetsRequirement": false,
+      "gap": 2,
+      "notes": "2 years short of requirement - significant gap"
     },
     "clearance": {
       "required": "Secret",
-      "candidateLevel": "Top Secret",
-      "meetsRequirement": true,
-      "notes": "Exceeds clearance requirement"
+      "candidateLevel": "None",
+      "meetsRequirement": false,
+      "notes": "Will need to obtain Secret clearance"
+    },
+    "keywords": {
+      "extracted": ["from job posting verbatim"],
+      "found": ["in resume"],
+      "missing": ["not in resume"]
     }
   },
   "bulletSuggestions": [
@@ -256,65 +325,80 @@ Return ONLY a valid JSON object with this exact structure:
       "experienceIndex": 0,
       "bulletIndex": 0,
       "original": "original bullet text",
-      "suggested": "improved bullet text with keywords",
-      "keywordsAdded": ["keyword1", "keyword2"],
+      "suggested": "improved bullet - MUST preserve original meaning, only add keywords",
+      "keywordsAdded": ["keyword1"],
       "action": "rewrite",
-      "priority": "high"
-    },
-    {
-      "experienceIndex": 0,
-      "bulletIndex": 2,
-      "original": "irrelevant bullet",
-      "suggested": null,
-      "keywordsAdded": [],
-      "action": "exclude",
-      "priority": "low"
+      "priority": "high",
+      "estimatedImpact": "+1-2%"
     }
   ],
   "skillChanges": {
-    "add": ["skill to add to resume"],
+    "add": ["skill to add - only if candidate actually has it"],
     "highlight": ["existing skill to emphasize"],
-    "remove": ["skill irrelevant to this job"]
+    "remove": ["irrelevant skill"]
   },
   "gaps": [
     {
       "category": "certifications",
+      "severity": "high",
+      "item": "PMP",
+      "description": "Missing required PMP certification",
+      "canAddress": false,
+      "addressSuggestion": "Consider obtaining PMP certification"
+    },
+    {
+      "category": "experience",
       "severity": "medium",
-      "description": "Missing CAPM certification mentioned as preferred"
+      "item": "years",
+      "description": "2 years short of 5-year requirement",
+      "canAddress": false,
+      "addressSuggestion": "Emphasize quality and scope of existing experience"
     }
   ],
   "strengths": [
-    "8 years of operations experience exceeds 5 year requirement",
-    "Active Top Secret clearance exceeds requirement",
-    "PMP certification directly matches job requirement"
+    "Specific strength with context"
   ],
   "priorityActions": [
-    "Add project management keywords to bullet points",
-    "Highlight PMP certification prominently",
-    "Consider obtaining CAPM certification"
+    {
+      "action": "Add project management keywords to bullet points",
+      "impact": "+2-3%",
+      "difficulty": "Easy",
+      "timeframe": "Immediate"
+    },
+    {
+      "action": "Obtain PMP certification",
+      "impact": "+5-8%",
+      "difficulty": "Hard",
+      "timeframe": "3-6 months"
+    }
   ],
-  "assessment": "2-3 sentence summary of overall match quality and top recommendations"
+  "assessment": "2-3 sentence HONEST assessment. Don't sugarcoat. Example: 'This candidate has strong technical skills but lacks the required PMP certification and falls 2 years short on experience. Without addressing these gaps, this application would likely be screened out. Focus on the certification gap first.'",
+  "competitivePosition": "Where this candidate likely stands: 'Would likely pass initial screening' OR 'May be filtered out due to missing requirements' OR 'Strong candidate for interviews'"
 }
 
-CRITICAL SCORING RULES - FOLLOW EXACTLY:
-1. If clearance is NOT required by job: set clearance.required = null, clearance.meetsRequirement = true, categoryScores.clearance = null
-2. If certifications are NOT required by job: set certifications.required = [], categoryScores.certifications = 100, certifications.meetsRequirement = true
-3. If experience years are NOT specified: set experience.requiredYears = 0, categoryScores.experience = 100, experience.meetsRequirement = true
-4. If education is NOT specified: set education.required = "Not specified", categoryScores.education = 100, education.meetsRequirement = true
-5. Skills score = (matchedSkills.length / requiredSkills.length) * 100, minimum 0
-6. Extract SPECIFIC keywords from the job posting (tools, technologies, methodologies, soft skills)
-7. Provide actionable bullet rewrites that sound natural, not keyword-stuffed
-8. Priority actions should be the 3 most impactful changes
-9. Return ONLY valid JSON, no markdown code blocks or explanation
+CRITICAL REMINDERS:
+1. Be HARSH but FAIR. Don't give 80%+ unless candidate truly matches most requirements.
+2. Missing REQUIRED items = major penalties. This is not negotiable.
+3. A candidate missing 2-3 required skills should score 50-65%, not 75-85%.
+4. Read the job posting CAREFULLY. Extract ACTUAL requirements, not generic assumptions.
+5. "5+ years experience" means 5 is the minimum. 4 years = does not meet requirement.
+6. Return ONLY valid JSON, no markdown.
 
-REALISTIC SCORING GUIDELINES:
-- Be critical and honest. A perfect 100% match is extremely rare and should never be awarded.
-- Strong candidates typically score 70-85%. Reserve 90%+ only for candidates who EXCEED requirements.
-- Missing even 1 required skill should impact the skills score significantly.
-- Keywords score should reflect actual term coverage, not inflate for similar concepts.
-- Experience score: if candidate has fewer years than required, score should reflect the gap.
-- Education: having a higher degree than required doesn't add extra points (cap at 100).
-- The overall score should realistically represent how competitive this candidate would be.`
+SCORING CONSISTENCY RULES (MANDATORY):
+- If missingRequired skills = 0, skills score MUST be 85-100%
+- If missingRequired skills > 0, skills score MUST be capped based on count
+- Category scores MUST mathematically align with matched/missing counts
+- Do NOT give low scores if there are no missing required items
+
+BULLET REWRITE RULES (ABSOLUTELY MANDATORY - DO NOT VIOLATE):
+- NEVER fabricate, invent, or add experience the candidate doesn't have
+- NEVER change the nature or scope of work (e.g., "maintenance" cannot become "cybersecurity")
+- NEVER add responsibilities, achievements, skills, or technologies not in the original
+- ONLY reframe existing experience with better keywords and action verbs
+- The rewritten bullet must be a TRUE statement about what the candidate actually did
+- If the original says "managed maintenance schedules", you can say "coordinated maintenance operations" but NOT "led cybersecurity vulnerability assessments"
+- When in doubt, keep the original meaning intact and only improve phrasing
+- Lying on a resume is fraud - your rewrites must be HONEST`
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -328,7 +412,6 @@ REALISTIC SCORING GUIDELINES:
     // Parse JSON from response
     let analysis
     try {
-      // Try to extract JSON if wrapped in markdown
       const jsonMatch = text.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         analysis = JSON.parse(jsonMatch[0])
@@ -341,8 +424,8 @@ REALISTIC SCORING GUIDELINES:
       return NextResponse.json({ error: 'Failed to parse analysis' }, { status: 500 })
     }
 
-    // Post-process to fix common scoring logic errors
-    analysis = normalizeScores(analysis)
+    // Post-process to enforce scoring rules
+    analysis = enforceScoring(analysis)
 
     // Track usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 4000
@@ -365,31 +448,34 @@ REALISTIC SCORING GUIDELINES:
 function buildCandidateProfile(content: any): string {
   const parts: string[] = []
 
-  // Total years of experience
   if (content.experiences?.length > 0) {
     const totalYears = calculateTotalExperience(content.experiences)
     parts.push(`Total Years of Experience: ${totalYears}`)
   }
 
-  // Clearance
   if (content.contact?.clearance) {
     parts.push(`Security Clearance: ${content.contact.clearance}`)
+  } else {
+    parts.push(`Security Clearance: None stated`)
   }
 
-  // Education summary
   if (content.education?.length > 0) {
     const highestEdu = content.education[0]
     parts.push(`Highest Education: ${highestEdu.degree} in ${highestEdu.field_of_study}`)
+  } else {
+    parts.push(`Education: None stated`)
   }
 
-  // All skills
   if (content.skills?.length > 0) {
-    parts.push(`Skills: ${content.skills.map((s: any) => s.name).join(', ')}`)
+    parts.push(`Skills Listed: ${content.skills.map((s: any) => s.name).join(', ')}`)
+  } else {
+    parts.push(`Skills: None listed`)
   }
 
-  // All certifications
   if (content.certifications?.length > 0) {
     parts.push(`Certifications: ${content.certifications.map((c: any) => c.name).join(', ')}`)
+  } else {
+    parts.push(`Certifications: None listed`)
   }
 
   return parts.join('\n')
@@ -417,10 +503,9 @@ function calculateTotalExperience(experiences: any[]): number {
 function parseDate(dateStr: string): Date | null {
   if (!dateStr) return null
 
-  // Handle various formats: "2020-01", "01/2020", "January 2020", etc.
   const formats = [
-    /^(\d{4})-(\d{2})/, // 2020-01
-    /^(\d{2})\/(\d{4})/, // 01/2020
+    /^(\d{4})-(\d{2})/,
+    /^(\d{2})\/(\d{4})/,
   ]
 
   for (const format of formats) {
@@ -432,7 +517,6 @@ function parseDate(dateStr: string): Date | null {
     }
   }
 
-  // Try parsing as-is
   const parsed = new Date(dateStr)
   return isNaN(parsed.getTime()) ? null : parsed
 }
@@ -440,7 +524,6 @@ function parseDate(dateStr: string): Date | null {
 function buildResumeText(content: any): string {
   const parts: string[] = []
 
-  // Contact
   if (content.contact) {
     const c = content.contact
     parts.push(`Name: ${c.first_name} ${c.last_name}`)
@@ -450,12 +533,10 @@ function buildResumeText(content: any): string {
     if (c.clearance) parts.push(`Security Clearance: ${c.clearance}`)
   }
 
-  // Summary
   if (content.summary) {
     parts.push(`\nPROFESSIONAL SUMMARY:\n${content.summary}`)
   }
 
-  // Experience
   if (content.experiences?.length > 0) {
     parts.push('\nEXPERIENCE:')
     content.experiences.forEach((exp: any, expIdx: number) => {
@@ -468,7 +549,6 @@ function buildResumeText(content: any): string {
     })
   }
 
-  // Education
   if (content.education?.length > 0) {
     parts.push('\nEDUCATION:')
     content.education.forEach((edu: any) => {
@@ -482,7 +562,6 @@ function buildResumeText(content: any): string {
     })
   }
 
-  // Certifications
   if (content.certifications?.length > 0) {
     parts.push('\nCERTIFICATIONS:')
     content.certifications.forEach((c: any) => {
@@ -490,7 +569,6 @@ function buildResumeText(content: any): string {
     })
   }
 
-  // Skills
   if (content.skills?.length > 0) {
     parts.push('\nSKILLS:')
     parts.push(content.skills.map((s: any) => s.name).join(', '))
@@ -499,88 +577,130 @@ function buildResumeText(content: any): string {
   return parts.join('\n')
 }
 
-// Normalize scores to fix common AI scoring errors
-function normalizeScores(analysis: any): any {
+/**
+ * Enforce strict scoring rules - this catches any AI leniency AND fixes inconsistencies
+ */
+function enforceScoring(analysis: any): any {
   const categoryScores = analysis.categoryScores || {}
   const categoryDetails = analysis.categoryDetails || {}
 
-  // Fix clearance scoring
-  if (categoryDetails.clearance) {
-    const clearance = categoryDetails.clearance
-    // If no clearance required, should always meet requirement
-    if (!clearance.required || clearance.required === 'None' || clearance.required === 'N/A') {
-      clearance.meetsRequirement = true
-      clearance.notes = clearance.notes || 'No clearance required'
-      categoryScores.clearance = null // null means not applicable
-    }
-  } else {
-    // No clearance section means no clearance required
-    categoryScores.clearance = null
-  }
+  // Count missing required items
+  let missingRequiredSkills = 0
+  let missingRequiredCerts = 0
+  let experienceGap = 0
+  let missingClearance = false
 
-  // Fix certifications scoring
-  if (categoryDetails.certifications) {
-    const certs = categoryDetails.certifications
-    // If no certifications required, score should be 100
-    if (!certs.required || certs.required.length === 0) {
-      categoryScores.certifications = 100
-      certs.meetsRequirement = true
-      certs.notes = certs.notes || 'No certifications required'
-    } else {
-      // Calculate proper score based on matched/required ratio
-      const matched = certs.matched?.length || 0
-      const required = certs.required?.length || 1
-      categoryScores.certifications = Math.round((matched / required) * 100)
-    }
-  } else {
-    categoryScores.certifications = 100
-  }
+  // Skills analysis
+  const skillsDetail = categoryDetails.skills || {}
+  const matchedSkills = skillsDetail.matched?.length || 0
+  const requiredSkills = skillsDetail.required?.length || 0
+  const preferredSkills = skillsDetail.preferred?.length || 0
+  missingRequiredSkills = skillsDetail.missingRequired?.length || 0
+  const missingPreferredSkills = skillsDetail.missingPreferred?.length || 0
 
-  // Fix experience scoring
+  // Certification analysis
+  const certsDetail = categoryDetails.certifications || {}
+  missingRequiredCerts = certsDetail.missingRequired?.length || 0
+  const matchedCerts = certsDetail.matched?.length || 0
+  const requiredCerts = certsDetail.required?.length || 0
+  const noCertsRequired = !requiredCerts || requiredCerts === 0
+
+  // Experience gap
   if (categoryDetails.experience) {
     const exp = categoryDetails.experience
-    // If no experience requirement specified, score should be 100
-    if (!exp.requiredYears || exp.requiredYears === 0 || exp.requiredYears === 'N/A') {
-      exp.requiredYears = 0
-      exp.meetsRequirement = true
-      categoryScores.experience = 100
-      exp.notes = exp.notes || 'No specific experience requirement'
-    } else if (exp.candidateYears >= exp.requiredYears) {
-      exp.meetsRequirement = true
-      categoryScores.experience = 100
-    } else {
-      // Partial credit for having some experience
-      categoryScores.experience = Math.round((exp.candidateYears / exp.requiredYears) * 100)
+    if (exp.requiredYears && exp.candidateYears < exp.requiredYears) {
+      experienceGap = exp.requiredYears - exp.candidateYears
     }
   }
 
-  // Fix education scoring
+  // Clearance
+  if (categoryDetails.clearance) {
+    const cl = categoryDetails.clearance
+    if (cl.required && cl.required !== 'None' && cl.required !== 'N/A' && !cl.meetsRequirement) {
+      missingClearance = true
+    }
+  }
+
+  // === FIX BUG 1: Recalculate skills score based on actual data ===
+  // If 0 missing required skills, score should be high (85-100%)
+  // The score formula: (matched_required/total_required)*70 + (matched_preferred/total_preferred)*30
+  if (missingRequiredSkills === 0) {
+    // No missing required skills = full points for required portion
+    let recalculatedSkillScore = 70 // Base 70% for meeting all required
+
+    // Add preferred skills portion
+    if (preferredSkills > 0) {
+      const preferredMatched = preferredSkills - missingPreferredSkills
+      const preferredRatio = preferredMatched / preferredSkills
+      recalculatedSkillScore += Math.round(preferredRatio * 30)
+    } else {
+      // No preferred skills listed = benefit of doubt
+      recalculatedSkillScore += 20
+    }
+
+    // Ensure score is at least 85% if no required skills are missing
+    categoryScores.skills = Math.max(recalculatedSkillScore, 85)
+  } else {
+    // Cap skills score based on how many required skills are missing
+    const maxSkillScore = missingRequiredSkills >= 3 ? 50 : missingRequiredSkills >= 2 ? 65 : 80
+
+    // Recalculate based on actual match ratio
+    const totalRequired = requiredSkills || (matchedSkills + missingRequiredSkills)
+    if (totalRequired > 0) {
+      const matchRatio = matchedSkills / totalRequired
+      const calculatedScore = Math.round(matchRatio * 100)
+      categoryScores.skills = Math.min(calculatedScore, maxSkillScore)
+    } else {
+      categoryScores.skills = Math.min(categoryScores.skills || 0, maxSkillScore)
+    }
+  }
+
+  // === FIX: Recalculate certifications score ===
+  if (noCertsRequired) {
+    categoryScores.certifications = 100 // No certs required = 100%
+  } else if (missingRequiredCerts === 0) {
+    categoryScores.certifications = 100 // Has all required = 100%
+  } else {
+    const maxCertScore = missingRequiredCerts >= 2 ? 30 : 50
+    categoryScores.certifications = Math.min(categoryScores.certifications || 0, maxCertScore)
+  }
+
+  // === FIX: Recalculate experience score ===
+  if (experienceGap === 0) {
+    // Meets or exceeds requirement
+    categoryScores.experience = categoryDetails.experience?.requiredYears ? 100 : 85
+  } else {
+    const maxExpScore = experienceGap >= 3 ? 40 : experienceGap >= 2 ? 60 : 75
+    categoryScores.experience = Math.min(categoryScores.experience || 0, maxExpScore)
+  }
+
+  // === FIX: Recalculate education score ===
   if (categoryDetails.education) {
     const edu = categoryDetails.education
-    // If no education requirement specified, score should be 100
-    if (!edu.required || edu.required === 'Not specified' || edu.required === 'N/A') {
-      edu.meetsRequirement = true
-      categoryScores.education = 100
-      edu.notes = edu.notes || 'No specific education requirement'
+    const noEduRequired = !edu.required || edu.required === 'Not specified' || edu.required === 'N/A'
+    if (noEduRequired) {
+      categoryScores.education = 85 // No requirement = benefit of doubt
     } else if (edu.meetsRequirement) {
       categoryScores.education = 100
     }
+    // If doesn't meet, keep AI's score (already penalized)
   }
 
-  // Fix skills scoring - calculate based on matched/required ratio
-  if (categoryDetails.skills) {
-    const skills = categoryDetails.skills
-    const matched = skills.matched?.length || 0
-    const required = skills.required?.length || 1
-    if (required === 0) {
-      categoryScores.skills = 100
+  // === FIX: Recalculate clearance score ===
+  if (categoryDetails.clearance) {
+    const cl = categoryDetails.clearance
+    const noClearanceRequired = !cl.required || cl.required === 'None' || cl.required === 'N/A'
+    if (noClearanceRequired) {
+      categoryScores.clearance = null // Exclude from calculation
+    } else if (cl.meetsRequirement) {
+      categoryScores.clearance = 100
     } else {
-      categoryScores.skills = Math.round((matched / required) * 100)
+      categoryScores.clearance = 40 // Can potentially obtain
     }
   }
 
-  // Recalculate overall score with correct weights
-  const weights = {
+  // === FIX BUG 2: Recalculate overall score with correct weighted average ===
+  const weights: Record<string, number> = {
     skills: 0.30,
     experience: 0.25,
     keywords: 0.20,
@@ -592,60 +712,82 @@ function normalizeScores(analysis: any): any {
   let totalWeight = 0
   let weightedScore = 0
 
-  // Skills
-  if (typeof categoryScores.skills === 'number') {
-    weightedScore += categoryScores.skills * weights.skills
-    totalWeight += weights.skills
-  }
-
-  // Experience
-  if (typeof categoryScores.experience === 'number') {
-    weightedScore += categoryScores.experience * weights.experience
-    totalWeight += weights.experience
-  }
-
-  // Keywords
-  if (typeof categoryScores.keywords === 'number') {
-    weightedScore += categoryScores.keywords * weights.keywords
-    totalWeight += weights.keywords
-  }
-
-  // Education
-  if (typeof categoryScores.education === 'number') {
-    weightedScore += categoryScores.education * weights.education
-    totalWeight += weights.education
-  }
-
-  // Certifications
-  if (typeof categoryScores.certifications === 'number') {
-    weightedScore += categoryScores.certifications * weights.certifications
-    totalWeight += weights.certifications
-  }
-
-  // Clearance - only include if required (not null)
-  if (categoryScores.clearance !== null && typeof categoryScores.clearance === 'number') {
-    weightedScore += categoryScores.clearance * weights.clearance
-    totalWeight += weights.clearance
-  }
-
-  // Calculate normalized overall score
-  if (totalWeight > 0) {
-    const rawScore = Math.round(weightedScore / totalWeight)
-    // Cap at 95% - no resume is ever a perfect match
-    // Even exceptional candidates typically score 75-90%
-    // Reserve 90%+ only for candidates who clearly exceed all requirements
-    analysis.overallScore = Math.min(rawScore, 95)
-  }
-
-  // Also cap individual category scores at 100 (they shouldn't exceed this)
-  for (const key of Object.keys(categoryScores)) {
-    if (typeof categoryScores[key] === 'number' && categoryScores[key] > 100) {
-      categoryScores[key] = 100
+  for (const [key, weight] of Object.entries(weights)) {
+    const score = categoryScores[key]
+    // Only include if score is a valid number (not null/undefined)
+    if (score !== null && score !== undefined && typeof score === 'number') {
+      weightedScore += score * weight
+      totalWeight += weight
     }
   }
 
+  // Calculate normalized weighted average
+  // This ensures the average is out of 100, not out of totalWeight
+  let baseScore = totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 50
+
+  // Apply penalties for missing REQUIRED items (on top of category score reductions)
+  let totalPenalty = 0
+
+  // Only apply additional penalties if there are significant gaps
+  if (missingRequiredSkills >= 2) {
+    totalPenalty += 5 // Additional penalty for multiple missing required skills
+  }
+
+  if (missingRequiredCerts >= 1) {
+    totalPenalty += 5 // Additional penalty for missing required certification
+  }
+
+  if (experienceGap >= 2) {
+    totalPenalty += 5 // Additional penalty for significant experience gap
+  }
+
+  if (missingClearance) {
+    totalPenalty += 10 // Missing required clearance is serious
+  }
+
+  // Apply penalties and enforce caps
+  let finalScore = Math.round(baseScore - totalPenalty)
+
+  // Absolute caps
+  finalScore = Math.max(finalScore, 15) // Floor at 15%
+  finalScore = Math.min(finalScore, 92) // Ceiling at 92% (100% impossible)
+
+  // Additional cap if missing multiple required items
+  const totalMissingRequired = missingRequiredSkills + missingRequiredCerts + (experienceGap >= 2 ? 1 : 0) + (missingClearance ? 1 : 0)
+  if (totalMissingRequired >= 3) {
+    finalScore = Math.min(finalScore, 55)
+  } else if (totalMissingRequired >= 2) {
+    finalScore = Math.min(finalScore, 70)
+  } else if (totalMissingRequired >= 1) {
+    finalScore = Math.min(finalScore, 82)
+  }
+
+  analysis.overallScore = finalScore
   analysis.categoryScores = categoryScores
-  analysis.categoryDetails = categoryDetails
+
+  // Set assessment level based on final score
+  if (finalScore >= 80) {
+    analysis.assessmentLevel = 'Strong Candidate'
+  } else if (finalScore >= 65) {
+    analysis.assessmentLevel = 'Competitive'
+  } else if (finalScore >= 50) {
+    analysis.assessmentLevel = 'Needs Development'
+  } else {
+    analysis.assessmentLevel = 'Consider Other Roles'
+  }
+
+  // Ensure competitive position is realistic
+  if (totalMissingRequired >= 2) {
+    analysis.competitivePosition = 'May be filtered out due to missing requirements'
+  } else if (totalMissingRequired === 1 && missingRequiredCerts > 0) {
+    analysis.competitivePosition = 'May be filtered out due to missing required certification'
+  } else if (finalScore >= 75) {
+    analysis.competitivePosition = 'Would likely pass initial screening'
+  } else if (finalScore >= 60) {
+    analysis.competitivePosition = 'Borderline - depends on applicant pool'
+  } else {
+    analysis.competitivePosition = 'Unlikely to pass initial screening without addressing gaps'
+  }
 
   return analysis
 }

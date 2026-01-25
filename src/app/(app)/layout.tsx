@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { BottomNav } from '@/components/layout/BottomNav'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { AnnouncementBanner } from '@/components/layout/AnnouncementBanner'
 import { BetaCodeRedeemerWrapper } from '@/components/beta/BetaCodeRedeemerWrapper'
@@ -63,7 +64,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-screen bg-bg-primary">
+    <div className="flex min-h-screen bg-bg-primary overflow-x-hidden">
       {/* Beta Code Redeemer - checks for pending codes from signup */}
       <BetaCodeRedeemerWrapper userId={user.id} />
 
@@ -84,12 +85,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <StatusBar />
         </div>
 
-        {/* Main Content - add top padding on mobile for fixed header */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto pt-16 md:pt-4">
+        {/* Main Content - add top padding on mobile for fixed header, bottom padding for bottom nav */}
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto pt-16 md:pt-4 pb-20 md:pb-4">
           {children}
         </main>
       </div>
 
+      {/* Bottom Navigation - mobile only */}
+      <BottomNav />
     </div>
   )
 }

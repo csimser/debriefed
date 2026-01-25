@@ -5,6 +5,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
 import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { hasCriticalPII, redactMinorPII } from '@/lib/pii-scanner'
 
 const anthropic = new Anthropic()
 
@@ -231,6 +232,20 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
 
       if (parsed.bullets && Array.isArray(parsed.bullets)) {
         result = parsed
+
+        // Scan extracted text for critical PII (SSN, DODID) BEFORE returning
+        const allText = parsed.bullets
+          .map((b: any) => `${b.original || ''} ${b.translated || ''}`)
+          .join(' ')
+
+        const piiCheck = hasCriticalPII(allText)
+        if (piiCheck.blocked) {
+          return NextResponse.json({
+            error: piiCheck.reason,
+            piiBlocked: true,
+            bullets: [],
+          }, { status: 400 })
+        }
       }
     } catch (parseError) {
       console.error('JSON parse error:', parseError)

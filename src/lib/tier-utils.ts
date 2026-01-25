@@ -72,14 +72,6 @@ export function canAccessLinkedInAnalyzer(tier: Tier): boolean {
   return hasAccess(tier, 'core')
 }
 
-/**
- * Check if user has access to Elevator Pitch feature
- * Core and Full tiers have access
- */
-export function canAccessElevatorPitch(tier: Tier): boolean {
-  return hasAccess(tier, 'core')
-}
-
 // Usage limits per tier (matches pricing-config.ts)
 export const TIER_LIMITS = {
   free: {
@@ -91,7 +83,6 @@ export const TIER_LIMITS = {
     linkedin_summaries: 999999, // Unlimited (part of score)
     linkedin_analyses: 999999, // Can see score
     linkedin_recommendations: 0, // PAYWALLED
-    elevator_pitches: 0, // PAYWALLED
     eval_uploads: 3,
     bullet_translations: 5,
   },
@@ -104,7 +95,6 @@ export const TIER_LIMITS = {
     linkedin_summaries: 999999,
     linkedin_analyses: 999999,
     linkedin_recommendations: 999999, // Unlimited
-    elevator_pitches: 3,
     eval_uploads: 10,
     bullet_translations: 50,
   },
@@ -117,7 +107,6 @@ export const TIER_LIMITS = {
     linkedin_summaries: 999999,
     linkedin_analyses: 999999,
     linkedin_recommendations: 999999,
-    elevator_pitches: 15, // Monthly limit
     eval_uploads: 30, // Monthly limit
     bullet_translations: 150, // Monthly limit
   },
