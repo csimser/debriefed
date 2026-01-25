@@ -4,13 +4,14 @@ import { Card } from '@/components/ui/Card'
 import { BetaCodeInput } from './BetaCodeInput'
 
 interface RedeemCodeCardProps {
-  userId: string
-  currentPlan: string
+  userId?: string
+  currentPlan?: string
 }
 
 export function RedeemCodeCard({ userId, currentPlan }: RedeemCodeCardProps) {
-  if (currentPlan !== 'free') {
-    return null // Already upgraded
+  // Don't show if no user or already upgraded
+  if (!userId || (currentPlan && currentPlan !== 'free')) {
+    return null
   }
 
   return (

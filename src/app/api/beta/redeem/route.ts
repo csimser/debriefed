@@ -8,6 +8,10 @@ const supabaseAdmin = createAdminClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Beta testing configuration
+const HARD_EXPIRATION = new Date('2026-02-01T00:00:00Z');
+const BETA_DURATION_HOURS = 72;
+
 export async function POST(req: Request) {
   try {
     // Authenticate user - get userId from session, NOT from request body
@@ -32,6 +36,15 @@ export async function POST(req: Request) {
     }
 
     const normalizedCode = code.trim().toUpperCase();
+    const now = new Date();
+
+    // Check if we're past the hard expiration date
+    if (now >= HARD_EXPIRATION) {
+      return NextResponse.json(
+        { success: false, error: 'Beta testing period has ended' },
+        { status: 400 }
+      );
+    }
 
     // Get the beta code using admin client (bypasses RLS)
     const { data: betaCode, error: codeError } = await supabaseAdmin
@@ -47,21 +60,53 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if already used
-    if (betaCode.used) {
+    // Check if code is revoked
+    if (betaCode.revoked) {
       return NextResponse.json(
-        { success: false, error: 'Code has already been used' },
+        { success: false, error: 'This code has been revoked' },
         { status: 400 }
       );
     }
 
-    // Mark code as used (using admin client)
+    // Check if already used
+    if (betaCode.used) {
+      return NextResponse.json(
+        { success: false, error: 'This code has already been redeemed' },
+        { status: 400 }
+      );
+    }
+
+    // Check if user already has active beta/full plan
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('plan, plan_expires_at')
+      .eq('user_id', userId)
+      .single();
+
+    if (profile?.plan === 'full' && profile?.plan_expires_at) {
+      const existingExpiry = new Date(profile.plan_expires_at);
+      if (existingExpiry > now) {
+        return NextResponse.json({
+          success: false,
+          error: 'You already have active full access',
+          expires_at: profile.plan_expires_at
+        }, { status: 400 });
+      }
+    }
+
+    // Calculate expiration: 72 hours from now OR Feb 1, 2026 - whichever is FIRST
+    const seventyTwoHoursLater = new Date(now.getTime() + (BETA_DURATION_HOURS * 60 * 60 * 1000));
+    const actualExpiration = seventyTwoHoursLater < HARD_EXPIRATION ? seventyTwoHoursLater : HARD_EXPIRATION;
+
+    // Mark code as used with activation and expiration timestamps
     const { error: updateCodeError } = await supabaseAdmin
       .from('beta_codes')
       .update({
         used: true,
         used_by: userId,
-        used_at: new Date().toISOString()
+        used_at: now.toISOString(),
+        activated_at: now.toISOString(),
+        expires_at: actualExpiration.toISOString()
       })
       .eq('id', betaCode.id);
 
@@ -73,16 +118,13 @@ export async function POST(req: Request) {
       );
     }
 
-    // Update user's plan to full with 48 hour expiration
-    // Update both subscription_tier (for existing tier checks) and plan/plan_expires_at
-    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(); // 48 hours
-
+    // Update user's plan to full tier
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
         subscription_tier: 'full',
         plan: 'full',
-        plan_expires_at: expiresAt
+        plan_expires_at: actualExpiration.toISOString()
       })
       .eq('user_id', userId);
 
@@ -91,7 +133,7 @@ export async function POST(req: Request) {
       // Rollback the code usage
       await supabaseAdmin
         .from('beta_codes')
-        .update({ used: false, used_by: null, used_at: null })
+        .update({ used: false, used_by: null, used_at: null, activated_at: null, expires_at: null })
         .eq('id', betaCode.id);
 
       return NextResponse.json(
@@ -100,10 +142,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const hoursRemaining = Math.round((actualExpiration.getTime() - now.getTime()) / (1000 * 60 * 60));
+
     return NextResponse.json({
       success: true,
       plan: 'full',
-      message: 'Success! You now have FULL tier access for 48 hours.'
+      message: `Success! You now have FULL tier access for ${hoursRemaining} hours.`,
+      tier: 'full',
+      expires_at: actualExpiration.toISOString(),
+      expires_in_hours: hoursRemaining
     });
 
   } catch (err) {

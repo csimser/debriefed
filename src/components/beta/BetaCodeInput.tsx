@@ -58,8 +58,12 @@ export function BetaCodeInput({ onValidCode, onCodeChange, userId, mode }: BetaC
         const data = await res.json()
 
         if (data.success) {
-          setStatus({ type: 'success', message: `Upgraded to ${data.tier?.toUpperCase()}!` })
+          setStatus({ type: 'success', message: data.message || `Upgraded to ${data.tier?.toUpperCase()}!` })
           onValidCode?.(data.tier)
+          // Dispatch custom event to update TierBadge
+          window.dispatchEvent(new CustomEvent('tier-updated'))
+          // Reload after a brief delay to refresh all tier-dependent UI
+          setTimeout(() => window.location.reload(), 1500)
         } else {
           setStatus({ type: 'error', message: data.error || 'Redemption failed' })
         }

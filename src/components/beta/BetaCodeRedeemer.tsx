@@ -40,6 +40,8 @@ export function BetaCodeRedeemer({ userId, onRedeemed }: BetaCodeRedeemerProps) 
         if (data.success) {
           console.log('Beta code redeemed successfully:', data)
           onRedeemed?.()
+          // Dispatch custom event to update TierBadge
+          window.dispatchEvent(new CustomEvent('tier-updated'))
           // Reload to reflect new plan
           window.location.reload()
         } else {

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { RedeemCodeCard } from '@/components/beta/RedeemCodeCard'
 import Link from 'next/link'
 
 // Tier limits configuration
@@ -229,6 +230,9 @@ export default async function DashboardPage() {
             </Link>
           </div>
         </Card>
+
+        {/* Beta Code Redemption - Only shows for free tier users */}
+        <RedeemCodeCard userId={user?.id} currentPlan={tier} />
       </div>
     </div>
   )

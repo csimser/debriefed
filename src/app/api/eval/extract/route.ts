@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
 import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary'
+import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
 
 const anthropic = new Anthropic()
+
+const supabaseAdmin = createAdminClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 const EXTRACTION_PROMPT = `You are extracting achievement bullets from a military evaluation image. Be EXTREMELY aggressive about:
 
@@ -87,6 +94,38 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Pre-check usage limits before processing
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('subscription_tier, email')
+      .eq('user_id', user.id)
+      .single()
+
+    const { data: usage } = await supabaseAdmin
+      .from('usage')
+      .select('eval_uploads')
+      .eq('user_id', user.id)
+      .single()
+
+    // Admin bypass
+    if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
+      const rawTier = profile?.subscription_tier || 'free'
+      const tier: TierId = ['core', 'full'].includes(rawTier) ? rawTier as TierId :
+        rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
+
+      const tierConfig = PRICING_TIERS[tier]
+      const currentUploads = usage?.eval_uploads || 0
+      const limit = tierConfig.limits.eval_uploads
+
+      if (currentUploads >= limit) {
+        return NextResponse.json({
+          error: `You've used all ${limit} eval upload${limit !== 1 ? 's' : ''}. ${tier === 'free' ? 'Upgrade to Core for more.' : tier === 'core' ? 'Upgrade to Full for more.' : 'Monthly limit reached.'}`,
+          limitReached: true,
+          tier
+        }, { status: 403 })
+      }
     }
 
     const formData = await request.formData()

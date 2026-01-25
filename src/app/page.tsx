@@ -79,8 +79,8 @@ export default async function HomePage({
           <Link href="/login" className="hidden md:block px-5 py-2.5 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text border border-border hover:border-border-bright rounded transition-all">
             Sign In
           </Link>
-          {/* TEMP: Redirect to waitlist */}
-          <Link href="/waitlist" className="px-4 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
+          
+          <Link href="/signup" className="px-4 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
             Begin Mission →
           </Link>
         </div>
@@ -150,8 +150,8 @@ export default async function HomePage({
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {/* TEMP: Redirect to waitlist */}
-            <Link href="/waitlist" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all text-center">
+            
+            <Link href="/signup" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all text-center">
               Start Free →
             </Link>
             <Link href="/help" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider text-text-muted border border-border hover:border-border-bright hover:text-text rounded transition-all text-center">
@@ -267,8 +267,8 @@ export default async function HomePage({
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="2" isLast />
             </ul>
-            {/* TEMP: Redirect to waitlist */}
-            <Link href="/waitlist" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
+            
+            <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
               Get Started Free
             </Link>
           </div>
@@ -297,8 +297,8 @@ export default async function HomePage({
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
-            {/* TEMP: Redirect to waitlist */}
-            <Link href="/waitlist" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all">
+            
+            <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all">
               Get Core
             </Link>
           </div>
@@ -324,8 +324,8 @@ export default async function HomePage({
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
-            {/* TEMP: Redirect to waitlist */}
-            <Link href="/waitlist" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
+            
+            <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
               Get Full
             </Link>
           </div>

@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 
-// TEMP: Admin-only access during development
-const ALLOWED_EMAILS = [
+// Admin emails that bypass beta code requirement
+const ADMIN_BYPASS_EMAILS = [
   'chris.simser@gmail.com',
+  'carlajo22@gmail.com',
   'admin@debriefed.io',
 ]
 
@@ -21,6 +22,7 @@ function LoginForm() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [betaCode, setBetaCode] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showResendConfirmation, setShowResendConfirmation] = useState(false)
@@ -36,27 +38,78 @@ function LoginForm() {
     setShowResendConfirmation(false)
     setResendMessage('')
 
-    // TEMP: Admin-only access during development
-    if (!ALLOWED_EMAILS.includes(email.toLowerCase().trim())) {
-      setError('Access restricted during beta development.')
+    const normalizedEmail = email.toLowerCase().trim()
+
+    // First, authenticate the user
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+
+    if (authError) {
+      setError(authError.message)
+      if (authError.message.toLowerCase().includes('email not confirmed') ||
+          authError.message.toLowerCase().includes('email confirmation')) {
+        setShowResendConfirmation(true)
+      }
       setLoading(false)
       return
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-
-    if (error) {
-      setError(error.message)
-      // Show resend option if email not confirmed
-      if (error.message.toLowerCase().includes('email not confirmed') ||
-          error.message.toLowerCase().includes('email confirmation')) {
-        setShowResendConfirmation(true)
-      }
+    if (!authData.user) {
+      setError('Login failed. Please try again.')
       setLoading(false)
-    } else {
+      return
+    }
+
+    // Check if user is an admin (bypass beta code requirement)
+    const isAdminEmail = ADMIN_BYPASS_EMAILS.includes(normalizedEmail)
+
+    // Also check is_admin flag in profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('user_id', authData.user.id)
+      .single()
+
+    const isAdmin = isAdminEmail || profile?.is_admin === true
+
+    if (isAdmin) {
+      // Admin - direct access
       router.push('/dashboard')
       router.refresh()
+      return
     }
+
+    // Non-admin - require beta code
+    if (!betaCode.trim()) {
+      // Sign out the user since they can't proceed without a code
+      await supabase.auth.signOut()
+      setError('A valid beta code is required to log in during the beta period.')
+      setLoading(false)
+      return
+    }
+
+    // Validate and redeem beta code
+    const redeemResponse = await fetch('/api/beta/redeem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: betaCode.trim() }),
+    })
+
+    const redeemData = await redeemResponse.json()
+
+    if (!redeemData.success) {
+      // Sign out since beta code failed
+      await supabase.auth.signOut()
+      setError(redeemData.error || 'Invalid beta code. Please check your code and try again.')
+      setLoading(false)
+      return
+    }
+
+    // Success - beta code redeemed, proceed to dashboard
+    router.push('/dashboard')
+    router.refresh()
   }
 
   const handleResendConfirmation = async () => {
@@ -94,6 +147,13 @@ function LoginForm() {
     <Card className="p-8">
       <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-center mb-6">Sign In</h2>
 
+      {/* Beta notice */}
+      <div className="bg-gold-dim border border-gold/30 rounded-md p-3 mb-6">
+        <p className="text-sm text-gold">
+          <span className="font-medium">Beta Period:</span> A valid beta code is required to log in. Codes have been distributed to selected testers.
+        </p>
+      </div>
+
       {/* Email confirmed success message */}
       {confirmed && (
         <div className="bg-status-green/10 border border-status-green/20 rounded-md p-3 mb-4">
@@ -101,7 +161,7 @@ function LoginForm() {
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
-            Email confirmed! Please sign in.
+            Email confirmed! Please sign in with your beta code.
           </p>
         </div>
       )}
@@ -142,6 +202,23 @@ function LoginForm() {
           required
         />
 
+        {/* Beta Code Input */}
+        <div className="pt-2 border-t border-border">
+          <Input
+            id="login-betacode"
+            label="Beta Code"
+            type="text"
+            name="beta-code"
+            value={betaCode}
+            onChange={(e) => setBetaCode(e.target.value.toUpperCase())}
+            placeholder="BETA-XXXXXXXX"
+            className="font-mono uppercase"
+          />
+          <p className="text-xs text-text-muted mt-1">
+            Have a code? Enter it above to access the platform.
+          </p>
+        </div>
+
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 text-sm text-text-muted">
             <input type="checkbox" className="rounded border-border" />
@@ -179,8 +256,14 @@ function LoginForm() {
         </Button>
       </form>
 
-      <div className="mt-6 text-center">
-        <p className="text-sm text-text-muted">
+      {/* Beta info footer */}
+      <div className="mt-6 pt-6 border-t border-border">
+        <div className="bg-bg-tertiary rounded-md p-4 mb-4">
+          <p className="text-xs text-text-muted text-center">
+            Beta codes have been distributed to selected testers. You'll be notified via email once we go live.
+          </p>
+        </div>
+        <p className="text-sm text-text-muted text-center">
           Don't have an account?{' '}
           <Link href="/signup" className="text-gold hover:text-gold-bright">Create Account</Link>
         </p>
@@ -195,6 +278,7 @@ function LoginFormLoading() {
       <div className="animate-pulse">
         <div className="h-6 bg-bg-tertiary rounded w-24 mx-auto mb-6"></div>
         <div className="space-y-4">
+          <div className="h-12 bg-bg-tertiary rounded"></div>
           <div className="h-12 bg-bg-tertiary rounded"></div>
           <div className="h-12 bg-bg-tertiary rounded"></div>
           <div className="h-4 bg-bg-tertiary rounded w-32"></div>
