@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -9,6 +9,9 @@ import { Card } from '@/components/ui/Card'
 import { BRANCHES, getRankFromPaygrade, getValidPaygradesForBranch } from '@/lib/constants/military'
 
 function SignupForm() {
+  const searchParams = useSearchParams()
+  const fromWaitlist = searchParams.get('source') === 'waitlist'
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -136,6 +139,16 @@ function SignupForm() {
   return (
     <Card className="p-8">
       <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-center mb-4">Create Account</h2>
+
+      {/* Waitlist closed notice */}
+      {fromWaitlist && (
+        <div className="bg-bg-tertiary border border-border rounded-md p-3 mb-4">
+          <p className="text-sm text-text">
+            <span className="font-medium">Beta waitlist is now closed.</span>{' '}
+            <span className="text-text-muted">Create an account to be notified when we go live.</span>
+          </p>
+        </div>
+      )}
 
       {/* Early signup notice */}
       <div className="bg-gold-dim border border-gold/30 rounded-md p-3 mb-6">
