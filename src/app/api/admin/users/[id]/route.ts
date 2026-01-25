@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { capitalizeName } from '@/lib/formatName'
 
 // Service role client bypasses RLS for admin queries
 const serviceClient = createServiceClient(
@@ -145,12 +146,12 @@ export async function PATCH(
   }
 
   const body = await request.json()
-  const { tier, is_admin, suspended, suspend_reason } = body
+  const { tier, is_admin, suspended, suspend_reason, first_name, last_name, email } = body
 
   // Get current user data for comparison (using service client)
   const { data: currentUser } = await serviceClient
     .from('profiles')
-    .select('tier, is_admin, suspended, email')
+    .select('tier, is_admin, suspended, email, first_name, last_name')
     .eq('user_id', id)
     .single()
 
@@ -201,6 +202,49 @@ export async function PATCH(
     await logAdminAction(auth.user.id, auth.adminProfile.email, id, 'user_suspended', {
       suspended: suspended,
       reason: suspend_reason || null,
+      target_email: currentUser.email,
+    })
+  }
+
+  // Handle profile field updates (first_name, last_name, email)
+  if (first_name !== undefined) {
+    const formattedFirstName = capitalizeName(first_name)
+    if (formattedFirstName !== currentUser.first_name) {
+      updates.first_name = formattedFirstName
+      changes.push(`first_name: ${currentUser.first_name || '(empty)'} → ${formattedFirstName}`)
+
+      await logAdminAction(auth.user.id, auth.adminProfile.email, id, 'profile_edited', {
+        field: 'first_name',
+        previous_value: currentUser.first_name || '(empty)',
+        new_value: formattedFirstName,
+        target_email: currentUser.email,
+      })
+    }
+  }
+
+  if (last_name !== undefined) {
+    const formattedLastName = capitalizeName(last_name)
+    if (formattedLastName !== currentUser.last_name) {
+      updates.last_name = formattedLastName
+      changes.push(`last_name: ${currentUser.last_name || '(empty)'} → ${formattedLastName}`)
+
+      await logAdminAction(auth.user.id, auth.adminProfile.email, id, 'profile_edited', {
+        field: 'last_name',
+        previous_value: currentUser.last_name || '(empty)',
+        new_value: formattedLastName,
+        target_email: currentUser.email,
+      })
+    }
+  }
+
+  if (email !== undefined && email !== currentUser.email) {
+    updates.email = email
+    changes.push(`email: ${currentUser.email || '(empty)'} → ${email}`)
+
+    await logAdminAction(auth.user.id, auth.adminProfile.email, id, 'profile_edited', {
+      field: 'email',
+      previous_value: currentUser.email || '(empty)',
+      new_value: email,
       target_email: currentUser.email,
     })
   }

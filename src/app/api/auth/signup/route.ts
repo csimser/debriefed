@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { capitalizeName } from '@/lib/formatName';
 
 // Use service role for signup
 const supabaseAdmin = createClient(
@@ -19,6 +20,10 @@ export async function POST(req: Request) {
       );
     }
 
+    // Auto-capitalize names
+    const formattedFirstName = capitalizeName(firstName);
+    const formattedLastName = capitalizeName(lastName);
+
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://getdebriefed.co';
 
     // Create the user account (no beta code required at signup)
@@ -28,9 +33,9 @@ export async function POST(req: Request) {
       options: {
         emailRedirectTo: `${siteUrl}/auth/callback?type=signup`,
         data: {
-          first_name: firstName,
-          last_name: lastName,
-          full_name: `${firstName} ${lastName}`.trim(),
+          first_name: formattedFirstName,
+          last_name: formattedLastName,
+          full_name: `${formattedFirstName} ${formattedLastName}`.trim(),
           branch,
           paygrade,
         },
@@ -73,8 +78,8 @@ export async function POST(req: Request) {
       .upsert({
         user_id: authData.user.id,
         email: email,
-        first_name: firstName,
-        last_name: lastName,
+        first_name: formattedFirstName,
+        last_name: formattedLastName,
         branch: branch,
         paygrade: paygrade,
         subscription_tier: 'free',

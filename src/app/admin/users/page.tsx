@@ -414,12 +414,20 @@ function UsersPageContent() {
                       })}
                     </td>
                     <td className="px-4 py-3">
-                      <Link
-                        href={`/admin/users/${user.user_id}`}
-                        className="text-sm text-gold hover:text-gold-bright hover:underline"
-                      >
-                        View →
-                      </Link>
+                      <div className="flex items-center gap-3">
+                        <Link
+                          href={`/admin/users/${user.user_id}?edit=true`}
+                          className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
+                        >
+                          Edit
+                        </Link>
+                        <Link
+                          href={`/admin/users/${user.user_id}`}
+                          className="text-sm text-gold hover:text-gold-bright hover:underline"
+                        >
+                          View →
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))

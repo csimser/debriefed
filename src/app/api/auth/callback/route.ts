@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { getRankFromPaygrade } from '@/lib/constants/military'
 import { trackUserIP, getClientIP } from '@/lib/ai-security'
+import { capitalizeName } from '@/lib/formatName'
 
 /**
  * POST handler for profile setup after successful authentication.
@@ -48,8 +49,12 @@ export async function POST(request: Request) {
       // Read first_name and last_name directly from metadata (new signup flow)
       // Fall back to parsing full_name for backwards compatibility
       const fullName = metadata.full_name || ''
-      const firstName = metadata.first_name || fullName.trim().split(' ')[0] || ''
-      const lastName = metadata.last_name || fullName.trim().split(' ').slice(1).join(' ') || ''
+      const rawFirstName = metadata.first_name || fullName.trim().split(' ')[0] || ''
+      const rawLastName = metadata.last_name || fullName.trim().split(' ').slice(1).join(' ') || ''
+
+      // Auto-capitalize names
+      const firstName = capitalizeName(rawFirstName)
+      const lastName = capitalizeName(rawLastName)
 
       // Branch is already stored in full format (e.g., "U.S. Navy") from signup
       const branch = metadata.branch || ''
@@ -210,8 +215,13 @@ export async function GET(request: Request) {
       const metadata = user.user_metadata || {}
 
       const fullName = metadata.full_name || ''
-      const firstName = metadata.first_name || fullName.trim().split(' ')[0] || ''
-      const lastName = metadata.last_name || fullName.trim().split(' ').slice(1).join(' ') || ''
+      const rawFirstName = metadata.first_name || fullName.trim().split(' ')[0] || ''
+      const rawLastName = metadata.last_name || fullName.trim().split(' ').slice(1).join(' ') || ''
+
+      // Auto-capitalize names
+      const firstName = capitalizeName(rawFirstName)
+      const lastName = capitalizeName(rawLastName)
+
       const branch = metadata.branch || ''
       const paygrade = metadata.paygrade || ''
       const rank = branch && paygrade ? getRankFromPaygrade(branch, paygrade) : ''

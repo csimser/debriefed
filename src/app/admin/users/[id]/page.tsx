@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -85,6 +85,7 @@ const TIER_OPTIONS = [
 
 export default function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [userId, setUserId] = useState<string | null>(null)
   const [user, setUser] = useState<UserProfile | null>(null)
   const [resumes, setResumes] = useState<Resume[]>([])
@@ -108,8 +109,14 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
   // Modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showSuspendModal, setShowSuspendModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [suspendReason, setSuspendReason] = useState('')
+
+  // Edit form state
+  const [editFirstName, setEditFirstName] = useState('')
+  const [editLastName, setEditLastName] = useState('')
+  const [editEmail, setEditEmail] = useState('')
 
   // Unwrap params
   useEffect(() => {
@@ -149,6 +156,16 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
           private_downloads: 0,
           federal_downloads: 0,
         })
+
+        // Auto-open edit modal if ?edit=true
+        if (searchParams.get('edit') === 'true' && data.user) {
+          setEditFirstName(data.user.first_name || '')
+          setEditLastName(data.user.last_name || '')
+          setEditEmail(data.user.email || '')
+          setShowEditModal(true)
+          // Remove the edit param from URL
+          router.replace(`/admin/users/${userId}`, { scroll: false })
+        }
       } catch (error) {
         console.error('Error fetching user:', error)
       } finally {
@@ -157,7 +174,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
     }
 
     fetchUser()
-  }, [userId, router])
+  }, [userId, router, searchParams])
 
   // Update tier
   const handleTierChange = async (newTier: string) => {
@@ -267,6 +284,52 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
       }
     } catch (error) {
       console.error('Error impersonating user:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Open edit modal with current values
+  const openEditModal = () => {
+    if (!user) return
+    setEditFirstName(user.first_name || '')
+    setEditLastName(user.last_name || '')
+    setEditEmail(user.email || '')
+    setShowEditModal(true)
+  }
+
+  // Save profile edits
+  const handleSaveProfile = async () => {
+    if (!user) return
+    setSaving(true)
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          first_name: editFirstName,
+          last_name: editLastName,
+          email: editEmail,
+        }),
+      })
+
+      if (response.ok) {
+        // Update local state with new values
+        setUser({
+          ...user,
+          first_name: editFirstName.charAt(0).toUpperCase() + editFirstName.slice(1).toLowerCase(),
+          last_name: editLastName.charAt(0).toUpperCase() + editLastName.slice(1).toLowerCase(),
+          email: editEmail,
+        })
+        setShowEditModal(false)
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to update profile')
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      alert('Failed to update profile')
     } finally {
       setSaving(false)
     }
@@ -548,6 +611,21 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
               Account Actions
             </h2>
 
+            {/* Edit Profile */}
+            <div className="mb-4">
+              <label className="block text-xs text-text-muted uppercase tracking-wider mb-2">
+                Edit Profile
+              </label>
+              <Button
+                variant="secondary"
+                onClick={openEditModal}
+                disabled={saving}
+                className="w-full"
+              >
+                Edit Profile
+              </Button>
+            </div>
+
             {/* Tier Change */}
             <div className="mb-4">
               <label className="block text-xs text-text-muted uppercase tracking-wider mb-2">
@@ -789,6 +867,70 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                 className="flex-1 bg-status-red hover:bg-status-red/80"
               >
                 {saving ? 'Deleting...' : 'Delete User'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="p-6 max-w-md w-full">
+            <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-gold mb-4">
+              Edit User Profile
+            </h2>
+            <p className="text-text-muted text-sm mb-4">
+              Names will be auto-capitalized (e.g., "john" becomes "John").
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-text-muted uppercase tracking-wider mb-2">
+                  First Name
+                </label>
+                <Input
+                  value={editFirstName}
+                  onChange={(e) => setEditFirstName(e.target.value)}
+                  placeholder="First name"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-text-muted uppercase tracking-wider mb-2">
+                  Last Name
+                </label>
+                <Input
+                  value={editLastName}
+                  onChange={(e) => setEditLastName(e.target.value)}
+                  placeholder="Last name"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-text-muted uppercase tracking-wider mb-2">
+                  Email
+                </label>
+                <Input
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                  placeholder="Email address"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="ghost"
+                onClick={() => setShowEditModal(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSaveProfile}
+                disabled={saving}
+                className="flex-1"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </Card>
