@@ -51,6 +51,14 @@ function CallbackHandler() {
         setErrorMessage('Authentication failed. Please try again.')
         return
       }
+
+      // For email verification (signup), the code exchange verifies the email
+      // Sign out and redirect to login - user needs beta code to log in
+      if (type === 'signup' || type === 'email') {
+        await supabase.auth.signOut()
+        router.replace('/login?confirmed=true')
+        return
+      }
     }
 
     // If there's hash fragment with access_token, let Supabase handle it
@@ -58,6 +66,13 @@ function CallbackHandler() {
     if (hashParams?.get('access_token')) {
       // Give Supabase client time to process the hash
       await new Promise(resolve => setTimeout(resolve, 500))
+
+      // For email verification via hash, sign out and redirect to login
+      if (type === 'signup' || type === 'email') {
+        await supabase.auth.signOut()
+        router.replace('/login?confirmed=true')
+        return
+      }
     }
 
     // Helper function to check session with retries
@@ -93,14 +108,6 @@ function CallbackHandler() {
       console.error('No session found')
       setStatus('error')
       setErrorMessage('Authentication failed. Please try again.')
-      return
-    }
-
-    // For email verification (signup), sign out and redirect to login
-    // During beta period, users need a beta code to log in
-    if (type === 'signup' || type === 'email') {
-      await supabase.auth.signOut()
-      router.replace('/login?confirmed=true')
       return
     }
 
