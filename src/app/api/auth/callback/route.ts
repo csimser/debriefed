@@ -27,6 +27,13 @@ export async function POST(request: Request) {
       )
     }
 
+    // For email verification (signup), sign out and redirect to login
+    // During beta period, users need a beta code to log in
+    if (type === 'signup' || type === 'email') {
+      await supabase.auth.signOut()
+      return NextResponse.json({ success: true, redirect: '/login?confirmed=true', isNewUser: true })
+    }
+
     // Check if profile exists
     const { data: existingProfile } = await supabase
       .from('profiles')
@@ -178,6 +185,13 @@ export async function GET(request: Request) {
   // For recovery flow, redirect to reset-password
   if (type === 'recovery') {
     return NextResponse.redirect(`${origin}/reset-password`)
+  }
+
+  // For email verification (signup), sign out and redirect to login
+  // During beta period, users need a beta code to log in
+  if (type === 'signup' || type === 'email') {
+    await supabase.auth.signOut()
+    return NextResponse.redirect(`${origin}/login?confirmed=true`)
   }
 
   // Get the user

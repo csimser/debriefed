@@ -96,6 +96,14 @@ function CallbackHandler() {
       return
     }
 
+    // For email verification (signup), sign out and redirect to login
+    // During beta period, users need a beta code to log in
+    if (type === 'signup' || type === 'email') {
+      await supabase.auth.signOut()
+      router.replace('/login?confirmed=true')
+      return
+    }
+
     // Call the API to handle profile setup and get redirect destination
     try {
       const response = await fetch('/api/auth/callback', {
