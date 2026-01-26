@@ -74,6 +74,9 @@ function LoginForm() {
 
     const isAdmin = isAdminEmail || profile?.is_admin === true
 
+    // Track last login (fire and forget - don't block on this)
+    fetch('/api/auth/track-login', { method: 'POST' }).catch(() => {})
+
     if (isAdmin) {
       // Admin - direct access
       router.push('/dashboard')

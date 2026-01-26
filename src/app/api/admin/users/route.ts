@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
   // Build query using service client to bypass RLS
   let query = serviceClient
     .from('profiles')
-    .select('id, user_id, email, first_name, last_name, tier, is_admin, suspended, created_at, onboarding_completed, branch, rank', { count: 'exact' })
+    .select('id, user_id, email, first_name, last_name, tier, is_admin, suspended, created_at, onboarding_completed, branch, rank, last_login_at', { count: 'exact' })
 
   // Apply search filter
   if (search) {

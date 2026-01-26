@@ -21,6 +21,39 @@ interface User {
   onboarding_completed: boolean
   branch: string | null
   rank: string | null
+  last_login_at: string | null
+}
+
+// Helper to format relative time
+function formatRelativeTime(dateString: string | null): string {
+  if (!dateString) return 'Never'
+
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffSecs = Math.floor(diffMs / 1000)
+  const diffMins = Math.floor(diffSecs / 60)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+
+  // Older than 7 days - show formatted date
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+  })
+}
+
+// Check if user is "online" (logged in within last 15 minutes)
+function isOnline(lastLoginAt: string | null): boolean {
+  if (!lastLoginAt) return false
+  const fifteenMinutesAgo = Date.now() - (15 * 60 * 1000)
+  return new Date(lastLoginAt).getTime() > fifteenMinutesAgo
 }
 
 interface Pagination {
@@ -51,7 +84,7 @@ const STATUS_OPTIONS = [
   { value: 'suspended', label: 'Suspended' },
 ]
 
-type SortField = 'email' | 'first_name' | 'tier' | 'created_at'
+type SortField = 'email' | 'first_name' | 'tier' | 'created_at' | 'last_login_at'
 
 function UsersPageContent() {
   const router = useRouter()
@@ -157,7 +190,7 @@ function UsersPageContent() {
       const usersToExport: User[] = data.users
 
       // Create CSV content
-      const headers = ['Email', 'First Name', 'Last Name', 'Role', 'Tier', 'Status', 'Branch', 'Rank', 'Created At']
+      const headers = ['Email', 'First Name', 'Last Name', 'Role', 'Tier', 'Status', 'Branch', 'Rank', 'Last Login', 'Created At']
       const rows = usersToExport.map(user => [
         user.email,
         user.first_name || '',
@@ -167,6 +200,7 @@ function UsersPageContent() {
         user.suspended ? 'Suspended' : 'Active',
         user.branch || '',
         user.rank || '',
+        user.last_login_at ? new Date(user.last_login_at).toISOString() : 'Never',
         new Date(user.created_at).toISOString(),
       ])
 
@@ -331,6 +365,12 @@ function UsersPageContent() {
                 <th className="px-4 py-3">Status</th>
                 <th
                   className="px-4 py-3 cursor-pointer hover:text-text transition-colors"
+                  onClick={() => handleSort('last_login_at')}
+                >
+                  Last Login <SortIndicator field="last_login_at" />
+                </th>
+                <th
+                  className="px-4 py-3 cursor-pointer hover:text-text transition-colors"
                   onClick={() => handleSort('created_at')}
                 >
                   Created At <SortIndicator field="created_at" />
@@ -341,7 +381,7 @@ function UsersPageContent() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-text-muted">
+                  <td colSpan={8} className="px-4 py-12 text-center text-text-muted">
                     <div className="flex items-center justify-center gap-2">
                       <span className="animate-spin">↻</span>
                       Loading users...
@@ -350,7 +390,7 @@ function UsersPageContent() {
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-text-muted">
+                  <td colSpan={8} className="px-4 py-12 text-center text-text-muted">
                     No users found
                   </td>
                 </tr>
@@ -405,6 +445,19 @@ function UsersPageContent() {
                       ) : (
                         <Badge variant="green">Active</Badge>
                       )}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        {isOnline(user.last_login_at) && (
+                          <span
+                            className="w-2 h-2 rounded-full bg-green-500 animate-pulse"
+                            title="Online"
+                          />
+                        )}
+                        <span className={user.last_login_at ? 'text-text-muted' : 'text-text-dim italic'}>
+                          {formatRelativeTime(user.last_login_at)}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-text-muted">
                       {new Date(user.created_at).toLocaleDateString('en-US', {
