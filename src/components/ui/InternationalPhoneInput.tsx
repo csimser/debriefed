@@ -110,8 +110,21 @@ function getSortedCountries(): CountryOption[] {
 
 const SORTED_COUNTRIES = getSortedCountries()
 
+/**
+ * Normalize phone value to E.164 format for backward compatibility
+ * Handles legacy US phone numbers stored as digits or formatted strings
+ */
+function normalizePhoneValue(value: string | null | undefined): string {
+  if (!value) return ''
+  if (value.startsWith('+')) return value // Already E.164
+
+  // Legacy format - assume US number
+  const digits = value.replace(/\D/g, '')
+  return digits ? `+1${digits}` : ''
+}
+
 interface InternationalPhoneInputProps {
-  value: string // E.164 format or empty
+  value: string // E.164 format or empty (legacy formats auto-converted)
   onChange: (value: string) => void // Returns E.164 format
   error?: string
   disabled?: boolean
@@ -138,9 +151,13 @@ export function InternationalPhoneInput({
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Parse initial value and set country/input
+  // Handles backward compatibility for legacy US phone formats
   useEffect(() => {
     if (value) {
-      const parsed = parsePhoneNumberFromString(value)
+      // Normalize legacy formats to E.164 (e.g., "(800) 555-1234" → "+18005551234")
+      const normalizedValue = normalizePhoneValue(value)
+
+      const parsed = parsePhoneNumberFromString(normalizedValue)
       if (parsed && parsed.country) {
         const country = SORTED_COUNTRIES.find((c) => c.code === parsed.country)
         if (country) {
@@ -148,12 +165,17 @@ export function InternationalPhoneInput({
           // Format national number for display
           setInputValue(parsed.formatNational())
         }
-      } else if (value.startsWith('+')) {
+      } else if (normalizedValue.startsWith('+')) {
         // Try to parse as E.164 without country hint
-        setInputValue(value)
-      } else {
-        // Assume US format for backwards compatibility
-        setInputValue(value)
+        setInputValue(normalizedValue)
+      } else if (normalizedValue) {
+        // Fallback: display as-is
+        setInputValue(normalizedValue)
+      }
+
+      // If the original value was in legacy format, notify parent of normalized value
+      if (normalizedValue && normalizedValue !== value) {
+        onChange(normalizedValue)
       }
     }
   }, []) // Only run on mount
