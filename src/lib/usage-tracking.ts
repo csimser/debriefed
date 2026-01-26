@@ -20,19 +20,35 @@ export type UsageField =
 
 /**
  * Log API usage for token tracking
+ * @param userId - User ID
+ * @param endpoint - Endpoint/feature name
+ * @param tokensUsed - Total tokens used (input + output)
+ * @param model - Model name
+ * @param inputTokens - Optional: separate input token count
+ * @param outputTokens - Optional: separate output token count
+ * @param success - Optional: whether the call succeeded
+ * @param errorMessage - Optional: error message if failed
  */
 export async function logApiUsage(
   userId: string,
   endpoint: string,
   tokensUsed: number,
-  model: string
+  model: string,
+  inputTokens?: number,
+  outputTokens?: number,
+  success: boolean = true,
+  errorMessage?: string
 ) {
   try {
     const { error } = await supabase.from('api_usage').insert({
       user_id: userId,
       endpoint,
       tokens_used: tokensUsed,
+      input_tokens: inputTokens || 0,
+      output_tokens: outputTokens || 0,
       model,
+      success,
+      error_message: errorMessage || null,
     })
 
     if (error) {
@@ -222,5 +238,121 @@ export async function getUserTotalTokens(userId: string): Promise<number> {
   } catch (err) {
     console.error('Failed to get user tokens:', err)
     return 0
+  }
+}
+
+// =====================================================
+// USER ACTIVITY LOGGING
+// =====================================================
+
+/**
+ * Valid activity types for user actions
+ */
+export type ActivityType =
+  | 'login'
+  | 'logout'
+  | 'resume_created'
+  | 'resume_edited'
+  | 'resume_downloaded'
+  | 'resume_deleted'
+  | 'cover_letter_generated'
+  | 'job_analysis_run'
+  | 'linkedin_analysis_run'
+  | 'linkedin_content_generated'
+  | 'eval_uploaded'
+  | 'eval_parsed'
+  | 'document_uploaded'
+  | 'profile_updated'
+  | 'subscription_started'
+  | 'subscription_expired'
+  | 'feature_limit_reached'
+
+/**
+ * Log user activity for tracking and analytics
+ * @param userId - User ID performing the action
+ * @param action - Type of activity
+ * @param details - Additional metadata about the action
+ * @param ipHash - Optional: hashed IP address
+ * @param userAgent - Optional: browser user agent
+ */
+export async function logActivity(
+  userId: string,
+  action: ActivityType,
+  details: Record<string, any> = {},
+  ipHash?: string,
+  userAgent?: string
+) {
+  try {
+    const { error } = await supabase.from('activity_log').insert({
+      user_id: userId,
+      action,
+      details: {
+        ...details,
+        timestamp: new Date().toISOString(),
+      },
+      ip_hash: ipHash || null,
+      user_agent: userAgent || null,
+    })
+
+    if (error) {
+      console.error('Error logging activity:', error)
+    }
+  } catch (err) {
+    console.error('Failed to log activity:', err)
+  }
+}
+
+/**
+ * Get user's recent activity
+ */
+export async function getUserActivity(userId: string, limit: number = 50) {
+  try {
+    const { data, error } = await supabase
+      .from('activity_log')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) {
+      console.error('Error getting user activity:', error)
+      return []
+    }
+
+    return data || []
+  } catch (err) {
+    console.error('Failed to get user activity:', err)
+    return []
+  }
+}
+
+/**
+ * Ensure user has a usage record (create if not exists)
+ */
+export async function ensureUsageRecord(userId: string) {
+  try {
+    const { data: existing } = await supabase
+      .from('usage')
+      .select('id')
+      .eq('user_id', userId)
+      .single()
+
+    if (!existing) {
+      await supabase.from('usage').insert({
+        user_id: userId,
+        resumes_created: 0,
+        resumes_downloaded: 0,
+        cover_letters: 0,
+        job_matches: 0,
+        eval_uploads: 0,
+        bullet_rewrites: 0,
+        ai_summaries: 0,
+        private_downloads: 0,
+        federal_downloads: 0,
+        linkedin_generations: 0,
+      })
+    }
+  } catch (err) {
+    console.error('Failed to ensure usage record:', err)
   }
 }

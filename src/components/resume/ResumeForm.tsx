@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/Badge'
 import { formatFullDegree, getSchoolName, formatGraduationDate } from '@/lib/utils/formatResume'
 import { ProfessionalSummaryEditor } from './ProfessionalSummaryEditor'
 import { buildProfileDataFromForm } from '@/lib/populateTemplate'
-import { formatPhoneNumber } from '@/lib/formatPhone'
+import { InternationalPhoneInput } from '@/components/ui/InternationalPhoneInput'
 
 interface ResumeFormProps {
   resumeId: string
@@ -108,10 +108,10 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
             </p>
           </div>
 
-          <Input
+          <InternationalPhoneInput
             label="Phone"
-            value={formatPhoneNumber(content.contact?.phone || '')}
-            onChange={(e) => updateContent('contact', { ...content.contact, phone: e.target.value })}
+            value={content.contact?.phone || ''}
+            onChange={(phone) => updateContent('contact', { ...content.contact, phone })}
           />
           <Input
             label="Location"

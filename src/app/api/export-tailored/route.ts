@@ -5,7 +5,7 @@ import { generateDocx } from '@/lib/docx/generateDocx'
 import { TemplateId } from '@/lib/templates'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
+import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
 import React from 'react'
 
@@ -193,8 +193,15 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Track API usage
-    await logApiUsage(user.id, 'export-tailored', 500, 'pdf-generation')
+    // Track API usage and activity
+    await logApiUsage(user.id, 'export-tailored', 0, 'pdf-generation')
+    await logActivity(user.id, 'resume_downloaded', {
+      type: 'tailored',
+      resume_type: resumeType,
+      format,
+      template,
+      tier,
+    })
 
     // Return file
     const timestamp = new Date().toISOString().split('T')[0]

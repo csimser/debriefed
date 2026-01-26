@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
+import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
 
 const anthropic = new Anthropic({
@@ -199,6 +199,8 @@ ${exp.bullets?.map((b: any) => b.translated_text || b.original_text).join('; ') 
 
     let headline = ''
     let summary = ''
+    let totalInputTokens = 0
+    let totalOutputTokens = 0
 
     // Generate headline if needed
     if (!regenerateOnly || regenerateOnly === 'headline') {
@@ -238,6 +240,10 @@ Generate ONLY the headline, nothing else.`
         max_tokens: 300,
         messages: [{ role: 'user', content: headlinePrompt }],
       })
+
+      // Track actual token usage from headline call
+      totalInputTokens += headlineResponse.usage?.input_tokens || 0
+      totalOutputTokens += headlineResponse.usage?.output_tokens || 0
 
       headline = (headlineResponse.content[0] as { text: string }).text.trim()
       // Remove quotes if wrapped
@@ -311,6 +317,10 @@ Generate the About section with proper paragraph breaks.`
         messages: [{ role: 'user', content: aboutPrompt }],
       })
 
+      // Track actual token usage from about call
+      totalInputTokens += aboutResponse.usage?.input_tokens || 0
+      totalOutputTokens += aboutResponse.usage?.output_tokens || 0
+
       summary = (aboutResponse.content[0] as { text: string }).text.trim()
       // Remove quotes if wrapped
       summary = summary.replace(/^["']|["']$/g, '')
@@ -329,6 +339,9 @@ Generate the About section with proper paragraph breaks.`
       }
     }
 
+    // Calculate actual total tokens used
+    const tokensUsed = totalInputTokens + totalOutputTokens
+
     console.log('LinkedIn generation:', {
       targetRole,
       experienceCount,
@@ -339,12 +352,25 @@ Generate the About section with proper paragraph breaks.`
       regenerateOnly,
       headlineLength: headline.length,
       summaryLength: summary.length,
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens,
+      totalTokens: tokensUsed,
     })
 
-    // Track usage - estimate tokens based on what was generated
-    const tokensUsed = 1800 // Approximation for both headline and about calls
-    await logApiUsage(user.id, 'generate-linkedin', tokensUsed, 'claude-sonnet-4-20250514')
+    // Track actual token usage (not hardcoded estimates)
+    await logApiUsage(user.id, 'generate-linkedin', tokensUsed, 'claude-sonnet-4-20250514', totalInputTokens, totalOutputTokens)
     await incrementUsage(user.id, 'ai_summaries')
+
+    // Log activity
+    await logActivity(user.id, 'linkedin_content_generated', {
+      target_role: targetRole,
+      tone,
+      about_length: aboutLength,
+      regenerate_only: regenerateOnly,
+      headline_length: headline.length,
+      summary_length: summary.length,
+      tokens_used: tokensUsed,
+    })
 
     return NextResponse.json({
       headline,

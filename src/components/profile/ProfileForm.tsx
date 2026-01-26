@@ -10,7 +10,8 @@ import { EvalUploadSection } from './sections/EvalUploadSection'
 import { ProfessionalSummaryEditor } from './ProfessionalSummaryEditor'
 import { AutosaveIndicator } from '@/components/AutosaveIndicator'
 import { useAutosave } from '@/hooks/useAutosave'
-import { formatPhoneNumber } from '@/lib/formatPhone'
+import { InternationalPhoneInput } from '@/components/ui/InternationalPhoneInput'
+import { toE164 } from '@/lib/formatPhone'
 import { buildProfileDataFromForm } from '@/lib/populateTemplate'
 import { US_STATES } from '@/lib/constants/states'
 import { BRANCHES as MILITARY_BRANCHES, PAYGRADES as MILITARY_PAYGRADES, PAYGRADE_TO_RANK } from '@/lib/constants/military'
@@ -64,7 +65,8 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
     first_name: profileData?.first_name || '',
     last_name: profileData?.last_name || '',
     email: profileData?.email || '',
-    phone: formatPhoneNumber(profileData?.phone || ''),
+    // Store phone in E.164 format, convert legacy US numbers
+    phone: toE164(profileData?.phone || ''),
     city: profileData?.city || '',
     state: profileData?.state || '',
     zip: profileData?.zip || '',
@@ -94,13 +96,11 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
 
   // Autosave function
   const saveProfile = useCallback(async (data: typeof profile) => {
-    // Strip phone formatting for storage (keep just digits)
-    const phoneDigits = data.phone.replace(/\D/g, '')
-
     // Note: first_name, last_name, and email are locked after signup
     // Users must contact support to change these fields (prevents account sharing abuse)
     const profilePayload = {
-      phone: phoneDigits || null,
+      // Store phone in E.164 format (e.g., +18005551234) for international support
+      phone: data.phone || null,
       city: data.city || null,
       state: data.state || null,
       zip: data.zip || null,
@@ -168,10 +168,7 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
   }, [profile.branch, profile.paygrade])
 
   const updateField = (field: string, value: any) => {
-    // Auto-format phone number as user types
-    if (field === 'phone') {
-      value = formatPhoneNumber(value)
-    }
+    // Phone is handled by InternationalPhoneInput which returns E.164 format
     setProfile(prev => ({ ...prev, [field]: value }))
   }
 
@@ -250,14 +247,11 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
             />
           </div>
           <div>
-            <label className={labelClass}>Phone</label>
-            <input
-              type="tel"
+            <InternationalPhoneInput
+              label="Phone"
               value={profile.phone}
-              onChange={(e) => updateField('phone', e.target.value)}
-              className={inputClass}
-              placeholder="(555) 123-4567"
-              maxLength={14}
+              onChange={(value) => updateField('phone', value)}
+              hint="International numbers supported"
             />
           </div>
           <div>

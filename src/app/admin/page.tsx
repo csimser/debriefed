@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/Card'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { SiteAnalytics } from '@/components/admin/SiteAnalytics'
+import { SecurityMetrics } from '@/components/admin/SecurityMetrics'
 
 // Service role client bypasses RLS for admin queries
 const serviceClient = createServiceClient(
@@ -371,6 +372,14 @@ export default async function AdminDashboardPage() {
           Site Analytics
         </h2>
         <SiteAnalytics />
+      </div>
+
+      {/* Security & Abuse Metrics */}
+      <div>
+        <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">
+          Security & Rate Limiting
+        </h2>
+        <SecurityMetrics />
       </div>
     </div>
   )

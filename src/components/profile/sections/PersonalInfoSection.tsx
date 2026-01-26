@@ -2,6 +2,7 @@
 
 import { CollapsibleSection } from '../CollapsibleSection'
 import { Input } from '@/components/ui/Input'
+import { InternationalPhoneInput } from '@/components/ui/InternationalPhoneInput'
 
 interface PersonalInfoSectionProps {
   data: any
@@ -31,12 +32,10 @@ export function PersonalInfoSection({ data, onChange }: PersonalInfoSectionProps
           onChange={e => onChange({ email: e.target.value })}
           placeholder="john@example.com"
         />
-        <Input
+        <InternationalPhoneInput
           label="Phone"
-          type="tel"
           value={data?.phone || ''}
-          onChange={e => onChange({ phone: e.target.value })}
-          placeholder="(555) 123-4567"
+          onChange={(phone) => onChange({ phone })}
         />
         <Input
           label="City"

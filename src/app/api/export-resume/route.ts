@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { TemplateId } from '@/lib/templates'
 import { PRICING_TIERS, DAILY_RATE_LIMITS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { logActivity, logApiUsage } from '@/lib/usage-tracking'
 import React from 'react'
 
 // Admin client for database operations (bypasses RLS)
@@ -88,6 +89,13 @@ export async function POST(request: NextRequest) {
         if (resumeType === 'federal') {
           // Free tier: federal uses the flex slot
           if (federalOrTailoredUsed || federalDownloads >= 1) {
+            // Log rate limit hit
+            await logActivity(userId, 'feature_limit_reached', {
+              feature: 'federal_resume',
+              tier: 'free',
+              current_usage: federalDownloads,
+              limit: 1,
+            })
             return NextResponse.json({
               error: 'You\'ve used your free federal/tailored resume. Upgrade to Core for more.',
               limitReached: true,
@@ -97,6 +105,13 @@ export async function POST(request: NextRequest) {
         } else {
           // Free tier: 1 private resume
           if (privateDownloads >= tierConfig.limits.private_resumes) {
+            // Log rate limit hit
+            await logActivity(userId, 'feature_limit_reached', {
+              feature: 'private_resume',
+              tier: 'free',
+              current_usage: privateDownloads,
+              limit: tierConfig.limits.private_resumes,
+            })
             return NextResponse.json({
               error: 'You\'ve used your free resume download. Upgrade to Core for more.',
               limitReached: true,
@@ -111,6 +126,12 @@ export async function POST(request: NextRequest) {
         const federalLimit = tierConfig.limits.federal_resumes
 
         if (resumeType === 'federal' && federalDownloads >= federalLimit) {
+          await logActivity(userId, 'feature_limit_reached', {
+            feature: 'federal_resume',
+            tier: 'core',
+            current_usage: federalDownloads,
+            limit: federalLimit,
+          })
           return NextResponse.json({
             error: `You've used all ${federalLimit} federal resumes. Upgrade to Full for more.`,
             limitReached: true,
@@ -119,6 +140,12 @@ export async function POST(request: NextRequest) {
         }
 
         if (resumeType === 'private' && privateDownloads >= privateLimit) {
+          await logActivity(userId, 'feature_limit_reached', {
+            feature: 'private_resume',
+            tier: 'core',
+            current_usage: privateDownloads,
+            limit: privateLimit,
+          })
           return NextResponse.json({
             error: `You've used all ${privateLimit} resume downloads. Upgrade to Full for more.`,
             limitReached: true,
@@ -146,6 +173,13 @@ export async function POST(request: NextRequest) {
 
         if (resumeType === 'federal') {
           if (dailyFederal >= dailyLimit) {
+            await logActivity(userId, 'feature_limit_reached', {
+              feature: 'federal_resume',
+              tier: 'full',
+              limit_type: 'daily',
+              current_usage: dailyFederal,
+              limit: dailyLimit,
+            })
             return NextResponse.json({
               error: 'Daily federal resume limit reached. Resets at midnight.',
               limitReached: true,
@@ -154,6 +188,13 @@ export async function POST(request: NextRequest) {
             }, { status: 403 })
           }
           if (monthlyFederal >= monthlyLimit) {
+            await logActivity(userId, 'feature_limit_reached', {
+              feature: 'federal_resume',
+              tier: 'full',
+              limit_type: 'monthly',
+              current_usage: monthlyFederal,
+              limit: monthlyLimit,
+            })
             return NextResponse.json({
               error: 'Monthly federal resume limit reached.',
               limitReached: true,
@@ -163,6 +204,13 @@ export async function POST(request: NextRequest) {
           }
         } else {
           if (dailyPrivate >= dailyLimit) {
+            await logActivity(userId, 'feature_limit_reached', {
+              feature: 'private_resume',
+              tier: 'full',
+              limit_type: 'daily',
+              current_usage: dailyPrivate,
+              limit: dailyLimit,
+            })
             return NextResponse.json({
               error: 'Daily resume download limit reached. Resets at midnight.',
               limitReached: true,
@@ -171,6 +219,13 @@ export async function POST(request: NextRequest) {
             }, { status: 403 })
           }
           if (monthlyPrivate >= monthlyLimit) {
+            await logActivity(userId, 'feature_limit_reached', {
+              feature: 'private_resume',
+              tier: 'full',
+              limit_type: 'monthly',
+              current_usage: monthlyPrivate,
+              limit: monthlyLimit,
+            })
             return NextResponse.json({
               error: 'Monthly resume download limit reached.',
               limitReached: true,
@@ -267,6 +322,18 @@ export async function POST(request: NextRequest) {
         .update({ downloaded_at: new Date().toISOString() })
         .eq('id', resumeId)
     }
+
+    // Log activity and API usage
+    await logActivity(userId, 'resume_downloaded', {
+      resume_id: resumeId,
+      resume_name: resume.name,
+      resume_type: resumeType,
+      format,
+      template,
+      tier,
+    })
+
+    await logApiUsage(userId, 'export-resume', 0, 'pdf-generation')
 
     // Return file
     const filename = `${resume.name || 'resume'}.${extension}`

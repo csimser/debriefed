@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { searchOccupations, getOccupationSkills } from '@/lib/onet-api'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
+import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
 import crypto from 'crypto'
 
@@ -428,9 +428,18 @@ BULLET REWRITE RULES (ABSOLUTELY MANDATORY - DO NOT VIOLATE):
     analysis = enforceScoring(analysis)
 
     // Track usage
-    const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 4000
-    await logApiUsage(user.id, 'job-match', tokensUsed, 'claude-sonnet-4-20250514')
+    const inputTokens = response.usage?.input_tokens || 0
+    const outputTokens = response.usage?.output_tokens || 0
+    const tokensUsed = inputTokens + outputTokens
+    await logApiUsage(user.id, 'job-match', tokensUsed, 'claude-sonnet-4-20250514', inputTokens, outputTokens)
     await incrementUsage(user.id, 'job_matches')
+
+    // Log activity
+    await logActivity(user.id, 'job_analysis_run', {
+      match_score: analysis.overallMatch?.score,
+      key_matches: analysis.keyMatches?.length,
+      tokens_used: tokensUsed,
+    })
 
     // Cache the result
     analysisCache.set(cacheKey, {

@@ -10,7 +10,8 @@ import { createClient } from '@/lib/supabase/client'
 import { formatDateForDB, formatDateForInput } from '@/lib/military-titles'
 import { US_STATES } from '@/lib/constants/states'
 import { formatSalary, parseSalary } from '@/lib/formatSalary'
-import { formatPhoneNumber, stripPhoneNumber } from '@/lib/formatPhone'
+import { toE164 } from '@/lib/formatPhone'
+import { InternationalPhoneInput } from '@/components/ui/InternationalPhoneInput'
 
 interface ExtractedBullet {
   original: string
@@ -84,7 +85,7 @@ export function ExperienceSection({
       hours_per_week: exp.hours_per_week || 40,
       grade_level: exp.grade_level || '',
       supervisor_name: exp.supervisor_name || '',
-      supervisor_phone: formatPhoneNumber(exp.supervisor_phone || ''),
+      supervisor_phone: toE164(exp.supervisor_phone || ''),
       supervisor_can_contact: exp.supervisor_can_contact !== false,
       salary: exp.salary || '',
       salaryDisplay: formatSalary(exp.salary),
@@ -256,7 +257,7 @@ export function ExperienceSection({
       hours_per_week: formExp.hours_per_week || 40,
       grade_level: formExp.grade_level || null,
       supervisor_name: formExp.supervisor_name || null,
-      supervisor_phone: stripPhoneNumber(formExp.supervisor_phone) || null,
+      supervisor_phone: formExp.supervisor_phone || null,
       supervisor_can_contact: formExp.supervisor_can_contact,
       salary: parsedSalary,
     }
@@ -846,16 +847,10 @@ export function ExperienceSection({
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                          Supervisor Phone
-                        </label>
-                        <input
-                          type="tel"
+                        <InternationalPhoneInput
+                          label="Supervisor Phone"
                           value={formExp.supervisor_phone}
-                          onChange={e => setFormExp({ ...formExp, supervisor_phone: formatPhoneNumber(e.target.value) })}
-                          placeholder="(555) 123-4567"
-                          maxLength={14}
-                          className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          onChange={(value) => setFormExp({ ...formExp, supervisor_phone: value })}
                         />
                       </div>
                     </div>
