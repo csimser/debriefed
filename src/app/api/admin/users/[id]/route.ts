@@ -50,7 +50,7 @@ async function logAdminAction(
   }
 }
 
-// GET - Get single user with resumes and API usage
+// GET - Get single user with resumes, experiences, and API usage
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -74,12 +74,25 @@ export async function GET(
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
 
-  // Get user's resumes
+  // Log admin view of user profile (audit logging)
+  await logAdminAction(auth.user.id, auth.adminProfile.email, id, 'admin_viewed_user', {
+    target_email: profile.email,
+    target_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+  })
+
+  // Get user's resumes with content for preview
   const { data: resumes } = await serviceClient
     .from('resumes')
-    .select('id, name, template, resume_type, created_at, updated_at')
+    .select('id, name, template, resume_type, content, created_at, updated_at')
     .eq('user_id', id)
     .order('updated_at', { ascending: false })
+
+  // Get user's experiences with bullets
+  const { data: experiences } = await serviceClient
+    .from('experience')
+    .select('*, experience_bullets(*)')
+    .eq('user_id', id)
+    .order('sort_order', { ascending: true })
 
   // Get activity log for this user
   const { data: activityLog } = await serviceClient
@@ -115,6 +128,10 @@ export async function GET(
   return NextResponse.json({
     user: profile,
     resumes: resumes || [],
+    experiences: (experiences || []).map(exp => ({
+      ...exp,
+      bullets: exp.experience_bullets || [],
+    })),
     activityLog: activityLog || [],
     apiUsage: apiUsage || [],
     totalTokensUsed,

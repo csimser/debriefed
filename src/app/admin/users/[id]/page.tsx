@@ -46,8 +46,30 @@ interface Resume {
   name: string
   template: string
   resume_type: string
+  content?: any
   created_at: string
   updated_at: string
+}
+
+interface ExperienceBullet {
+  id: string
+  original_text: string
+  translated_text: string | null
+  is_from_eval: boolean
+  created_at: string
+}
+
+interface Experience {
+  id: string
+  job_title: string
+  organization: string
+  location: string | null
+  start_date: string | null
+  end_date: string | null
+  is_current: boolean
+  duties_description: string | null
+  bullets: ExperienceBullet[]
+  created_at: string
 }
 
 interface ActivityLogEntry {
@@ -89,9 +111,13 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
   const [userId, setUserId] = useState<string | null>(null)
   const [user, setUser] = useState<UserProfile | null>(null)
   const [resumes, setResumes] = useState<Resume[]>([])
+  const [experiences, setExperiences] = useState<Experience[]>([])
   const [activityLog, setActivityLog] = useState<ActivityLogEntry[]>([])
   const [apiUsage, setApiUsage] = useState<ApiUsageEntry[]>([])
   const [totalTokensUsed, setTotalTokensUsed] = useState(0)
+  const [activeTab, setActiveTab] = useState<'resumes' | 'experiences'>('resumes')
+  const [previewResume, setPreviewResume] = useState<Resume | null>(null)
+  const [downloading, setDownloading] = useState<string | null>(null)
   const [usageStats, setUsageStats] = useState<UsageStats>({
     resumes_created: 0,
     resumes_downloaded: 0,
@@ -142,6 +168,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
         const data = await response.json()
         setUser(data.user)
         setResumes(data.resumes)
+        setExperiences(data.experiences || [])
         setActivityLog(data.activityLog)
         setApiUsage(data.apiUsage || [])
         setTotalTokensUsed(data.totalTokensUsed || 0)
@@ -360,6 +387,39 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
     }
   }
 
+  // Download resume as admin
+  const handleDownloadResume = async (resume: Resume, format: 'pdf' | 'docx') => {
+    setDownloading(resume.id)
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/resume`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resumeId: resume.id, format }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        alert(data.error || 'Failed to download resume')
+        return
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${resume.name || 'resume'}.${format}`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error downloading resume:', error)
+      alert('Failed to download resume')
+    } finally {
+      setDownloading(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -500,30 +560,158 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
             )}
           </Card>
 
-          {/* Resumes */}
+          {/* Resumes & Experiences Tabs */}
           <Card className="p-6">
-            <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">
-              Resumes ({resumes.length})
-            </h2>
-            {resumes.length === 0 ? (
-              <p className="text-text-muted">No resumes created</p>
-            ) : (
-              <div className="space-y-2">
-                {resumes.map((resume) => (
-                  <div
-                    key={resume.id}
-                    className="flex items-center justify-between p-3 bg-bg-tertiary rounded-lg"
-                  >
-                    <div>
-                      <div className="font-medium">{resume.name}</div>
-                      <div className="text-xs text-text-muted">
-                        {resume.template} • {resume.resume_type} • Updated{' '}
-                        {new Date(resume.updated_at).toLocaleDateString()}
+            {/* Tab Header */}
+            <div className="flex gap-4 mb-4 border-b border-border">
+              <button
+                onClick={() => setActiveTab('resumes')}
+                className={`pb-2 px-1 font-heading text-lg font-bold uppercase tracking-wider transition-colors ${
+                  activeTab === 'resumes'
+                    ? 'text-gold border-b-2 border-gold'
+                    : 'text-text-muted hover:text-text'
+                }`}
+              >
+                Resumes ({resumes.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('experiences')}
+                className={`pb-2 px-1 font-heading text-lg font-bold uppercase tracking-wider transition-colors ${
+                  activeTab === 'experiences'
+                    ? 'text-gold border-b-2 border-gold'
+                    : 'text-text-muted hover:text-text'
+                }`}
+              >
+                Experiences ({experiences.length})
+              </button>
+            </div>
+
+            {/* Resumes Tab */}
+            {activeTab === 'resumes' && (
+              <>
+                {resumes.length === 0 ? (
+                  <p className="text-text-muted">No resumes created</p>
+                ) : (
+                  <div className="space-y-3">
+                    {resumes.map((resume) => (
+                      <div
+                        key={resume.id}
+                        className="p-4 bg-bg-tertiary rounded-lg"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">{resume.name}</div>
+                            <div className="text-xs text-text-muted">
+                              {resume.template} • {resume.resume_type} • Updated{' '}
+                              {new Date(resume.updated_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setPreviewResume(resume)}
+                              className="text-gold hover:bg-gold/10"
+                            >
+                              Preview
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDownloadResume(resume, 'pdf')}
+                              disabled={downloading === resume.id}
+                              className="text-blue-400 hover:bg-blue-500/10"
+                            >
+                              {downloading === resume.id ? 'Downloading...' : 'PDF'}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDownloadResume(resume, 'docx')}
+                              disabled={downloading === resume.id}
+                              className="text-green-400 hover:bg-green-500/10"
+                            >
+                              DOCX
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )}
+              </>
+            )}
+
+            {/* Experiences Tab */}
+            {activeTab === 'experiences' && (
+              <>
+                {experiences.length === 0 ? (
+                  <p className="text-text-muted">No experiences entered</p>
+                ) : (
+                  <div className="space-y-4">
+                    {experiences.map((exp) => (
+                      <div
+                        key={exp.id}
+                        className="p-4 bg-bg-tertiary rounded-lg"
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <div className="font-medium text-gold">{exp.job_title}</div>
+                            <div className="text-sm text-text-muted">{exp.organization}</div>
+                            {exp.location && (
+                              <div className="text-xs text-text-dim">{exp.location}</div>
+                            )}
+                          </div>
+                          <div className="text-right text-xs text-text-muted">
+                            {exp.start_date && (
+                              <div>
+                                {new Date(exp.start_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                {' - '}
+                                {exp.is_current
+                                  ? 'Present'
+                                  : exp.end_date
+                                  ? new Date(exp.end_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                                  : 'Present'}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {exp.duties_description && (
+                          <p className="text-sm text-text-muted mb-3 italic">
+                            {exp.duties_description}
+                          </p>
+                        )}
+
+                        {exp.bullets && exp.bullets.length > 0 && (
+                          <div className="space-y-2 mt-3 pt-3 border-t border-border/50">
+                            <div className="text-xs text-text-dim uppercase tracking-wider">
+                              Bullets ({exp.bullets.length})
+                            </div>
+                            {exp.bullets.map((bullet) => (
+                              <div key={bullet.id} className="text-sm space-y-1 pl-3 border-l-2 border-border">
+                                <div className="text-text-muted">
+                                  <span className="text-xs text-text-dim mr-2">Original:</span>
+                                  {bullet.original_text}
+                                </div>
+                                {bullet.translated_text && (
+                                  <div className="text-green-400">
+                                    <span className="text-xs text-text-dim mr-2">Translated:</span>
+                                    {bullet.translated_text}
+                                  </div>
+                                )}
+                                {bullet.is_from_eval && (
+                                  <Badge variant="amber" className="text-xs">From Eval</Badge>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </Card>
 
@@ -868,6 +1056,149 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
               >
                 {saving ? 'Deleting...' : 'Delete User'}
               </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Resume Preview Modal */}
+      {previewResume && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="p-6 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-gold">
+                  {previewResume.name}
+                </h2>
+                <p className="text-sm text-text-muted">
+                  {previewResume.template} • {previewResume.resume_type}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => handleDownloadResume(previewResume, 'pdf')}
+                  disabled={downloading === previewResume.id}
+                >
+                  Download PDF
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setPreviewResume(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+            <div className="overflow-auto flex-1 bg-white text-black p-6 rounded">
+              {previewResume.content ? (
+                <div className="space-y-4">
+                  {/* Header */}
+                  {previewResume.content.header && (
+                    <div className="border-b pb-4">
+                      <h1 className="text-2xl font-bold">
+                        {previewResume.content.header.name || 'No Name'}
+                      </h1>
+                      <div className="text-sm text-gray-600 mt-1">
+                        {[
+                          previewResume.content.header.email,
+                          previewResume.content.header.phone,
+                          previewResume.content.header.location,
+                        ]
+                          .filter(Boolean)
+                          .join(' | ')}
+                      </div>
+                      {previewResume.content.header.linkedin && (
+                        <div className="text-sm text-blue-600">
+                          {previewResume.content.header.linkedin}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Summary */}
+                  {previewResume.content.summary && (
+                    <div>
+                      <h2 className="text-lg font-bold uppercase text-gray-700 mb-2">Summary</h2>
+                      <p className="text-sm">{previewResume.content.summary}</p>
+                    </div>
+                  )}
+
+                  {/* Experience */}
+                  {previewResume.content.experience && previewResume.content.experience.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold uppercase text-gray-700 mb-2">Experience</h2>
+                      {previewResume.content.experience.map((exp: any, idx: number) => (
+                        <div key={idx} className="mb-4">
+                          <div className="flex justify-between">
+                            <div>
+                              <div className="font-semibold">{exp.title || exp.job_title}</div>
+                              <div className="text-sm text-gray-600">{exp.company || exp.organization}</div>
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {exp.startDate || exp.start_date} - {exp.endDate || exp.end_date || 'Present'}
+                            </div>
+                          </div>
+                          {exp.bullets && exp.bullets.length > 0 && (
+                            <ul className="list-disc list-inside text-sm mt-2 space-y-1">
+                              {exp.bullets.map((bullet: any, bidx: number) => (
+                                <li key={bidx}>
+                                  {typeof bullet === 'string' ? bullet : bullet.text || bullet.translated_text || bullet.original_text}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Education */}
+                  {previewResume.content.education && previewResume.content.education.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold uppercase text-gray-700 mb-2">Education</h2>
+                      {previewResume.content.education.map((edu: any, idx: number) => (
+                        <div key={idx} className="mb-2">
+                          <div className="font-semibold">{edu.degree}</div>
+                          <div className="text-sm text-gray-600">
+                            {edu.school || edu.institution}
+                            {edu.graduationDate && ` - ${edu.graduationDate}`}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Skills */}
+                  {previewResume.content.skills && previewResume.content.skills.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold uppercase text-gray-700 mb-2">Skills</h2>
+                      <div className="text-sm">
+                        {previewResume.content.skills
+                          .map((s: any) => (typeof s === 'string' ? s : s.name))
+                          .join(', ')}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Certifications */}
+                  {previewResume.content.certifications && previewResume.content.certifications.length > 0 && (
+                    <div>
+                      <h2 className="text-lg font-bold uppercase text-gray-700 mb-2">Certifications</h2>
+                      <ul className="text-sm space-y-1">
+                        {previewResume.content.certifications.map((cert: any, idx: number) => (
+                          <li key={idx}>
+                            {typeof cert === 'string' ? cert : cert.name}
+                            {cert.issuer && ` - ${cert.issuer}`}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">No content available for this resume</p>
+              )}
             </div>
           </Card>
         </div>
