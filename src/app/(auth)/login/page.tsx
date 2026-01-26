@@ -81,7 +81,18 @@ function LoginForm() {
       return
     }
 
-    // Non-admin - require beta code
+    // Check if user already has valid beta access (previously redeemed code)
+    const betaCheckResponse = await fetch('/api/beta/check')
+    const betaCheckData = await betaCheckResponse.json()
+
+    if (betaCheckData.hasValidAccess) {
+      // User already has valid beta access - let them in
+      router.push('/dashboard')
+      router.refresh()
+      return
+    }
+
+    // Non-admin without existing access - require beta code
     if (!betaCode.trim()) {
       // Sign out the user since they can't proceed without a code
       await supabase.auth.signOut()
