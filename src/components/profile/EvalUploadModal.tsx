@@ -22,6 +22,7 @@ interface EvalUploadModalProps {
   onBulletsSaved?: () => void // Callback when bullets are saved directly to an experience
   userId: string
   experiences?: Array<{ id: string; job_title: string; organization: string; start_date: string; end_date: string }>
+  defaultExperienceId?: string // Pre-select this experience when opening
 }
 
 interface CropArea {
@@ -31,7 +32,7 @@ interface CropArea {
   height: number
 }
 
-export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, userId, experiences = [] }: EvalUploadModalProps) {
+export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, userId, experiences = [], defaultExperienceId }: EvalUploadModalProps) {
   const [step, setStep] = useState<'upload' | 'crop' | 'processing' | 'review'>('upload')
   const [savingToExperience, setSavingToExperience] = useState(false)
   const supabase = createClient()
@@ -43,7 +44,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
   const [bulletItems, setBulletItems] = useState<BulletWithStatus[]>([])
   const [evalPeriod, setEvalPeriod] = useState<{ startDate: string | null; endDate: string | null }>({ startDate: null, endDate: null })
   const [detectedJobTitle, setDetectedJobTitle] = useState<string | null>(null)
-  const [selectedExperience, setSelectedExperience] = useState<string>('')
+  const [selectedExperience, setSelectedExperience] = useState<string>(defaultExperienceId || '')
   const [evalType, setEvalType] = useState<string>('')
   const [showOriginal, setShowOriginal] = useState(false)
   const [error, setError] = useState('')
@@ -127,7 +128,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
     setBulletItems([])
     setEvalPeriod({ startDate: null, endDate: null })
     setDetectedJobTitle(null)
-    setSelectedExperience('')
+    setSelectedExperience(defaultExperienceId || '')
     setEvalType('')
     setShowOriginal(false)
     setError('')
@@ -407,12 +408,14 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
 
         const startOrder = existingBullets?.[0]?.sort_order ?? -1
 
-        // Insert bullets directly
+        // Insert bullets directly with accepted status so they appear in resumes
         const bulletsToInsert = bulletsToSave.map((b, idx) => ({
           experience_id: selectedExperience,
           original_text: b.original,
           translated_text: b.translated,
           sort_order: startOrder + idx + 1,
+          status: 'accepted',
+          is_accepted: true,
         }))
 
         const { error } = await supabase.from('experience_bullets').insert(bulletsToInsert)

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
     // Pre-check usage limits before processing
     const { data: dbProfile } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, email')
+      .select('subscription_tier, email, rating_mos, branch')
       .eq('user_id', user.id)
       .single()
 
@@ -147,7 +148,17 @@ export async function POST(request: NextRequest) {
 
     const rank = userProfile?.rank || 'Senior military leader'
     const years = userProfile?.years_of_service || '20'
-    const branch = userProfile?.branch || 'Military'
+    const branch = userProfile?.branch || dbProfile?.branch || 'Military'
+
+    // Build crosswalk context from local data (no AI call needed)
+    let crosswalkContext = ''
+    const mosCode = dbProfile?.rating_mos
+    if (mosCode) {
+      const localResult = getCivilianJobs(mosCode, branch)
+      if (localResult) {
+        crosswalkContext = `- Civilian equivalent roles: ${localResult.civilian_titles.join(', ')}`
+      }
+    }
 
     // Extract certifications
     const certList = certifications?.map((c: any) => c.name || c).filter(Boolean) || []
@@ -210,7 +221,7 @@ THEIR DATA:
 - Rank/Title: ${rank}
 - Years: ${years} years experience
 - Branch: ${branch}
-- Certifications: ${certString}
+${crosswalkContext ? crosswalkContext + '\n' : ''}- Certifications: ${certString}
 - Education: ${eduString}
 - Experience entries: ${experienceCount}
 
@@ -260,7 +271,7 @@ Generate ONLY the headline, nothing else.`
 
 THEIR DATA:
 - Background: ${rank} with ${years} years in ${branch}
-- Certifications: ${certString}
+${crosswalkContext ? crosswalkContext + '\n' : ''}- Certifications: ${certString}
 - Education: ${eduString}
 - Skills: ${skills?.slice(0, 10).join(', ') || 'None listed'}
 

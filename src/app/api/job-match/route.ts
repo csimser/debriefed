@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import crypto from 'crypto'
 
 const anthropic = new Anthropic({
@@ -98,9 +99,21 @@ export async function POST(request: NextRequest) {
     // Pre-check usage limits before processing
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, email')
+      .select('subscription_tier, email, target_role, target_industry, rating_mos, branch')
       .eq('user_id', user.id)
       .single()
+
+    const targetRole = profile?.target_role || ''
+    const targetIndustry = profile?.target_industry || ''
+
+    // Build local crosswalk context for military occupation mapping
+    let crosswalkContext = ''
+    if (profile?.rating_mos) {
+      const localResult = getCivilianJobs(profile.rating_mos, profile?.branch)
+      if (localResult) {
+        crosswalkContext = `\nMilitary Occupation Crosswalk: ${profile.rating_mos} maps to ${localResult.civilian_titles.join(', ')} (Industries: ${localResult.industries?.join(', ') || 'Various'})\n`
+      }
+    }
 
     const { data: usage } = await supabaseAdmin
       .from('usage')
@@ -154,6 +167,9 @@ export async function POST(request: NextRequest) {
 
 === CANDIDATE PROFILE ===
 ${candidateProfile}
+${targetRole ? `Target Role: ${targetRole}` : ''}
+${targetIndustry ? `Target Industry: ${targetIndustry}` : ''}
+${crosswalkContext}
 
 === RESUME CONTENT ===
 ${resumeText}
@@ -398,7 +414,17 @@ BULLET REWRITE RULES (ABSOLUTELY MANDATORY - DO NOT VIOLATE):
 - The rewritten bullet must be a TRUE statement about what the candidate actually did
 - If the original says "managed maintenance schedules", you can say "coordinated maintenance operations" but NOT "led cybersecurity vulnerability assessments"
 - When in doubt, keep the original meaning intact and only improve phrasing
-- Lying on a resume is fraud - your rewrites must be HONEST`
+- Lying on a resume is fraud - your rewrites must be HONEST
+
+JOB-SPECIFIC TAILORING:
+- Frame bullet rewrites toward the specific job posting, not generic improvements
+- Use keywords from THIS job description, not generic industry terms
+- Consider the candidate's stated target role when suggesting improvements
+- Same experience should be framed differently for different role types:
+  * For admin roles: emphasize organization, coordination, documentation
+  * For operations roles: emphasize efficiency, process improvement, cost savings
+  * For management roles: emphasize leadership, budgets, team development
+  * For technical roles: emphasize technical skills, systems, problem-solving`
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',

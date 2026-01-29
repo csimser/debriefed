@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+import { translateTerm } from '@/lib/debriefed-token-saver/termLookup'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -27,7 +29,7 @@ export async function POST(request: NextRequest) {
     // Pre-check usage limits before processing
     const { data: userProfile } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, email')
+      .select('subscription_tier, email, rating_mos, branch')
       .eq('user_id', user.id)
       .single()
 
@@ -72,24 +74,87 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing summary text' }, { status: 400 })
     }
 
-    const prompt = `Refine this professional summary. Make it more compelling while keeping the same general message and length. Do not use clichés like "Results-driven" or "Detail-oriented professional." Keep military-to-civilian translations accurate.
+    // Build crosswalk context from local data (no AI call needed)
+    let crosswalkContext = ''
+    const mosCode = profile?.mos || userProfile?.rating_mos
+    const branchName = profile?.branch || userProfile?.branch
+    if (mosCode) {
+      const localResult = getCivilianJobs(mosCode, branchName)
+      if (localResult) {
+        crosswalkContext = `\nCivilian Role Context: ${mosCode} maps to ${localResult.civilian_titles.join(', ')} (Industries: ${localResult.industries?.join(', ') || 'Various'}). Use these civilian titles as reference for appropriate terminology.`
+      }
+    }
+
+    // Pre-translate known military terms in the summary
+    const knownTranslations: string[] = []
+    const words = summary.split(/\s+/)
+    for (const word of words) {
+      const cleaned = word.replace(/[^a-zA-Z0-9/-]/g, '')
+      if (cleaned.length >= 2) {
+        const translation = translateTerm(cleaned)
+        if (translation) {
+          knownTranslations.push(`"${cleaned}" → "${translation}"`)
+        }
+      }
+    }
+    const termContext = knownTranslations.length > 0
+      ? `\nKnown translations (apply these): ${knownTranslations.join(', ')}`
+      : ''
+
+    // Check if targeting defense/government industry
+    const targetIndustry = profile?.targetIndustry || 'Not specified'
+    const isDefenseIndustry = targetIndustry.toLowerCase().includes('defense') ||
+      targetIndustry.toLowerCase().includes('government') ||
+      targetIndustry.toLowerCase().includes('federal') ||
+      targetIndustry.toLowerCase().includes('contractor') ||
+      targetIndustry.toLowerCase().includes('dod')
+
+    // Build industry-specific guidance
+    let industryGuidance = ''
+    if (isDefenseIndustry) {
+      industryGuidance = `
+DEFENSE/GOVERNMENT INDUSTRY EXCEPTION:
+Since the target industry is ${targetIndustry}, military terminology IS acceptable.
+You may use military ranks, branch names, and service-related language.
+Emphasize: clearance level, defense programs, government contracting experience, mission accomplishment.`
+    } else {
+      industryGuidance = `
+MILITARY-TO-CIVILIAN TRANSLATION RULES (MANDATORY):
+The target industry is "${targetIndustry}" - write as if the person has always worked in this industry.
+- NEVER use military ranks (Petty Officer, Sergeant, Chief, etc.) — translate to civilian equivalents like "Senior Operations Leader", "Team Supervisor", "Department Manager"
+- NEVER use military terms like "deployment", "command", "MOS", "rating", "enlisted", "commissioned", "watch", "underway"
+- NEVER mention military branch names (U.S. Navy, Army, etc.)
+- ALWAYS translate to civilian equivalents:
+  * Military ranks → "Senior Leader", "Operations Manager", "Team Lead"
+  * "Led a division of sailors/soldiers/airmen" → "Led a team of employees" or "Led a team of professionals"
+  * "20 years naval service" → "20 years of experience"
+  * "deployment" → "field assignment" or "operational period"
+  * "command" → "organization" or "department"
+
+INDUSTRY-SPECIFIC KEYWORDS for ${targetIndustry}:
+- Use terminology and keywords that hiring managers in ${targetIndustry} expect to see
+- Frame all experience in terms relevant to ${targetIndustry}`
+    }
+
+    const prompt = `Refine this professional summary for someone targeting: ${targetIndustry}
 
 CURRENT SUMMARY:
 ${summary}
 
 CONTEXT:
-- ${profile?.rank || 'Veteran'} in the ${profile?.branch || 'military'}
-- ${profile?.yearsOfService || '10+'} years of service
-- Rating/MOS: ${profile?.mos || 'N/A'}
+- Years of experience: ${profile?.yearsOfService || '10+'}
 - Target Role: ${profile?.targetRole || 'Not specified'}
-- Target Industry: ${profile?.targetIndustry || 'Not specified'}
+- Target Industry: ${targetIndustry}
+${crosswalkContext}${termContext}
+${industryGuidance}
 
 REQUIREMENTS:
 1. Keep approximately the same length (2-4 sentences)
 2. Use strong, active voice
-3. Avoid clichés and buzzwords
+3. Avoid clichés and buzzwords like "Results-driven" or "Detail-oriented professional"
 4. Highlight leadership and transferable skills
 5. Make it sound confident but not arrogant
+6. Use industry-specific keywords for ${targetIndustry}
 
 Return ONLY the improved summary, nothing else.`
 

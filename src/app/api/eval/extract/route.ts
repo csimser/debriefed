@@ -6,6 +6,7 @@ import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
 import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
 import { hasCriticalPII, redactMinorPII } from '@/lib/pii-scanner'
+import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 
 const anthropic = new Anthropic()
 
@@ -88,6 +89,74 @@ AFTER: "Selected by senior leadership to serve as department supervisor, coordin
 BEFORE: "Maintained 100% CSMP compliance across 3 work centers--drove zone inspections achieving zone average of 98.5"
 AFTER: "Maintained 100% maintenance compliance across 3 departments, driving inspection scores to 98.5 average"`
 
+/**
+ * Get role-specific guidance for bullet translation
+ */
+function getTargetRoleGuidance(targetRole: string, targetIndustry: string): string {
+  const role = targetRole?.toLowerCase() || ''
+  const industry = targetIndustry?.toLowerCase() || ''
+
+  // Administrative / Support roles
+  if (role.includes('admin') || role.includes('support') || role.includes('assistant') ||
+      role.includes('coordinator') || role.includes('clerk') || role.includes('office')) {
+    return `- Emphasize: organization, coordination, documentation, scheduling, communication
+- Use terms like: coordinated, organized, scheduled, documented, maintained records, processed, facilitated
+- Translate military leadership as: office management, team coordination, process improvement
+- Focus on: efficiency, accuracy, attention to detail, customer service, multi-tasking`
+  }
+
+  // Operations / Logistics roles
+  if (role.includes('operations') || role.includes('logistics') || role.includes('supply') ||
+      role.includes('warehouse') || role.includes('manufacturing') || industry.includes('logistics')) {
+    return `- Emphasize: process optimization, supply chain, inventory management, workflow efficiency
+- Use terms like: streamlined, optimized, reduced costs, improved throughput, managed inventory
+- Translate military logistics as: supply chain management, vendor relations, asset tracking
+- Focus on: efficiency gains, cost savings, quality control, safety compliance`
+  }
+
+  // IT / Cybersecurity roles
+  if (role.includes('it') || role.includes('cyber') || role.includes('security') ||
+      role.includes('network') || role.includes('software') || role.includes('tech') ||
+      industry.includes('tech') || industry.includes('cyber')) {
+    return `- Emphasize: technical skills, security protocols, system administration, compliance
+- Use terms like: implemented, configured, secured, monitored, troubleshot, automated
+- Translate military systems as: network infrastructure, information systems, security operations
+- Focus on: uptime, security posture, incident response, technical certifications`
+  }
+
+  // Project Management roles
+  if (role.includes('project') || role.includes('program') || role.includes('manager')) {
+    return `- Emphasize: project delivery, stakeholder management, budget oversight, team leadership
+- Use terms like: delivered, managed, led cross-functional teams, tracked milestones, controlled budgets
+- Translate military operations as: project phases, resource allocation, risk management
+- Focus on: on-time delivery, scope management, team development, strategic planning`
+  }
+
+  // Healthcare roles
+  if (role.includes('health') || role.includes('medical') || role.includes('nurse') ||
+      industry.includes('health') || industry.includes('medical')) {
+    return `- Emphasize: patient care, compliance, safety protocols, medical terminology familiarity
+- Use terms like: administered, monitored, documented, ensured compliance, coordinated care
+- Translate military medical as: clinical operations, patient outcomes, regulatory compliance
+- Focus on: patient safety, quality of care, HIPAA awareness, emergency response`
+  }
+
+  // Human Resources roles
+  if (role.includes('hr') || role.includes('human resources') || role.includes('recruiting') ||
+      role.includes('talent')) {
+    return `- Emphasize: personnel management, training, policy compliance, employee development
+- Use terms like: recruited, trained, developed, counseled, managed performance, ensured compliance
+- Translate military personnel work as: talent management, employee relations, policy administration
+- Focus on: retention, development programs, conflict resolution, organizational culture`
+  }
+
+  // Default / General civilian
+  return `- Use general professional language suitable for any civilian employer
+- Emphasize: leadership, results, teamwork, problem-solving, accountability
+- Avoid IT/cyber-specific terminology unless the bullet specifically relates to technology
+- Focus on: measurable results, transferable skills, professional growth`
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -97,12 +166,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Pre-check usage limits before processing
+    // Pre-check usage limits and get target role for context-aware translations
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, email')
+      .select('subscription_tier, email, target_role, target_industry, rating_mos, branch')
       .eq('user_id', user.id)
       .single()
+
+    const targetRole = profile?.target_role || ''
+    const targetIndustry = profile?.target_industry || ''
+
+    // Build local crosswalk context for better translations (no AI call needed)
+    let crosswalkContext = ''
+    if (profile?.rating_mos) {
+      const localResult = getCivilianJobs(profile.rating_mos, profile?.branch)
+      if (localResult) {
+        crosswalkContext = `\n## OCCUPATION CONTEXT (from crosswalk data)
+The candidate's military specialty (${profile.rating_mos}) maps to these civilian roles: ${localResult.civilian_titles.join(', ')}
+Industries: ${localResult.industries?.join(', ') || 'Various'}
+Use this context to make translations more relevant to their career path.\n`
+      }
+    }
 
     const { data: usage } = await supabaseAdmin
       .from('usage')
@@ -163,6 +247,13 @@ export async function POST(request: NextRequest) {
               text: `${EXTRACTION_PROMPT}
 
 This is a ${evalType || 'military evaluation'} document.
+${crosswalkContext}${targetRole || targetIndustry ? `
+## TARGET CAREER CONTEXT
+The candidate is targeting: ${targetRole || 'general civilian'}${targetIndustry ? ` in ${targetIndustry}` : ''}.
+
+IMPORTANT: Tailor translations toward this target role:
+${getTargetRoleGuidance(targetRole, targetIndustry)}
+` : ''}
 
 ## OUTPUT FORMAT:
 Return a JSON object with this exact structure:

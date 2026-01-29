@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { CollapsibleSection } from '../CollapsibleSection'
 import { BulletAssignmentModal } from '../BulletAssignmentModal'
 import { CivilianTitleSuggestions } from '../CivilianTitleSuggestions'
+import { EvalUploadModal } from '../EvalUploadModal'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { createClient } from '@/lib/supabase/client'
@@ -18,6 +19,12 @@ interface ExtractedBullet {
   translated: string
   metrics: string[]
   skills: string[]
+}
+
+// Strip leading bullet characters from pasted/entered text
+function stripLeadingBulletChars(text: string): string {
+  // Remove leading whitespace, then bullet characters, then more whitespace
+  return text.replace(/^\s*[•\-\*\>\●\○\◆\◇\▸\▹\►\▻\➤\➢\→]+\s*/g, '').trim()
 }
 
 interface ExperienceSectionProps {
@@ -40,11 +47,14 @@ export function ExperienceSection({
   const [showBulletModal, setShowBulletModal] = useState(pendingBullets.length > 0)
   const [savingBullets, setSavingBullets] = useState(false)
   const [expandedExperiences, setExpandedExperiences] = useState<Set<string>>(new Set())
+  const [showEvalUploadForExp, setShowEvalUploadForExp] = useState<string | null>(null) // Experience ID to upload eval for
 
   const emptyExp = {
+    employment_type: 'military' as 'military' | 'civilian',
     job_title: '',
     civilian_title: '',
     organization: '',
+    company_name: '',
     location: '',
     city: '',
     state: '',
@@ -73,9 +83,11 @@ export function ExperienceSection({
     setEditingId(exp.id)
     setAdding(false)
     setFormExp({
+      employment_type: exp.employment_type || 'military',
       job_title: exp.job_title || '',
       civilian_title: exp.civilian_title || '',
       organization: exp.organization || '',
+      company_name: exp.company_name || exp.organization || '',
       location: exp.location || '',
       city: exp.city || '',
       state: exp.state || '',
@@ -151,14 +163,15 @@ export function ExperienceSection({
 
   // Save edited bullet
   const saveEditBullet = async (bulletId: string, experienceId: string) => {
-    if (!editingBulletText.trim()) {
+    const cleanedText = stripLeadingBulletChars(editingBulletText)
+    if (!cleanedText) {
       alert('Bullet text cannot be empty')
       return
     }
 
     const { error } = await supabase
       .from('experience_bullets')
-      .update({ translated_text: editingBulletText.trim() })
+      .update({ translated_text: cleanedText })
       .eq('id', bulletId)
 
     if (error) {
@@ -170,7 +183,7 @@ export function ExperienceSection({
           return {
             ...exp,
             bullets: exp.bullets?.map((b: any) =>
-              b.id === bulletId ? { ...b, translated_text: editingBulletText.trim() } : b
+              b.id === bulletId ? { ...b, translated_text: cleanedText } : b
             ) || []
           }
         }
@@ -201,6 +214,8 @@ export function ExperienceSection({
         original_text: '',
         translated_text: 'New bullet - click to edit',
         sort_order: maxOrder + 1,
+        status: 'accepted',
+        is_accepted: true,
       })
       .select()
       .single()
@@ -231,8 +246,12 @@ export function ExperienceSection({
   }, [pendingBullets])
 
   const handleSave = async () => {
-    if (!formExp.job_title || !formExp.organization) {
-      alert('Please fill in Job Title and Organization')
+    // Different validation based on employment type
+    const isCivilian = formExp.employment_type === 'civilian'
+    const orgField = isCivilian ? formExp.company_name : formExp.organization
+
+    if (!formExp.job_title || !orgField) {
+      alert(`Please fill in Job Title and ${isCivilian ? 'Company Name' : 'Organization'}`)
       return
     }
 
@@ -245,9 +264,12 @@ export function ExperienceSection({
     const parsedSalary = parseSalary(formExp.salaryDisplay || formExp.salary)
 
     const dataToSave = {
+      employment_type: formExp.employment_type,
       job_title: formExp.job_title,
-      civilian_title: formExp.civilian_title || formExp.job_title,
-      organization: formExp.organization,
+      // For civilian jobs, use job_title as civilian_title; for military, use civilian_title or job_title
+      civilian_title: isCivilian ? formExp.job_title : (formExp.civilian_title || formExp.job_title),
+      organization: isCivilian ? formExp.company_name : formExp.organization,
+      company_name: isCivilian ? formExp.company_name : null,
       location,
       city: formExp.city || null,
       state: formExp.state || null,
@@ -255,7 +277,8 @@ export function ExperienceSection({
       end_date: formExp.is_current ? null : formatDateForDB(formExp.end_date),
       is_current: formExp.is_current,
       hours_per_week: formExp.hours_per_week || 40,
-      grade_level: formExp.grade_level || null,
+      // Only save federal/military fields for military employment
+      grade_level: isCivilian ? null : (formExp.grade_level || null),
       supervisor_name: formExp.supervisor_name || null,
       supervisor_phone: formExp.supervisor_phone || null,
       supervisor_can_contact: formExp.supervisor_can_contact,
@@ -301,6 +324,38 @@ export function ExperienceSection({
     if (!error) onUpdate(experiences.filter(e => e.id !== id))
   }
 
+  // Move experience up or down in the list
+  const moveExperience = async (expId: string, direction: 'up' | 'down') => {
+    const currentIndex = experiences.findIndex(e => e.id === expId)
+    if (currentIndex === -1) return
+
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+    if (targetIndex < 0 || targetIndex >= experiences.length) return
+
+    // Swap the two experiences
+    const currentExp = experiences[currentIndex]
+    const targetExp = experiences[targetIndex]
+
+    // Update sort_order in database
+    const updates = [
+      supabase.from('experience').update({ sort_order: targetIndex }).eq('id', currentExp.id),
+      supabase.from('experience').update({ sort_order: currentIndex }).eq('id', targetExp.id),
+    ]
+
+    const results = await Promise.all(updates)
+    const hasError = results.some(r => r.error)
+
+    if (!hasError) {
+      // Swap in local state
+      const newExperiences = [...experiences]
+      newExperiences[currentIndex] = { ...targetExp, sort_order: currentIndex }
+      newExperiences[targetIndex] = { ...currentExp, sort_order: targetIndex }
+      onUpdate(newExperiences)
+    } else {
+      alert('Failed to reorder experiences')
+    }
+  }
+
   // Save bullets to an existing experience
   const saveBulletsToExperience = async (experienceId: string) => {
     setSavingBullets(true)
@@ -316,12 +371,14 @@ export function ExperienceSection({
 
       const startOrder = existingBullets?.[0]?.sort_order ?? -1
 
-      // Insert bullets
+      // Insert bullets (strip any leading bullet characters) with accepted status
       const bulletsToInsert = pendingBullets.map((b, idx) => ({
         experience_id: experienceId,
-        original_text: b.original,
-        translated_text: b.translated,
+        original_text: stripLeadingBulletChars(b.original),
+        translated_text: stripLeadingBulletChars(b.translated),
         sort_order: startOrder + idx + 1,
+        status: 'accepted',
+        is_accepted: true,
       }))
 
       const { error } = await supabase.from('experience_bullets').insert(bulletsToInsert)
@@ -387,12 +444,14 @@ export function ExperienceSection({
         return
       }
 
-      // Insert bullets
+      // Insert bullets (strip any leading bullet characters) with accepted status
       const bulletsToInsert = pendingBullets.map((b, idx) => ({
         experience_id: formExperience.id,
-        original_text: b.original,
-        translated_text: b.translated,
+        original_text: stripLeadingBulletChars(b.original),
+        translated_text: stripLeadingBulletChars(b.translated),
         sort_order: idx,
+        status: 'accepted',
+        is_accepted: true,
       }))
 
       const { error: bulletError } = await supabase.from('experience_bullets').insert(bulletsToInsert)
@@ -448,15 +507,22 @@ export function ExperienceSection({
           // If editing this experience, show the form instead
           if (isEditing) return null
 
+          const isCivilianExp = exp.employment_type === 'civilian'
+
           return (
             <Card key={exp.id} className="p-4 bg-bg-tertiary">
               <div className="flex justify-between items-start">
                 <div>
-                  <div className="font-heading font-bold">{exp.civilian_title || exp.job_title}</div>
-                  {exp.civilian_title && exp.civilian_title !== exp.job_title && (
+                  <div className="flex items-center gap-2">
+                    <span className="font-heading font-bold">{exp.civilian_title || exp.job_title}</span>
+                    <span className={`px-2 py-0.5 text-xs rounded ${isCivilianExp ? 'bg-blue-500/20 text-blue-400' : 'bg-gold/20 text-gold'}`}>
+                      {isCivilianExp ? 'Civilian' : 'Military'}
+                    </span>
+                  </div>
+                  {!isCivilianExp && exp.civilian_title && exp.civilian_title !== exp.job_title && (
                     <div className="text-text-dim text-xs">Military: {exp.job_title}</div>
                   )}
-                  <div className="text-text-muted text-sm">{exp.organization}</div>
+                  <div className="text-text-muted text-sm">{exp.company_name || exp.organization}</div>
                   {exp.location && <div className="text-text-dim text-xs">{exp.location}</div>}
                   <div className="text-text-dim text-xs mt-1">
                     {formatDateForInput(exp.start_date)} — {exp.is_current ? 'Present' : formatDateForInput(exp.end_date)}
@@ -470,6 +536,33 @@ export function ExperienceSection({
                   )}
                 </div>
                 <div className="flex items-center gap-1">
+                  {/* Move up/down buttons */}
+                  <div className="flex flex-col -my-1 mr-1">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => moveExperience(exp.id, 'up')}
+                      disabled={experiences.findIndex(e => e.id === exp.id) === 0}
+                      title="Move up"
+                      className="p-0.5 h-5"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => moveExperience(exp.id, 'down')}
+                      disabled={experiences.findIndex(e => e.id === exp.id) === experiences.length - 1}
+                      title="Move down"
+                      className="p-0.5 h-5"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </Button>
+                  </div>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -497,15 +590,27 @@ export function ExperienceSection({
                   <p className="text-xs text-text-dim uppercase tracking-wider">
                     Bullets ({bullets.length})
                   </p>
-                  <button
-                    onClick={() => addBulletToExperience(exp.id)}
-                    className="flex items-center gap-1 px-2 py-1 bg-gold/20 text-gold border border-gold/30 rounded hover:bg-gold/30 transition-colors text-xs"
-                  >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add Bullet
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowEvalUploadForExp(exp.id)}
+                      className="flex items-center gap-1 px-2 py-1 bg-status-green/20 text-status-green border border-status-green/30 rounded hover:bg-status-green/30 transition-colors text-xs"
+                      title="Import bullets from an evaluation document"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      Import Eval
+                    </button>
+                    <button
+                      onClick={() => addBulletToExperience(exp.id)}
+                      className="flex items-center gap-1 px-2 py-1 bg-gold/20 text-gold border border-gold/30 rounded hover:bg-gold/30 transition-colors text-xs"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add Bullet
+                    </button>
+                  </div>
                 </div>
                 {bullets.length > 0 ? (
                   <>
@@ -610,38 +715,73 @@ export function ExperienceSection({
                 Editing Experience
               </div>
             )}
+
+            {/* Employment Type Toggle */}
+            <div className="mb-6">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                Employment Type
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFormExp(prev => ({ ...prev, employment_type: 'military' }))}
+                  className={`flex-1 px-4 py-2 rounded text-sm font-semibold transition-all ${
+                    formExp.employment_type === 'military'
+                      ? 'bg-gold text-bg-primary'
+                      : 'bg-bg-secondary text-text-muted hover:text-text border border-border'
+                  }`}
+                >
+                  Military
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormExp(prev => ({ ...prev, employment_type: 'civilian' }))}
+                  className={`flex-1 px-4 py-2 rounded text-sm font-semibold transition-all ${
+                    formExp.employment_type === 'civilian'
+                      ? 'bg-gold text-bg-primary'
+                      : 'bg-bg-secondary text-text-muted hover:text-text border border-border'
+                  }`}
+                >
+                  Civilian
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Military Job Title */}
+              {/* Job Title */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  Job Title (Military) *
+                  {formExp.employment_type === 'military' ? 'Job Title (Military)' : 'Job Title'} *
                 </label>
                 <input
                   type="text"
                   value={formExp.job_title}
                   onChange={e => setFormExp({ ...formExp, job_title: e.target.value })}
-                  placeholder="e.g., Damage Controlman Chief"
+                  placeholder={formExp.employment_type === 'military' ? 'e.g., Damage Controlman Chief' : 'e.g., Project Manager'}
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
                 />
               </div>
 
-              {/* Organization */}
+              {/* Organization/Company */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  Organization *
+                  {formExp.employment_type === 'military' ? 'Organization' : 'Company Name'} *
                 </label>
                 <input
                   type="text"
-                  value={formExp.organization}
-                  onChange={e => setFormExp({ ...formExp, organization: e.target.value })}
-                  placeholder="e.g., USS Sterett (DDG-104)"
+                  value={formExp.employment_type === 'military' ? formExp.organization : formExp.company_name}
+                  onChange={e => setFormExp({
+                    ...formExp,
+                    [formExp.employment_type === 'military' ? 'organization' : 'company_name']: e.target.value
+                  })}
+                  placeholder={formExp.employment_type === 'military' ? 'e.g., USS Sterett (DDG-104)' : 'e.g., Acme Corporation'}
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
                 />
               </div>
             </div>
 
-            {/* Civilian Title Suggestions */}
-            {formExp.job_title.length >= 2 && (
+            {/* Civilian Title Suggestions - Only for military employment */}
+            {formExp.employment_type === 'military' && formExp.job_title.length >= 2 && (
               <div className="mt-4">
                 <CivilianTitleSuggestions
                   militaryTitle={formExp.job_title}
@@ -651,20 +791,22 @@ export function ExperienceSection({
               </div>
             )}
 
-            {/* Civilian Job Title */}
-            <div className="mt-4">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                Civilian Job Title (for resume)
-              </label>
-              <input
-                type="text"
-                value={formExp.civilian_title}
-                onChange={e => setFormExp({ ...formExp, civilian_title: e.target.value })}
-                placeholder="Select above or type your own"
-                className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
-              />
-              <p className="text-xs text-text-dim mt-1">This is what will appear on your resume</p>
-            </div>
+            {/* Civilian Job Title - Only for military employment */}
+            {formExp.employment_type === 'military' && (
+              <div className="mt-4">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                  Civilian Job Title (for resume)
+                </label>
+                <input
+                  type="text"
+                  value={formExp.civilian_title}
+                  onChange={e => setFormExp({ ...formExp, civilian_title: e.target.value })}
+                  placeholder="Select above or type your own"
+                  className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                />
+                <p className="text-xs text-text-dim mt-1">This is what will appear on your resume</p>
+              </div>
+            )}
 
             {/* City and State */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -748,7 +890,8 @@ export function ExperienceSection({
               </div>
             </div>
 
-            {/* Federal Resume Fields Toggle */}
+            {/* Federal Resume Fields Toggle - Only for military */}
+            {formExp.employment_type === 'military' && (
             <div className="mt-4 pt-4 border-t border-border/50">
               <button
                 type="button"
@@ -870,6 +1013,7 @@ export function ExperienceSection({
                 </div>
               )}
             </div>
+            )}
 
             <div className="flex gap-2 mt-6">
               <Button size="sm" onClick={handleSave}>
@@ -904,6 +1048,39 @@ export function ExperienceSection({
         onCreate={createExperienceWithBullets}
         saving={savingBullets}
       />
+
+      {/* Eval Upload Modal for specific experience */}
+      {showEvalUploadForExp && (
+        <EvalUploadModal
+          isOpen={true}
+          onClose={() => setShowEvalUploadForExp(null)}
+          onExtracted={() => {
+            // This won't be called since we have an experience pre-selected
+          }}
+          onBulletsSaved={async () => {
+            // Refresh experiences to show new bullets
+            const { data: updatedExp } = await supabase
+              .from('experience')
+              .select('*, experience_bullets(*)')
+              .eq('user_id', userId)
+              .order('sort_order')
+
+            if (updatedExp) {
+              onUpdate(updatedExp.map(exp => ({ ...exp, bullets: exp.experience_bullets })))
+            }
+            setShowEvalUploadForExp(null)
+          }}
+          userId={userId}
+          experiences={experiences.map(exp => ({
+            id: exp.id,
+            job_title: exp.job_title,
+            organization: exp.organization,
+            start_date: exp.start_date,
+            end_date: exp.end_date,
+          }))}
+          defaultExperienceId={showEvalUploadForExp}
+        />
+      )}
     </CollapsibleSection>
   )
 }

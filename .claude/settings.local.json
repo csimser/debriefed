@@ -20,7 +20,10 @@
       "Bash(npm run lint:*)",
       "Bash(/home/fiveftslim/projects/debriefedfinal/debriefed/src/app/\\\\\\(auth\\\\\\)/signup/page.tsx)",
       "Bash(npx next lint:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(npx next build:*)"
     ]
   }
 }

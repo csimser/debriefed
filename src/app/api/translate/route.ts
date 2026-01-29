@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { getOccupationContext } from '@/lib/onet-api'
 import { withAISecurity, secureSystemPrompt, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
+import { translateTerm } from '@/lib/debriefed-token-saver/termLookup'
+import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -37,22 +39,64 @@ export const POST = withAISecurity<TranslateInput>(
       return NextResponse.json({ error: 'Missing bullet text' }, { status: 400 })
     }
 
-    // Try to get O*NET occupation context for better translation
+    // Check if input is a single military term/acronym (not a full bullet)
+    // If so, return local translation immediately without AI call
+    const trimmed = bullet.trim()
+    if (trimmed.split(/\s+/).length <= 3) {
+      const localTranslation = translateTerm(trimmed)
+      if (localTranslation) {
+        return NextResponse.json({
+          original: bullet,
+          translated: localTranslation,
+          source: 'local',
+        })
+      }
+    }
+
+    // For full bullets, pre-translate known terms to provide context to AI
+    const words = trimmed.split(/\s+/)
+    const knownTranslations: string[] = []
+    for (const word of words) {
+      const cleaned = word.replace(/[^a-zA-Z0-9/-]/g, '')
+      if (cleaned.length >= 2) {
+        const translation = translateTerm(cleaned)
+        if (translation) {
+          knownTranslations.push(`${cleaned} = ${translation}`)
+        }
+      }
+    }
+    const termContext = knownTranslations.length > 0
+      ? `\nKnown term translations (use these): ${knownTranslations.join('; ')}`
+      : ''
+
+    // Try local crosswalk data first, then fall back to O*NET API
     let onetContext = ''
     if (context?.mos_rating) {
-      try {
-        const mosCode = context.mos_rating.split(/[\s(]/)[0].trim()
-        const branch = context?.branch || 'navy'
-        const occupationData = await getOccupationContext(mosCode, branch)
-        if (occupationData && occupationData.civilianTitles.length > 0) {
-          onetContext = `
+      const mosCode = context.mos_rating.split(/[\s(]/)[0].trim()
+      const branch = context?.branch || 'navy'
+
+      // Check local crosswalk data first (no API call needed)
+      const localResult = getCivilianJobs(mosCode, branch)
+      if (localResult) {
+        onetContext = `
+Civilian Occupation Context (from local crosswalk):
+- This military role maps to: ${localResult.civilian_titles.join(', ')}
+- Relevant industries: ${localResult.industries?.join(', ') || 'Various'}
+Use these civilian job titles as reference for appropriate terminology.`
+      } else {
+        // Fall back to O*NET API only if not found locally
+        try {
+          const occupationData = await getOccupationContext(mosCode, branch)
+          if (occupationData && occupationData.civilianTitles.length > 0) {
+            onetContext = `
 Civilian Occupation Context (from O*NET):
 - This military role maps to: ${occupationData.civilianTitles.join(', ')}
 Use these civilian job titles as reference for appropriate terminology.`
+          }
+        } catch (error) {
+          // Silently fail - O*NET enhancement is optional
+          console.log('O*NET context fetch failed, proceeding without')
         }
-      } catch (error) {
-        // Silently fail - O*NET enhancement is optional
-        console.log('O*NET context fetch failed, proceeding without')
       }
     }
 
@@ -62,7 +106,7 @@ Original: ${bullet}
 Branch: ${context?.branch || 'military'}
 Rank: ${context?.rank || ''}
 Target: ${context?.jobType || 'private'} sector
-${onetContext}
+${onetContext}${termContext}
 
 Rules:
 1. Remove ALL military jargon and acronyms

@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { withAISecurity, secureSystemPrompt, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+import { suggestVerbs } from '@/lib/debriefed-token-saver/verbSuggester'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
+
+const supabaseAdmin = createAdminClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 const BASE_SYSTEM_PROMPT = `You are a cover letter writer who helps military veterans transition to civilian careers. You write like a real person, not like AI.
 
@@ -368,6 +376,30 @@ export const POST = withAISecurity<CoverLetterInput>(
     const skillsList = skills?.slice(0, 10)?.join(', ') || ''
     const greeting = getGreeting(jobData.company, hiringManagerName)
 
+    // Look up crosswalk data for MOS-to-civilian context (no AI call needed)
+    let crosswalkContext = ''
+    try {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('rating_mos, branch')
+        .eq('user_id', ctx.userId)
+        .single()
+
+      if (profile?.rating_mos) {
+        const localResult = getCivilianJobs(profile.rating_mos, profile.branch || branch)
+        if (localResult) {
+          crosswalkContext = `\nCivilian Role Context: ${profile.rating_mos} maps to ${localResult.civilian_titles.join(', ')}. Frame experience toward these roles.`
+        }
+      }
+    } catch {
+      // Silently continue without crosswalk context
+    }
+
+    // Get suggested action verbs for the cover letter
+    const leadershipVerbs = suggestVerbs('leadership', 5)
+    const opsVerbs = suggestVerbs('operations', 5)
+    const verbSuggestions = `Preferred action verbs: ${[...leadershipVerbs, ...opsVerbs].join(', ')}`
+
     // Build refinement instructions
     const toneInstruction = toneInstructions[tone] || toneInstructions.professional
     const lengthInstruction = lengthInstructions[length] || lengthInstructions.standard
@@ -391,6 +423,8 @@ APPLICANT PROFILE:
 - Current/Recent role: ${currentRole}
 - Clearance: ${clearance || 'Not specified'}
 - Relevant skills: ${skillsList}
+${crosswalkContext}
+${verbSuggestions}
 - Key achievements:
 ${achievements.map((a: string, i: number) => `  ${i + 1}. ${a}`).join('\n')}
 

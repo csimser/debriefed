@@ -6,8 +6,8 @@ import { ExperienceSection } from './sections/ExperienceSection'
 import { EducationSection } from './sections/EducationSection'
 import { CertificationsSection } from './sections/CertificationsSection'
 import { SkillsSection } from './sections/SkillsSection'
-import { EvalUploadSection } from './sections/EvalUploadSection'
 import { ProfessionalSummaryEditor } from './ProfessionalSummaryEditor'
+import { ResumeImportModal } from './ResumeImportModal'
 import { AutosaveIndicator } from '@/components/AutosaveIndicator'
 import { useAutosave } from '@/hooks/useAutosave'
 import { InternationalPhoneInput } from '@/components/ui/InternationalPhoneInput'
@@ -94,6 +94,9 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
   // State for pending bullets from eval extraction
   const [pendingBullets, setPendingBullets] = useState<any[]>([])
 
+  // State for resume import modal
+  const [showResumeImport, setShowResumeImport] = useState(false)
+
   // Autosave function
   const saveProfile = useCallback(async (data: typeof profile) => {
     // Note: first_name, last_name, and email are locked after signup
@@ -172,6 +175,155 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
     setProfile(prev => ({ ...prev, [field]: value }))
   }
 
+  // Handle imported resume data
+  const handleResumeImport = async (data: any) => {
+    // Update profile fields (only if they're currently empty)
+    const updates: any = {}
+    if (data.contact) {
+      if (!profile.phone && data.contact.phone) updates.phone = data.contact.phone
+      if (!profile.city && data.contact.city) updates.city = data.contact.city
+      if (!profile.state && data.contact.state) updates.state = data.contact.state
+      if (!profile.linkedin_url && data.contact.linkedin_url) updates.linkedin_url = data.contact.linkedin_url
+    }
+    if (!profile.professional_summary && data.professional_summary) {
+      updates.professional_summary = data.professional_summary
+    }
+    if (data.military_info) {
+      if (!profile.branch && data.military_info.branch) updates.branch = data.military_info.branch
+      if (!profile.rank && data.military_info.rank) updates.rank = data.military_info.rank
+      if (!profile.years_of_service && data.military_info.years_of_service) {
+        updates.years_of_service = String(data.military_info.years_of_service)
+      }
+    }
+    if (!profile.clearance && data.clearance) {
+      const clearanceMap: Record<string, string> = {
+        'None': 'none',
+        'Confidential': 'confidential',
+        'Secret': 'secret',
+        'Top Secret': 'top_secret',
+        'TS/SCI': 'ts_sci',
+      }
+      updates.clearance = clearanceMap[data.clearance] || data.clearance.toLowerCase()
+    }
+
+    if (Object.keys(updates).length > 0) {
+      setProfile(prev => ({ ...prev, ...updates }))
+    }
+
+    // Import experiences
+    if (data.experiences && data.experiences.length > 0) {
+      const expToInsert = data.experiences.map((exp: any, idx: number) => ({
+        user_id: userId,
+        employment_type: exp.employment_type || 'civilian',
+        job_title: exp.job_title,
+        civilian_title: exp.civilian_title || exp.job_title,
+        organization: exp.organization,
+        company_name: exp.employment_type === 'civilian' ? exp.organization : null,
+        city: exp.city,
+        state: exp.state,
+        location: exp.city && exp.state ? `${exp.city}, ${exp.state}` : null,
+        start_date: exp.start_date,
+        end_date: exp.is_current ? null : exp.end_date,
+        is_current: exp.is_current || false,
+        hours_per_week: 40,
+        sort_order: idx,
+      }))
+
+      for (const exp of expToInsert) {
+        const bullets = data.experiences.find((e: any) => e.job_title === exp.job_title)?.bullets || []
+
+        const { data: insertedExp, error } = await supabase
+          .from('experience')
+          .insert(exp)
+          .select()
+          .single()
+
+        if (!error && insertedExp && bullets.length > 0) {
+          // Insert bullets for this experience
+          const bulletsToInsert = bullets.map((text: string, bIdx: number) => ({
+            experience_id: insertedExp.id,
+            original_text: text,
+            translated_text: text,
+            sort_order: bIdx,
+            status: 'accepted',
+            is_accepted: true,
+          }))
+          await supabase.from('experience_bullets').insert(bulletsToInsert)
+        }
+      }
+
+      // Refresh experiences
+      const { data: updatedExp } = await supabase
+        .from('experience')
+        .select('*, experience_bullets(*)')
+        .eq('user_id', userId)
+        .order('sort_order')
+
+      if (updatedExp) {
+        setExperiences(updatedExp.map(exp => ({ ...exp, bullets: exp.experience_bullets })))
+      }
+    }
+
+    // Import education
+    if (data.education && data.education.length > 0) {
+      const eduToInsert = data.education.map((edu: any, idx: number) => ({
+        user_id: userId,
+        degree: edu.degree,
+        field_of_study: edu.field_of_study,
+        institution: edu.institution,
+        graduation_date: edu.graduation_date,
+        gpa: edu.gpa,
+        sort_order: idx,
+      }))
+      await supabase.from('education').insert(eduToInsert)
+
+      const { data: updatedEdu } = await supabase
+        .from('education')
+        .select('*')
+        .eq('user_id', userId)
+        .order('sort_order')
+      if (updatedEdu) setEducation(updatedEdu)
+    }
+
+    // Import certifications
+    if (data.certifications && data.certifications.length > 0) {
+      const certsToInsert = data.certifications.map((cert: any, idx: number) => ({
+        user_id: userId,
+        name: cert.name,
+        issuer: cert.issuing_org,
+        date_earned: cert.date_earned,
+        expiration_date: cert.expiration_date,
+        sort_order: idx,
+      }))
+      await supabase.from('certifications').insert(certsToInsert)
+
+      const { data: updatedCerts } = await supabase
+        .from('certifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('sort_order')
+      if (updatedCerts) setCertifications(updatedCerts)
+    }
+
+    // Import skills
+    if (data.skills && data.skills.length > 0) {
+      const skillsToInsert = data.skills.map((skill: string, idx: number) => ({
+        user_id: userId,
+        name: skill,
+        proficiency_level: 3,
+        sort_order: idx,
+      }))
+      await supabase.from('skills').insert(skillsToInsert)
+
+      const { data: updatedSkills } = await supabase
+        .from('skills')
+        .select('*')
+        .eq('user_id', userId)
+        .order('sort_order')
+      if (updatedSkills) setSkills(updatedSkills)
+    }
+  }
+
   // Build profile data for summary template population
   const profileDataForTemplates = useMemo(() => {
     return buildProfileDataFromForm(profile, certifications)
@@ -186,6 +338,16 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
       <div className="flex items-center justify-between sticky top-4 z-10 bg-bg-primary/80 backdrop-blur-sm py-2 px-4 -mx-4 rounded-lg">
         <h2 className="font-heading text-lg font-bold text-gold uppercase tracking-wider">Profile</h2>
         <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setShowResumeImport(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-status-green/20 hover:bg-status-green/30 border border-status-green/30 text-status-green font-semibold rounded text-sm transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            Import Resume
+          </button>
           <AutosaveIndicator
             status={autosaveStatus.status}
             lastSaved={autosaveStatus.lastSaved}
@@ -494,27 +656,11 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
         onUpdate={setSkills}
       />
 
-      {/* Eval Upload Section */}
-      <EvalUploadSection
-        userId={userId}
-        experiences={experiences}
-        onBulletsExtracted={(bullets) => {
-          console.log('Bullets extracted:', bullets)
-          // Pass bullets to ExperienceSection via pending state
-          setPendingBullets(bullets)
-        }}
-        onExperiencesUpdated={async () => {
-          // Refresh experiences from database
-          const { data: updatedExp } = await supabase
-            .from('experience')
-            .select('*, experience_bullets(*)')
-            .eq('user_id', userId)
-            .order('sort_order')
-
-          if (updatedExp) {
-            setExperiences(updatedExp.map(exp => ({ ...exp, bullets: exp.experience_bullets })))
-          }
-        }}
+      {/* Resume Import Modal */}
+      <ResumeImportModal
+        isOpen={showResumeImport}
+        onClose={() => setShowResumeImport(false)}
+        onImport={handleResumeImport}
       />
     </div>
   )

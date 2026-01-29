@@ -8,6 +8,52 @@ import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
 import { translateMilitaryToCivilian, cleanEvalText } from '@/lib/constants/military-dictionary'
 import { hasCriticalPII } from '@/lib/pii-scanner'
+import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+
+/**
+ * Get role-specific guidance for bullet translation
+ */
+function getTargetRoleGuidance(targetRole: string, targetIndustry: string): string {
+  const role = targetRole?.toLowerCase() || ''
+  const industry = targetIndustry?.toLowerCase() || ''
+
+  // Administrative / Support roles
+  if (role.includes('admin') || role.includes('support') || role.includes('assistant') ||
+      role.includes('coordinator') || role.includes('clerk') || role.includes('office')) {
+    return `Emphasize: organization, coordination, documentation, scheduling, communication.
+Use terms like: coordinated, organized, scheduled, documented, maintained records, processed, facilitated.
+Avoid: IT/cyber terminology unless directly relevant.`
+  }
+
+  // Operations / Logistics roles
+  if (role.includes('operations') || role.includes('logistics') || role.includes('supply') ||
+      role.includes('warehouse') || role.includes('manufacturing') || industry.includes('logistics')) {
+    return `Emphasize: process optimization, supply chain, inventory management, workflow efficiency.
+Use terms like: streamlined, optimized, reduced costs, improved throughput, managed inventory.
+Focus on: efficiency gains, cost savings, quality control, safety compliance.`
+  }
+
+  // IT / Cybersecurity roles
+  if (role.includes('it') || role.includes('cyber') || role.includes('security') ||
+      role.includes('network') || role.includes('software') || role.includes('tech') ||
+      industry.includes('tech') || industry.includes('cyber')) {
+    return `Emphasize: technical skills, security protocols, system administration, compliance.
+Use terms like: implemented, configured, secured, monitored, troubleshot, automated.
+Focus on: uptime, security posture, incident response, technical certifications.`
+  }
+
+  // Project Management roles
+  if (role.includes('project') || role.includes('program') || role.includes('manager')) {
+    return `Emphasize: project delivery, stakeholder management, budget oversight, team leadership.
+Use terms like: delivered, managed, led cross-functional teams, tracked milestones, controlled budgets.
+Focus on: on-time delivery, scope management, team development, strategic planning.`
+  }
+
+  // Default / General civilian
+  return `Use general professional language suitable for any civilian employer.
+Emphasize: leadership, results, teamwork, problem-solving, accountability.
+Avoid defaulting to IT/cyber terminology - use context from the original bullet.`
+}
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -62,6 +108,9 @@ Replace these terms automatically:
 - "Quals/qualifications" → "certifications"
 - All acronyms must be spelled out or translated to civilian equivalents
 
+## TARGET ROLE GUIDANCE (if provided):
+{TARGET_ROLE_GUIDANCE}
+
 3. OUTPUT REQUIREMENTS:
 - Return ONLY clean, civilian-ready bullets
 - Each bullet must start with a strong action verb
@@ -85,12 +134,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Check usage limits before processing
+    // Check usage limits and get target role for context-aware translations
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, email')
+      .select('subscription_tier, email, target_role, target_industry, rating_mos, branch')
       .eq('user_id', user.id)
       .single()
+
+    const targetRole = profile?.target_role || ''
+    const targetIndustry = profile?.target_industry || ''
+
+    // Build local crosswalk context for better translations (no AI call needed)
+    let crosswalkContext = ''
+    if (profile?.rating_mos) {
+      const localResult = getCivilianJobs(profile.rating_mos, profile?.branch)
+      if (localResult) {
+        crosswalkContext = `\nOCCUPATION CONTEXT: The candidate's specialty (${profile.rating_mos}) maps to: ${localResult.civilian_titles.join(', ')}. Industries: ${localResult.industries?.join(', ') || 'Various'}.\n`
+      }
+    }
 
     const { data: usage } = await supabaseAdmin
       .from('usage')
@@ -127,10 +188,13 @@ export async function POST(request: NextRequest) {
     // Pre-clean the extracted text
     pdfText = cleanEvalText(pdfText)
 
-    // Use Claude to extract bullets
-    const prompt = `${EXTRACTION_PROMPT}
+    // Use Claude to extract bullets with target role guidance
+    const roleGuidance = getTargetRoleGuidance(targetRole, targetIndustry)
+    const promptWithGuidance = EXTRACTION_PROMPT.replace('{TARGET_ROLE_GUIDANCE}', roleGuidance)
+    const prompt = `${promptWithGuidance}
 
 DOCUMENT TYPE: ${getEvalTypeName(evalType)}
+${crosswalkContext}${targetRole ? `\nTARGET ROLE: ${targetRole}${targetIndustry ? ` in ${targetIndustry}` : ''}` : ''}
 
 DOCUMENT TEXT:
 ${pdfText.substring(0, 8000)} ${pdfText.length > 8000 ? '...[truncated]' : ''}
@@ -266,23 +330,43 @@ Return ONLY valid JSON, no markdown or explanation. If the text is too garbled t
   }
 }
 
-// Extract text from PDF using pdf-parse
+// Extract text from PDF using Claude's document API
 async function extractTextFromPDF(base64Data: string): Promise<string> {
-  try {
-    // Use require for pdf-parse (works better with Next.js)
-    const pdfParse = require('pdf-parse/lib/pdf-parse.js')
+  console.log('PDF base64 size:', base64Data.length, 'chars')
 
-    // Convert base64 to buffer
-    const buffer = Buffer.from(base64Data, 'base64')
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 4096,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: 'application/pdf',
+              data: base64Data,
+            },
+          },
+          {
+            type: 'text',
+            text: 'Extract ALL text from this military evaluation PDF. Return ONLY the raw text content exactly as it appears. Preserve all bullet points, rankings, dates, and performance comments. Do not summarize or modify - just extract the exact text.',
+          },
+        ],
+      },
+    ],
+  })
 
-    // Parse PDF
-    const data = await pdfParse(buffer)
+  const text = response.content[0].type === 'text' ? response.content[0].text : ''
 
-    return data.text || ''
-  } catch (error) {
-    console.error('PDF parse error:', error)
-    return ''
+  console.log('Extracted text length:', text.length)
+
+  if (!text || text.trim().length === 0) {
+    throw new Error('No text extracted - PDF may be scanned/image-based')
   }
+
+  return text
 }
 
 function getEvalTypeName(type: string): string {

@@ -136,7 +136,7 @@ export default async function DashboardPage() {
         <StatCard
           icon="◈"
           color="green"
-          value={(usage?.job_analyses || 0).toString()}
+          value={(usage?.job_matches || 0).toString()}
           label="Jobs Analyzed"
         />
         <StatCard
@@ -168,7 +168,7 @@ export default async function DashboardPage() {
             />
             <UsageMeter
               label="Job Match Analyses"
-              current={usage?.job_analyses || 0}
+              current={usage?.job_matches || 0}
               limit={limits.job_analyses}
             />
             <UsageMeter

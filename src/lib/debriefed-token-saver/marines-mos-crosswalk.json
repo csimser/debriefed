@@ -1,0 +1,666 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "branch": "Marine Corps",
+    "code_type": "MOS (Military Occupational Specialty)",
+    "description": "Marine Corps MOS to O*NET civilian occupation crosswalk",
+    "source": "O*NET Military Crosswalk + manual additions",
+    "last_updated": "2025-01-28"
+  },
+  "mos": {
+    "0111": {
+      "title": "Administrative Specialist",
+      "onet_codes": ["43-6014.00", "43-6011.00"],
+      "civilian_titles": ["Administrative Assistant", "Office Manager", "Executive Assistant"],
+      "industries": ["Any Industry"]
+    },
+    "0121": {
+      "title": "Personnel Clerk",
+      "onet_codes": ["43-4161.00", "13-1071.00"],
+      "civilian_titles": ["HR Clerk", "Personnel Specialist", "HR Assistant"],
+      "industries": ["Human Resources", "Any Industry"]
+    },
+    "0131": {
+      "title": "Logistics/Embarkation Specialist",
+      "onet_codes": ["43-5071.00", "13-1081.00"],
+      "civilian_titles": ["Logistics Coordinator", "Shipping Coordinator", "Supply Chain Specialist"],
+      "industries": ["Logistics", "Transportation", "Shipping"]
+    },
+    "0151": {
+      "title": "Administrative Clerk",
+      "onet_codes": ["43-9061.00", "43-6014.00"],
+      "civilian_titles": ["Administrative Clerk", "Office Clerk", "Records Clerk"],
+      "industries": ["Any Industry"]
+    },
+    "0161": {
+      "title": "Postal Clerk",
+      "onet_codes": ["43-5051.00", "43-5052.00"],
+      "civilian_titles": ["Postal Clerk", "Mail Handler", "Shipping Clerk"],
+      "industries": ["Postal Service", "Logistics", "Corporate"]
+    },
+    "0211": {
+      "title": "Counterintelligence/HUMINT Specialist",
+      "onet_codes": ["33-3021.06", "33-3021.01"],
+      "civilian_titles": ["Intelligence Analyst", "Counterintelligence Specialist", "Investigator"],
+      "industries": ["Intelligence", "Security", "Government"]
+    },
+    "0231": {
+      "title": "Intelligence Specialist",
+      "onet_codes": ["33-3021.06", "13-1199.02"],
+      "civilian_titles": ["Intelligence Analyst", "Research Analyst", "Threat Analyst"],
+      "industries": ["Intelligence", "Defense", "Finance", "Consulting"]
+    },
+    "0241": {
+      "title": "Imagery Analysis Specialist",
+      "onet_codes": ["19-4099.03", "15-1299.02"],
+      "civilian_titles": ["Imagery Analyst", "Geospatial Analyst", "GIS Analyst"],
+      "industries": ["Intelligence", "Government", "Technology"]
+    },
+    "0261": {
+      "title": "Geographic Intelligence Specialist",
+      "onet_codes": ["15-1299.02", "17-1021.00"],
+      "civilian_titles": ["GIS Analyst", "Cartographer", "Geospatial Specialist"],
+      "industries": ["Government", "Technology", "Engineering"]
+    },
+    "0311": {
+      "title": "Rifleman",
+      "onet_codes": ["33-3051.00", "33-9032.00"],
+      "civilian_titles": ["Security Specialist", "Law Enforcement Officer", "Security Consultant"],
+      "industries": ["Security", "Law Enforcement", "Government"]
+    },
+    "0313": {
+      "title": "Light Armored Reconnaissance Marine",
+      "onet_codes": ["33-3051.00", "53-7032.00"],
+      "civilian_titles": ["Security Specialist", "Surveillance Specialist", "Reconnaissance Specialist"],
+      "industries": ["Security", "Defense"]
+    },
+    "0317": {
+      "title": "Scout Sniper",
+      "onet_codes": ["33-3051.04", "33-9032.00"],
+      "civilian_titles": ["Security Specialist", "Tactical Instructor", "Law Enforcement Specialist"],
+      "industries": ["Security", "Law Enforcement", "Training"]
+    },
+    "0321": {
+      "title": "Reconnaissance Marine",
+      "onet_codes": ["33-3051.04", "33-9032.00"],
+      "civilian_titles": ["Security Consultant", "Special Operations Specialist"],
+      "industries": ["Security", "Defense", "Consulting"]
+    },
+    "0331": {
+      "title": "Machine Gunner",
+      "onet_codes": ["33-3051.00", "55-3011.00"],
+      "civilian_titles": ["Security Specialist", "Weapons Instructor", "Training Specialist"],
+      "industries": ["Security", "Defense", "Training"]
+    },
+    "0341": {
+      "title": "Mortarman",
+      "onet_codes": ["55-3011.00", "33-3051.00"],
+      "civilian_titles": ["Security Specialist", "Training Instructor", "Heavy Equipment Operator"],
+      "industries": ["Security", "Defense", "Training"]
+    },
+    "0351": {
+      "title": "Infantry Assault Marine",
+      "onet_codes": ["33-3051.00", "47-5031.00"],
+      "civilian_titles": ["Security Specialist", "Demolition Specialist"],
+      "industries": ["Security", "Construction", "Mining"]
+    },
+    "0352": {
+      "title": "Anti-Tank Missile Gunner",
+      "onet_codes": ["55-3011.00", "33-3051.00"],
+      "civilian_titles": ["Weapons Specialist", "Security Specialist", "Training Instructor"],
+      "industries": ["Defense", "Security"]
+    },
+    "0369": {
+      "title": "Infantry Unit Leader",
+      "onet_codes": ["11-1021.00", "33-1012.00"],
+      "civilian_titles": ["Operations Manager", "Security Manager", "Team Leader"],
+      "industries": ["Security", "Management", "Any Industry"]
+    },
+    "0411": {
+      "title": "Maintenance Management Specialist",
+      "onet_codes": ["11-3071.00", "43-5061.00"],
+      "civilian_titles": ["Maintenance Manager", "Production Planner", "Operations Supervisor"],
+      "industries": ["Manufacturing", "Logistics", "Facilities"]
+    },
+    "0431": {
+      "title": "Logistics/Embarkation Chief",
+      "onet_codes": ["11-3071.00", "13-1081.00"],
+      "civilian_titles": ["Logistics Manager", "Supply Chain Manager", "Distribution Manager"],
+      "industries": ["Logistics", "Supply Chain", "Transportation"]
+    },
+    "0481": {
+      "title": "Landing Support Specialist",
+      "onet_codes": ["53-7062.00", "43-5071.00"],
+      "civilian_titles": ["Cargo Handler", "Logistics Coordinator", "Freight Specialist"],
+      "industries": ["Logistics", "Shipping", "Transportation"]
+    },
+    "0612": {
+      "title": "Field Wireman",
+      "onet_codes": ["49-9052.00", "49-2022.00"],
+      "civilian_titles": ["Cable Technician", "Telecommunications Technician", "Network Installer"],
+      "industries": ["Telecommunications", "Construction"]
+    },
+    "0621": {
+      "title": "Transmission Systems Operator",
+      "onet_codes": ["49-2022.00", "15-1232.00"],
+      "civilian_titles": ["Radio Operator", "Communications Technician", "Network Technician"],
+      "industries": ["Telecommunications", "Broadcasting"]
+    },
+    "0627": {
+      "title": "Satellite Communications Operator",
+      "onet_codes": ["49-2022.00", "17-3023.00"],
+      "civilian_titles": ["SATCOM Technician", "Satellite Communications Operator", "RF Technician"],
+      "industries": ["Telecommunications", "Aerospace", "Defense"]
+    },
+    "0631": {
+      "title": "Network Administrator",
+      "onet_codes": ["15-1231.00", "15-1232.00"],
+      "civilian_titles": ["Network Administrator", "Systems Administrator", "Network Engineer"],
+      "industries": ["Technology", "Any Industry"]
+    },
+    "0651": {
+      "title": "Cyber Network Operator",
+      "onet_codes": ["15-1231.00", "15-1212.00"],
+      "civilian_titles": ["Network Engineer", "Cybersecurity Specialist", "Security Analyst"],
+      "industries": ["Technology", "Cybersecurity"]
+    },
+    "0671": {
+      "title": "Data Systems Administrator",
+      "onet_codes": ["15-1244.00", "15-1231.00"],
+      "civilian_titles": ["Database Administrator", "Data Systems Specialist", "Systems Administrator"],
+      "industries": ["Technology", "Any Industry"]
+    },
+    "0689": {
+      "title": "Cyber Security Technician",
+      "onet_codes": ["15-1212.00", "15-1299.09"],
+      "civilian_titles": ["Cybersecurity Analyst", "Security Technician", "SOC Analyst"],
+      "industries": ["Cybersecurity", "Technology", "Finance"]
+    },
+    "0811": {
+      "title": "Field Artillery Cannoneer",
+      "onet_codes": ["55-3011.00", "53-7032.00"],
+      "civilian_titles": ["Heavy Equipment Operator", "Security Specialist"],
+      "industries": ["Defense", "Construction"]
+    },
+    "0842": {
+      "title": "Field Artillery Radar Operator",
+      "onet_codes": ["17-3023.00", "49-2022.00"],
+      "civilian_titles": ["Radar Technician", "Electronics Technician", "Surveillance Operator"],
+      "industries": ["Defense", "Aviation"]
+    },
+    "0861": {
+      "title": "Fire Support Marine",
+      "onet_codes": ["17-3031.00", "33-3051.00"],
+      "civilian_titles": ["Operations Coordinator", "Communications Specialist"],
+      "industries": ["Defense", "Security"]
+    },
+    "1141": {
+      "title": "Electrician",
+      "onet_codes": ["47-2111.00", "49-9051.00"],
+      "civilian_titles": ["Electrician", "Electrical Technician", "Industrial Electrician"],
+      "industries": ["Construction", "Utilities", "Manufacturing"]
+    },
+    "1142": {
+      "title": "Electrical Equipment Repair Specialist",
+      "onet_codes": ["49-2022.00", "49-9051.00"],
+      "civilian_titles": ["Electronics Technician", "Electrical Repair Technician"],
+      "industries": ["Electronics", "Manufacturing"]
+    },
+    "1161": {
+      "title": "Refrigeration and Air Conditioning Technician",
+      "onet_codes": ["49-9021.00", "49-9021.01"],
+      "civilian_titles": ["HVAC Technician", "Refrigeration Technician", "HVAC Mechanic"],
+      "industries": ["HVAC", "Facilities", "Construction"]
+    },
+    "1171": {
+      "title": "Water Support Technician",
+      "onet_codes": ["51-8031.00", "47-2152.00"],
+      "civilian_titles": ["Water Treatment Operator", "Utilities Technician"],
+      "industries": ["Utilities", "Municipal", "Environmental"]
+    },
+    "1316": {
+      "title": "Metal Worker",
+      "onet_codes": ["51-4121.00", "47-2221.00"],
+      "civilian_titles": ["Welder", "Sheet Metal Worker", "Metal Fabricator"],
+      "industries": ["Manufacturing", "Construction"]
+    },
+    "1341": {
+      "title": "Heavy Equipment Mechanic",
+      "onet_codes": ["49-3042.00", "49-3031.00"],
+      "civilian_titles": ["Heavy Equipment Mechanic", "Diesel Mechanic"],
+      "industries": ["Construction", "Mining", "Transportation"]
+    },
+    "1345": {
+      "title": "Heavy Equipment Operator",
+      "onet_codes": ["47-2073.00", "53-7032.00"],
+      "civilian_titles": ["Heavy Equipment Operator", "Bulldozer Operator", "Crane Operator"],
+      "industries": ["Construction", "Mining", "Government"]
+    },
+    "1371": {
+      "title": "Combat Engineer",
+      "onet_codes": ["47-2061.00", "47-4011.00"],
+      "civilian_titles": ["Construction Supervisor", "Construction Manager", "Demolition Specialist"],
+      "industries": ["Construction", "Government"]
+    },
+    "1391": {
+      "title": "Bulk Fuel Specialist",
+      "onet_codes": ["53-7072.00", "51-9199.00"],
+      "civilian_titles": ["Fuel Distribution Specialist", "Petroleum Technician", "Terminal Operator"],
+      "industries": ["Oil & Gas", "Transportation"]
+    },
+    "1812": {
+      "title": "Tank Crewman",
+      "onet_codes": ["53-7032.00", "33-3051.00"],
+      "civilian_titles": ["Heavy Equipment Operator", "Security Specialist"],
+      "industries": ["Security", "Construction", "Mining"]
+    },
+    "1833": {
+      "title": "Amphibious Assault Vehicle Crewman",
+      "onet_codes": ["53-5022.00", "53-7032.00"],
+      "civilian_titles": ["Vehicle Operator", "Equipment Operator", "Marine Operator"],
+      "industries": ["Transportation", "Marine"]
+    },
+    "2111": {
+      "title": "Small Arms Repairer/Technician",
+      "onet_codes": ["49-9099.00", "51-9199.00"],
+      "civilian_titles": ["Gunsmith", "Armorer", "Weapons Technician"],
+      "industries": ["Firearms", "Security", "Sporting Goods"]
+    },
+    "2141": {
+      "title": "Assault Amphibious Vehicle Repairer",
+      "onet_codes": ["49-3042.00", "49-3031.00"],
+      "civilian_titles": ["Heavy Equipment Mechanic", "Vehicle Technician", "Diesel Mechanic"],
+      "industries": ["Marine", "Transportation"]
+    },
+    "2146": {
+      "title": "Main Battle Tank Repairer",
+      "onet_codes": ["49-3042.00", "49-3031.00"],
+      "civilian_titles": ["Heavy Equipment Mechanic", "Track Vehicle Technician"],
+      "industries": ["Defense", "Mining", "Construction"]
+    },
+    "2147": {
+      "title": "Light Armored Vehicle Repairer",
+      "onet_codes": ["49-3042.00", "49-3023.00"],
+      "civilian_titles": ["Vehicle Mechanic", "Automotive Technician"],
+      "industries": ["Automotive", "Defense"]
+    },
+    "2311": {
+      "title": "Ammunition Technician",
+      "onet_codes": ["55-3011.00", "43-5071.00"],
+      "civilian_titles": ["Ammunition Handler", "Ordnance Specialist", "Warehouse Specialist"],
+      "industries": ["Defense", "Security", "Warehousing"]
+    },
+    "2336": {
+      "title": "Explosive Ordnance Disposal Technician",
+      "onet_codes": ["33-3031.00", "33-2011.00"],
+      "civilian_titles": ["EOD Technician", "Bomb Technician", "Explosive Safety Specialist"],
+      "industries": ["Law Enforcement", "Security", "Defense"]
+    },
+    "2621": {
+      "title": "Special Communications Signals Collection Operator",
+      "onet_codes": ["33-3021.06", "15-1299.09"],
+      "civilian_titles": ["SIGINT Analyst", "Communications Analyst", "Intelligence Analyst"],
+      "industries": ["Intelligence", "Defense"]
+    },
+    "2631": {
+      "title": "Electronic Intelligence Intercept Operator",
+      "onet_codes": ["33-3021.06", "17-3023.00"],
+      "civilian_titles": ["ELINT Analyst", "Electronic Warfare Analyst"],
+      "industries": ["Intelligence", "Defense"]
+    },
+    "2651": {
+      "title": "Special Intelligence System Administrator",
+      "onet_codes": ["15-1231.00", "15-1212.00"],
+      "civilian_titles": ["Systems Administrator", "Security Administrator", "Network Administrator"],
+      "industries": ["Technology", "Intelligence", "Defense"]
+    },
+    "2671": {
+      "title": "Middle East Cryptologic Linguist",
+      "onet_codes": ["27-3091.00", "33-3021.06"],
+      "civilian_titles": ["Arabic Linguist", "Translator", "Intelligence Analyst"],
+      "industries": ["Intelligence", "Government", "Translation"]
+    },
+    "2673": {
+      "title": "Asian Pacific Cryptologic Linguist",
+      "onet_codes": ["27-3091.00", "33-3021.06"],
+      "civilian_titles": ["Chinese/Korean Linguist", "Translator", "Intelligence Analyst"],
+      "industries": ["Intelligence", "Government", "Translation"]
+    },
+    "2674": {
+      "title": "European Cryptologic Linguist",
+      "onet_codes": ["27-3091.00", "33-3021.06"],
+      "civilian_titles": ["Russian Linguist", "Translator", "Intelligence Analyst"],
+      "industries": ["Intelligence", "Government", "Translation"]
+    },
+    "2841": {
+      "title": "Ground Radio Repairer",
+      "onet_codes": ["49-2022.00", "49-2094.00"],
+      "civilian_titles": ["Radio Technician", "Electronics Repair Technician"],
+      "industries": ["Telecommunications", "Electronics"]
+    },
+    "2862": {
+      "title": "Electronics Maintenance Technician",
+      "onet_codes": ["49-2022.00", "17-3023.00"],
+      "civilian_titles": ["Electronics Technician", "Maintenance Technician", "Field Service Technician"],
+      "industries": ["Electronics", "Manufacturing"]
+    },
+    "2871": {
+      "title": "Test Measurement and Diagnostic Equipment Technician",
+      "onet_codes": ["17-3023.00", "49-9061.00"],
+      "civilian_titles": ["Calibration Technician", "TMDE Technician", "Metrology Technician"],
+      "industries": ["Manufacturing", "Aerospace", "Quality Control"]
+    },
+    "3043": {
+      "title": "Supply Administration and Operations Clerk",
+      "onet_codes": ["43-5071.00", "43-5061.00"],
+      "civilian_titles": ["Supply Clerk", "Inventory Specialist", "Logistics Clerk"],
+      "industries": ["Logistics", "Warehousing", "Any Industry"]
+    },
+    "3051": {
+      "title": "Warehouse Clerk",
+      "onet_codes": ["43-5081.00", "53-7062.00"],
+      "civilian_titles": ["Warehouse Clerk", "Stock Clerk", "Material Handler"],
+      "industries": ["Warehousing", "Retail", "Logistics"]
+    },
+    "3052": {
+      "title": "Packaging Specialist",
+      "onet_codes": ["43-5081.00", "51-9111.00"],
+      "civilian_titles": ["Packaging Specialist", "Shipping Specialist"],
+      "industries": ["Logistics", "Manufacturing", "Warehousing"]
+    },
+    "3112": {
+      "title": "Distribution Management Specialist",
+      "onet_codes": ["43-5071.00", "11-3071.00"],
+      "civilian_titles": ["Distribution Manager", "Logistics Coordinator", "Inventory Manager"],
+      "industries": ["Logistics", "Distribution", "Retail"]
+    },
+    "3381": {
+      "title": "Food Service Specialist",
+      "onet_codes": ["35-2014.00", "35-2012.00"],
+      "civilian_titles": ["Chef", "Cook", "Food Service Supervisor", "Kitchen Manager"],
+      "industries": ["Food Service", "Hospitality"]
+    },
+    "3432": {
+      "title": "Finance Technician",
+      "onet_codes": ["43-3031.00", "43-3051.00"],
+      "civilian_titles": ["Payroll Technician", "Accounting Clerk", "Bookkeeper"],
+      "industries": ["Finance", "Accounting", "Any Industry"]
+    },
+    "3451": {
+      "title": "Financial Management Resource Analyst",
+      "onet_codes": ["13-2011.00", "13-2031.00"],
+      "civilian_titles": ["Budget Analyst", "Financial Analyst", "Accountant"],
+      "industries": ["Finance", "Government", "Corporate"]
+    },
+    "3529": {
+      "title": "Motor Transport Operator",
+      "onet_codes": ["53-3032.00", "53-3033.00"],
+      "civilian_titles": ["Truck Driver", "CDL Driver", "Fleet Driver"],
+      "industries": ["Transportation", "Logistics"]
+    },
+    "3531": {
+      "title": "Motor Vehicle Operator",
+      "onet_codes": ["53-3032.00", "53-3033.00"],
+      "civilian_titles": ["Commercial Driver", "Delivery Driver", "Vehicle Operator"],
+      "industries": ["Transportation", "Logistics", "Delivery"]
+    },
+    "3537": {
+      "title": "Motor Transport Operations Chief",
+      "onet_codes": ["11-3071.00", "53-1031.00"],
+      "civilian_titles": ["Transportation Manager", "Fleet Manager", "Logistics Manager"],
+      "industries": ["Transportation", "Logistics"]
+    },
+    "4421": {
+      "title": "Legal Services Specialist",
+      "onet_codes": ["23-2011.00", "43-4031.00"],
+      "civilian_titles": ["Paralegal", "Legal Assistant", "Legal Secretary"],
+      "industries": ["Legal", "Government"]
+    },
+    "4612": {
+      "title": "Combat Correspondent",
+      "onet_codes": ["27-3022.00", "27-3091.00"],
+      "civilian_titles": ["Journalist", "Reporter", "Public Affairs Specialist"],
+      "industries": ["Media", "News", "Communications"]
+    },
+    "4641": {
+      "title": "Combat Photographer",
+      "onet_codes": ["27-4021.00", "27-4031.00"],
+      "civilian_titles": ["Photographer", "Photojournalist", "Videographer"],
+      "industries": ["Media", "News", "Entertainment"]
+    },
+    "5711": {
+      "title": "Nuclear, Biological, and Chemical Defense Specialist",
+      "onet_codes": ["33-2011.00", "19-4099.00"],
+      "civilian_titles": ["HAZMAT Technician", "CBRN Specialist", "Safety Specialist"],
+      "industries": ["Environmental", "Safety", "Emergency Response"]
+    },
+    "5811": {
+      "title": "Military Police",
+      "onet_codes": ["33-3051.00", "33-3012.00"],
+      "civilian_titles": ["Police Officer", "Security Officer", "Corrections Officer"],
+      "industries": ["Law Enforcement", "Security", "Government"]
+    },
+    "5831": {
+      "title": "Correctional Specialist",
+      "onet_codes": ["33-3012.00", "33-9032.00"],
+      "civilian_titles": ["Corrections Officer", "Detention Officer"],
+      "industries": ["Corrections", "Law Enforcement"]
+    },
+    "6046": {
+      "title": "Aircraft Intermediate Level Structures Mechanic",
+      "onet_codes": ["49-3011.00", "51-2011.00"],
+      "civilian_titles": ["Aircraft Structural Mechanic", "Sheet Metal Mechanic"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6048": {
+      "title": "Flight Equipment Technician",
+      "onet_codes": ["49-9099.00", "51-6093.00"],
+      "civilian_titles": ["Life Support Technician", "Flight Equipment Specialist"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6062": {
+      "title": "Aircraft Intermediate Level Electrical Mechanic",
+      "onet_codes": ["49-2091.00", "49-2094.00"],
+      "civilian_titles": ["Aircraft Electrician", "Avionics Technician"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6092": {
+      "title": "Aircraft Intermediate Level Avionics Technician",
+      "onet_codes": ["49-2091.00", "49-2094.00"],
+      "civilian_titles": ["Avionics Technician", "Aircraft Electronics Technician"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6111": {
+      "title": "Helicopter/Tiltrotor Mechanic",
+      "onet_codes": ["49-3011.00"],
+      "civilian_titles": ["Helicopter Mechanic", "Rotor Wing Technician", "Aircraft Mechanic"],
+      "industries": ["Aviation", "Aerospace", "Emergency Services"]
+    },
+    "6116": {
+      "title": "Tiltrotor Mechanic MV-22",
+      "onet_codes": ["49-3011.00", "49-2091.00"],
+      "civilian_titles": ["Tiltrotor Mechanic", "Aircraft Mechanic", "Aviation Technician"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6124": {
+      "title": "CH-53 Helicopter Mechanic",
+      "onet_codes": ["49-3011.00"],
+      "civilian_titles": ["Heavy Lift Helicopter Mechanic", "Aircraft Mechanic"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6154": {
+      "title": "Helicopter Power Plants Mechanic CH-53",
+      "onet_codes": ["49-3011.00", "51-2011.00"],
+      "civilian_titles": ["Jet Engine Mechanic", "Powerplant Technician", "Turbine Mechanic"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6156": {
+      "title": "Tiltrotor Power Plants Mechanic MV-22",
+      "onet_codes": ["49-3011.00", "51-2011.00"],
+      "civilian_titles": ["Powerplant Mechanic", "Turbine Mechanic"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6173": {
+      "title": "Helicopter Crew Chief",
+      "onet_codes": ["49-3011.00", "53-2012.00"],
+      "civilian_titles": ["Helicopter Crew Chief", "Flight Mechanic", "Aircraft Mechanic"],
+      "industries": ["Aviation", "Emergency Services", "Oil & Gas"]
+    },
+    "6212": {
+      "title": "Fixed-Wing Aircraft Mechanic",
+      "onet_codes": ["49-3011.00", "49-2091.00"],
+      "civilian_titles": ["Aircraft Mechanic", "A&P Mechanic", "Aviation Maintenance Technician"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6252": {
+      "title": "Fixed-Wing Aircraft Power Plants Mechanic",
+      "onet_codes": ["49-3011.00", "51-2011.00"],
+      "civilian_titles": ["Jet Engine Mechanic", "Powerplant Technician", "A&P Mechanic"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6276": {
+      "title": "Fixed-Wing Aircraft Crew Chief",
+      "onet_codes": ["49-3011.00", "53-2012.00"],
+      "civilian_titles": ["Crew Chief", "Line Mechanic", "Lead Technician"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6311": {
+      "title": "Aircraft Communications/Navigation Systems Technician",
+      "onet_codes": ["49-2091.00", "49-2094.00"],
+      "civilian_titles": ["Avionics Technician", "Navigation Systems Technician"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6314": {
+      "title": "Unmanned Aircraft System Avionics Technician",
+      "onet_codes": ["49-2091.00", "49-2094.00"],
+      "civilian_titles": ["UAS Technician", "Drone Technician", "Avionics Technician"],
+      "industries": ["Aviation", "Aerospace", "Technology"]
+    },
+    "6317": {
+      "title": "Aircraft Communications/Navigation/Radar Systems Technician",
+      "onet_codes": ["49-2091.00", "17-3023.00"],
+      "civilian_titles": ["Radar Technician", "Avionics Technician"],
+      "industries": ["Aviation", "Aerospace", "Defense"]
+    },
+    "6336": {
+      "title": "Aircraft Electrical Systems Technician",
+      "onet_codes": ["49-2091.00", "49-2094.00"],
+      "civilian_titles": ["Aircraft Electrician", "Aviation Electrician"],
+      "industries": ["Aviation", "Aerospace"]
+    },
+    "6423": {
+      "title": "Aviation Operations Specialist",
+      "onet_codes": ["43-5032.00", "53-2022.00"],
+      "civilian_titles": ["Flight Operations Coordinator", "Aviation Dispatcher"],
+      "industries": ["Aviation", "Transportation"]
+    },
+    "6461": {
+      "title": "Aviation Ordnance Technician",
+      "onet_codes": ["55-3011.00", "49-9099.00"],
+      "civilian_titles": ["Ordnance Technician", "Weapons Specialist"],
+      "industries": ["Defense", "Aviation"]
+    },
+    "6483": {
+      "title": "Aircraft Firefighting and Rescue Specialist",
+      "onet_codes": ["33-2011.00", "33-2011.01"],
+      "civilian_titles": ["Aircraft Rescue Firefighter", "ARFF Specialist", "Airport Firefighter"],
+      "industries": ["Fire Service", "Aviation"]
+    },
+    "6492": {
+      "title": "Aviation Precision Measurement Equipment Technician",
+      "onet_codes": ["17-3023.00", "49-9061.00"],
+      "civilian_titles": ["Calibration Technician", "PMEL Technician", "Metrology Technician"],
+      "industries": ["Aviation", "Manufacturing", "Quality Control"]
+    },
+    "6499": {
+      "title": "Unmanned Aerial Vehicle Operator",
+      "onet_codes": ["53-6051.07", "17-3023.00"],
+      "civilian_titles": ["Drone Pilot", "UAV Operator", "UAS Pilot", "Remote Pilot"],
+      "industries": ["Aviation", "Technology", "Agriculture", "Film"]
+    },
+    "6541": {
+      "title": "Aviation Ordnance Systems Technician",
+      "onet_codes": ["49-9099.00", "55-3011.00"],
+      "civilian_titles": ["Weapons Systems Technician", "Ordnance Systems Specialist"],
+      "industries": ["Defense", "Aerospace"]
+    },
+    "6672": {
+      "title": "Aviation Supply Clerk",
+      "onet_codes": ["43-5071.00", "43-5061.00"],
+      "civilian_titles": ["Supply Clerk", "Aviation Supply Specialist", "Inventory Specialist"],
+      "industries": ["Aviation", "Logistics"]
+    },
+    "6694": {
+      "title": "Aviation Logistics Information Management Systems Specialist",
+      "onet_codes": ["15-1232.00", "43-5061.00"],
+      "civilian_titles": ["Logistics Systems Specialist", "IT Specialist", "Supply Chain Analyst"],
+      "industries": ["Aviation", "Technology", "Logistics"]
+    },
+    "7011": {
+      "title": "Expeditionary Airfield Systems Technician",
+      "onet_codes": ["47-4051.00", "49-9051.00"],
+      "civilian_titles": ["Airfield Lighting Technician", "Electrical Technician"],
+      "industries": ["Aviation", "Utilities"]
+    },
+    "7041": {
+      "title": "Aviation Operations Specialist",
+      "onet_codes": ["53-2022.00", "43-5032.00"],
+      "civilian_titles": ["Air Traffic Controller", "Flight Operations Specialist"],
+      "industries": ["Aviation", "Transportation"]
+    },
+    "7051": {
+      "title": "Aircraft Rescue and Firefighting Specialist",
+      "onet_codes": ["33-2011.00", "33-2011.01"],
+      "civilian_titles": ["Aircraft Rescue Firefighter", "ARFF Specialist", "Fire Captain"],
+      "industries": ["Fire Service", "Aviation", "Government"]
+    },
+    "7212": {
+      "title": "Low Altitude Air Defense Gunner",
+      "onet_codes": ["55-3011.00", "17-3023.00"],
+      "civilian_titles": ["Air Defense Operator", "Radar Operator", "Security Specialist"],
+      "industries": ["Defense", "Security"]
+    },
+    "7234": {
+      "title": "Air Control Electronics Operator",
+      "onet_codes": ["53-2022.00", "17-3023.00"],
+      "civilian_titles": ["Air Traffic Controller", "Radar Operator"],
+      "industries": ["Aviation", "Defense"]
+    },
+    "7251": {
+      "title": "Air Traffic Controller",
+      "onet_codes": ["53-2021.00"],
+      "civilian_titles": ["Air Traffic Controller", "ATC Specialist", "Tower Controller"],
+      "industries": ["Aviation", "Transportation", "Government"]
+    },
+    "7252": {
+      "title": "Approach Controller",
+      "onet_codes": ["53-2021.00"],
+      "civilian_titles": ["Air Traffic Controller", "Approach Controller", "TRACON Controller"],
+      "industries": ["Aviation", "Government"]
+    },
+    "7314": {
+      "title": "Unmanned Aerial Vehicle Commander",
+      "onet_codes": ["53-6051.07", "11-3071.00"],
+      "civilian_titles": ["UAV Program Manager", "Drone Operations Manager", "UAS Director"],
+      "industries": ["Aviation", "Technology", "Defense"]
+    },
+    "8411": {
+      "title": "Recruiter",
+      "onet_codes": ["13-1071.00", "41-3099.00"],
+      "civilian_titles": ["Recruiter", "Talent Acquisition Specialist", "Staffing Specialist"],
+      "industries": ["Human Resources", "Staffing", "Any Industry"]
+    },
+    "8412": {
+      "title": "Career Retention Specialist",
+      "onet_codes": ["13-1071.00", "21-1012.00"],
+      "civilian_titles": ["Career Counselor", "Retention Specialist", "HR Specialist"],
+      "industries": ["Human Resources", "Any Industry"]
+    },
+    "8421": {
+      "title": "Drill Instructor",
+      "onet_codes": ["25-3099.00", "25-3021.00"],
+      "civilian_titles": ["Training Instructor", "Corporate Trainer", "Leadership Trainer"],
+      "industries": ["Training", "Education", "Fitness"]
+    }
+  }
+}
