@@ -178,15 +178,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Decode base64 PDF and extract text
-    let pdfText = await extractTextFromPDF(fileData)
+    // Decode base64 file and extract text (handles both PDF and images)
+    let pdfText = await extractTextFromFile(fileData)
 
     if (!pdfText || pdfText.trim().length < 50) {
-      return NextResponse.json({ error: 'Could not extract text from PDF. Please ensure it is not a scanned image.' }, { status: 400 })
+      return NextResponse.json({ error: 'Could not extract text from file. Please ensure it is readable.' }, { status: 400 })
     }
 
     // Pre-clean the extracted text
+    const rawTextLength = pdfText.length
     pdfText = cleanEvalText(pdfText)
+    console.log('Text before cleaning:', rawTextLength, 'after:', pdfText.length)
 
     // Use Claude to extract bullets with target role guidance
     const roleGuidance = getTargetRoleGuidance(targetRole, targetIndustry)
@@ -209,18 +211,30 @@ Instructions:
 3. Clean and translate each bullet to civilian language
 4. Categorize each as: "leadership", "technical", or "achievement"
 
-Return JSON array:
-[
-  {
-    "original": "the cleaned text from the document",
-    "translated": "the civilian-translated version",
-    "metrics": ["extracted numbers/percentages"],
-    "skills": ["relevant civilian skills"],
-    "category": "leadership" | "technical" | "achievement"
-  }
-]
+Return a JSON object with this structure:
+{
+  "bullets": [
+    {
+      "original": "the cleaned text from the document",
+      "translated": "the civilian-translated version",
+      "metrics": ["extracted numbers/percentages"],
+      "skills": ["relevant civilian skills"],
+      "category": "leadership" | "technical" | "achievement"
+    }
+  ],
+  "evalPeriod": {
+    "startDate": "YYYY-MM" or null if not found,
+    "endDate": "YYYY-MM" or null if not found
+  },
+  "jobTitle": "Extracted job title/billet if visible" or null
+}
 
-Return ONLY valid JSON, no markdown or explanation. If the text is too garbled to extract anything useful, return: {"error": "Unable to extract clean bullets from this document. Please try a clearer scan."}`
+Return ONLY valid JSON, no markdown or explanation. ALWAYS try to extract at least 3-5 bullets even if the text quality is poor. Only return an error if the text is completely unreadable with no achievement statements at all.`
+
+    console.log('=== EVAL EXTRACTION DEBUG ===')
+    console.log('Extracted text length:', pdfText.length)
+    console.log('Extracted text preview:', pdfText.substring(0, 500))
+    console.log('Eval type:', evalType)
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
@@ -231,8 +245,12 @@ Return ONLY valid JSON, no markdown or explanation. If the text is too garbled t
 
     const text = (response.content[0] as { text: string }).text.trim()
 
+    console.log('Raw Claude response:', text.substring(0, 1000))
+
     // Parse bullets from response
     let bullets: any[] = []
+    let evalPeriod: { startDate: string | null; endDate: string | null } = { startDate: null, endDate: null }
+    let jobTitle: string | null = null
     let parseError = null
 
     try {
@@ -260,6 +278,8 @@ Return ONLY valid JSON, no markdown or explanation. If the text is too garbled t
         bullets = parsed
       } else if (parsed.bullets && Array.isArray(parsed.bullets)) {
         bullets = parsed.bullets
+        evalPeriod = parsed.evalPeriod || evalPeriod
+        jobTitle = parsed.jobTitle || null
       }
 
       // Scan extracted text for critical PII (SSN, DODID) BEFORE returning
@@ -301,9 +321,9 @@ Return ONLY valid JSON, no markdown or explanation. If the text is too garbled t
       .from('eval_uploads')
       .insert({
         user_id: user.id,
-        filename,
+        file_name: filename,
         eval_type: evalType,
-        extracted_bullets: processedBullets,
+        extracted_data: processedBullets,
         status: processedBullets.length > 0 ? 'complete' : 'failed',
       })
       .select()
@@ -323,6 +343,8 @@ Return ONLY valid JSON, no markdown or explanation. If the text is too garbled t
       uploadId: upload.id,
       bullets: processedBullets,
       count: processedBullets.length,
+      evalPeriod,
+      jobTitle,
     })
   } catch (error) {
     console.error('Eval parse error:', error)
@@ -330,9 +352,52 @@ Return ONLY valid JSON, no markdown or explanation. If the text is too garbled t
   }
 }
 
-// Extract text from PDF using Claude's document API
-async function extractTextFromPDF(base64Data: string): Promise<string> {
-  console.log('PDF base64 size:', base64Data.length, 'chars')
+// Detect media type from base64 header
+function getMediaTypeFromBase64(base64: string): { mediaType: string; isImage: boolean } {
+  if (base64.startsWith('JVBERi0')) return { mediaType: 'application/pdf', isImage: false }
+  if (base64.startsWith('iVBORw0KGgo')) return { mediaType: 'image/png', isImage: true }
+  if (base64.startsWith('/9j/')) return { mediaType: 'image/jpeg', isImage: true }
+  if (base64.startsWith('R0lGOD')) return { mediaType: 'image/gif', isImage: true }
+  if (base64.startsWith('UklGR')) return { mediaType: 'image/webp', isImage: true }
+  // Default to PDF
+  return { mediaType: 'application/pdf', isImage: false }
+}
+
+// Extract text from PDF or image using Claude's document/vision API
+async function extractTextFromFile(base64Data: string): Promise<string> {
+  // Strip data URL prefix if present (e.g., "data:application/pdf;base64,")
+  let cleanBase64 = base64Data
+  if (cleanBase64.includes(',')) {
+    cleanBase64 = cleanBase64.split(',')[1]
+  }
+  // Remove any whitespace that might have been introduced
+  cleanBase64 = cleanBase64.replace(/\s/g, '')
+
+  // Detect file type from base64 header
+  const { mediaType, isImage } = getMediaTypeFromBase64(cleanBase64)
+
+  console.log('File base64 size:', cleanBase64.length, 'chars')
+  console.log('Base64 starts with:', cleanBase64.substring(0, 20))
+  console.log('Detected media type:', mediaType, 'isImage:', isImage)
+
+  // Build content based on file type
+  const fileContent = isImage
+    ? {
+        type: 'image' as const,
+        source: {
+          type: 'base64' as const,
+          media_type: mediaType as 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp',
+          data: cleanBase64,
+        },
+      }
+    : {
+        type: 'document' as const,
+        source: {
+          type: 'base64' as const,
+          media_type: 'application/pdf' as const,
+          data: cleanBase64,
+        },
+      }
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -341,17 +406,10 @@ async function extractTextFromPDF(base64Data: string): Promise<string> {
       {
         role: 'user',
         content: [
-          {
-            type: 'document',
-            source: {
-              type: 'base64',
-              media_type: 'application/pdf',
-              data: base64Data,
-            },
-          },
+          fileContent,
           {
             type: 'text',
-            text: 'Extract ALL text from this military evaluation PDF. Return ONLY the raw text content exactly as it appears. Preserve all bullet points, rankings, dates, and performance comments. Do not summarize or modify - just extract the exact text.',
+            text: 'Extract ALL text from this military evaluation document. Return ONLY the raw text content exactly as it appears. Preserve all bullet points, rankings, dates, and performance comments. Do not summarize or modify - just extract the exact text.',
           },
         ],
       },
@@ -363,7 +421,7 @@ async function extractTextFromPDF(base64Data: string): Promise<string> {
   console.log('Extracted text length:', text.length)
 
   if (!text || text.trim().length === 0) {
-    throw new Error('No text extracted - PDF may be scanned/image-based')
+    throw new Error('No text extracted - file may be scanned/image-based or corrupted')
   }
 
   return text

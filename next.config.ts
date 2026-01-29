@@ -7,6 +7,15 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/((?!maintenance.html|_next|favicon.ico).*)',
+        destination: '/maintenance.html',
+        permanent: false,
+      },
+    ]
+  },
 }
 
 export default nextConfig

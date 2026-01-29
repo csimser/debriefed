@@ -182,7 +182,15 @@ ${resumeText.substring(0, 15000)}${resumeText.length > 15000 ? '\n...[truncated]
       delete result.contact.email
     }
 
-    console.log('Resume import - locked fields removed from contact data')
+    console.log('=== RESUME PARSE RESULT ===')
+    console.log('Contact fields:', result.contact ? Object.keys(result.contact).filter(k => result.contact[k]) : 'none')
+    console.log('Professional summary:', result.professional_summary ? 'yes' : 'no')
+    console.log('Experiences:', result.experiences?.length || 0)
+    console.log('Education:', result.education?.length || 0)
+    console.log('Certifications:', result.certifications?.length || 0)
+    console.log('Skills:', result.skills?.length || 0)
+    console.log('Military info:', result.military_info || 'none')
+    console.log('Clearance:', result.clearance || 'none')
 
     // Post-process: validate/supplement civilian titles using local crosswalk
     if (result.experiences && Array.isArray(result.experiences)) {

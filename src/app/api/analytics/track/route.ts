@@ -39,17 +39,48 @@ export async function POST(request: NextRequest) {
     const ip_hash = hashIP(ip)
 
     // Insert page view using SERVICE CLIENT (bypasses RLS for anonymous visitors)
-    const { error } = await serviceClient.from('page_views').insert({
-      path,
-      session_id,
-      user_id,
-      referrer: referrer || null,
-      user_agent: user_agent || null,
-      ip_hash,
-    })
+    // Note: user_id must exist in auth.users due to FK constraint
+    // If insert fails with FK error, retry without user_id
+    let insertError = null
 
-    if (error) {
-      console.error('Page view insert error:', error)
+    if (user_id) {
+      const { error } = await serviceClient.from('page_views').insert({
+        path,
+        session_id,
+        user_id,
+        referrer: referrer || null,
+        user_agent: user_agent || null,
+        ip_hash,
+      })
+      insertError = error
+
+      // If FK error (user doesn't exist in auth.users), retry without user_id
+      if (error?.code === '23503') {
+        console.warn('Page view FK error - user_id not found in auth.users, inserting without user_id')
+        const { error: retryError } = await serviceClient.from('page_views').insert({
+          path,
+          session_id,
+          user_id: null,
+          referrer: referrer || null,
+          user_agent: user_agent || null,
+          ip_hash,
+        })
+        insertError = retryError
+      }
+    } else {
+      const { error } = await serviceClient.from('page_views').insert({
+        path,
+        session_id,
+        user_id: null,
+        referrer: referrer || null,
+        user_agent: user_agent || null,
+        ip_hash,
+      })
+      insertError = error
+    }
+
+    if (insertError) {
+      console.error('Page view insert error:', insertError)
     }
 
     return NextResponse.json({ success: true })

@@ -40,7 +40,8 @@ export function StepMilitary({ data, updateData, onNext, onBack, saving, isFirst
   const handleBranchChange = (branch: string) => {
     updateData({ branch })
     // If current paygrade is invalid for new branch, clear it
-    if (data.paygrade && !getValidPaygradesForBranch(branch).includes(data.paygrade)) {
+    const validPaygradeValues = getValidPaygradesForBranch(branch).map(pg => pg.value)
+    if (data.paygrade && !validPaygradeValues.includes(data.paygrade)) {
       updateData({ paygrade: '', rank: '' })
     } else if (data.paygrade) {
       // Auto-update rank for new branch
@@ -102,7 +103,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, saving, isFirst
             >
               <option value="">Select</option>
               {validPaygrades.map((pg) => (
-                <option key={pg} value={pg}>{pg}</option>
+                <option key={pg.value} value={pg.value}>{pg.label}</option>
               ))}
             </select>
           </div>

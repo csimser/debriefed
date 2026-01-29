@@ -85,6 +85,13 @@ export const BRANCH_TO_API: Record<string, MilitaryBranch> = {
   'U.S. Marine Corps': 'marine_corps',
   'U.S. Coast Guard': 'coast_guard',
   'U.S. Space Force': 'space_force',
+  // Lowercase "u.s." format (after toLowerCase)
+  'u.s._navy': 'navy',
+  'u.s._army': 'army',
+  'u.s._air_force': 'air_force',
+  'u.s._marine_corps': 'marine_corps',
+  'u.s._coast_guard': 'coast_guard',
+  'u.s._space_force': 'space_force',
 }
 
 // Types
@@ -130,9 +137,14 @@ export async function getMilitaryCrosswalk(
 ): Promise<MilitaryCrosswalkResult[]> {
   if (!militaryCode) return []
 
-  // Normalize branch name
-  const normalizedBranch = branch ? BRANCH_TO_API[branch.toLowerCase().replace(/\s+/g, '_')] : 'navy'
+  // Normalize branch name - try direct match first, then lowercase with underscores
+  const branchKey = branch?.toLowerCase().replace(/\s+/g, '_') || ''
+  const normalizedBranch = branch
+    ? (BRANCH_TO_API[branch] || BRANCH_TO_API[branchKey] || 'navy')
+    : 'navy'
   const code = militaryCode.toUpperCase().trim()
+
+  console.log(`O*NET crosswalk: code=${code}, branch=${branch}, normalized=${normalizedBranch}`)
 
   const cacheKey = `crosswalk:${code}:${normalizedBranch}`
   const cached = getCachedData(cacheKey)

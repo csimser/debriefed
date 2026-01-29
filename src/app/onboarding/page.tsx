@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard'
+import { NewOnboardingWizard } from '@/components/onboarding-new/NewOnboardingWizard'
 
 export default async function OnboardingPage() {
   const supabase = await createClient()
@@ -22,13 +23,24 @@ export default async function OnboardingPage() {
     redirect('/dashboard')
   }
 
+  // Feature flag for new onboarding wizard
+  const useNewOnboarding = process.env.NEXT_PUBLIC_NEW_ONBOARDING === 'true'
+
   return (
     <div className="min-h-screen bg-bg-primary">
-      <OnboardingWizard
-        userId={user.id}
-        currentStep={profile?.onboarding_step || 0}
-        existingProfile={profile}
-      />
+      {useNewOnboarding ? (
+        <NewOnboardingWizard
+          userId={user.id}
+          currentStep={profile?.onboarding_step || 0}
+          existingProfile={profile}
+        />
+      ) : (
+        <OnboardingWizard
+          userId={user.id}
+          currentStep={profile?.onboarding_step || 0}
+          existingProfile={profile}
+        />
+      )}
     </div>
   )
 }

@@ -71,9 +71,9 @@ export function EvalHistory({ uploads, experiences, userId, onImportComplete }: 
               </div>
 
               <div className="flex items-center gap-2">
-                {upload.status === 'complete' && upload.extracted_bullets?.length > 0 && (
+                {upload.status === 'complete' && upload.extracted_data?.length > 0 && (
                   <>
-                    <Badge variant="gold">{upload.extracted_bullets.length} bullets</Badge>
+                    <Badge variant="gold">{upload.extracted_data.length} bullets</Badge>
                     <Button size="sm" variant="secondary" onClick={() => setViewingUpload(upload)}>
                       Import
                     </Button>
@@ -88,7 +88,7 @@ export function EvalHistory({ uploads, experiences, userId, onImportComplete }: 
       {/* Import Modal */}
       {viewingUpload && (
         <BulletImportModal
-          bullets={viewingUpload.extracted_bullets || []}
+          bullets={viewingUpload.extracted_data || []}
           experiences={experiences}
           userId={userId}
           onClose={() => setViewingUpload(null)}

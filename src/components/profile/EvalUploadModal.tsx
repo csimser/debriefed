@@ -162,7 +162,8 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
     setFile(selectedFile)
 
     if (selectedFile.type === 'application/pdf') {
-      await convertPdfToImage(selectedFile)
+      // Send PDF directly to Claude's document API (no image conversion needed)
+      await processPdfDirectly(selectedFile)
     } else if (selectedFile.type.startsWith('image/')) {
       const url = URL.createObjectURL(selectedFile)
       setImageUrl(url)
@@ -172,42 +173,73 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
     }
   }
 
-  const convertPdfToImage = async (pdfFile: File) => {
+  const processPdfDirectly = async (pdfFile: File) => {
+    setStep('processing')
     setProcessing(true)
+    setError('')
+
     try {
-      // Dynamic import of pdfjs-dist
-      const pdfjsLib = await import('pdfjs-dist')
+      // Convert PDF to base64 using FileReader (robust for large files)
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const dataUrl = reader.result as string
+          // Remove the data:application/pdf;base64, prefix
+          const base64Data = dataUrl.split(',')[1]
+          resolve(base64Data)
+        }
+        reader.onerror = () => reject(new Error('Failed to read file'))
+        reader.readAsDataURL(pdfFile)
+      })
 
-      // Set worker source
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+      console.log('Sending PDF directly to Claude, size:', base64.length, 'chars')
 
-      const arrayBuffer = await pdfFile.arrayBuffer()
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-      const page = await pdf.getPage(1)
+      // Send directly to parse-eval endpoint (uses Claude's document API)
+      const response = await fetch('/api/parse-eval', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filename: pdfFile.name,
+          fileData: base64,
+          evalType: evalType,
+        }),
+      })
 
-      const scale = 2
-      const viewport = page.getViewport({ scale })
+      const data = await response.json()
 
-      const canvas = document.createElement('canvas')
-      const context = canvas.getContext('2d')!
-      canvas.height = viewport.height
-      canvas.width = viewport.width
-
-      // Use the correct render parameters for pdfjs-dist
-      const renderContext = {
-        canvasContext: context,
-        viewport: viewport,
-        canvas: canvas,
+      if (data.error) {
+        setError(data.error)
+        setStep('upload')
+        return
       }
 
-      await page.render(renderContext as any).promise
+      // Convert bullets to items with status
+      const bullets = (data.bullets || []).map((b: ExtractedBullet, idx: number) => ({
+        ...b,
+        id: `bullet-${Date.now()}-${idx}`,
+        status: 'pending' as const,
+      }))
+      setBulletItems(bullets)
+      setEvalPeriod(data.evalPeriod || { startDate: null, endDate: null })
+      setDetectedJobTitle(data.jobTitle || null)
 
-      const imageUrl = canvas.toDataURL('image/png')
-      setImageUrl(imageUrl)
-      setStep('crop')
-    } catch (err) {
-      console.error('PDF conversion error:', err)
-      setError('Failed to process PDF. Please try uploading an image file (screenshot) instead.')
+      // Auto-select experience if period matches
+      if (data.evalPeriod?.startDate && experiences.length > 0) {
+        const matchingExp = experiences.find(exp => {
+          const expStart = exp.start_date?.substring(0, 7)
+          const evalStart = data.evalPeriod.startDate?.substring(0, 7)
+          return expStart === evalStart
+        })
+        if (matchingExp) {
+          setSelectedExperience(matchingExp.id)
+        }
+      }
+
+      setStep('review')
+    } catch (err: any) {
+      console.error('PDF processing error:', err)
+      setError(err?.message || 'Failed to process PDF. Please try again.')
+      setStep('upload')
     } finally {
       setProcessing(false)
     }
@@ -546,7 +578,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                     {processing ? (
                       <div className="animate-pulse">
                         <div className="text-4xl mb-4">&#9670;</div>
-                        <p className="text-text">Converting PDF...</p>
+                        <p className="text-text">Processing...</p>
                       </div>
                     ) : (
                       <>
@@ -556,7 +588,8 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                           <line x1="12" y1="3" x2="12" y2="15"/>
                         </svg>
                         <p className="text-text mb-1">Click to upload or drag and drop</p>
-                        <p className="text-sm text-text-muted">PDF or Image (PNG, JPG)</p>
+                        <p className="text-sm text-text-muted">PDF (recommended) or Image (PNG, JPG)</p>
+                        <p className="text-xs text-gold mt-2">PDFs are processed directly - images require cropping</p>
                       </>
                     )}
                   </label>

@@ -13,11 +13,32 @@ export const BRANCHES = [
 
 export const PAYGRADES = [
   // Enlisted
-  'E-1', 'E-2', 'E-3', 'E-4', 'E-5', 'E-6', 'E-7', 'E-8', 'E-9',
+  { value: 'E-1', label: 'E-1' },
+  { value: 'E-2', label: 'E-2' },
+  { value: 'E-3', label: 'E-3' },
+  { value: 'E-4', label: 'E-4' },
+  { value: 'E-5', label: 'E-5' },
+  { value: 'E-6', label: 'E-6' },
+  { value: 'E-7', label: 'E-7' },
+  { value: 'E-8', label: 'E-8' },
+  { value: 'E-9', label: 'E-9' },
   // Warrant Officers
-  'W-1', 'W-2', 'W-3', 'W-4', 'W-5',
+  { value: 'W-1', label: 'W-1' },
+  { value: 'W-2', label: 'W-2' },
+  { value: 'W-3', label: 'W-3' },
+  { value: 'W-4', label: 'W-4' },
+  { value: 'W-5', label: 'W-5' },
   // Officers
-  'O-1', 'O-2', 'O-3', 'O-4', 'O-5', 'O-6', 'O-7', 'O-8', 'O-9', 'O-10',
+  { value: 'O-1', label: 'O-1' },
+  { value: 'O-2', label: 'O-2' },
+  { value: 'O-3', label: 'O-3' },
+  { value: 'O-4', label: 'O-4' },
+  { value: 'O-5', label: 'O-5' },
+  { value: 'O-6', label: 'O-6' },
+  { value: 'O-7', label: 'O-7' },
+  { value: 'O-8', label: 'O-8' },
+  { value: 'O-9', label: 'O-9' },
+  { value: 'O-10', label: 'O-10' },
 ] as const
 
 /**
@@ -219,16 +240,16 @@ export function getRankFromPaygrade(branch: string, paygrade: string): string {
 /**
  * Get available paygrades for a branch (excludes N/A ranks)
  */
-export function getValidPaygradesForBranch(branch: string): string[] {
-  if (!branch) return PAYGRADES as unknown as string[]
+export function getValidPaygradesForBranch(branch: string): typeof PAYGRADES[number][] {
+  if (!branch) return [...PAYGRADES]
 
   const branchRanks = PAYGRADE_TO_RANK[branch]
-  if (!branchRanks) return PAYGRADES as unknown as string[]
+  if (!branchRanks) return [...PAYGRADES]
 
   return PAYGRADES.filter(pg => {
-    const rank = branchRanks[pg]
+    const rank = branchRanks[pg.value]
     return rank && rank !== 'N/A'
-  }) as unknown as string[]
+  })
 }
 
 /**
@@ -245,4 +266,4 @@ export function isPaygradeValidForBranch(branch: string, paygrade: string): bool
 }
 
 export type Branch = typeof BRANCHES[number]['value']
-export type Paygrade = typeof PAYGRADES[number]
+export type Paygrade = typeof PAYGRADES[number]['value']

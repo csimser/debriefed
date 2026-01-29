@@ -35,7 +35,7 @@ const BRANCHES = [
 
 const PAYGRADES = [
   { value: '', label: 'Select Paygrade' },
-  ...MILITARY_PAYGRADES.map(p => ({ value: p, label: p }))
+  ...MILITARY_PAYGRADES
 ]
 
 // Use PAYGRADE_TO_RANK from imported constants for rank auto-fill
@@ -177,6 +177,9 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
 
   // Handle imported resume data
   const handleResumeImport = async (data: any) => {
+    console.log('=== RESUME IMPORT DEBUG ===')
+    console.log('1. Incoming data:', JSON.stringify(data, null, 2))
+
     // Update profile fields (only if they're currently empty)
     const updates: any = {}
     if (data.contact) {
@@ -206,12 +209,35 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
       updates.clearance = clearanceMap[data.clearance] || data.clearance.toLowerCase()
     }
 
+    console.log('2. Profile updates to apply:', updates)
+
+    // Save profile updates DIRECTLY to database (don't rely on autosave)
     if (Object.keys(updates).length > 0) {
-      setProfile(prev => ({ ...prev, ...updates }))
+      console.log('3. Saving profile updates to database...')
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+
+      if (profileError) {
+        console.error('4. PROFILE SAVE FAILED:', profileError)
+      } else {
+        console.log('4. Profile saved successfully')
+        // Update local state after successful save
+        setProfile(prev => ({ ...prev, ...updates }))
+      }
+    } else {
+      console.log('3. No profile updates to save')
     }
 
     // Import experiences
     if (data.experiences && data.experiences.length > 0) {
+      console.log('5. Importing', data.experiences.length, 'experiences...')
+
       const expToInsert = data.experiences.map((exp: any, idx: number) => ({
         user_id: userId,
         employment_type: exp.employment_type || 'civilian',
@@ -229,27 +255,38 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
         sort_order: idx,
       }))
 
+      let expSuccessCount = 0
       for (const exp of expToInsert) {
         const bullets = data.experiences.find((e: any) => e.job_title === exp.job_title)?.bullets || []
 
-        const { data: insertedExp, error } = await supabase
+        const { data: insertedExp, error: expError } = await supabase
           .from('experience')
           .insert(exp)
           .select()
           .single()
 
-        if (!error && insertedExp && bullets.length > 0) {
-          // Insert bullets for this experience
-          const bulletsToInsert = bullets.map((text: string, bIdx: number) => ({
-            experience_id: insertedExp.id,
-            original_text: text,
-            translated_text: text,
-            sort_order: bIdx,
-            status: 'accepted',
-          }))
-          await supabase.from('experience_bullets').insert(bulletsToInsert)
+        if (expError) {
+          console.error('Experience insert failed:', expError, 'for:', exp.job_title)
+        } else if (insertedExp) {
+          expSuccessCount++
+          console.log('  - Inserted experience:', exp.job_title, 'with', bullets.length, 'bullets')
+
+          if (bullets.length > 0) {
+            const bulletsToInsert = bullets.map((text: string, bIdx: number) => ({
+              experience_id: insertedExp.id,
+              original_text: text,
+              translated_text: text,
+              sort_order: bIdx,
+              status: 'accepted',
+            }))
+            const { error: bulletError } = await supabase.from('experience_bullets').insert(bulletsToInsert)
+            if (bulletError) {
+              console.error('Bullets insert failed:', bulletError)
+            }
+          }
         }
       }
+      console.log('6. Experiences saved:', expSuccessCount, '/', expToInsert.length)
 
       // Refresh experiences
       const { data: updatedExp } = await supabase
@@ -261,10 +298,14 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
       if (updatedExp) {
         setExperiences(updatedExp.map(exp => ({ ...exp, bullets: exp.experience_bullets })))
       }
+    } else {
+      console.log('5. No experiences to import')
     }
 
     // Import education
     if (data.education && data.education.length > 0) {
+      console.log('7. Importing', data.education.length, 'education entries...')
+
       const eduToInsert = data.education.map((edu: any, idx: number) => ({
         user_id: userId,
         degree: edu.degree,
@@ -274,7 +315,13 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
         gpa: edu.gpa,
         sort_order: idx,
       }))
-      await supabase.from('education').insert(eduToInsert)
+
+      const { error: eduError } = await supabase.from('education').insert(eduToInsert)
+      if (eduError) {
+        console.error('Education insert failed:', eduError)
+      } else {
+        console.log('8. Education saved successfully')
+      }
 
       const { data: updatedEdu } = await supabase
         .from('education')
@@ -282,10 +329,14 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
         .eq('user_id', userId)
         .order('sort_order')
       if (updatedEdu) setEducation(updatedEdu)
+    } else {
+      console.log('7. No education to import')
     }
 
     // Import certifications
     if (data.certifications && data.certifications.length > 0) {
+      console.log('9. Importing', data.certifications.length, 'certifications...')
+
       const certsToInsert = data.certifications.map((cert: any, idx: number) => ({
         user_id: userId,
         name: cert.name,
@@ -294,7 +345,13 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
         expiration_date: cert.expiration_date,
         sort_order: idx,
       }))
-      await supabase.from('certifications').insert(certsToInsert)
+
+      const { error: certError } = await supabase.from('certifications').insert(certsToInsert)
+      if (certError) {
+        console.error('Certifications insert failed:', certError)
+      } else {
+        console.log('10. Certifications saved successfully')
+      }
 
       const { data: updatedCerts } = await supabase
         .from('certifications')
@@ -302,17 +359,27 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
         .eq('user_id', userId)
         .order('sort_order')
       if (updatedCerts) setCertifications(updatedCerts)
+    } else {
+      console.log('9. No certifications to import')
     }
 
     // Import skills
     if (data.skills && data.skills.length > 0) {
+      console.log('11. Importing', data.skills.length, 'skills...')
+
       const skillsToInsert = data.skills.map((skill: string, idx: number) => ({
         user_id: userId,
         name: skill,
         proficiency_level: 3,
         sort_order: idx,
       }))
-      await supabase.from('skills').insert(skillsToInsert)
+
+      const { error: skillError } = await supabase.from('skills').insert(skillsToInsert)
+      if (skillError) {
+        console.error('Skills insert failed:', skillError)
+      } else {
+        console.log('12. Skills saved successfully')
+      }
 
       const { data: updatedSkills } = await supabase
         .from('skills')
@@ -320,7 +387,11 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
         .eq('user_id', userId)
         .order('sort_order')
       if (updatedSkills) setSkills(updatedSkills)
+    } else {
+      console.log('11. No skills to import')
     }
+
+    console.log('=== RESUME IMPORT COMPLETE ===')
   }
 
   // Build profile data for summary template population
