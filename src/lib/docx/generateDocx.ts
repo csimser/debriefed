@@ -196,7 +196,7 @@ export async function generateDocx(
         exp.bullets
           .filter((bullet: any) => bullet.status !== 'excluded')
           .forEach((bullet: any) => {
-            const bulletText = bullet.is_accepted || bullet.status === 'accepted'
+            const bulletText = bullet.status === 'accepted'
               ? bullet.translated_text
               : bullet.translated_text || bullet.original_text
 

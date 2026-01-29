@@ -174,7 +174,7 @@ export function ResumePreview({ template, resumeType, content }: ResumePreviewPr
                           .map((bullet: any, bIdx: number) => (
                             <li key={bIdx} className="text-sm flex">
                               <span className="mr-2" style={{ color: styles.accentColor }}>•</span>
-                              <span>{bullet.is_accepted || bullet.status === 'accepted' ? bullet.translated_text : (bullet.translated_text || bullet.original_text)}</span>
+                              <span>{bullet.status === 'accepted' ? bullet.translated_text : (bullet.translated_text || bullet.original_text)}</span>
                             </li>
                           ))}
                       </ul>
@@ -277,7 +277,7 @@ export function ResumePreview({ template, resumeType, content }: ResumePreviewPr
                       .map((bullet: any, bIdx: number) => (
                         <li key={bullet.id || bIdx} className="text-sm flex">
                           <span className="mr-2" style={{ color: styles.accentColor }}>•</span>
-                          <span>{bullet.is_accepted || bullet.status === 'accepted' ? bullet.translated_text : (bullet.translated_text || bullet.original_text)}</span>
+                          <span>{bullet.status === 'accepted' ? bullet.translated_text : (bullet.translated_text || bullet.original_text)}</span>
                         </li>
                       ))}
                   </ul>

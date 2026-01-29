@@ -415,7 +415,6 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
           translated_text: b.translated,
           sort_order: startOrder + idx + 1,
           status: 'accepted',
-          is_accepted: true,
         }))
 
         const { error } = await supabase.from('experience_bullets').insert(bulletsToInsert)

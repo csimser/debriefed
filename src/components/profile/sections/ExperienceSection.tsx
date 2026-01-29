@@ -215,7 +215,6 @@ export function ExperienceSection({
         translated_text: 'New bullet - click to edit',
         sort_order: maxOrder + 1,
         status: 'accepted',
-        is_accepted: true,
       })
       .select()
       .single()
@@ -378,7 +377,6 @@ export function ExperienceSection({
         translated_text: stripLeadingBulletChars(b.translated),
         sort_order: startOrder + idx + 1,
         status: 'accepted',
-        is_accepted: true,
       }))
 
       const { error } = await supabase.from('experience_bullets').insert(bulletsToInsert)
@@ -451,7 +449,6 @@ export function ExperienceSection({
         translated_text: stripLeadingBulletChars(b.translated),
         sort_order: idx,
         status: 'accepted',
-        is_accepted: true,
       }))
 
       const { error: bulletError } = await supabase.from('experience_bullets').insert(bulletsToInsert)

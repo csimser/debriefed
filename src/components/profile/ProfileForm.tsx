@@ -246,7 +246,6 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
             translated_text: text,
             sort_order: bIdx,
             status: 'accepted',
-            is_accepted: true,
           }))
           await supabase.from('experience_bullets').insert(bulletsToInsert)
         }

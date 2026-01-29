@@ -486,7 +486,7 @@ export function ResumeDocument({ content, resumeType, template = 'clean' }: Resu
                               <View key={bIdx} style={templateStyles.bullet}>
                                 <Text style={templateStyles.bulletPoint}>•</Text>
                                 <Text style={templateStyles.bulletText}>
-                                  {bullet.is_accepted || bullet.status === 'accepted'
+                                  {bullet.status === 'accepted'
                                     ? bullet.translated_text
                                     : bullet.translated_text || bullet.original_text}
                                 </Text>
@@ -574,7 +574,7 @@ export function ResumeDocument({ content, resumeType, template = 'clean' }: Resu
                         <View key={bIdx} style={templateStyles.bullet}>
                           <Text style={templateStyles.bulletPoint}>•</Text>
                           <Text style={templateStyles.bulletText}>
-                            {bullet.is_accepted || bullet.status === 'accepted'
+                            {bullet.status === 'accepted'
                               ? bullet.translated_text
                               : bullet.translated_text || bullet.original_text}
                           </Text>

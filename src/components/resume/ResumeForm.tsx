@@ -332,7 +332,6 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
     newBullets[bulletIdx] = {
       ...newBullets[bulletIdx],
       translated_text: editText,
-      is_accepted: true,
       status: 'accepted',
     }
     onChange({ ...experience, bullets: newBullets })
@@ -351,7 +350,6 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
       id: `new-${Date.now()}`,
       original_text: '',
       translated_text: '',
-      is_accepted: false,
       status: 'pending',
     }
     newBullets.push(newBullet)
@@ -404,7 +402,6 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
     const newBullets = [...(experience.bullets || [])]
     newBullets[bulletIdx] = {
       ...newBullets[bulletIdx],
-      is_accepted: true,
       status: 'accepted',
     }
     onChange({ ...experience, bullets: newBullets })
@@ -434,17 +431,16 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
 
   // Count pending bullets that can be accepted (have translated text but not yet accepted)
   const pendingBullets = activeBullets.filter(
-    (b: any) => b.translated_text && !(b.is_accepted || b.status === 'accepted')
+    (b: any) => b.translated_text && b.status !== 'accepted'
   )
 
   // Accept all pending bullets
   const handleAcceptAll = () => {
     const newBullets = [...(experience.bullets || [])]
     newBullets.forEach((bullet, idx) => {
-      if (bullet.translated_text && !(bullet.is_accepted || bullet.status === 'accepted') && bullet.status !== 'excluded') {
+      if (bullet.translated_text && bullet.status !== 'accepted' && bullet.status !== 'excluded') {
         newBullets[idx] = {
           ...bullet,
-          is_accepted: true,
           status: 'accepted',
         }
       }
@@ -456,7 +452,7 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
   const handleExcludeAll = () => {
     const newBullets = [...(experience.bullets || [])]
     newBullets.forEach((bullet, idx) => {
-      if (bullet.status !== 'excluded' && bullet.status !== 'accepted' && !bullet.is_accepted) {
+      if (bullet.status !== 'excluded' && bullet.status !== 'accepted') {
         newBullets[idx] = {
           ...bullet,
           status: 'excluded',
@@ -535,7 +531,7 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
                 {bullet.translated_text ? (
                   <div className="text-sm mb-2">
                     <span className="text-xs uppercase tracking-wider text-gold">Translated:</span>
-                    <p className={bullet.is_accepted || bullet.status === 'accepted' ? 'text-status-green' : ''}>{bullet.translated_text}</p>
+                    <p className={bullet.status === 'accepted' ? 'text-status-green' : ''}>{bullet.translated_text}</p>
                   </div>
                 ) : !bullet.original_text && (
                   <div className="text-sm mb-2">
@@ -556,7 +552,7 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
                     </Button>
                   )}
 
-                  {bullet.translated_text && !(bullet.is_accepted || bullet.status === 'accepted') && (
+                  {bullet.translated_text && bullet.status !== 'accepted' && (
                     <>
                       <Button size="sm" onClick={() => handleAcceptBullet(bullet._idx)}>
                         ✓ Accept
@@ -572,7 +568,7 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
                     </>
                   )}
 
-                  {(bullet.is_accepted || bullet.status === 'accepted') && (
+                  {bullet.status === 'accepted' && (
                     <Badge variant="green">✓ Accepted</Badge>
                   )}
 

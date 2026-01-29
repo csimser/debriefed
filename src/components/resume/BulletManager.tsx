@@ -8,7 +8,6 @@ interface Bullet {
   original_text: string
   translated_text: string
   status: 'pending' | 'accepted' | 'excluded'
-  is_accepted?: boolean  // Legacy field
 }
 
 interface BulletManagerProps {
@@ -27,10 +26,7 @@ export function BulletManager({ bullets, experienceId, onUpdate, onRetry }: Bull
     try {
       const { error } = await supabase
         .from('experience_bullets')
-        .update({
-          status,
-          is_accepted: status === 'accepted'  // Keep legacy field in sync
-        })
+        .update({ status })
         .eq('id', bulletId)
 
       if (error) {
@@ -40,7 +36,7 @@ export function BulletManager({ bullets, experienceId, onUpdate, onRetry }: Bull
 
       onUpdate(bullets.map(b =>
         b.id === bulletId
-          ? { ...b, status, is_accepted: status === 'accepted' }
+          ? { ...b, status }
           : b
       ))
     } finally {
@@ -144,7 +140,7 @@ interface BulletItemProps {
 }
 
 function BulletItem({ bullet, isUpdating, onAccept, onRetry, onExclude }: BulletItemProps) {
-  const isAccepted = bullet.status === 'accepted' || bullet.is_accepted
+  const isAccepted = bullet.status === 'accepted'
 
   return (
     <div

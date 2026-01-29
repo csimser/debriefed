@@ -137,7 +137,7 @@ export function FederalResumeCompact({ content, jobInfo }: FederalResumeCompactP
                     <ul className="list-disc list-outside ml-4 mt-1 space-y-0.5">
                       {bullets.map((bullet: any, bIdx: number) => (
                         <li key={bullet.id || bIdx}>
-                          {bullet.is_accepted
+                          {bullet.status === 'accepted'
                             ? bullet.translated_text
                             : bullet.translated_text || bullet.original_text}
                         </li>
