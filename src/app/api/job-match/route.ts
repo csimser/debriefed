@@ -457,7 +457,7 @@ JOB-SPECIFIC TAILORING:
     const inputTokens = response.usage?.input_tokens || 0
     const outputTokens = response.usage?.output_tokens || 0
     const tokensUsed = inputTokens + outputTokens
-    await logApiUsage(user.id, 'job-match', tokensUsed, 'claude-sonnet-4-20250514', inputTokens, outputTokens)
+    await logApiUsage(user.id, 'job-match', tokensUsed, 'claude-sonnet-4-20250514')
     await incrementUsage(user.id, 'job_matches')
 
     // Log activity

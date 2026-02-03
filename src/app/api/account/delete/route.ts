@@ -49,7 +49,7 @@ export async function DELETE(request: Request) {
 
     // 2. Delete experiences
     const { error: expError } = await supabaseAdmin
-      .from('experiences')
+      .from('experience')
       .delete()
       .eq('user_id', userId)
 

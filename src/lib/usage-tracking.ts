@@ -24,31 +24,19 @@ export type UsageField =
  * @param endpoint - Endpoint/feature name
  * @param tokensUsed - Total tokens used (input + output)
  * @param model - Model name
- * @param inputTokens - Optional: separate input token count
- * @param outputTokens - Optional: separate output token count
- * @param success - Optional: whether the call succeeded
- * @param errorMessage - Optional: error message if failed
  */
 export async function logApiUsage(
   userId: string,
   endpoint: string,
   tokensUsed: number,
-  model: string,
-  inputTokens?: number,
-  outputTokens?: number,
-  success: boolean = true,
-  errorMessage?: string
+  model: string
 ) {
   try {
     const { error } = await supabase.from('api_usage').insert({
       user_id: userId,
       endpoint,
       tokens_used: tokensUsed,
-      input_tokens: inputTokens || 0,
-      output_tokens: outputTokens || 0,
       model,
-      success,
-      error_message: errorMessage || null,
     })
 
     if (error) {

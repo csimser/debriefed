@@ -369,7 +369,7 @@ Generate the About section with proper paragraph breaks.`
     })
 
     // Track actual token usage (not hardcoded estimates)
-    await logApiUsage(user.id, 'generate-linkedin', tokensUsed, 'claude-sonnet-4-20250514', totalInputTokens, totalOutputTokens)
+    await logApiUsage(user.id, 'generate-linkedin', tokensUsed, 'claude-sonnet-4-20250514')
     await incrementUsage(user.id, 'ai_summaries')
 
     // Log activity
