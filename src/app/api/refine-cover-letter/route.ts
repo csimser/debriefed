@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -247,6 +248,7 @@ Output the version with more numbers:`,
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 1000
     await logApiUsage(user.id, 'refine-cover-letter', tokensUsed, 'claude-sonnet-4-20250514')
     await incrementUsage(user.id, 'cover_letters')
+    await incrementPeriodUsage(user.id, 'cover_letters')
 
     console.log('Cover letter refined successfully')
 

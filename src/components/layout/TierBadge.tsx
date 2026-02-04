@@ -104,6 +104,11 @@ export function TierBadge() {
       label: 'Full Access',
       icon: '★',
       className: 'bg-gold-dim text-gold border-gold/50'
+    },
+    expired: {
+      label: 'Expired',
+      icon: '○',
+      className: 'bg-status-red/10 text-status-red border-status-red/30'
     }
   };
 

@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     const { data: usage } = await supabaseAdmin
       .from('usage')
-      .select('private_downloads, federal_downloads, federal_or_tailored_used, monthly_private_downloads, monthly_federal_downloads, daily_private_downloads, daily_federal_downloads, monthly_reset_date, daily_reset_date')
+      .select('private_downloads, federal_downloads, monthly_private_downloads, monthly_federal_downloads, daily_private_downloads, daily_federal_downloads, monthly_reset_date, daily_reset_date')
       .eq('user_id', userId)
       .single()
 
@@ -75,21 +75,22 @@ export async function POST(request: NextRequest) {
     } else {
       // Determine tier and limits
       const rawTier = profile?.subscription_tier || 'free'
-      const tier: TierId = ['core', 'full'].includes(rawTier) ? rawTier as TierId :
+      const tier: TierId = ['core', 'full', 'expired'].includes(rawTier) ? rawTier as TierId :
         rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
 
       const tierConfig = PRICING_TIERS[tier]
 
-      const privateDownloads = usage?.private_downloads || 0
-      const federalDownloads = usage?.federal_downloads || 0
-      const federalOrTailoredUsed = usage?.federal_or_tailored_used || false
-
+      // Expired tier: allow downloads (skip limit checks)
+      if (tier === 'expired') {
+        // Downloads are allowed for expired tier, skip all limit checks
+      }
       // Free tier logic
-      if (tier === 'free') {
+      else if (tier === 'free') {
+        const privateDownloads = usage?.private_downloads || 0
+        const federalDownloads = usage?.federal_downloads || 0
+
         if (resumeType === 'federal') {
-          // Free tier: federal uses the flex slot
-          if (federalOrTailoredUsed || federalDownloads >= 1) {
-            // Log rate limit hit
+          if (federalDownloads >= 1) {
             await logActivity(userId, 'feature_limit_reached', {
               feature: 'federal_resume',
               tier: 'free',
@@ -97,15 +98,13 @@ export async function POST(request: NextRequest) {
               limit: 1,
             })
             return NextResponse.json({
-              error: 'You\'ve used your free federal/tailored resume. Upgrade to Core for more.',
+              error: 'Federal resumes require Core tier.',
               limitReached: true,
               tier: 'free'
             }, { status: 403 })
           }
         } else {
-          // Free tier: 1 private resume
           if (privateDownloads >= tierConfig.limits.private_resumes) {
-            // Log rate limit hit
             await logActivity(userId, 'feature_limit_reached', {
               feature: 'private_resume',
               tier: 'free',
@@ -122,35 +121,77 @@ export async function POST(request: NextRequest) {
       }
       // Core tier logic
       else if (tier === 'core') {
+        const privateDownloads = usage?.private_downloads || 0
+        const federalDownloads = usage?.federal_downloads || 0
         const privateLimit = tierConfig.limits.private_resumes
         const federalLimit = tierConfig.limits.federal_resumes
 
-        if (resumeType === 'federal' && federalDownloads >= federalLimit) {
-          await logActivity(userId, 'feature_limit_reached', {
-            feature: 'federal_resume',
-            tier: 'core',
-            current_usage: federalDownloads,
-            limit: federalLimit,
-          })
-          return NextResponse.json({
-            error: `You've used all ${federalLimit} federal resumes. Upgrade to Full for more.`,
-            limitReached: true,
-            tier: 'core'
-          }, { status: 403 })
-        }
+        // Check daily limits for Core tier
+        const now = new Date()
+        const dailyResetDate = usage?.daily_reset_date ? new Date(usage.daily_reset_date) : null
+        const needsDailyReset = !dailyResetDate || dailyResetDate <= now
+        const dailyPrivate = needsDailyReset ? 0 : (usage?.daily_private_downloads || 0)
+        const dailyFederal = needsDailyReset ? 0 : (usage?.daily_federal_downloads || 0)
+        const dailyLimit = DAILY_RATE_LIMITS.core.private_resumes
 
-        if (resumeType === 'private' && privateDownloads >= privateLimit) {
-          await logActivity(userId, 'feature_limit_reached', {
-            feature: 'private_resume',
-            tier: 'core',
-            current_usage: privateDownloads,
-            limit: privateLimit,
-          })
-          return NextResponse.json({
-            error: `You've used all ${privateLimit} resume downloads. Upgrade to Full for more.`,
-            limitReached: true,
-            tier: 'core'
-          }, { status: 403 })
+        if (resumeType === 'federal') {
+          if (dailyFederal >= dailyLimit) {
+            await logActivity(userId, 'feature_limit_reached', {
+              feature: 'federal_resume',
+              tier: 'core',
+              limit_type: 'daily',
+              current_usage: dailyFederal,
+              limit: dailyLimit,
+            })
+            return NextResponse.json({
+              error: 'Daily federal resume limit reached. Resets at midnight.',
+              limitReached: true,
+              tier: 'core',
+              isDailyLimit: true
+            }, { status: 403 })
+          }
+          if (federalDownloads >= federalLimit) {
+            await logActivity(userId, 'feature_limit_reached', {
+              feature: 'federal_resume',
+              tier: 'core',
+              current_usage: federalDownloads,
+              limit: federalLimit,
+            })
+            return NextResponse.json({
+              error: `You've used all ${federalLimit} federal resumes. Upgrade to Full for more.`,
+              limitReached: true,
+              tier: 'core'
+            }, { status: 403 })
+          }
+        } else {
+          if (dailyPrivate >= dailyLimit) {
+            await logActivity(userId, 'feature_limit_reached', {
+              feature: 'private_resume',
+              tier: 'core',
+              limit_type: 'daily',
+              current_usage: dailyPrivate,
+              limit: dailyLimit,
+            })
+            return NextResponse.json({
+              error: 'Daily resume download limit reached. Resets at midnight.',
+              limitReached: true,
+              tier: 'core',
+              isDailyLimit: true
+            }, { status: 403 })
+          }
+          if (privateDownloads >= privateLimit) {
+            await logActivity(userId, 'feature_limit_reached', {
+              feature: 'private_resume',
+              tier: 'core',
+              current_usage: privateDownloads,
+              limit: privateLimit,
+            })
+            return NextResponse.json({
+              error: `You've used all ${privateLimit} resume downloads. Upgrade to Full for more.`,
+              limitReached: true,
+              tier: 'core'
+            }, { status: 403 })
+          }
         }
       }
       // Full tier logic - monthly and daily limits
@@ -169,7 +210,7 @@ export async function POST(request: NextRequest) {
         const dailyFederal = needsDailyReset ? 0 : (usage?.daily_federal_downloads || 0)
 
         const monthlyLimit = tierConfig.limits.private_resumes // 30
-        const dailyLimit = DAILY_RATE_LIMITS.private_resumes // 10
+        const dailyLimit = DAILY_RATE_LIMITS.full.private_resumes // 10
 
         if (resumeType === 'federal') {
           if (dailyFederal >= dailyLimit) {
@@ -263,27 +304,19 @@ export async function POST(request: NextRequest) {
 
     // Determine tier for usage increment
     const rawTier = profile?.subscription_tier || 'free'
-    const tier: TierId = ['core', 'full'].includes(rawTier) ? rawTier as TierId :
+    const tier: TierId = ['core', 'full', 'expired'].includes(rawTier) ? rawTier as TierId :
       rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
-    const isPaidTier = tier !== 'free'
+    const isPaidTier = tier !== 'free' && tier !== 'expired'
 
     // Increment usage based on resume type and tier
     if (resumeType === 'federal') {
       await supabaseAdmin.rpc('increment_federal_downloads', { p_user_id: userId })
-
-      // For free tier, also mark the flex slot as used
-      if (tier === 'free') {
-        await supabaseAdmin
-          .from('usage')
-          .update({ federal_or_tailored_used: true })
-          .eq('user_id', userId)
-      }
     } else {
       await supabaseAdmin.rpc('increment_private_downloads', { p_user_id: userId })
     }
 
-    // For Full tier, also increment monthly and daily counters
-    if (tier === 'full') {
+    // For Core and Full tiers, also increment monthly and daily counters
+    if (tier === 'core' || tier === 'full') {
       const now = new Date()
       const tomorrow = new Date(now)
       tomorrow.setDate(tomorrow.getDate() + 1)

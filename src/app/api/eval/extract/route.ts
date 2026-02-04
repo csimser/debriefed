@@ -7,6 +7,7 @@ import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
 import { hasCriticalPII, redactMinorPII } from '@/lib/pii-scanner'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+import { incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
 
 const anthropic = new Anthropic()
 
@@ -396,6 +397,7 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 4000
     await logApiUsage(user.id, 'eval-extract', tokensUsed, 'claude-sonnet-4-20250514')
     await incrementUsage(user.id, 'eval_uploads')
+    await incrementPeriodUsage(user.id, 'eval_uploads')
 
     return NextResponse.json({
       ...result,

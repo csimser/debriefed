@@ -17,6 +17,7 @@ export type UsageField =
   | 'ai_summaries'
   | 'private_downloads'
   | 'federal_downloads'
+  | 'resume_imports'
 
 /**
  * Log API usage for token tracking
@@ -95,6 +96,7 @@ export async function incrementUsage(userId: string, field: UsageField) {
           ai_summaries: field === 'ai_summaries' ? 1 : 0,
           private_downloads: field === 'private_downloads' ? 1 : 0,
           federal_downloads: field === 'federal_downloads' ? 1 : 0,
+          resume_imports: field === 'resume_imports' ? 1 : 0,
         })
 
       if (insertError) {
@@ -337,6 +339,7 @@ export async function ensureUsageRecord(userId: string) {
         ai_summaries: 0,
         private_downloads: 0,
         federal_downloads: 0,
+        resume_imports: 0,
         linkedin_generations: 0,
       })
     }

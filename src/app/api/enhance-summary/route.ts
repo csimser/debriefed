@@ -3,7 +3,8 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
-import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
+import { canUseFeature, incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { translateTerm } from '@/lib/debriefed-token-saver/termLookup'
 
@@ -33,37 +34,13 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .single()
 
-    const { data: usage } = await supabaseAdmin
-      .from('usage')
-      .select('ai_summaries')
-      .eq('user_id', user.id)
-      .single()
-
     // Admin bypass
     if (!userProfile?.email || !ADMIN_BYPASS_EMAILS.includes(userProfile.email)) {
-      const rawTier = userProfile?.subscription_tier || 'free'
-      const tier: TierId = ['core', 'full'].includes(rawTier) ? rawTier as TierId :
-        rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
-
-      const tierConfig = PRICING_TIERS[tier]
-      const currentCount = usage?.ai_summaries || 0
-      // Use cover_letters limit as a proxy for AI summaries (both are AI text generation)
-      const limit = tierConfig.limits.cover_letters
-
-      if (limit === 0) {
+      const usageCheck = await canUseFeature(user.id, 'ai_summaries')
+      if (!usageCheck.allowed) {
         return NextResponse.json({
-          error: 'Summary enhancement is available for Core and Full subscribers. Upgrade to unlock this feature.',
+          error: usageCheck.reason || 'AI summary limit reached. Upgrade your plan for more.',
           limitReached: true,
-          paywalled: true,
-          tier
-        }, { status: 403 })
-      }
-
-      if (currentCount >= limit) {
-        return NextResponse.json({
-          error: `You've used all ${limit} AI generation${limit !== 1 ? 's' : ''}. ${tier === 'core' ? 'Upgrade to Full for more.' : 'Monthly limit reached.'}`,
-          limitReached: true,
-          tier
         }, { status: 403 })
       }
     }
@@ -170,6 +147,7 @@ Return ONLY the improved summary, nothing else.`
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 400
     await logApiUsage(user.id, 'enhance-summary', tokensUsed, 'claude-sonnet-4-20250514')
     await incrementUsage(user.id, 'ai_summaries')
+    await incrementPeriodUsage(user.id, 'ai_summaries')
 
     return NextResponse.json({ enhanced })
   } catch (error) {

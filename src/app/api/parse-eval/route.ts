@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
 import { translateMilitaryToCivilian, cleanEvalText } from '@/lib/constants/military-dictionary'
 import { hasCriticalPII } from '@/lib/pii-scanner'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
@@ -384,6 +385,7 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 2000
     await logApiUsage(user.id, 'parse-eval', tokensUsed, 'claude-sonnet-4-20250514')
     await incrementUsage(user.id, 'eval_uploads')
+    await incrementPeriodUsage(user.id, 'eval_uploads')
 
     return NextResponse.json({
       uploadId: upload.id,

@@ -108,7 +108,7 @@ export function CoverLetterTool({
     }
 
     if (remaining <= 0 && !isRegenerate) {
-      setError('You have reached your cover letter limit. Upgrade to Pro for more.')
+      setError('You have reached your cover letter limit. Upgrade to Core for more.')
       return
     }
 

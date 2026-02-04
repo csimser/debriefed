@@ -3,7 +3,8 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage } from '@/lib/usage-tracking'
-import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
+import { canUseFeature, incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }
 
-    // Check usage limits for free tier (1 LinkedIn upload)
+    // Check usage limits
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('subscription_tier, email')
@@ -38,25 +39,12 @@ export async function POST(request: NextRequest) {
 
     // Admin bypass
     if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
-      const rawTier = profile?.subscription_tier || 'free'
-      const tier: TierId = ['core', 'full'].includes(rawTier) ? rawTier as TierId :
-        rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
-
-      // Free tier: check if they've already used their 1 LinkedIn upload
-      if (tier === 'free') {
-        const { count } = await supabaseAdmin
-          .from('api_usage')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .eq('endpoint', 'parse-linkedin-pdf')
-
-        if (count && count >= 1) {
-          return NextResponse.json({
-            error: 'You\'ve used your free LinkedIn profile upload. Upgrade to Core for unlimited uploads.',
-            limitReached: true,
-            tier: 'free'
-          }, { status: 403 })
-        }
+      const usageCheck = await canUseFeature(user.id, 'linkedin_profile_analysis')
+      if (!usageCheck.allowed) {
+        return NextResponse.json({
+          error: usageCheck.reason || 'LinkedIn profile upload limit reached. Upgrade your plan for more.',
+          limitReached: true,
+        }, { status: 403 })
       }
     }
 
@@ -200,6 +188,7 @@ Return ONLY valid JSON, no other text.`
     // Track usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 3000
     await logApiUsage(user.id, 'parse-linkedin-pdf', tokensUsed, 'claude-sonnet-4-20250514')
+    await incrementPeriodUsage(user.id, 'linkedin_profile_analysis')
 
     return NextResponse.json({ profileData: linkedInProfile })
   } catch (error: any) {

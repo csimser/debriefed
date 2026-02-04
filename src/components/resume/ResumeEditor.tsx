@@ -28,7 +28,6 @@ interface ResumeEditorProps {
   usage?: {
     private_downloads: number
     federal_downloads: number
-    federal_or_tailored_used?: boolean
   }
 }
 
@@ -116,14 +115,13 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
   // Download limit check
   const privateDownloads = usage?.private_downloads || 0
   const federalDownloads = usage?.federal_downloads || 0
-  const federalOrTailoredUsed = usage?.federal_or_tailored_used || false
 
   // Check if download limits have been reached based on tier
   const privateLimit = TIER_LIMITS[userTier].resumes
-  const federalLimit = isFreeUser ? 1 : TIER_LIMITS[userTier].resumes
+  const federalLimit = isFreeUser ? 0 : TIER_LIMITS[userTier].resumes
   const hasReachedPrivateLimit = privateDownloads >= privateLimit
   const hasReachedFederalLimit = isFreeUser
-    ? (federalOrTailoredUsed || federalDownloads >= 1)
+    ? true // Free tier: no federal resumes
     : federalDownloads >= federalLimit
 
   // State for showing limit reached modal

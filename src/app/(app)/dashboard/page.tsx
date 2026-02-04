@@ -14,6 +14,8 @@ function getDashboardLimits(tier: string) {
     job_analyses: getTierLimit(normalizedTier, 'job_analyses'),
     cover_letters: getTierLimit(normalizedTier, 'cover_letters'),
     linkedin_analyses: getTierLimit(normalizedTier, 'linkedin_analyses'),
+    resume_imports: getTierLimit(normalizedTier, 'resume_imports'),
+    ai_summaries: getTierLimit(normalizedTier, 'ai_summaries'),
   }
 }
 

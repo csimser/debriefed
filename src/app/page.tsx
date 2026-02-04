@@ -251,12 +251,15 @@ export default async function HomePage({
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Private Resume" limit="1" />
-              <PricingFeature label="Federal OR Tailored Resume" limit="1" tooltip="Your choice: use for a federal resume OR a tailored resume from Job Match" />
               <PricingFeature label="Cover Letter" limit="1" />
               <PricingFeature label="Job Match Analysis" limit="1" />
-              <PricingFeature label="Bullet Translations" limit="5" />
-              <PricingFeature label="Eval Uploads" limit="3" />
-              <PricingFeature label="LinkedIn Profile Score" />
+              <PricingFeature label="Bullet Translations" limit="10" />
+              <PricingFeature label="Eval Uploads" limit="2" />
+              <PricingFeature label="Resume Import (PDF)" limit="1" />
+              <PricingFeature label="AI Summary Generation" limit="1" />
+              <PricingFeature label="LinkedIn Headline" limit="1" />
+              <PricingFeature label="LinkedIn Summary" limit="1" />
+              <PricingFeature label="LinkedIn Profile Analysis" limit="1" />
               <PricingFeature label="LinkedIn Recommendations" unavailable />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="2" isLast />
@@ -279,14 +282,18 @@ export default async function HomePage({
               <span className="font-heading text-3xl font-bold text-gold">Coming Soon</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes (private + tailored)" limit="5" tooltip="Includes both private resumes and tailored resumes from Job Match" />
+              <PricingFeature label="Private Resumes" limit="5" />
               <PricingFeature label="Federal Resumes" limit="5" />
               <PricingFeature label="Cover Letters" limit="10" />
-              <PricingFeature label="Job Match Analyses" limit="10" tooltip="Analysis only; tailored resumes count against resume limit" />
+              <PricingFeature label="Job Match Analyses" limit="15" />
               <PricingFeature label="Bullet Translations" limit="50" />
               <PricingFeature label="Eval Uploads" limit="10" />
-              <PricingFeature label="LinkedIn Profile Score" />
+              <PricingFeature label="Resume Imports" limit="5" />
+              <PricingFeature label="AI Summary Generations" limit="10" />
+              <PricingFeature label="LinkedIn Headlines & Summaries" limit="15" />
+              <PricingFeature label="LinkedIn Profile Analyses" limit="10" />
               <PricingFeature label="LinkedIn Recommendations" />
+              <PricingFeature label="Daily rate limits apply" tooltip="Daily limits prevent abuse while keeping your period limits generous" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
@@ -305,14 +312,17 @@ export default async function HomePage({
               <span className="font-heading text-3xl font-bold text-gold">Coming Soon</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes (private + tailored)" limit="30/mo" tooltip="Includes both private resumes and tailored resumes from Job Match" />
-              <PricingFeature label="Federal Resumes" limit="30/mo" />
-              <PricingFeature label="Cover Letters" limit="30/mo" />
-              <PricingFeature label="Job Match Analyses" limit="45/mo" tooltip="Analysis only; tailored resumes count against resume limit" />
-              <PricingFeature label="Bullet Translations" limit="150/mo" />
-              <PricingFeature label="Eval Uploads" limit="30/mo" />
-              <PricingFeature label="LinkedIn Profile Score" />
+              <PricingFeature label="Private Resumes" limit="30" />
+              <PricingFeature label="Federal Resumes" limit="30" />
+              <PricingFeature label="Cover Letters" limit="30" />
+              <PricingFeature label="Job Match Analyses" limit="45" />
+              <PricingFeature label="Bullet Translations" limit="150" />
+              <PricingFeature label="Eval Uploads" limit="30" />
+              <PricingFeature label="Resume Imports" limit="Unlimited" />
+              <PricingFeature label="AI Summaries" limit="Unlimited" />
+              <PricingFeature label="LinkedIn Tools" limit="Unlimited" />
               <PricingFeature label="LinkedIn Recommendations" />
+              <PricingFeature label="Daily rate limits apply" tooltip="Daily limits prevent abuse while keeping your period limits generous" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
@@ -325,7 +335,7 @@ export default async function HomePage({
 
         {/* Footer Note */}
         <p className="text-center text-sm text-text-muted mt-8 max-w-2xl mx-auto">
-          Full tier includes daily rate limits to ensure fair usage. Need enterprise access? Contact us.
+          Core and Full tiers include daily rate limits to ensure fair usage. Need enterprise access? Contact us.
         </p>
       </section>
 

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
 import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import crypto from 'crypto'
 
@@ -459,6 +460,7 @@ JOB-SPECIFIC TAILORING:
     const tokensUsed = inputTokens + outputTokens
     await logApiUsage(user.id, 'job-match', tokensUsed, 'claude-sonnet-4-20250514')
     await incrementUsage(user.id, 'job_matches')
+    await incrementPeriodUsage(user.id, 'job_match_analysis')
 
     // Log activity
     await logActivity(user.id, 'job_analysis_run', {

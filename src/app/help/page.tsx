@@ -11,11 +11,11 @@ const FAQ_SECTIONS = [
     questions: [
       {
         q: 'How do I upgrade my account?',
-        a: 'Navigate to the Pricing page from your dashboard or visit /pricing. Choose between Core ($35 for 30 days) or Full ($75 for 90 days) plans. Click the upgrade button and complete checkout through our secure Stripe payment system. Your new limits are available immediately after purchase.',
+        a: 'Navigate to the Pricing page from your dashboard or visit /pricing. Choose between Core ($35 for 30 days) or Full ($75 for 90 days) plans. Click the upgrade button and complete checkout through our secure Stripe payment system. Your new limits are available immediately after purchase. Both paid tiers include daily rate limits to ensure fair usage.',
       },
       {
         q: "What's the difference between Core and Full?",
-        a: 'Core ($35/30 days) gives you more resumes, cover letters, and job match analyses - perfect for an active job search. Full ($75/90 days) provides even higher limits plus extended access time, ideal for longer transition periods or career changers exploring multiple paths. Both unlock all premium features like the full LinkedIn Optimizer.',
+        a: 'Core ($35/30 days) gives you 5 private and 5 federal resumes, 10 cover letters, 15 job match analyses, resume imports, and AI summaries - perfect for an active job search. Full ($75/90 days) provides 30 resumes, unlimited imports and AI summaries, and extended 90-day access, ideal for longer transition periods or career changers exploring multiple paths. Both unlock all premium features including LinkedIn Recommendations and all 6 templates.',
       },
       {
         q: 'How do I cancel or get a refund?',

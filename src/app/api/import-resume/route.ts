@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage } from '@/lib/usage-tracking'
+import { logApiUsage, incrementUsage as incrementCumulativeUsage } from '@/lib/usage-tracking'
 import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
+import { canUseFeature, incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 
 const anthropic = new Anthropic()
@@ -92,6 +93,17 @@ export async function POST(request: NextRequest) {
       .select('email')
       .eq('user_id', user.id)
       .single()
+
+    // Check resume import usage limit (admin bypass handled inside canUseFeature)
+    if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
+      const usageCheck = await canUseFeature(user.id, 'resume_imports')
+      if (!usageCheck.allowed) {
+        return NextResponse.json({
+          error: usageCheck.reason || 'Resume import limit reached. Upgrade your plan for more.',
+          limitReached: true,
+        }, { status: 403 })
+      }
+    }
 
     const formData = await request.formData()
     const file = formData.get('file') as File
@@ -234,6 +246,10 @@ ${resumeText.substring(0, 15000)}${resumeText.length > 15000 ? '\n...[truncated]
     if (shouldSave) {
       await saveToDatabase(user.id, result)
     }
+
+    // Track usage - period-based (usage_tracking table) and cumulative (usage table)
+    await incrementPeriodUsage(user.id, 'resume_imports')
+    await incrementCumulativeUsage(user.id, 'resume_imports')
 
     // Track API usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 4000

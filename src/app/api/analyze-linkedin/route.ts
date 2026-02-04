@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
+import { canUseFeature, incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
 import crypto from 'crypto'
 
 const anthropic = new Anthropic({
@@ -95,6 +96,15 @@ export async function POST(request: NextRequest) {
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
+    }
+
+    // Check usage limit
+    const usageCheck = await canUseFeature(user.id, 'linkedin_profile_analysis')
+    if (!usageCheck.allowed) {
+      return NextResponse.json({
+        error: usageCheck.reason || 'LinkedIn analysis limit reached. Upgrade your plan for more.',
+        limitReached: true,
+      }, { status: 403 })
     }
 
     const { linkedInData, targetCriteria, isPro } = await request.json()
@@ -467,6 +477,7 @@ Return ONLY valid JSON.`
     // Track usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 6000
     await logApiUsage(user.id, 'analyze-linkedin', tokensUsed, 'claude-sonnet-4-20250514')
+    await incrementPeriodUsage(user.id, 'linkedin_profile_analysis')
     await incrementUsage(user.id, 'ai_summaries')
 
     // Cache the result

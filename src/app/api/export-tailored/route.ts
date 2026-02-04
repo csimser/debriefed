@@ -6,7 +6,7 @@ import { TemplateId } from '@/lib/templates'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
-import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { PRICING_TIERS, DAILY_RATE_LIMITS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
 import React from 'react'
 
 const supabaseAdmin = createAdminClient(
@@ -51,34 +51,52 @@ export async function POST(request: NextRequest) {
 
     const { data: usage } = await supabaseAdmin
       .from('usage')
-      .select('private_downloads, federal_or_tailored_used, monthly_private_downloads, daily_private_downloads, monthly_reset_date, daily_reset_date')
+      .select('private_downloads, monthly_private_downloads, daily_private_downloads, monthly_reset_date, daily_reset_date')
       .eq('user_id', user.id)
       .single()
 
     // Determine tier
     const rawTier = profile?.subscription_tier || 'free'
-    const tier: TierId = ['core', 'full'].includes(rawTier) ? rawTier as TierId :
+    const tier: TierId = ['core', 'full', 'expired'].includes(rawTier) ? rawTier as TierId :
       rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
 
     // Admin bypass
     if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
       const tierConfig = PRICING_TIERS[tier]
       const privateDownloads = usage?.private_downloads || 0
-      const federalOrTailoredUsed = usage?.federal_or_tailored_used || false
 
-      // Free tier: tailored resumes use the flex slot
-      if (tier === 'free') {
-        if (federalOrTailoredUsed) {
-          return NextResponse.json({
-            error: 'You\'ve used your free federal/tailored resume. Upgrade to Core for more.',
-            limitReached: true,
-            tier: 'free'
-          }, { status: 403 })
-        }
+      // Expired tier: allow downloads (skip limit checks)
+      if (tier === 'expired') {
+        // Downloads are allowed for expired tier, skip all limit checks
+      }
+      // Free tier: tailored resumes require Core tier
+      else if (tier === 'free') {
+        return NextResponse.json({
+          error: 'Tailored resumes require Core tier.',
+          limitReached: true,
+          tier: 'free'
+        }, { status: 403 })
       }
       // Core tier: tailored resumes count against private_resumes limit
       else if (tier === 'core') {
         const limit = tierConfig.limits.private_resumes
+
+        // Check daily limits for Core tier
+        const now = new Date()
+        const dailyResetDate = usage?.daily_reset_date ? new Date(usage.daily_reset_date) : null
+        const needsDailyReset = !dailyResetDate || dailyResetDate <= now
+        const dailyPrivate = needsDailyReset ? 0 : (usage?.daily_private_downloads || 0)
+        const dailyLimit = DAILY_RATE_LIMITS.core.private_resumes
+
+        if (dailyPrivate >= dailyLimit) {
+          return NextResponse.json({
+            error: 'Daily resume download limit reached. Resets at midnight.',
+            limitReached: true,
+            tier: 'core',
+            isDailyLimit: true
+          }, { status: 403 })
+        }
+
         if (privateDownloads >= limit) {
           return NextResponse.json({
             error: `You've used all ${limit} resume downloads. Upgrade to Full for more.`,
@@ -100,7 +118,7 @@ export async function POST(request: NextRequest) {
         const dailyPrivate = needsDailyReset ? 0 : (usage?.daily_private_downloads || 0)
 
         const monthlyLimit = tierConfig.limits.private_resumes // 30
-        const dailyLimit = 10
+        const dailyLimit = DAILY_RATE_LIMITS.full.private_resumes // 10
 
         if (dailyPrivate >= dailyLimit) {
           return NextResponse.json({
@@ -158,21 +176,11 @@ export async function POST(request: NextRequest) {
       console.log('DOCX generated, size:', arrayBuffer.byteLength)
     }
 
-    // Increment usage based on tier
-    // Tailored resumes count against resume_downloads (private_resumes limit)
-    if (tier === 'free') {
-      // For free tier, mark the flex slot as used
-      await supabaseAdmin
-        .from('usage')
-        .update({ federal_or_tailored_used: true })
-        .eq('user_id', user.id)
-    } else {
-      // For paid tiers, increment private downloads
-      await supabaseAdmin.rpc('increment_private_downloads', { p_user_id: user.id })
-    }
+    // Increment usage - tailored resumes count against private downloads
+    await supabaseAdmin.rpc('increment_private_downloads', { p_user_id: user.id })
 
-    // For Full tier, also increment monthly and daily counters
-    if (tier === 'full') {
+    // For Core and Full tiers, also increment monthly and daily counters
+    if (tier === 'core' || tier === 'full') {
       const now = new Date()
       const tomorrow = new Date(now)
       tomorrow.setDate(tomorrow.getDate() + 1)

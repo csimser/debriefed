@@ -55,7 +55,7 @@ export function EvalUploader({ userId, currentUsage, usageLimit, onUploadComplet
     }
 
     if (remaining <= 0) {
-      setError('You have reached your upload limit. Upgrade to Pro for more.')
+      setError('You have reached your upload limit. Upgrade to Core for more.')
       return
     }
 

@@ -3,7 +3,8 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
-import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
+import { canUseFeature, incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 
 const anthropic = new Anthropic({
@@ -106,30 +107,13 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .single()
 
-    const { data: usage } = await supabaseAdmin
-      .from('usage')
-      .select('ai_summaries')
-      .eq('user_id', user.id)
-      .single()
-
-    // Admin bypass
-    if (!dbProfile?.email || !ADMIN_BYPASS_EMAILS.includes(dbProfile.email)) {
-      const rawTier = dbProfile?.subscription_tier || 'free'
-      const tier: TierId = ['core', 'full'].includes(rawTier) ? rawTier as TierId :
-        rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
-
-      const tierConfig = PRICING_TIERS[tier]
-      const currentCount = usage?.ai_summaries || 0
-      // Use linkedin_summary limit for LinkedIn content generation
-      const limit = tierConfig.limits.linkedin_summary
-
-      if (currentCount >= limit) {
-        return NextResponse.json({
-          error: `You've used all ${limit} AI generation${limit !== 1 ? 's' : ''}. ${tier === 'core' ? 'Upgrade to Full for more.' : 'Monthly limit reached.'}`,
-          limitReached: true,
-          tier
-        }, { status: 403 })
-      }
+    // Check usage limit (checks both headline and summary - use headline as the gate)
+    const usageCheck = await canUseFeature(user.id, 'linkedin_headline')
+    if (!usageCheck.allowed) {
+      return NextResponse.json({
+        error: usageCheck.reason || 'LinkedIn generation limit reached. Upgrade your plan for more.',
+        limitReached: true,
+      }, { status: 403 })
     }
 
     const {
@@ -370,6 +354,8 @@ Generate the About section with proper paragraph breaks.`
 
     // Track actual token usage (not hardcoded estimates)
     await logApiUsage(user.id, 'generate-linkedin', tokensUsed, 'claude-sonnet-4-20250514')
+    await incrementPeriodUsage(user.id, 'linkedin_headline')
+    await incrementPeriodUsage(user.id, 'linkedin_summary')
     await incrementUsage(user.id, 'ai_summaries')
 
     // Log activity

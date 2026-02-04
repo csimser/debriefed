@@ -1,10 +1,11 @@
 // Utility functions for consistent tier checking across the application
 // This ensures all tier-related logic uses the same validation
 
-export type Tier = 'free' | 'core' | 'full'
+export type Tier = 'free' | 'core' | 'full' | 'expired'
 
 // Tier hierarchy for access checks
 const TIER_ORDER: Record<Tier, number> = {
+  expired: -1,
   free: 0,
   core: 1,
   full: 2,
@@ -19,6 +20,7 @@ const TIER_MAPPINGS: Record<string, Tier> = {
   'full': 'full',
   'monthly': 'core',  // Subscription type
   'quarterly': 'full', // Subscription type
+  'expired': 'expired',
 }
 
 /**
@@ -53,12 +55,19 @@ export function hasAccess(userTier: Tier, requiredTier: Tier): boolean {
  * This is the most common check - used for template/feature gating
  */
 export function isPaidTier(tier: Tier): boolean {
-  return tier !== 'free'
+  return tier !== 'free' && tier !== 'expired'
+}
+
+/**
+ * Check if user has an expired subscription
+ */
+export function isExpiredTier(tier: Tier): boolean {
+  return tier === 'expired'
 }
 
 /**
  * Check if user has access to premium templates
- * Core and Full tiers have access to all templates
+ * Core and Full tiers have access
  */
 export function canAccessPremiumTemplates(tier: Tier): boolean {
   return hasAccess(tier, 'core')
@@ -74,41 +83,61 @@ export function canAccessLinkedInAnalyzer(tier: Tier): boolean {
 
 // Usage limits per tier (matches pricing-config.ts)
 export const TIER_LIMITS = {
+  expired: {
+    cover_letters: 0,
+    resumes: 0,
+    resume_imports: 0,
+    job_analyses: 0,
+    ai_summaries: 0,
+    linkedin_headlines: 0,
+    linkedin_summaries: 0,
+    linkedin_analyses: 0,
+    linkedin_recommendations: 0,
+    eval_uploads: 0,
+    bullet_translations: 0,
+    downloads: 999,
+  },
   free: {
     cover_letters: 1,
-    resumes: 1, // Base/private resume only
-    federal_or_tailored: 1, // Flex slot: federal OR tailored, not both
+    resumes: 1,
+    resume_imports: 1,
     job_analyses: 1,
-    linkedin_headlines: 999999, // Unlimited (part of score)
-    linkedin_summaries: 999999, // Unlimited (part of score)
-    linkedin_analyses: 999999, // Can see score
-    linkedin_recommendations: 0, // PAYWALLED
-    eval_uploads: 3,
-    bullet_translations: 5,
+    ai_summaries: 1,
+    linkedin_headlines: 1,
+    linkedin_summaries: 1,
+    linkedin_analyses: 1,
+    linkedin_recommendations: 0,
+    eval_uploads: 2,
+    bullet_translations: 10,
+    downloads: 999,
   },
   core: {
     cover_letters: 10,
     resumes: 5,
-    federal_or_tailored: 999999, // N/A for paid tiers
-    job_analyses: 10,
-    linkedin_headlines: 999999,
-    linkedin_summaries: 999999,
-    linkedin_analyses: 999999,
-    linkedin_recommendations: 999999, // Unlimited
+    resume_imports: 5,
+    job_analyses: 15,
+    ai_summaries: 10,
+    linkedin_headlines: 15,
+    linkedin_summaries: 15,
+    linkedin_analyses: 10,
+    linkedin_recommendations: 999999,
     eval_uploads: 10,
     bullet_translations: 50,
+    downloads: 999,
   },
   full: {
-    cover_letters: 30, // Monthly limit
-    resumes: 30, // Monthly limit
-    federal_or_tailored: 999999, // N/A for paid tiers
-    job_analyses: 45, // Monthly limit
+    cover_letters: 30,
+    resumes: 30,
+    resume_imports: 999999,
+    job_analyses: 45,
+    ai_summaries: 999999,
     linkedin_headlines: 999999,
     linkedin_summaries: 999999,
     linkedin_analyses: 999999,
     linkedin_recommendations: 999999,
-    eval_uploads: 30, // Monthly limit
-    bullet_translations: 150, // Monthly limit
+    eval_uploads: 30,
+    bullet_translations: 150,
+    downloads: 999,
   },
 } as const
 

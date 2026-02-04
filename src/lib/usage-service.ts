@@ -43,18 +43,27 @@ export function isAdmin(email: string | null | undefined): boolean {
 export async function getUserTier(userId: string): Promise<UserTierInfo> {
   const supabase = await createClient();
 
-  // Check for active subscription
+  // Check for active or expired subscription (most recent first)
   const { data: subscription } = await supabase
     .from('subscriptions')
     .select('id, tier, expires_at, status')
     .eq('user_id', userId)
-    .eq('status', 'active')
-    .gt('expires_at', new Date().toISOString())
+    .or('status.eq.active,status.eq.expired')
     .order('expires_at', { ascending: false })
     .limit(1)
     .single();
 
   if (subscription) {
+    const isExpired = new Date(subscription.expires_at) < new Date();
+    if (isExpired) {
+      return {
+        tier: 'expired',
+        subscriptionId: subscription.id,
+        expiresAt: new Date(subscription.expires_at),
+        isActive: false,
+      };
+    }
+    // Active subscription
     return {
       tier: subscription.tier as TierId,
       subscriptionId: subscription.id,
@@ -127,7 +136,7 @@ export async function getUsage(
     .eq('user_id', userId)
     .eq('feature', feature);
 
-  if (subscription && tier !== 'free') {
+  if (subscription && tier !== 'free' && tier !== 'expired') {
     // For paid tiers, only count within subscription period
     query = query
       .gte('period_start', subscription.started_at)
@@ -194,8 +203,8 @@ export async function checkLimit(
   // Get current usage
   let currentUsage = 0;
 
-  if (tier === 'free') {
-    // Free tier: count all-time usage from usage_tracking
+  if (tier === 'free' || tier === 'expired') {
+    // Free/expired tier: count all-time usage from usage_tracking
     const { data } = await supabase
       .from('usage_tracking')
       .select('count')
@@ -236,7 +245,7 @@ export async function checkLimit(
   };
 }
 
-// Check daily rate limit (only for Full tier)
+// Check daily rate limit (applies to Core and Full tiers)
 export async function checkDailyLimit(
   userId: string,
   feature: FeatureName
@@ -253,8 +262,8 @@ export async function checkDailyLimit(
 
   const { tier } = await getUserTier(userId);
 
-  // Daily limits only apply to Full tier
-  if (tier !== 'full') {
+  // Daily limits only apply to Core and Full tiers
+  if (tier !== 'core' && tier !== 'full') {
     return {
       allowed: true,
       remaining: 999999,
@@ -263,7 +272,7 @@ export async function checkDailyLimit(
     };
   }
 
-  const dailyLimit = DAILY_RATE_LIMITS[feature];
+  const dailyLimit = DAILY_RATE_LIMITS[tier][feature];
   const dailyUsage = await getDailyUsage(userId, feature);
   const remaining = Math.max(0, dailyLimit - dailyUsage);
 
@@ -286,7 +295,7 @@ export async function canUseFeature(
     return tierCheck;
   }
 
-  // Check daily limit for Full tier
+  // Check daily limit for Core and Full tiers
   const dailyCheck = await checkDailyLimit(userId, feature);
   if (!dailyCheck.allowed) {
     return {
@@ -322,8 +331,8 @@ export async function incrementUsage(
   let periodStart: Date;
   let periodEnd: Date;
 
-  if (tier === 'free') {
-    // Free tier: use a far past and future date for "lifetime"
+  if (tier === 'free' || tier === 'expired') {
+    // Free/expired tier: use a far past and future date for "lifetime"
     periodStart = new Date('2024-01-01');
     periodEnd = new Date('2099-12-31');
   } else if (subscriptionId) {
@@ -378,8 +387,8 @@ export async function incrementUsage(
     }
   }
 
-  // Also track daily usage for Full tier
-  if (tier === 'full') {
+  // Also track daily usage for Core and Full tiers
+  if (tier === 'core' || tier === 'full') {
     await supabase
       .from('daily_usage')
       .upsert(
@@ -421,15 +430,17 @@ export async function resetUsageOnPurchase(
   const features: FeatureName[] = [
     'private_resumes',
     'federal_resumes',
-    'federal_or_tailored',
+    'resume_imports',
     'eval_uploads',
     'bullet_translations',
     'job_match_analysis',
     'cover_letters',
+    'ai_summaries',
     'linkedin_headline',
     'linkedin_summary',
     'linkedin_profile_analysis',
     'linkedin_recommendations',
+    'downloads',
   ];
 
   for (const feature of features) {
@@ -453,55 +464,22 @@ export async function resetUsageOnPurchase(
     .eq('user_id', userId);
 }
 
-// Check if free user can use their flex slot (federal OR tailored resume)
-// Returns true if flex slot is still available
-export async function canUseFlexSlot(userId: string): Promise<{
-  available: boolean;
-  usedFor?: 'federal' | 'tailored';
-}> {
-  const { tier } = await getUserTier(userId);
-
-  // Paid tiers don't use flex slot system
-  if (tier !== 'free') {
-    return { available: true };
-  }
-
-  const usage = await checkLimit(userId, 'federal_or_tailored');
-
-  if (usage.allowed) {
-    return { available: true };
-  }
-
-  // Flex slot is used - we don't track which type it was used for currently
-  // Could be enhanced to track this in the future
-  return { available: false };
-}
-
-// Use the flex slot (for free tier federal or tailored resume)
-export async function useFlexSlot(userId: string): Promise<boolean> {
-  const { available } = await canUseFlexSlot(userId);
-
-  if (!available) {
-    return false;
-  }
-
-  return await incrementUsage(userId, 'federal_or_tailored');
-}
-
 // Get all usage for a user (for displaying in UI)
 export async function getAllUsage(userId: string): Promise<Record<FeatureName, UsageCheckResult>> {
   const features: FeatureName[] = [
     'private_resumes',
     'federal_resumes',
-    'federal_or_tailored',
+    'resume_imports',
     'eval_uploads',
     'bullet_translations',
     'job_match_analysis',
     'cover_letters',
+    'ai_summaries',
     'linkedin_headline',
     'linkedin_summary',
     'linkedin_profile_analysis',
     'linkedin_recommendations',
+    'downloads',
   ];
 
   const usage: Partial<Record<FeatureName, UsageCheckResult>> = {};

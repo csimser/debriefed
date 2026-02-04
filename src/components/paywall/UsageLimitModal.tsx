@@ -56,8 +56,8 @@ export function UsageLimitModal({
     }
   };
 
-  const showCoreUpgrade = currentTier === 'free';
-  const showFullUpgrade = currentTier === 'free' || currentTier === 'core';
+  const showCoreUpgrade = currentTier === 'free' || currentTier === 'expired';
+  const showFullUpgrade = currentTier === 'free' || currentTier === 'expired' || currentTier === 'core';
 
   // Contextual messaging based on tier and limit type
   const getTitle = () => {
@@ -82,6 +82,15 @@ export function UsageLimitModal({
           You&apos;ve used all {limit} {featureName} for this month.
           <br />
           <span className="text-sm text-gold">Resets on {monthlyResetDate}.</span>
+        </>
+      );
+    }
+    if (currentTier === 'expired') {
+      return (
+        <>
+          Your subscription has expired.
+          <br />
+          <span className="text-sm">Renew to regain access to {featureName.toLowerCase()}.</span>
         </>
       );
     }
@@ -156,7 +165,7 @@ export function UsageLimitModal({
         {!isDailyLimit && !isMonthlyLimit && (showCoreUpgrade || showFullUpgrade) && (
           <div className="space-y-3 mb-6">
             <p className="text-sm text-text-muted text-center mb-3">
-              {currentTier === 'free'
+              {currentTier === 'free' || currentTier === 'expired'
                 ? `Upgrade to Core for more ${featureName.toLowerCase()}:`
                 : `Upgrade to Full for higher limits:`}
             </p>
@@ -208,9 +217,9 @@ export function UsageLimitModal({
           </div>
         )}
 
-        {(isDailyLimit || isMonthlyLimit) && currentTier === 'full' && (
+        {(isDailyLimit || isMonthlyLimit) && (currentTier === 'core' || currentTier === 'full') && (
           <p className="text-sm text-text-muted text-center mb-6">
-            The Full tier includes {isDailyLimit ? 'daily' : 'monthly'} rate limits to ensure fair usage for all users.
+            The {currentTier === 'core' ? 'Core' : 'Full'} tier includes {isDailyLimit ? 'daily' : 'monthly'} rate limits to ensure fair usage for all users.
             {isDailyLimit
               ? ' Your daily limits will reset at midnight.'
               : monthlyResetDate
