@@ -17,6 +17,8 @@ interface ResumeFormProps {
   onChange: (content: any) => void
   userProfile: any
   profileSummary?: string
+  allSkills?: any[]
+  allCertifications?: any[]
 }
 
 // Federal resume option maps
@@ -51,7 +53,7 @@ const CLEARANCE_STATUS_OPTIONS = [
   { value: 'expired', label: 'Expired' },
 ]
 
-export function ResumeForm({ resumeId, content, resumeType, onChange, userProfile, profileSummary }: ResumeFormProps) {
+export function ResumeForm({ resumeId, content, resumeType, onChange, userProfile, profileSummary, allSkills = [], allCertifications = [] }: ResumeFormProps) {
   const updateContent = (key: string, value: any) => {
     onChange({ ...content, [key]: value })
   }
@@ -178,31 +180,25 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
         </div>
       </FormSection>
 
-      {/* Certifications */}
-      <FormSection title="Certifications" icon="✦">
-        <div className="flex flex-wrap gap-2">
-          {content.certifications?.map((cert: any) => (
-            <Badge key={cert.id} variant="gold">{cert.name}</Badge>
-          ))}
-          {(!content.certifications || content.certifications.length === 0) && (
-            <p className="text-text-muted">No certifications added.</p>
-          )}
-        </div>
-      </FormSection>
-
       {/* Skills */}
-      <FormSection title="Skills" icon="◆">
-        <div className="flex flex-wrap gap-2">
-          {content.skills?.map((skill: any) => (
-            <span key={skill.id} className="px-3 py-1 bg-bg-tertiary rounded text-sm">
-              {skill.name}
-            </span>
-          ))}
-          {(!content.skills || content.skills.length === 0) && (
-            <p className="text-text-muted">No skills added.</p>
-          )}
-        </div>
-      </FormSection>
+      <SkillCertSelector
+        title="Skills"
+        icon="◆"
+        allItems={allSkills}
+        selectedItems={content.skills || []}
+        onChange={(skills) => updateContent('skills', skills)}
+        renderLabel={(item) => item.name}
+      />
+
+      {/* Certifications */}
+      <SkillCertSelector
+        title="Certifications"
+        icon="✦"
+        allItems={allCertifications}
+        selectedItems={content.certifications || []}
+        onChange={(certs) => updateContent('certifications', certs)}
+        renderLabel={(item) => item.issuing_organization ? `${item.name} - ${item.issuing_organization}` : item.name}
+      />
 
       {/* Federal Resume Extra Fields - Only for federal resumes */}
       {resumeType === 'federal' && (
@@ -309,6 +305,113 @@ function FormSection({ title, icon, children }: { title: string; icon: string; c
       </div>
       {children}
     </div>
+  )
+}
+
+function SkillCertSelector({
+  title,
+  icon,
+  allItems,
+  selectedItems,
+  onChange,
+  renderLabel,
+}: {
+  title: string
+  icon: string
+  allItems: any[]
+  selectedItems: any[]
+  onChange: (items: any[]) => void
+  renderLabel: (item: any) => string
+}) {
+  // Match by name (stable) not ID (changes on re-import)
+  const selectedNames = new Set(
+    selectedItems.map((s: any) => (typeof s === 'string' ? s : s.name)?.toLowerCase())
+  )
+
+  const isItemSelected = (item: any) => selectedNames.has(item.name?.toLowerCase())
+
+  const toggle = (item: any) => {
+    if (isItemSelected(item)) {
+      // Remove by name match
+      onChange(selectedItems.filter((s: any) => {
+        const sName = (typeof s === 'string' ? s : s.name)?.toLowerCase()
+        return sName !== item.name?.toLowerCase()
+      }))
+    } else {
+      // Add the canonical item from allItems (current DB record with valid ID)
+      onChange([...selectedItems.filter((s: any) => {
+        const sName = (typeof s === 'string' ? s : s.name)?.toLowerCase()
+        return sName !== item.name?.toLowerCase()
+      }), item])
+    }
+  }
+
+  const selectAll = () => onChange([...allItems])
+  const deselectAll = () => onChange([])
+
+  // Count how many allItems are selected (by name match)
+  const selectedCount = allItems.filter(isItemSelected).length
+
+  if (allItems.length === 0) {
+    return (
+      <FormSection title={title} icon={icon}>
+        <p className="text-text-muted">No {title.toLowerCase()} added. Add them in your <a href="/profile" className="text-gold hover:underline">Profile</a>.</p>
+      </FormSection>
+    )
+  }
+
+  return (
+    <FormSection title={title} icon={icon}>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs text-text-muted">
+          {selectedCount} of {allItems.length} selected
+        </span>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={selectAll}
+            disabled={selectedCount === allItems.length}
+            className="text-xs text-gold hover:underline disabled:opacity-40 disabled:no-underline"
+          >
+            Select All
+          </button>
+          <span className="text-text-dim">|</span>
+          <button
+            type="button"
+            onClick={deselectAll}
+            disabled={selectedCount === 0}
+            className="text-xs text-text-muted hover:underline disabled:opacity-40 disabled:no-underline"
+          >
+            Deselect All
+          </button>
+        </div>
+      </div>
+      <div className="space-y-1">
+        {allItems.map((item: any) => {
+          const isSelected = isItemSelected(item)
+          return (
+            <label
+              key={item.id}
+              className={`flex items-center gap-3 px-3 py-2 rounded cursor-pointer transition-colors ${
+                isSelected
+                  ? 'bg-gold/10 border border-gold/30'
+                  : 'bg-bg-tertiary border border-transparent hover:border-border'
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => toggle(item)}
+                className="accent-gold w-4 h-4 shrink-0"
+              />
+              <span className={`text-sm ${isSelected ? 'text-text' : 'text-text-muted'}`}>
+                {renderLabel(item)}
+              </span>
+            </label>
+          )
+        })}
+      </div>
+    </FormSection>
   )
 }
 

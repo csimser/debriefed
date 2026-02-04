@@ -69,8 +69,11 @@ export function StepSkills({ data, updateData, onNext, onBack, saving, userId, s
     return PAYGRADE_SKILLS[data.paygrade] || []
   }, [data.paygrade])
 
-  // Skills already added
-  const existingSkillNames = new Set(data.skills.map(s => s.name.toLowerCase()))
+  // Skills already added — handle both objects {name} and legacy string entries
+  const existingSkillNames = new Set(data.skills.map(s => {
+    const name = typeof s === 'string' ? s : (s.name || '')
+    return name.toLowerCase()
+  }))
   const existingCertNames = new Set(data.certifications.map(c => c.name.toLowerCase()))
 
   // Filter MOS recommendations
@@ -312,7 +315,7 @@ export function StepSkills({ data, updateData, onNext, onBack, saving, userId, s
               key={skill.id}
               className="group inline-flex items-center gap-1 px-3 py-1.5 bg-bg-tertiary border border-border rounded text-sm"
             >
-              {skill.name}
+              {typeof skill === 'string' ? skill : skill.name}
               <button
                 onClick={() => handleRemoveSkill(skill.id)}
                 className="opacity-0 group-hover:opacity-100 text-status-red hover:bg-status-red/10 rounded px-1 transition-all"

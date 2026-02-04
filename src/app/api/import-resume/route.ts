@@ -13,20 +13,7 @@ const supabaseAdmin = createAdminClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const EXTRACTION_PROMPT = `You are an expert resume parser. Extract structured data from the following resume.
-
-## INSTRUCTIONS:
-1. Extract ALL information you can find, being thorough but accurate
-2. For work experience, capture each job with its bullets/accomplishments
-3. Determine if each job is military or civilian based on context clues:
-   - Military indicators: USS, military rank, base/post names, branches (Army, Navy, Air Force, Marines, Coast Guard), military acronyms
-   - Civilian indicators: regular company names, civilian job titles
-4. Preserve the original text of accomplishment bullets
-5. Parse dates in YYYY-MM format where possible
-6. Do NOT include first_name, last_name, or email in the response (these are locked fields)
-
-## OUTPUT FORMAT:
-Return a JSON object with this exact structure:
+const EXTRACTION_PROMPT = `Extract ALL information from this resume. Return ONLY valid JSON with this structure. Extract whatever exists - leave fields as null if not found:
 
 {
   "contact": {
@@ -35,39 +22,41 @@ Return a JSON object with this exact structure:
     "state": "2-letter state code or null",
     "linkedin_url": "string or null"
   },
-  "professional_summary": "string or null - the summary/objective section if present",
+  "professional_summary": "string or null - the summary/objective paragraph at the top",
   "experiences": [
     {
-      "employment_type": "military" or "civilian",
-      "job_title": "original job title",
+      "job_title": "exact title from resume",
       "civilian_title": "translated civilian title if military, otherwise same as job_title",
-      "organization": "company/unit name",
+      "organization": "company or military unit name",
+      "employment_type": "military or civilian - infer from context",
       "city": "string or null",
       "state": "2-letter state code or null",
-      "start_date": "YYYY-MM or null",
-      "end_date": "YYYY-MM or null (null if current)",
-      "is_current": boolean,
-      "bullets": ["accomplishment 1", "accomplishment 2", ...]
+      "start_date": "YYYY-MM-DD format, use -01 for day if only month/year shown",
+      "end_date": "YYYY-MM-DD or null if current",
+      "is_current": true or false,
+      "bullets": ["each accomplishment bullet as a string"]
     }
   ],
   "education": [
     {
-      "degree": "Bachelor's, Master's, etc.",
-      "field_of_study": "Computer Science, etc.",
-      "institution": "school name",
-      "graduation_date": "YYYY-MM or YYYY",
-      "gpa": "string or null"
+      "degree_type": "High School, Associate, Bachelor, Master, Doctorate, or Trade/Technical",
+      "field_of_study": "string or null",
+      "school_name": "string",
+      "graduation_year": "YYYY string or null"
     }
   ],
   "certifications": [
     {
       "name": "certification name",
-      "issuing_org": "issuing organization",
-      "date_earned": "YYYY-MM or null",
-      "expiration_date": "YYYY-MM or null"
+      "issuing_organization": "issuer or null"
     }
   ],
-  "skills": ["skill1", "skill2", ...],
+  "skills": [
+    {
+      "name": "skill name",
+      "category": "technical, professional, leadership, or software"
+    }
+  ],
   "clearance": "None | Confidential | Secret | Top Secret | TS/SCI | null",
   "military_info": {
     "branch": "Army | Navy | Air Force | Marines | Coast Guard | Space Force | null",
@@ -76,8 +65,17 @@ Return a JSON object with this exact structure:
   }
 }
 
-Return ONLY the JSON object, no other text or markdown formatting.
-If you cannot parse something, use null rather than guessing.`
+Rules:
+- Extract EVERY job, even if formatting varies
+- If multiple certs are listed on one line, split them into separate entries
+- If a skill contains "|" or "/", split into separate skills. Example: "IT | Cybersecurity Compliance" becomes two skills: {"name":"IT","category":"technical"} and {"name":"Cybersecurity Compliance","category":"technical"}. Keep "&" together (e.g. "Training & Development" is one skill).
+- For military resumes, set employment_type to "military" for military jobs
+- Infer city/state from location if provided
+- If dates show "Mar. 2006" convert to "2006-03-01"
+- If dates show "2006" alone, use "2006-01-01"
+- If dates show "Present" or "Current" set end_date to null and is_current to true
+- Do NOT include first_name, last_name, or email (these are locked fields)
+- Return ONLY the JSON, no markdown, no backticks, no explanation`
 
 export async function POST(request: NextRequest) {
   try {
@@ -97,6 +95,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData()
     const file = formData.get('file') as File
+    const shouldSave = formData.get('save') === 'true'
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
@@ -191,14 +190,12 @@ ${resumeText.substring(0, 15000)}${resumeText.length > 15000 ? '\n...[truncated]
     console.log('Skills:', result.skills?.length || 0)
     console.log('Military info:', result.military_info || 'none')
     console.log('Clearance:', result.clearance || 'none')
+    console.log('Save to database:', shouldSave)
 
     // Post-process: validate/supplement civilian titles using local crosswalk
     if (result.experiences && Array.isArray(result.experiences)) {
-      console.log('Experiences to import:', result.experiences.length)
-
       for (const exp of result.experiences) {
         if (exp.employment_type === 'military' && exp.job_title) {
-          // Try to extract MOS/rating from job title and look up civilian equivalent
           const codeMatch = exp.job_title.match(/\b(\d{2}[A-Z]\d?|\d{4}|[A-Z]{2,4}|\d[A-Z]\d+X?\d*)\b/)
           if (codeMatch) {
             const localResult = getCivilianJobs(
@@ -206,7 +203,6 @@ ${resumeText.substring(0, 15000)}${resumeText.length > 15000 ? '\n...[truncated]
               result.military_info?.branch || undefined
             )
             if (localResult && localResult.civilian_titles?.length > 0) {
-              // Use local crosswalk civilian title if AI didn't provide one or gave a generic one
               if (!exp.civilian_title || exp.civilian_title === exp.job_title) {
                 exp.civilian_title = localResult.civilian_titles[0]
               }
@@ -216,20 +212,28 @@ ${resumeText.substring(0, 15000)}${resumeText.length > 15000 ? '\n...[truncated]
       }
     }
 
-    // Log what fields will be available for profile update
-    const profileFieldsAvailable = []
-    if (result.contact?.phone) profileFieldsAvailable.push('phone')
-    if (result.contact?.city) profileFieldsAvailable.push('city')
-    if (result.contact?.state) profileFieldsAvailable.push('state')
-    if (result.contact?.linkedin_url) profileFieldsAvailable.push('linkedin_url')
-    if (result.professional_summary) profileFieldsAvailable.push('professional_summary')
-    if (result.military_info?.branch) profileFieldsAvailable.push('branch')
-    if (result.military_info?.rank) profileFieldsAvailable.push('rank')
-    if (result.clearance) profileFieldsAvailable.push('clearance')
-    console.log('Profile fields available for update:', profileFieldsAvailable)
-    console.log('Education entries:', result.education?.length || 0)
-    console.log('Certifications:', result.certifications?.length || 0)
-    console.log('Skills:', result.skills?.length || 0)
+    // Post-process: split skills that contain "|" or "/"
+    if (result.skills && Array.isArray(result.skills)) {
+      const expanded: any[] = []
+      for (const skill of result.skills) {
+        const name = typeof skill === 'string' ? skill : skill.name
+        const category = typeof skill === 'string' ? 'general' : (skill.category || 'general')
+        if (/[|/]/.test(name)) {
+          const parts = name.split(/[|/]/).map((s: string) => s.trim()).filter(Boolean)
+          for (const part of parts) {
+            expanded.push({ name: part, category })
+          }
+        } else {
+          expanded.push({ name, category })
+        }
+      }
+      result.skills = expanded
+    }
+
+    // Save to database if requested
+    if (shouldSave) {
+      await saveToDatabase(user.id, result)
+    }
 
     // Track API usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 4000
@@ -237,6 +241,7 @@ ${resumeText.substring(0, 15000)}${resumeText.length > 15000 ? '\n...[truncated]
 
     return NextResponse.json({
       success: true,
+      saved: shouldSave,
       data: result,
       extractedTextLength: resumeText.length,
     })
@@ -244,6 +249,139 @@ ${resumeText.substring(0, 15000)}${resumeText.length > 15000 ? '\n...[truncated]
     console.error('Resume import error:', error)
     return NextResponse.json({ error: error?.message || 'Failed to import resume' }, { status: 500 })
   }
+}
+
+/**
+ * Save parsed resume data to database.
+ * Only updates fields that have non-null values.
+ */
+async function saveToDatabase(userId: string, parsed: any) {
+  // 1. Update profile - only fields that aren't null
+  const profileUpdate: Record<string, any> = {}
+  if (parsed.contact?.phone) profileUpdate.phone = parsed.contact.phone
+  if (parsed.contact?.city) profileUpdate.city = parsed.contact.city
+  if (parsed.contact?.state) profileUpdate.state = parsed.contact.state
+  if (parsed.contact?.linkedin_url) profileUpdate.linkedin_url = parsed.contact.linkedin_url
+  if (parsed.professional_summary) profileUpdate.professional_summary = parsed.professional_summary
+  if (parsed.military_info?.branch) profileUpdate.branch = parsed.military_info.branch
+  if (parsed.military_info?.rank) profileUpdate.rank = parsed.military_info.rank
+  if (parsed.military_info?.years_of_service) {
+    profileUpdate.years_of_service = parsed.military_info.years_of_service
+  }
+  if (parsed.clearance && parsed.clearance !== 'None') {
+    const clearanceMap: Record<string, string> = {
+      'Confidential': 'confidential',
+      'Secret': 'secret',
+      'Top Secret': 'top_secret',
+      'TS/SCI': 'ts_sci',
+    }
+    profileUpdate.clearance = clearanceMap[parsed.clearance] || parsed.clearance.toLowerCase()
+  }
+
+  if (Object.keys(profileUpdate).length > 0) {
+    const { error } = await supabaseAdmin
+      .from('profiles')
+      .update(profileUpdate)
+      .eq('user_id', userId)
+    if (error) console.error('Profile update failed:', error)
+    else console.log('Profile updated:', Object.keys(profileUpdate))
+  }
+
+  // 2. Insert experiences with bullets
+  if (parsed.experiences?.length) {
+    for (let i = 0; i < parsed.experiences.length; i++) {
+      const exp = parsed.experiences[i]
+      const isMilitary = exp.employment_type === 'military'
+
+      const { data: expData, error: expError } = await supabaseAdmin
+        .from('experience')
+        .insert({
+          user_id: userId,
+          job_title: exp.job_title,
+          civilian_title: exp.civilian_title || exp.job_title,
+          organization: isMilitary ? exp.organization : null,
+          company_name: !isMilitary ? exp.organization : null,
+          location: exp.city && exp.state ? `${exp.city}, ${exp.state}` : null,
+          employment_type: exp.employment_type || 'civilian',
+          city: exp.city || null,
+          state: exp.state || null,
+          start_date: exp.start_date || null,
+          end_date: exp.is_current ? null : exp.end_date || null,
+          is_current: exp.is_current || false,
+          sort_order: i,
+          hours_per_week: 40,
+        })
+        .select()
+        .single()
+
+      if (expError) {
+        console.error(`Experience ${i} insert failed:`, expError)
+        continue
+      }
+
+      // Insert bullets for this experience
+      if (expData && exp.bullets?.length) {
+        const bulletInserts = exp.bullets.map((bullet: string, j: number) => ({
+          experience_id: expData.id,
+          original_text: bullet,
+          translated_text: bullet,
+          status: 'accepted',
+          sort_order: j,
+        }))
+        const { error: bulletError } = await supabaseAdmin
+          .from('experience_bullets')
+          .insert(bulletInserts)
+        if (bulletError) console.error(`Bullets for experience ${i} failed:`, bulletError)
+      }
+    }
+    console.log(`Saved ${parsed.experiences.length} experiences`)
+  }
+
+  // 3. Insert education
+  if (parsed.education?.length) {
+    const eduInserts = parsed.education.map((edu: any, idx: number) => ({
+      user_id: userId,
+      school_name: edu.school_name || edu.institution || null,
+      degree_type: edu.degree_type || edu.degree || null,
+      field_of_study: edu.field_of_study || null,
+      graduation_year: edu.graduation_year || null,
+      gpa: edu.gpa || null,
+      sort_order: idx,
+    }))
+    const { error } = await supabaseAdmin.from('education').insert(eduInserts)
+    if (error) console.error('Education insert failed:', error)
+    else console.log(`Saved ${eduInserts.length} education entries`)
+  }
+
+  // 4. Insert certifications
+  if (parsed.certifications?.length) {
+    const certInserts = parsed.certifications.map((cert: any, idx: number) => ({
+      user_id: userId,
+      name: cert.name,
+      issuing_organization: cert.issuing_organization || cert.issuing_org || null,
+      issue_date: cert.issue_date || cert.date_earned || null,
+      expiration_date: cert.expiration_date || null,
+      sort_order: idx,
+    }))
+    const { error } = await supabaseAdmin.from('certifications').insert(certInserts)
+    if (error) console.error('Certifications insert failed:', error)
+    else console.log(`Saved ${certInserts.length} certifications`)
+  }
+
+  // 5. Insert skills
+  if (parsed.skills?.length) {
+    const skillInserts = parsed.skills.map((skill: any, idx: number) => ({
+      user_id: userId,
+      name: typeof skill === 'string' ? skill : skill.name,
+      category: typeof skill === 'string' ? 'general' : (skill.category || 'general'),
+      sort_order: idx,
+    }))
+    const { error } = await supabaseAdmin.from('skills').insert(skillInserts)
+    if (error) console.error('Skills insert failed:', error)
+    else console.log(`Saved ${skillInserts.length} skills`)
+  }
+
+  console.log('=== DATABASE SAVE COMPLETE ===')
 }
 
 async function extractTextFromPDF(file: File): Promise<string> {

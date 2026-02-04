@@ -3,37 +3,18 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { RedeemCodeCard } from '@/components/beta/RedeemCodeCard'
+import { getUserTier, isPaidTier as checkPaidTier, getTierLimit } from '@/lib/tier-utils'
 import Link from 'next/link'
 
-// Tier limits configuration
-const TIER_LIMITS = {
-  free: {
-    private_downloads: 1,
-    federal_downloads: 1,
-    job_analyses: 3,
-    cover_letters: 3,
-    linkedin_analyses: 1,
-  },
-  core: {
-    private_downloads: 999999,
-    federal_downloads: 999999,
-    job_analyses: 20,
-    cover_letters: 999999,
-    linkedin_analyses: 999999,
-  },
-  pro: {
-    private_downloads: 999999,
-    federal_downloads: 999999,
-    job_analyses: 999999,
-    cover_letters: 999999,
-    linkedin_analyses: 999999,
-  },
-}
-
-function getTierLimits(tier: string) {
-  if (tier === 'full') return TIER_LIMITS.pro
-  if (tier === 'basic') return TIER_LIMITS.core
-  return TIER_LIMITS[tier as keyof typeof TIER_LIMITS] || TIER_LIMITS.free
+function getDashboardLimits(tier: string) {
+  const normalizedTier = getUserTier({ tier })
+  return {
+    private_downloads: getTierLimit(normalizedTier, 'resumes'),
+    federal_downloads: getTierLimit(normalizedTier, 'resumes'),
+    job_analyses: getTierLimit(normalizedTier, 'job_analyses'),
+    cover_letters: getTierLimit(normalizedTier, 'cover_letters'),
+    linkedin_analyses: getTierLimit(normalizedTier, 'linkedin_analyses'),
+  }
 }
 
 // Profile fields for completeness calculation
@@ -99,8 +80,8 @@ export default async function DashboardPage() {
 
   // Get tier and limits
   const tier = profile?.subscription_tier || profile?.tier || 'free'
-  const limits = getTierLimits(tier)
-  const isPaidTier = tier === 'core' || tier === 'full' || tier === 'pro' || tier === 'basic'
+  const limits = getDashboardLimits(tier)
+  const isPaid = checkPaidTier(getUserTier({ tier }))
 
   // Calculate profile completeness
   const profileComplete = calculateProfileCompleteness(profile)
@@ -182,7 +163,7 @@ export default async function DashboardPage() {
               limit={limits.linkedin_analyses}
             />
           </div>
-          {!isPaidTier && (
+          {!isPaid && (
             <div className="mt-6 pt-6 border-t border-border">
               <Link href="/pricing">
                 <Button variant="secondary" size="sm">Upgrade for More →</Button>

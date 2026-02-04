@@ -9,6 +9,57 @@ import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config
 import { translateMilitaryToCivilian, cleanEvalText } from '@/lib/constants/military-dictionary'
 import { hasCriticalPII } from '@/lib/pii-scanner'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+import militaryTermsDictionary from '@/lib/debriefed-token-saver/military-terms-dictionary.json'
+import actionVerbsLibrary from '@/lib/debriefed-token-saver/action-verbs-library.json'
+
+/**
+ * Build compact jargon reference from the token-saver dictionary.
+ * Injected into the extraction prompt so Claude has the full translation table.
+ */
+function buildJargonReference(): string {
+  const sections: string[] = []
+
+  const acronymList = Object.entries(militaryTermsDictionary.acronyms)
+    .map(([k, v]) => `${k} → ${v}`)
+    .join(', ')
+  sections.push(`ACRONYM TRANSLATIONS:\n${acronymList}`)
+
+  const termList = Object.entries(militaryTermsDictionary.terms)
+    .map(([k, v]) => `${k} → ${v}`)
+    .join(', ')
+  sections.push(`TERM TRANSLATIONS:\n${termList}`)
+
+  const unitList = Object.entries(militaryTermsDictionary.unit_types)
+    .map(([k, v]) => `${k} → ${v}`)
+    .join(', ')
+  sections.push(`UNIT SIZE TRANSLATIONS:\n${unitList}`)
+
+  const equipList = Object.entries(militaryTermsDictionary.equipment_to_civilian)
+    .map(([k, v]) => `${k} → ${v}`)
+    .join(', ')
+  sections.push(`EQUIPMENT TRANSLATIONS:\n${equipList}`)
+
+  const phraseList = Object.entries(militaryTermsDictionary.action_phrases)
+    .map(([k, v]) => `${k} → ${v}`)
+    .join(', ')
+  sections.push(`EVAL PHRASE TRANSLATIONS:\n${phraseList}`)
+
+  return sections.join('\n\n')
+}
+
+function buildActionVerbReference(): string {
+  return Object.entries(actionVerbsLibrary)
+    .filter(([key]) => key !== 'meta')
+    .map(([, data]: [string, any]) => {
+      const topVerbs = (data as any).verbs.slice(0, 12).join(', ')
+      return `- ${(data as any).description}: ${topVerbs}`
+    })
+    .join('\n')
+}
+
+// Pre-built references (loaded once at module init from JSON dictionaries)
+const JARGON_REFERENCE = buildJargonReference()
+const ACTION_VERB_REFERENCE = buildActionVerbReference()
 
 /**
  * Get role-specific guidance for bullet translation
@@ -65,7 +116,7 @@ const supabaseAdmin = createAdminClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const SYSTEM_PROMPT = `You are an expert at extracting achievement bullets from military performance evaluations and award citations.
+const SYSTEM_PROMPT = `You are an expert military-to-civilian resume writer who specializes in extracting accomplishment bullets from military performance evaluations and award citations.
 
 You understand the format of:
 - Navy FITREPs and Chief Evals
@@ -73,50 +124,48 @@ You understand the format of:
 - Air Force EPRs
 - Award citations (NAM, COM, MSM, etc.)
 
-Your job is to identify and extract the strongest achievement bullets - statements that describe specific accomplishments, quantified results, and leadership examples.
+Your job is to extract every meaningful accomplishment and translate it into a strong, quantified civilian resume bullet.`
 
-Be EXTREMELY aggressive about cleaning the input text.`
+const EXTRACTION_PROMPT = `Extract accomplishment bullets from this military evaluation. Follow these rules precisely:
 
-const EXTRACTION_PROMPT = `You are extracting achievement bullets from a military evaluation. Be EXTREMELY aggressive about:
+## 1. EXTRACT EVERY ACCOMPLISHMENT
+- Find ALL quantifiable accomplishments, results, awards, and leadership examples
+- Focus on statements with numbers, percentages, dollar amounts, timelines, or personnel counts
+- Include awards and recognition mentioned
+- Combine related accomplishments if they tell one story
+- Skip filler language ("he/she is a", "demonstrated ability to", "proven track record")
+- Skip bullets with no measurable impact or specific accomplishment
+- If the same accomplishment appears in multiple sections, extract it only once
 
-1. REMOVING JUNK:
-- Delete ALL asterisks (*, **, ***, ****)
-- Delete ALL broken text fragments (random letters, partial words)
-- Delete page numbers, headers, footers, form labels
-- Delete signature blocks, dates, routing info
-- Delete ranking statements like "RANKED 1 OF 5" or "TOP 10%"
-- Delete any line under 30 characters
-- Delete anything that looks like OCR garbage
+## 2. TRANSLATE TO CIVILIAN LANGUAGE
+Remove ALL military jargon, acronyms, and terminology. Use this comprehensive translation dictionary — if a term appears here, you MUST use the civilian translation provided:
 
-2. TRANSLATING MILITARY JARGON (do this BEFORE returning):
-Replace these terms automatically:
-- "Sailor/Airman/Soldier/Marine" → "team member" or "professional"
-- "Command" → "organization" or "department"
-- "CO/XO/CMC" → "senior leadership" or "executive team"
-- "Watch" → "shift" or "operational coverage"
-- "Underway/deployment" → "operational period" or "field assignment"
-- "INSURV/inspection" → "federal compliance audit" or "regulatory inspection"
-- "Deckplate" → "frontline" or "hands-on"
-- "Ship/boat/vessel" → "facility" or "operation"
-- "Shipmate" → "colleague" or "team member"
-- "Mission" → "objective" or "project"
-- "Rate/rating/MOS" → "specialty" or "role"
-- "Quarterdeck" → "reception" or "main entrance"
-- "Liberty" → "time off"
-- "TAD/TDY" → "temporary assignment"
-- "PCS" → "relocation"
-- "Quals/qualifications" → "certifications"
-- All acronyms must be spelled out or translated to civilian equivalents
+${JARGON_REFERENCE}
+
+Rules:
+- NEVER leave military acronyms unexplained in the translated bullet
+- If a term is not in this dictionary, translate it to the closest civilian equivalent
+- Do NOT use "Sailor", "Marine", "Airman", "Soldier" — use "team member", "employee", or "professional"
+- Translate ALL rank references to civilian equivalents (e.g., CPO → Department Supervisor, LT → Senior Manager, SGT → Team Lead)
+
+## 3. FORMAT AS STRONG RESUME BULLETS
+Each bullet must follow this pattern:
+[Strong Action Verb] + [What was done] + [Scope/Scale] + [Result/Impact]
+
+Choose action verbs from these categories based on the bullet content:
+${ACTION_VERB_REFERENCE}
+
+Example input: "Led 42 work centers through INSURV prep, reducing CSMP backlog from 400 to 86 actions"
+Example output: "Directed maintenance readiness program across 42 departments, reducing compliance backlog by 78% (from 400 to 86 outstanding items) ahead of federal regulatory inspection"
+
+## 4. PRESERVE TRUTH
+- Keep numbers, percentages, dollar amounts, and timelines EXACTLY as stated
+- Do NOT fabricate or embellish numbers, outcomes, or accomplishments
+- If the eval says "significantly improved" with no number, use "improved" without a fake statistic
+- Only extract what is actually stated or directly implied in the eval
 
 ## TARGET ROLE GUIDANCE (if provided):
-{TARGET_ROLE_GUIDANCE}
-
-3. OUTPUT REQUIREMENTS:
-- Return ONLY clean, civilian-ready bullets
-- Each bullet must start with a strong action verb
-- Each bullet must be a complete, professional sentence
-- Preserve ALL numbers, percentages, and dollar amounts
-- If you can't clean a bullet properly, skip it entirely`
+{TARGET_ROLE_GUIDANCE}`
 
 export async function POST(request: NextRequest) {
   try {
@@ -201,35 +250,32 @@ ${crosswalkContext}${targetRole ? `\nTARGET ROLE: ${targetRole}${targetIndustry 
 DOCUMENT TEXT:
 ${pdfText.substring(0, 8000)} ${pdfText.length > 8000 ? '...[truncated]' : ''}
 
-Instructions:
-1. Find 5-15 of the STRONGEST achievement bullets
-2. Focus on statements that include:
-   - Quantified results (numbers, percentages, dollar amounts)
-   - Leadership examples (led, managed, supervised)
-   - Awards, recognition, or promotions mentioned
-   - Specific accomplishments with impact
-3. Clean and translate each bullet to civilian language
-4. Categorize each as: "leadership", "technical", or "achievement"
+Extract 5-15 of the strongest accomplishment bullets. For each bullet, return:
+- "original": the relevant text from the eval (cleaned of OCR junk, asterisks, form labels)
+- "translated": the civilian resume bullet version (fully translated, action verb first)
+- "metrics": array of extracted numbers/percentages/dollar amounts
+- "skills": array of relevant civilian skills demonstrated
+- "category": "leadership", "technical", or "achievement"
 
-Return a JSON object with this structure:
+Return a JSON object:
 {
   "bullets": [
     {
-      "original": "the cleaned text from the document",
-      "translated": "the civilian-translated version",
-      "metrics": ["extracted numbers/percentages"],
-      "skills": ["relevant civilian skills"],
-      "category": "leadership" | "technical" | "achievement"
+      "original": "cleaned text from the document",
+      "translated": "civilian resume bullet version",
+      "metrics": ["42 departments", "78% reduction"],
+      "skills": ["Program Management", "Process Improvement"],
+      "category": "leadership"
     }
   ],
   "evalPeriod": {
-    "startDate": "YYYY-MM" or null if not found,
-    "endDate": "YYYY-MM" or null if not found
+    "startDate": "YYYY-MM or null",
+    "endDate": "YYYY-MM or null"
   },
-  "jobTitle": "Extracted job title/billet if visible" or null
+  "jobTitle": "extracted job title or null"
 }
 
-Return ONLY valid JSON, no markdown or explanation. ALWAYS try to extract at least 3-5 bullets even if the text quality is poor. Only return an error if the text is completely unreadable with no achievement statements at all.`
+Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 bullets even if text quality is poor. Only return an error if the text is completely unreadable.`
 
     console.log('=== EVAL EXTRACTION DEBUG ===')
     console.log('Extracted text length:', pdfText.length)

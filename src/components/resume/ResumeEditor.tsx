@@ -147,6 +147,41 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     content: initialContent,
   })
 
+  // Sync skills/certs in resume content with current profile data (IDs may have changed after re-import)
+  const syncContentWithProfile = (content: any) => {
+    const synced = { ...content }
+
+    // Replace stale skill objects with current profile versions (matched by name)
+    if (content.skills?.length && profileData.skills?.length) {
+      const profileSkillsByName = new Map(
+        profileData.skills.map((s: any) => [s.name?.toLowerCase(), s])
+      )
+      synced.skills = content.skills
+        .map((s: any) => {
+          const name = (typeof s === 'string' ? s : s.name)?.toLowerCase()
+          return profileSkillsByName.get(name) || s
+        })
+        // Deduplicate by name
+        .filter((s: any, i: number, arr: any[]) =>
+          arr.findIndex((x: any) => x.name?.toLowerCase() === s.name?.toLowerCase()) === i
+        )
+    }
+
+    // Same for certifications
+    if (content.certifications?.length && profileData.certifications?.length) {
+      const profileCertsByName = new Map(
+        profileData.certifications.map((c: any) => [c.name?.toLowerCase(), c])
+      )
+      synced.certifications = content.certifications
+        .map((c: any) => profileCertsByName.get(c.name?.toLowerCase()) || c)
+        .filter((c: any, i: number, arr: any[]) =>
+          arr.findIndex((x: any) => x.name?.toLowerCase() === c.name?.toLowerCase()) === i
+        )
+    }
+
+    return synced
+  }
+
   // Load selected resume
   useEffect(() => {
     if (selectedId) {
@@ -156,11 +191,13 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
         const hasContent = resume.content && Object.keys(resume.content).length > 0 &&
           (resume.content.contact?.first_name || resume.content.experiences?.length > 0)
 
+        const content = hasContent ? syncContentWithProfile(resume.content) : initialContent
+
         setCurrentResume({
           name: resume.name,
           template: resume.template || 'clean',
           resume_type: resume.resume_type || 'private',
-          content: hasContent ? resume.content : initialContent,
+          content,
         })
       }
     }
@@ -413,6 +450,8 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                   onChange={(content) => !isLocked && setCurrentResume(prev => ({ ...prev, content }))}
                   userProfile={profileData.userProfile}
                   profileSummary={profileData.userProfile?.professional_summary}
+                  allSkills={profileData.skills}
+                  allCertifications={profileData.certifications}
                 />
               </div>
 

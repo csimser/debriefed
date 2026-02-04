@@ -303,8 +303,8 @@ export function ResumeImportModal({ isOpen, onClose, onImport }: ResumeImportMod
                   <div className="space-y-2">
                     {importedData.education.map((edu, idx) => (
                       <div key={idx}>
-                        <p className="font-semibold text-sm">{edu.degree} in {edu.field_of_study}</p>
-                        <p className="text-xs text-text-muted">{edu.institution} {edu.graduation_date && `(${edu.graduation_date})`}</p>
+                        <p className="font-semibold text-sm">{edu.degree_type || edu.degree}{edu.field_of_study ? ` in ${edu.field_of_study}` : ''}</p>
+                        <p className="text-xs text-text-muted">{edu.school_name || edu.institution} {(edu.graduation_year || edu.graduation_date) && `(${edu.graduation_year || edu.graduation_date})`}</p>
                       </div>
                     ))}
                   </div>
@@ -332,7 +332,7 @@ export function ResumeImportModal({ isOpen, onClose, onImport }: ResumeImportMod
                   <div className="flex flex-wrap gap-2">
                     {importedData.skills.map((skill, idx) => (
                       <span key={idx} className="px-3 py-1 bg-gold/20 text-gold rounded text-sm">
-                        {skill}
+                        {typeof skill === 'string' ? skill : skill.name}
                       </span>
                     ))}
                   </div>

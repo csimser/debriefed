@@ -308,11 +308,11 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
 
       const eduToInsert = data.education.map((edu: any, idx: number) => ({
         user_id: userId,
-        degree: edu.degree,
-        field_of_study: edu.field_of_study,
-        institution: edu.institution,
-        graduation_date: edu.graduation_date,
-        gpa: edu.gpa,
+        school_name: edu.school_name || edu.institution || null,
+        degree_type: edu.degree_type || edu.degree || null,
+        field_of_study: edu.field_of_study || null,
+        graduation_year: edu.graduation_year || null,
+        gpa: edu.gpa || null,
         sort_order: idx,
       }))
 
@@ -340,9 +340,9 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
       const certsToInsert = data.certifications.map((cert: any, idx: number) => ({
         user_id: userId,
         name: cert.name,
-        issuer: cert.issuing_org,
-        date_earned: cert.date_earned,
-        expiration_date: cert.expiration_date,
+        issuing_organization: cert.issuing_organization || cert.issuing_org || null,
+        issue_date: cert.issue_date || cert.date_earned || null,
+        expiration_date: cert.expiration_date || null,
         sort_order: idx,
       }))
 
@@ -367,10 +367,10 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
     if (data.skills && data.skills.length > 0) {
       console.log('11. Importing', data.skills.length, 'skills...')
 
-      const skillsToInsert = data.skills.map((skill: string, idx: number) => ({
+      const skillsToInsert = data.skills.map((skill: any, idx: number) => ({
         user_id: userId,
-        name: skill,
-        proficiency_level: 3,
+        name: typeof skill === 'string' ? skill : skill.name,
+        category: typeof skill === 'string' ? 'general' : (skill.category || 'general'),
         sort_order: idx,
       }))
 

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { CareerToolsHub } from '@/components/career-tools/CareerToolsHub'
+import { getUserTier, getTierLimit } from '@/lib/tier-utils'
 
 export default async function CareerToolsPage() {
   const supabase = await createClient()
@@ -40,8 +41,7 @@ export default async function CareerToolsPage() {
     .select('*')
     .eq('user_id', user?.id)
 
-  // Pro users (pro or basic tier) get unlimited access
-  const isPaidTier = profile?.tier === 'pro' || profile?.tier === 'basic'
+  const userTier = getUserTier(profile)
 
   return (
     <div className="animate-fade-in">
@@ -54,7 +54,7 @@ export default async function CareerToolsPage() {
         certifications={certifications || []}
         education={education || []}
         coverLetterUsage={usage?.cover_letters || 0}
-        coverLetterLimit={isPaidTier ? 999 : 1}
+        coverLetterLimit={getTierLimit(userTier, 'cover_letters')}
       />
     </div>
   )

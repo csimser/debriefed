@@ -91,54 +91,49 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile }: Ne
     suggested_certs: [],
   })
 
+  // Reusable function to load related-table data from DB
+  const loadRelatedData = useCallback(async () => {
+    try {
+      const { data: experiences } = await supabase
+        .from('experience')
+        .select('*, experience_bullets(*)')
+        .eq('user_id', userId)
+        .order('sort_order')
+
+      const { data: skills } = await supabase
+        .from('skills')
+        .select('*')
+        .eq('user_id', userId)
+        .order('sort_order')
+
+      const { data: certifications } = await supabase
+        .from('certifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('sort_order')
+
+      const { data: education } = await supabase
+        .from('education')
+        .select('*')
+        .eq('user_id', userId)
+        .order('sort_order')
+
+      setData(prev => ({
+        ...prev,
+        experiences: experiences?.map(e => ({ ...e, bullets: e.experience_bullets })) || [],
+        skills: skills || [],
+        certifications: certifications || [],
+        education: education || [],
+      }))
+    } catch (error) {
+      console.error('Error loading onboarding data:', error)
+    }
+  }, [userId, supabase])
+
   // Load existing data on mount
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Load experiences
-        const { data: experiences } = await supabase
-          .from('experience')
-          .select('*, experience_bullets(*)')
-          .eq('user_id', userId)
-          .order('sort_order')
-
-        // Load skills
-        const { data: skills } = await supabase
-          .from('skills')
-          .select('*')
-          .eq('user_id', userId)
-          .order('sort_order')
-
-        // Load certifications
-        const { data: certifications } = await supabase
-          .from('certifications')
-          .select('*')
-          .eq('user_id', userId)
-          .order('sort_order')
-
-        // Load education
-        const { data: education } = await supabase
-          .from('education')
-          .select('*')
-          .eq('user_id', userId)
-          .order('sort_order')
-
-        setData(prev => ({
-          ...prev,
-          experiences: experiences?.map(e => ({ ...e, bullets: e.experience_bullets })) || [],
-          skills: skills || [],
-          certifications: certifications || [],
-          education: education || [],
-        }))
-      } catch (error) {
-        console.error('Error loading onboarding data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadData()
-  }, [userId, supabase])
+    loadRelatedData().finally(() => setLoading(false))
+  }, [loadRelatedData])
 
   const updateData = useCallback((updates: Partial<OnboardingData>) => {
     setData(prev => ({ ...prev, ...updates }))
@@ -267,6 +262,7 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile }: Ne
     saving,
     userId,
     supabase,
+    loadRelatedData,
   }
 
   return (

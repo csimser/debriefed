@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { OnboardingData } from './NewOnboardingWizard'
+import { TEMPLATE_CATEGORIES, getTemplatesByCategory, SummaryTemplate } from '@/lib/summaryTemplates'
+import { populateTemplate, ProfileData } from '@/lib/populateTemplate'
 
 const JOB_SEARCH_TIMELINES = [
   { value: 'actively_looking', label: 'Actively looking now' },
@@ -39,6 +41,30 @@ interface StepSummaryProps {
 export function StepSummary({ data, updateData, onBack, onComplete, saving }: StepSummaryProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [generating, setGenerating] = useState(false)
+  const [showTemplates, setShowTemplates] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+
+  const filteredTemplates = getTemplatesByCategory(selectedCategory)
+
+  // Build profile data for template population
+  const profileData: ProfileData = useMemo(() => ({
+    branch: data.branch,
+    rank: data.rank,
+    paygrade: data.paygrade,
+    mos: data.rating_mos,
+    yearsOfService: data.years_of_service ? parseInt(String(data.years_of_service)) : undefined,
+    clearance: data.clearance,
+    targetRole: data.target_role,
+    targetIndustry: data.target_industry,
+    certifications: data.certifications?.map(c => c.name) || [],
+  }), [data.branch, data.rank, data.paygrade, data.rating_mos, data.years_of_service, data.clearance, data.target_role, data.target_industry, data.certifications])
+
+  const handleSelectTemplate = (template: SummaryTemplate) => {
+    const populated = populateTemplate(template.template, profileData)
+    updateData({ professional_summary: populated })
+    setSelectedTemplateId(template.id)
+  }
 
   // Build suggested roles from crosswalk data
   const suggestedRoles = useMemo(() => {
@@ -222,35 +248,97 @@ export function StepSummary({ data, updateData, onBack, onComplete, saving }: St
           <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-gold">
             Professional Summary
           </h3>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleGenerateSummary}
-            disabled={generating || !data.target_industry || !data.target_role}
-          >
-            {generating ? (
-              <>
-                <span className="animate-spin mr-2">&#8635;</span>
-                Generating...
-              </>
-            ) : (
-              <>
-                &#10024; {data.professional_summary ? 'Regenerate' : 'Generate'} with AI
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowTemplates(!showTemplates)}
+              className="flex items-center gap-2 px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border text-text font-semibold rounded text-sm transition-colors"
+            >
+              <span>&#128203;</span>
+              {showTemplates ? 'Hide Templates' : 'Choose Template'}
+            </button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleGenerateSummary}
+              disabled={generating || !data.target_industry || !data.target_role}
+            >
+              {generating ? (
+                <>
+                  <span className="animate-spin mr-2">&#8635;</span>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  &#10024; {data.professional_summary ? 'Regenerate' : 'Generate'} with AI
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         <textarea
           value={data.professional_summary}
           onChange={(e) => updateData({ professional_summary: e.target.value })}
-          placeholder="Your professional summary will appear here. Click 'Generate with AI' to create one automatically based on your profile, or write your own."
+          placeholder="Your professional summary will appear here. Choose a template, click 'Generate with AI', or write your own."
           className={`${inputClass} min-h-[150px] resize-none`}
         />
 
         <p className="text-xs text-text-dim mt-2">
           This summary will be pre-filled when you create resumes. You can always edit it later.
         </p>
+
+        {/* Template Selector Panel */}
+        {showTemplates && (
+          <div className="mt-3 border border-border rounded-lg bg-bg-card overflow-hidden">
+            {/* Category Tabs */}
+            <div className="flex flex-wrap gap-1 p-2 bg-bg-tertiary border-b border-border">
+              {TEMPLATE_CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
+                    selectedCategory === cat.id
+                      ? 'bg-gold text-bg-primary'
+                      : 'bg-bg-secondary text-text-muted hover:bg-bg-hover hover:text-text'
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Template List */}
+            <div className="max-h-64 overflow-y-auto p-2 space-y-2">
+              {filteredTemplates.map((template) => {
+                const isSelected = selectedTemplateId === template.id
+                return (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => handleSelectTemplate(template)}
+                    className={`w-full text-left p-3 rounded-lg border transition-colors group ${
+                      isSelected
+                        ? 'bg-gold/10 border-gold/50'
+                        : 'bg-bg-tertiary hover:bg-bg-hover border-border hover:border-gold/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`font-semibold ${isSelected ? 'text-gold' : 'text-text group-hover:text-gold'}`}>
+                        {isSelected && '✓ '}{template.name}
+                      </span>
+                      <span className="text-xs px-2 py-0.5 bg-bg-secondary text-text-dim rounded">
+                        {template.category}
+                      </span>
+                    </div>
+                    <p className="text-xs text-text-dim">{template.description}</p>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Profile Completeness */}

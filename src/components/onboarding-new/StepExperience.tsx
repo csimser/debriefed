@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { US_STATES } from '@/lib/constants/states'
 import { CivilianTitleSuggestions } from '@/components/profile/CivilianTitleSuggestions'
+import { EvalUploadModal } from '@/components/profile/EvalUploadModal'
+import { formatDateForDB, formatDateForInput } from '@/lib/military-titles'
 import { OnboardingData } from './NewOnboardingWizard'
 
 interface Experience {
@@ -53,6 +55,7 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
   const [uploadingEval, setUploadingEval] = useState(false)
   const [extractedBullets, setExtractedBullets] = useState<any[]>([])
   const [evalType, setEvalType] = useState('fitrep')
+  const [showEvalUploadForExp, setShowEvalUploadForExp] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const EVAL_TYPES = [
@@ -111,22 +114,27 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
 
     setSavingExp(true)
     try {
-      // Build location string from city/state
+      const isCivilian = formData.employment_type === 'civilian'
+
+      // Generate location from city/state for backwards compatibility
       const location = formData.city && formData.state
         ? `${formData.city}, ${formData.state}`
-        : formData.city || formData.state || null
+        : null
 
-      // Only include columns that exist in the experience table:
-      // id, user_id, job_title, civilian_title, organization, location, description, start_date, end_date, is_current, sort_order
       const expData = {
         user_id: userId,
+        employment_type: formData.employment_type,
         job_title: formData.job_title,
-        civilian_title: formData.civilian_title || formData.job_title,
+        civilian_title: isCivilian ? formData.job_title : (formData.civilian_title || formData.job_title),
         organization: formData.organization,
+        company_name: isCivilian ? formData.organization : null,
+        city: formData.city || null,
+        state: formData.state || null,
         location,
-        start_date: formData.start_date,
-        end_date: formData.is_current ? null : formData.end_date || null,
+        start_date: formatDateForDB(formData.start_date),
+        end_date: formData.is_current ? null : formatDateForDB(formData.end_date),
         is_current: formData.is_current,
+        hours_per_week: 40,
         sort_order: editingIndex !== null ? editingIndex : data.experiences.length,
       }
 
@@ -134,7 +142,7 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
         // Update existing
         const expId = data.experiences[editingIndex].id
         const { error } = await supabase
-          .from('experiences')
+          .from('experience')
           .update(expData)
           .eq('id', expId)
 
@@ -147,7 +155,7 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
       } else {
         // Insert new
         const { data: insertedExp, error } = await supabase
-          .from('experiences')
+          .from('experience')
           .insert(expData)
           .select()
           .single()
@@ -173,13 +181,13 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
 
         // Reload experiences to get bullets
         const { data: freshExperiences } = await supabase
-          .from('experiences')
+          .from('experience')
           .select('*, experience_bullets(*)')
           .eq('user_id', userId)
           .order('sort_order')
 
         updateData({
-          experiences: freshExperiences?.map(e => ({
+          experiences: freshExperiences?.map((e: any) => ({
             ...e,
             bullets: e.experience_bullets || []
           })) || []
@@ -209,8 +217,8 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
       organization: exp.organization || '',
       city: exp.city || '',
       state: exp.state || '',
-      start_date: exp.start_date?.substring(0, 7) || '',
-      end_date: exp.end_date?.substring(0, 7) || '',
+      start_date: formatDateForInput(exp.start_date),
+      end_date: formatDateForInput(exp.end_date),
       is_current: exp.is_current || false,
       bullets: exp.bullets || [],
     })
@@ -226,7 +234,7 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
 
     try {
       const { error } = await supabase
-        .from('experiences')
+        .from('experience')
         .delete()
         .eq('id', exp.id)
 
@@ -248,7 +256,8 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
       // Convert file to base64
       const base64 = await fileToBase64(file)
 
-      console.log('Uploading eval:', file.name, 'type:', evalType, 'size:', base64.length)
+      console.log('Sending raw file to Claude API:', file.name, 'type:', evalType, 'size:', base64.length)
+      console.log('Base64 starts with:', base64.substring(0, 20))
 
       const response = await fetch('/api/parse-eval', {
         method: 'POST',
@@ -355,6 +364,19 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
                   </Button>
                 </div>
               </div>
+              {exp.id && (
+                <div className="mt-3 pt-3 border-t border-border/50 flex items-center gap-2">
+                  <button
+                    onClick={() => setShowEvalUploadForExp(exp.id)}
+                    className="flex items-center gap-1 px-2 py-1 bg-status-green/20 text-status-green border border-status-green/30 rounded hover:bg-status-green/30 transition-colors text-xs"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    Import Eval
+                  </button>
+                </div>
+              )}
             </Card>
           ))}
 
@@ -649,6 +671,44 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
         <p className="text-xs text-text-dim text-center mt-2">
           Add at least one experience to continue
         </p>
+      )}
+
+      {/* Eval Upload Modal for saved experiences */}
+      {showEvalUploadForExp && (
+        <EvalUploadModal
+          isOpen={true}
+          onClose={() => setShowEvalUploadForExp(null)}
+          onExtracted={() => {}}
+          onBulletsSaved={async () => {
+            // Refresh experiences to show new bullets
+            const { data: freshExperiences } = await supabase
+              .from('experience')
+              .select('*, experience_bullets(*)')
+              .eq('user_id', userId)
+              .order('sort_order')
+
+            if (freshExperiences) {
+              updateData({
+                experiences: freshExperiences.map((e: any) => ({
+                  ...e,
+                  bullets: e.experience_bullets || []
+                }))
+              })
+            }
+            setShowEvalUploadForExp(null)
+          }}
+          userId={userId}
+          experiences={data.experiences
+            .filter((exp: any) => exp.id)
+            .map((exp: any) => ({
+              id: exp.id,
+              job_title: exp.job_title,
+              organization: exp.organization,
+              start_date: exp.start_date,
+              end_date: exp.end_date,
+            }))}
+          defaultExperienceId={showEvalUploadForExp}
+        />
       )}
     </div>
   )

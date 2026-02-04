@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { JobMatchWorkspace } from '@/components/job-match/JobMatchWorkspace'
+import { getUserTier, getTierLimit } from '@/lib/tier-utils'
 
 export default async function JobMatchPage() {
   const supabase = await createClient()
@@ -23,8 +24,7 @@ export default async function JobMatchPage() {
     .eq('user_id', user?.id)
     .single()
 
-  // Pro users (pro or basic tier) get unlimited access
-  const isPaidTier = profile?.tier === 'pro' || profile?.tier === 'basic'
+  const userTier = getUserTier(profile)
 
   return (
     <div className="h-full -m-8">
@@ -33,7 +33,7 @@ export default async function JobMatchPage() {
         userPlan={profile?.tier || 'free'}
         resumes={resumes || []}
         currentUsage={usage?.job_matches || 0}
-        usageLimit={isPaidTier ? 999 : 3}
+        usageLimit={getTierLimit(userTier, 'job_analyses')}
       />
     </div>
   )

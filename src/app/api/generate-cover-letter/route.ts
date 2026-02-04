@@ -60,9 +60,18 @@ TONE AND STYLE:
 - Be conversational but professional
 - NEVER praise the company excessively
 - Don't oversell or use superlatives
-- Vary sentence structure. Don't start too many sentences with "I"
 - Active voice throughout
 - Quantify achievements with specific numbers
+
+"I" STATEMENT RULES (CRITICAL):
+- LIMIT the word "I" to no more than 3-4 times in the ENTIRE letter
+- NEVER start consecutive sentences with "I"
+- NEVER start more than one paragraph with "I"
+- Instead of "I managed a team of 20", write "Managing a team of 20..." or "As the team lead for 20 personnel..."
+- Use varied sentence starters: "Throughout my career...", "With experience in...", "By implementing...", "Drawing from...", "After leading..."
+- Lead with accomplishments and results, not "I did X"
+- BAD: "I led a team. I improved metrics. I managed budgets."
+- GOOD: "Leading a cross-functional team of 15, our division achieved a 30% improvement in operational efficiency. This experience, combined with expertise in budget management totaling $2.4M, aligns directly with your needs."
 
 GOOD EXAMPLE:
 "Your Program Manager posting caught my attention because it matches what I've spent 8 years doing: keeping complex projects on schedule while managing stakeholders who all think their priority is the only priority. Last year I cut a 490-day project timeline down to 86 days. I'd like to do the same kind of work for Lockheed Martin."
@@ -194,11 +203,32 @@ function validateCoverLetter(text: string): { valid: boolean; issues: string[] }
     issues.push('Contains "spearheaded"')
   }
 
+  // Check total "I" usage (should be 4 or fewer)
+  const iCount = (text.match(/\bI\b/g) || []).length
+  if (iCount > 6) {
+    issues.push(`Too many "I" statements (${iCount}, target 3-4)`)
+  }
+
   // Check for too many sentences starting with "I"
-  const sentences = text.split(/[.!?]+/)
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0)
   const iStarts = sentences.filter(s => s.trim().match(/^I\s/)).length
-  if (iStarts > 4) {
+  if (iStarts > 3) {
     issues.push(`Too many sentences starting with "I" (${iStarts})`)
+  }
+
+  // Check for consecutive sentences starting with "I"
+  for (let i = 0; i < sentences.length - 1; i++) {
+    if (sentences[i].trim().match(/^I\s/) && sentences[i + 1].trim().match(/^I\s/)) {
+      issues.push('Consecutive sentences start with "I"')
+      break
+    }
+  }
+
+  // Check for multiple paragraphs starting with "I"
+  const paragraphs = text.split(/\n\n+/).filter(p => p.trim().length > 0)
+  const iParaStarts = paragraphs.filter(p => p.trim().match(/^I\s/)).length
+  if (iParaStarts > 1) {
+    issues.push(`${iParaStarts} paragraphs start with "I" (max 1)`)
   }
 
   return {
@@ -472,7 +502,9 @@ ${fullName}
 - Word count must be under ${maxWords}
 - No em dashes (—)
 - No banned phrases from the rules
-- Varied sentence starters (not too many starting with "I")
+- Count uses of "I" — must be 4 or fewer in the entire letter
+- No consecutive sentences starting with "I"
+- No more than one paragraph starting with "I"
 - Active voice throughout
 - Specific numbers and outcomes
 
