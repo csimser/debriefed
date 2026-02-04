@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /resumes
+Disallow: /profile
+Disallow: /settings
+Disallow: /onboarding
+Disallow: /career-tools
+Disallow: /job-match
+
+Sitemap: https://getdebriefed.co/sitemap.xml
