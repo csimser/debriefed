@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Also mark any unused beta codes as expired if past hard expiration
-    const hardExpiration = '2026-02-01T00:00:00Z';
+    const hardExpiration = '2026-02-11T23:59:59Z';
     if (new Date(now) >= new Date(hardExpiration)) {
       const { error: codesError } = await supabase
         .from('beta_codes')

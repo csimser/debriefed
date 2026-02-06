@@ -31,7 +31,7 @@ function SignupForm() {
     setFormData(prev => ({
       ...prev,
       branch,
-      paygrade: branch && prev.paygrade && !getValidPaygradesForBranch(branch).includes(prev.paygrade)
+      paygrade: branch && prev.paygrade && !getValidPaygradesForBranch(branch).map(pg => pg.value).includes(prev.paygrade)
         ? ''
         : prev.paygrade
     }))
@@ -239,7 +239,7 @@ function SignupForm() {
           >
             <option value="">Select Paygrade</option>
             {validPaygrades.map((p) => (
-              <option key={p} value={p}>{p}</option>
+              <option key={p.value} value={p.value}>{p.label}</option>
             ))}
           </select>
           <p className="text-xs text-text-muted italic">

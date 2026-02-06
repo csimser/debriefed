@@ -9,8 +9,8 @@ const supabaseAdmin = createAdminClient(
 );
 
 // Beta testing configuration
-const HARD_EXPIRATION = new Date('2026-02-01T00:00:00Z');
-const BETA_DURATION_HOURS = 72;
+const HARD_EXPIRATION = new Date('2026-02-11T23:59:59Z');
+const BETA_DURATION_HOURS = 48;
 
 export async function POST(req: Request) {
   try {
