@@ -25,6 +25,8 @@ interface ProfileFormProps {
     certifications: any[]
     skills: any[]
   }
+  resumeImportUsage?: number
+  resumeImportLimit?: number
 }
 
 // Use consistent military constants (with empty option for select)
@@ -49,7 +51,7 @@ const CLEARANCES = [
   { value: 'ts_sci', label: 'TS/SCI' },
 ]
 
-export function ProfileForm({ userId, initialData }: ProfileFormProps) {
+export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImportLimit }: ProfileFormProps) {
   const supabase = createClient()
 
   // Initialize state from initialData
@@ -731,6 +733,8 @@ export function ProfileForm({ userId, initialData }: ProfileFormProps) {
         isOpen={showResumeImport}
         onClose={() => setShowResumeImport(false)}
         onImport={handleResumeImport}
+        currentUsage={resumeImportUsage}
+        usageLimit={resumeImportLimit}
       />
     </div>
   )

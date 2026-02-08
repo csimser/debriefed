@@ -117,19 +117,23 @@ export async function POST(request: NextRequest) {
         // Reset usage tracking for the new subscription period
         await resetUsageOnPurchase(userId, tier as TierId, now, expiresAt);
 
-        // Log to activity log
-        await supabase.from('activity_log').insert({
-          user_id: userId,
-          action: 'subscription_updated',
-          details: {
-            tier: tier,
-            duration: duration,
-            stripe_session_id: session.id,
-            stripe_payment_id: session.payment_intent,
-            amount: session.amount_total,
-            expires_at: expiresAt.toISOString(),
-          },
-        });
+        // Log to activity log (non-critical, don't block on failure)
+        try {
+          await supabase.from('activity_log').insert({
+            user_id: userId,
+            action: 'subscription_updated',
+            details: {
+              tier: tier,
+              duration: duration,
+              stripe_session_id: session.id,
+              stripe_payment_id: session.payment_intent,
+              amount: session.amount_total,
+              expires_at: expiresAt.toISOString(),
+            },
+          });
+        } catch (logError) {
+          console.error('Failed to log activity (non-critical):', logError);
+        }
 
         console.log(
           `Subscription updated for user ${userId}: ${tier} tier, expires ${expiresAt.toISOString()}`
@@ -155,15 +159,19 @@ export async function POST(request: NextRequest) {
       const userId = paymentIntent.metadata?.userId;
 
       if (userId) {
-        // Log failed payment
-        await supabase.from('activity_log').insert({
-          user_id: userId,
-          action: 'payment_failed',
-          details: {
-            stripe_payment_id: paymentIntent.id,
-            error: paymentIntent.last_payment_error?.message,
-          },
-        });
+        // Log failed payment (non-critical, don't block on failure)
+        try {
+          await supabase.from('activity_log').insert({
+            user_id: userId,
+            action: 'payment_failed',
+            details: {
+              stripe_payment_id: paymentIntent.id,
+              error: paymentIntent.last_payment_error?.message,
+            },
+          });
+        } catch (logError) {
+          console.error('Failed to log payment failure (non-critical):', logError);
+        }
       }
 
       console.error(`PaymentIntent ${paymentIntent.id} failed`);

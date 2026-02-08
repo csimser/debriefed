@@ -65,6 +65,10 @@ export function StepWelcome({ data, updateData, onNext, saving, userId, supabase
           profileUpdate.rank = parsed.military_info.rank
           wizardUpdates.rank = parsed.military_info.rank
         }
+        if (parsed.military_info.paygrade) {
+          profileUpdate.paygrade = parsed.military_info.paygrade
+          wizardUpdates.paygrade = parsed.military_info.paygrade
+        }
         if (parsed.military_info.years_of_service) {
           profileUpdate.years_of_service = parsed.military_info.years_of_service
           wizardUpdates.years_of_service = String(parsed.military_info.years_of_service)
@@ -161,6 +165,7 @@ export function StepWelcome({ data, updateData, onNext, saving, userId, supabase
           school_name: edu.school_name || edu.institution || null,
           degree_type: edu.degree_type || edu.degree || null,
           field_of_study: edu.field_of_study || null,
+          graduation_month: edu.graduation_month || null,
           graduation_year: edu.graduation_year || edu.graduation_date || null,
           gpa: edu.gpa || null,
           sort_order: idx,

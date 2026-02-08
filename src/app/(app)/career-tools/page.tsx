@@ -15,7 +15,7 @@ export default async function CareerToolsPage() {
 
   const { data: usage } = await supabase
     .from('usage')
-    .select('cover_letters')
+    .select('cover_letters, linkedin_generations')
     .eq('user_id', user?.id)
     .single()
 
@@ -55,6 +55,8 @@ export default async function CareerToolsPage() {
         education={education || []}
         coverLetterUsage={usage?.cover_letters || 0}
         coverLetterLimit={getTierLimit(userTier, 'cover_letters')}
+        linkedinUsage={usage?.linkedin_generations || 0}
+        linkedinLimit={getTierLimit(userTier, 'linkedin_headlines')}
       />
     </div>
   )

@@ -17,6 +17,8 @@ interface CareerToolsHubProps {
   education?: any[]
   coverLetterUsage: number
   coverLetterLimit: number
+  linkedinUsage: number
+  linkedinLimit: number
 }
 
 const TOOLS = [
@@ -34,6 +36,8 @@ export function CareerToolsHub({
   education,
   coverLetterUsage,
   coverLetterLimit,
+  linkedinUsage,
+  linkedinLimit,
 }: CareerToolsHubProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -125,6 +129,8 @@ export function CareerToolsHub({
           certifications={certifications}
           education={education}
           isPro={isPaidTier(getUserTier({ tier: userPlan }))}
+          currentUsage={linkedinUsage}
+          usageLimit={linkedinLimit}
           onBack={() => setActiveTool(null)}
         />
       )}

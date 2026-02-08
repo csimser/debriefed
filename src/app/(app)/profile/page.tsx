@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ProfileForm } from '@/components/profile/ProfileForm'
+import { getUserTier, getTierLimit } from '@/lib/tier-utils'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -19,13 +20,15 @@ export default async function ProfilePage() {
     { data: experiences },
     { data: education },
     { data: certifications },
-    { data: skills }
+    { data: skills },
+    { data: usage }
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
     supabase.from('experience').select('*, experience_bullets(*)').eq('user_id', user.id).order('sort_order'),
     supabase.from('education').select('*').eq('user_id', user.id).order('sort_order'),
     supabase.from('certifications').select('*').eq('user_id', user.id).order('sort_order'),
-    supabase.from('skills').select('*').eq('user_id', user.id).order('sort_order')
+    supabase.from('skills').select('*').eq('user_id', user.id).order('sort_order'),
+    supabase.from('usage').select('*').eq('user_id', user.id).maybeSingle()
   ])
 
   console.log('2. Profile fetch result:', { profile, profileError })
@@ -62,6 +65,8 @@ export default async function ProfilePage() {
           certifications: certifications || [],
           skills: skills || []
         }}
+        resumeImportUsage={usage?.resume_imports || 0}
+        resumeImportLimit={getTierLimit(getUserTier(profile), 'resume_imports')}
       />
     </div>
   )

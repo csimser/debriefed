@@ -91,17 +91,21 @@ export async function POST(request: NextRequest) {
       // Reset usage tracking for the new subscription period
       await resetUsageOnPurchase(user.id, tier as TierId, now, expiresAt);
 
-      // Log to activity log
-      await supabaseAdmin.from('activity_log').insert({
-        user_id: user.id,
-        action: 'subscription_updated',
-        details: {
-          tier: tier,
-          duration: duration,
-          beta_bypass: true, // TEMP: Flag for beta bypass
-          expires_at: expiresAt.toISOString(),
-        },
-      });
+      // Log to activity log (non-critical, don't block on failure)
+      try {
+        await supabaseAdmin.from('activity_log').insert({
+          user_id: user.id,
+          action: 'subscription_updated',
+          details: {
+            tier: tier,
+            duration: duration,
+            beta_bypass: true, // TEMP: Flag for beta bypass
+            expires_at: expiresAt.toISOString(),
+          },
+        });
+      } catch (logError) {
+        console.error('Failed to log activity (non-critical):', logError);
+      }
 
       console.log(
         `Beta access granted for user ${user.id}: ${tier} tier, expires ${expiresAt.toISOString()}`

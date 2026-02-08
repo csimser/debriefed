@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
 
 interface ImportedData {
   contact: {
@@ -53,9 +54,12 @@ interface ResumeImportModalProps {
   isOpen: boolean
   onClose: () => void
   onImport: (data: ImportedData) => void
+  currentUsage?: number
+  usageLimit?: number
 }
 
-export function ResumeImportModal({ isOpen, onClose, onImport }: ResumeImportModalProps) {
+export function ResumeImportModal({ isOpen, onClose, onImport, currentUsage, usageLimit }: ResumeImportModalProps) {
+  const remaining = usageLimit != null ? usageLimit - (currentUsage || 0) : null
   const [step, setStep] = useState<'upload' | 'processing' | 'review'>('upload')
   const [file, setFile] = useState<File | null>(null)
   const [error, setError] = useState('')
@@ -134,7 +138,14 @@ export function ResumeImportModal({ isOpen, onClose, onImport }: ResumeImportMod
       <div className="bg-bg-card border border-border rounded-lg w-full max-w-3xl max-h-[90vh] flex flex-col shadow-xl">
         {/* Header */}
         <div className="p-6 border-b border-border">
-          <h2 className="font-heading text-xl font-bold">Import Existing Resume</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-xl font-bold">Import Existing Resume</h2>
+            {remaining != null && (
+              <Badge variant={remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
+                {remaining} Remaining
+              </Badge>
+            )}
+          </div>
           <p className="text-sm text-text-muted mt-1">
             {step === 'upload' && 'Upload your resume to jumpstart your profile'}
             {step === 'processing' && 'Analyzing your resume...'}
@@ -366,10 +377,10 @@ export function ResumeImportModal({ isOpen, onClose, onImport }: ResumeImportMod
           {step === 'upload' && (
             <button
               onClick={handleUpload}
-              disabled={!file || processing}
+              disabled={!file || processing || (remaining != null && remaining <= 0)}
               className="flex-1 px-6 py-3 bg-gold text-bg-primary rounded font-heading font-bold uppercase tracking-wider hover:bg-gold-bright disabled:opacity-50 transition-all"
             >
-              Analyze Resume
+              {remaining != null && remaining <= 0 ? 'Import Limit Reached' : 'Analyze Resume'}
             </button>
           )}
 

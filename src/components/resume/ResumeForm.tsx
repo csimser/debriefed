@@ -19,6 +19,8 @@ interface ResumeFormProps {
   profileSummary?: string
   allSkills?: any[]
   allCertifications?: any[]
+  bulletTranslationUsage?: number
+  bulletTranslationLimit?: number
 }
 
 // Federal resume option maps
@@ -53,7 +55,8 @@ const CLEARANCE_STATUS_OPTIONS = [
   { value: 'expired', label: 'Expired' },
 ]
 
-export function ResumeForm({ resumeId, content, resumeType, onChange, userProfile, profileSummary, allSkills = [], allCertifications = [] }: ResumeFormProps) {
+export function ResumeForm({ resumeId, content, resumeType, onChange, userProfile, profileSummary, allSkills = [], allCertifications = [], bulletTranslationUsage = 0, bulletTranslationLimit = 999 }: ResumeFormProps) {
+  const bulletTranslationRemaining = bulletTranslationLimit - bulletTranslationUsage
   const updateContent = (key: string, value: any) => {
     onChange({ ...content, [key]: value })
   }
@@ -143,7 +146,11 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
       />
 
       {/* Experience */}
-      <FormSection title="Experience" icon="◫">
+      <FormSection title="Experience" icon="◫" badge={
+        <Badge variant={bulletTranslationRemaining <= 1 ? 'red' : bulletTranslationRemaining <= 3 ? 'amber' : 'default'}>
+          {bulletTranslationRemaining} Translations Left
+        </Badge>
+      }>
         <div className="space-y-4">
           {content.experiences?.map((exp: any, idx: number) => (
             <ExperienceItem
@@ -160,6 +167,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
                 updateContent('experiences', newExps)
               }}
               userProfile={userProfile}
+              translationRemaining={bulletTranslationRemaining}
             />
           ))}
           {(!content.experiences || content.experiences.length === 0) && (
@@ -308,12 +316,15 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
   )
 }
 
-function FormSection({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
+function FormSection({ title, icon, children, badge }: { title: string; icon: string; children: React.ReactNode; badge?: React.ReactNode }) {
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-gold">{icon}</span>
-        <h3 className="font-heading text-sm font-bold uppercase tracking-wider">{title}</h3>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-gold">{icon}</span>
+          <h3 className="font-heading text-sm font-bold uppercase tracking-wider">{title}</h3>
+        </div>
+        {badge}
       </div>
       {children}
     </div>
@@ -427,12 +438,13 @@ function SkillCertSelector({
   )
 }
 
-function ExperienceItem({ experience, resumeType, onChange, onDelete, userProfile }: {
+function ExperienceItem({ experience, resumeType, onChange, onDelete, userProfile, translationRemaining = 999 }: {
   experience: any
   resumeType: 'private' | 'federal'
   onChange: (exp: any) => void
   onDelete: () => void
   userProfile: any
+  translationRemaining?: number
 }) {
   const [translating, setTranslating] = useState<string | null>(null)
   const [editingBulletIdx, setEditingBulletIdx] = useState<number | null>(null)
@@ -785,9 +797,9 @@ function ExperienceItem({ experience, resumeType, onChange, onDelete, userProfil
                       size="sm"
                       variant="secondary"
                       onClick={() => handleTranslateBullet(bullet._idx, bullet.original_text)}
-                      disabled={translating === bullet._idx.toString()}
+                      disabled={translating === bullet._idx.toString() || translationRemaining <= 0}
                     >
-                      {translating === bullet._idx.toString() ? 'Translating...' : '✦ Translate'}
+                      {translating === bullet._idx.toString() ? 'Translating...' : translationRemaining <= 0 ? 'Limit Reached' : '✦ Translate'}
                     </Button>
                   )}
 
@@ -800,7 +812,7 @@ function ExperienceItem({ experience, resumeType, onChange, onDelete, userProfil
                         size="sm"
                         variant="ghost"
                         onClick={() => handleTranslateBullet(bullet._idx, bullet.original_text)}
-                        disabled={translating === bullet._idx.toString()}
+                        disabled={translating === bullet._idx.toString() || translationRemaining <= 0}
                       >
                         ↻ Retry
                       </Button>

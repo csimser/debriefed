@@ -28,6 +28,7 @@ interface ResumeEditorProps {
   usage?: {
     private_downloads: number
     federal_downloads: number
+    bullet_rewrites?: number
   }
 }
 
@@ -478,6 +479,8 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                   profileSummary={profileData.userProfile?.professional_summary}
                   allSkills={profileData.skills}
                   allCertifications={profileData.certifications}
+                  bulletTranslationUsage={usage?.bullet_rewrites || 0}
+                  bulletTranslationLimit={TIER_LIMITS[userTier]?.bullet_translations}
                 />
               </div>
 

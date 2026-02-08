@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Badge } from '@/components/ui/Badge'
 
 interface LinkedInToolProps {
   userProfile: any
@@ -12,10 +13,13 @@ interface LinkedInToolProps {
   certifications?: any[]
   education?: any[]
   isPro: boolean
+  currentUsage?: number
+  usageLimit?: number
   onBack: () => void
 }
 
-export function LinkedInTool({ userProfile, experiences, skills, certifications, education, isPro, onBack }: LinkedInToolProps) {
+export function LinkedInTool({ userProfile, experiences, skills, certifications, education, isPro, currentUsage = 0, usageLimit = 999, onBack }: LinkedInToolProps) {
+  const remaining = usageLimit - currentUsage
   // Mode toggle
   const [mode, setMode] = useState<'generate' | 'analyze'>('generate')
 
@@ -112,11 +116,16 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <button onClick={onBack} className="text-text-muted hover:text-text">
-          ← Back
-        </button>
-        <h2 className="font-heading text-2xl font-bold uppercase tracking-wider">LinkedIn Optimizer</h2>
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-3">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="text-text-muted hover:text-text">
+            ← Back
+          </button>
+          <h2 className="font-heading text-2xl font-bold uppercase tracking-wider">LinkedIn Optimizer</h2>
+        </div>
+        <Badge variant={remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
+          {remaining} Remaining
+        </Badge>
       </div>
 
       {/* Mode Toggle with descriptions */}
@@ -307,9 +316,9 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
               <Button
                 className="w-full"
                 onClick={handleGenerate}
-                disabled={generating}
+                disabled={generating || remaining <= 0}
               >
-                {generating ? 'Optimizing...' : '✦ Generate LinkedIn Content'}
+                {generating ? 'Optimizing...' : remaining <= 0 ? 'Limit Reached' : '✦ Generate LinkedIn Content'}
               </Button>
             </div>
           </Card>

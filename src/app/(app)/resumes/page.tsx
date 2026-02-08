@@ -21,7 +21,7 @@ export default async function ResumesPage() {
     supabase.from('education').select('*').eq('user_id', user?.id).order('sort_order'),
     supabase.from('certifications').select('*').eq('user_id', user?.id).order('sort_order'),
     supabase.from('skills').select('*').eq('user_id', user?.id).order('sort_order'),
-    supabase.from('usage').select('private_downloads, federal_downloads').eq('user_id', user?.id).maybeSingle()
+    supabase.from('usage').select('private_downloads, federal_downloads, bullet_rewrites').eq('user_id', user?.id).maybeSingle()
   ])
 
   const userProfile = profile || {}
@@ -43,7 +43,7 @@ export default async function ResumesPage() {
           certifications: certifications || [],
           skills: skills || [],
         }}
-        usage={usage || { private_downloads: 0, federal_downloads: 0 }}
+        usage={usage || { private_downloads: 0, federal_downloads: 0, bullet_rewrites: 0 }}
       />
     </div>
   )
