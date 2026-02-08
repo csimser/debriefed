@@ -53,6 +53,22 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const paymentIntentId = session.payment_intent as string;
+
+      // Idempotency check: skip if this payment was already processed
+      if (paymentIntentId) {
+        const { data: existing } = await supabase
+          .from('subscriptions')
+          .select('id')
+          .eq('stripe_payment_id', paymentIntentId)
+          .maybeSingle();
+
+        if (existing) {
+          console.log(`Payment ${paymentIntentId} already processed, skipping`);
+          return NextResponse.json({ received: true });
+        }
+      }
+
       const now = new Date();
       const expiresAt = new Date(now.getTime() + duration * 24 * 60 * 60 * 1000);
 
@@ -83,17 +99,19 @@ export async function POST(request: NextRequest) {
           throw subError;
         }
 
-        // Update user profile tier
+        // Update user profile tier (both columns for backward compatibility)
         const { error: profileError } = await supabase
           .from('profiles')
           .update({
             tier: tier,
+            subscription_tier: tier,
             updated_at: now.toISOString(),
           })
           .eq('user_id', userId);
 
         if (profileError) {
           console.error('Error updating profile tier:', profileError);
+          throw profileError;
         }
 
         // Reset usage tracking for the new subscription period

@@ -35,7 +35,15 @@ export async function POST(request: NextRequest) {
     }
 
     const tierConfig = PRICING_TIERS[tier];
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl && process.env.NODE_ENV === 'production') {
+      console.error('NEXT_PUBLIC_APP_URL must be set in production');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+    const baseUrl = appUrl || 'http://localhost:3000';
 
     // TEMP: Payments disabled during beta - grant access without Stripe
     if (!PAYMENTS_ENABLED) {
@@ -70,10 +78,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Update user profile tier
+      // Update user profile tier (both columns for backward compatibility)
       await supabaseAdmin
         .from('profiles')
         .update({
+          tier: tier,
           subscription_tier: tier,
           updated_at: now.toISOString(),
         })
@@ -100,7 +109,7 @@ export async function POST(request: NextRequest) {
 
       // Return success URL directly (no Stripe redirect needed)
       return NextResponse.json({
-        url: `${appUrl}/dashboard?payment=success&tier=${tier}&beta=true`,
+        url: `${baseUrl}/dashboard?payment=success&tier=${tier}&beta=true`,
         betaBypass: true,
       });
     }
@@ -126,8 +135,8 @@ export async function POST(request: NextRequest) {
       ],
       mode: 'payment', // One-time payment, not subscription
       customer_email: profile?.email || user.email,
-      success_url: `${appUrl}/dashboard?payment=success&tier=${tier}`,
-      cancel_url: `${appUrl}/pricing?payment=cancelled`,
+      success_url: `${baseUrl}/dashboard?payment=success&tier=${tier}`,
+      cancel_url: `${baseUrl}/pricing?payment=cancelled`,
       metadata: {
         userId: user.id,
         tier: tier,
