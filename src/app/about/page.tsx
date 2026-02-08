@@ -12,7 +12,7 @@ export default function AboutPage() {
           <span className="text-status-green">SYSTEMS OPERATIONAL</span>
         </div>
         <div className="text-text-muted">
-          <span>BETA v1.0</span>
+          <span>v1.0</span>
         </div>
       </div>
 

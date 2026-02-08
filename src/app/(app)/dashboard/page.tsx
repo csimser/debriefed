@@ -2,8 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { RedeemCodeCard } from '@/components/beta/RedeemCodeCard'
 import { getUserTier, isPaidTier as checkPaidTier, getTierLimit } from '@/lib/tier-utils'
+import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
 import Link from 'next/link'
 
 function getDashboardLimits(tier: string) {
@@ -130,6 +130,16 @@ export default async function DashboardPage() {
         />
       </div>
 
+      {/* Upgrade Banner - shows for free users at 50%+ usage */}
+      {!isPaid && (usage?.job_matches || 0) + (usage?.cover_letters || 0) + (usage?.private_downloads || 0) > 0 && (
+        <UpgradeBanner
+          feature="features"
+          tier={tier}
+          variant="banner"
+          coreLimit={15}
+        />
+      )}
+
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Usage Limits */}
@@ -206,8 +216,6 @@ export default async function DashboardPage() {
           </div>
         </Card>
 
-        {/* Beta Code Redemption - Only shows for free tier users */}
-        <RedeemCodeCard userId={user?.id} currentPlan={tier} />
       </div>
     </div>
   )

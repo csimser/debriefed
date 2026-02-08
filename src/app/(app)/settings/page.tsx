@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -134,14 +135,15 @@ export default function SettingsPage() {
   }
 
   const getPlanDisplay = (plan: string, expiresAt: string | null) => {
-    if (plan === 'full' && expiresAt) {
+    if (expiresAt) {
       const expires = new Date(expiresAt)
       const now = new Date()
       if (expires > now) {
-        const hoursLeft = Math.round((expires.getTime() - now.getTime()) / (1000 * 60 * 60))
-        return `Full Access (Beta) - ${hoursLeft}h remaining`
+        const daysLeft = Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+        const planNames: Record<string, string> = { core: 'Core', full: 'Full Access' }
+        return `${planNames[plan] || plan} - ${daysLeft}d remaining`
       }
-      return 'Free'
+      return 'Free (expired)'
     }
     const planNames: Record<string, string> = {
       free: 'Free',
@@ -201,6 +203,20 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {profile?.plan === 'free' && (
+          <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+            <p className="text-sm text-text-muted">
+              Current plan: <span className="text-text font-medium">Free</span>
+            </p>
+            <Link
+              href="/pricing"
+              className="px-4 py-2 bg-gold text-bg-primary font-heading text-xs font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
+            >
+              Upgrade →
+            </Link>
+          </div>
+        )}
 
         <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-text-muted">

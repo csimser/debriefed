@@ -4,7 +4,6 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { AnnouncementBanner } from '@/components/layout/AnnouncementBanner'
-import { BetaCodeRedeemerWrapper } from '@/components/beta/BetaCodeRedeemerWrapper'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -65,9 +64,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen bg-bg-primary overflow-x-hidden">
-      {/* Beta Code Redeemer - checks for pending codes from signup */}
-      <BetaCodeRedeemerWrapper userId={user.id} />
-
       {/* Sidebar - handles desktop, tablet, and mobile states internally */}
       <Sidebar
         user={sidebarUser}

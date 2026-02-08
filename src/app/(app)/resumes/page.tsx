@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { ResumeEditor } from '@/components/resume/ResumeEditor'
+import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
 
 export default async function ResumesPage() {
   const supabase = await createClient()
@@ -25,12 +26,26 @@ export default async function ResumesPage() {
   ])
 
   const userProfile = profile || {}
+  const tier = profile?.tier || 'free'
+  const resumeCount = resumes?.length || 0
 
   return (
     <div className="h-[calc(100vh-120px)] -m-8">
+      {tier === 'free' && resumeCount >= 1 && (
+        <div className="p-4 pb-0 m-8 mb-0">
+          <UpgradeBanner
+            feature="Resumes"
+            currentUsage={resumeCount}
+            freeLimit={1}
+            coreLimit={5}
+            tier={tier}
+            variant="inline"
+          />
+        </div>
+      )}
       <ResumeEditor
         userId={user?.id || ''}
-        userPlan={profile?.tier || 'free'}
+        userPlan={tier}
         resumes={resumes || []}
         profileData={{
           userProfile,

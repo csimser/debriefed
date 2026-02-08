@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { JobMatchWorkspace } from '@/components/job-match/JobMatchWorkspace'
+import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
 import { getUserTier, getTierLimit } from '@/lib/tier-utils'
 
 export default async function JobMatchPage() {
@@ -25,15 +26,30 @@ export default async function JobMatchPage() {
     .single()
 
   const userTier = getUserTier(profile)
+  const tier = profile?.tier || 'free'
+  const currentUsage = usage?.job_matches || 0
+  const limit = getTierLimit(userTier, 'job_analyses')
 
   return (
     <div className="h-full -m-8">
+      {tier === 'free' && currentUsage >= limit && (
+        <div className="p-4 pb-0 m-8 mb-0">
+          <UpgradeBanner
+            feature="Job Match Analyses"
+            currentUsage={currentUsage}
+            freeLimit={limit}
+            coreLimit={15}
+            tier={tier}
+            variant="inline"
+          />
+        </div>
+      )}
       <JobMatchWorkspace
         userId={user?.id || ''}
-        userPlan={profile?.tier || 'free'}
+        userPlan={tier}
         resumes={resumes || []}
-        currentUsage={usage?.job_matches || 0}
-        usageLimit={getTierLimit(userTier, 'job_analyses')}
+        currentUsage={currentUsage}
+        usageLimit={limit}
       />
     </div>
   )

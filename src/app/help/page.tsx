@@ -22,8 +22,8 @@ const FAQ_SECTIONS = [
         a: "Debriefed uses one-time purchases, not recurring subscriptions - so there's nothing to cancel. If you're unsatisfied within 7 days of purchase and haven't used a significant portion of your limits, contact support@debriefed.io for refund consideration.",
       },
       {
-        q: 'Can I use a beta code after signing up?',
-        a: 'Yes! Go to your Dashboard and look for the "Redeem Code" section. Enter your beta code there to unlock premium features. Beta codes can only be used once and may have expiration dates.',
+        q: 'What happens when my paid plan expires?',
+        a: 'When your Core or Full plan expires, your account reverts to the Free tier. All your resumes and data are preserved - you just can\'t create new ones beyond Free limits until you upgrade again.',
       },
     ],
   },

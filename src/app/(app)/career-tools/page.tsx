@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { CareerToolsHub } from '@/components/career-tools/CareerToolsHub'
+import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
 import { getUserTier, getTierLimit } from '@/lib/tier-utils'
 
 export default async function CareerToolsPage() {
@@ -42,19 +43,32 @@ export default async function CareerToolsPage() {
     .eq('user_id', user?.id)
 
   const userTier = getUserTier(profile)
+  const tier = profile?.tier || 'free'
+  const coverLetterUsage = usage?.cover_letters || 0
+  const coverLetterLimit = getTierLimit(userTier, 'cover_letters')
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in space-y-4">
+      {tier === 'free' && coverLetterUsage >= coverLetterLimit && (
+        <UpgradeBanner
+          feature="Cover Letters"
+          currentUsage={coverLetterUsage}
+          freeLimit={coverLetterLimit}
+          coreLimit={10}
+          tier={tier}
+          variant="inline"
+        />
+      )}
       <CareerToolsHub
         userId={user?.id || ''}
-        userPlan={profile?.tier || 'free'}
+        userPlan={tier}
         userProfile={profile || {}}
         experiences={(experiences || []).map(exp => ({ ...exp, bullets: exp.experience_bullets || [] }))}
         skills={skills?.map(s => s.name) || []}
         certifications={certifications || []}
         education={education || []}
-        coverLetterUsage={usage?.cover_letters || 0}
-        coverLetterLimit={getTierLimit(userTier, 'cover_letters')}
+        coverLetterUsage={coverLetterUsage}
+        coverLetterLimit={coverLetterLimit}
         linkedinUsage={usage?.linkedin_generations || 0}
         linkedinLimit={getTierLimit(userTier, 'linkedin_headlines')}
       />

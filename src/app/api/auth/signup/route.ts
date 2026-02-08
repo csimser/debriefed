@@ -26,7 +26,7 @@ export async function POST(req: Request) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://getdebriefed.co';
 
-    // Create the user account (no beta code required at signup)
+    // Create the user account
     const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
       email,
       password,
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create initial profile with free tier (beta code redeemed at login)
+    // Create initial profile with free tier
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .upsert({

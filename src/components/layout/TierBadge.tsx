@@ -113,24 +113,21 @@ export function TierBadge() {
   };
 
   const config = tierConfig[tier.plan] || tierConfig.free;
-  const isBeta = tier.plan === 'full' && tier.expires_at;
 
   // Format expiration for display
   const formatExpiration = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
-    const hoursLeft = Math.round((date.getTime() - now.getTime()) / (1000 * 60 * 60));
+    const daysLeft = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-    if (hoursLeft <= 0) {
+    if (daysLeft <= 0) {
       return 'Expired';
     }
-    if (hoursLeft < 24) {
+    if (daysLeft === 1) {
+      const hoursLeft = Math.round((date.getTime() - now.getTime()) / (1000 * 60 * 60));
       return `${hoursLeft}h remaining`;
     }
-    if (hoursLeft < 48) {
-      return `${Math.round(hoursLeft / 24)}d ${hoursLeft % 24}h left`;
-    }
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${daysLeft}d remaining`;
   };
 
   return (
@@ -139,9 +136,9 @@ export function TierBadge() {
         <span className="text-lg">{config.icon}</span>
         <div>
           <span className="font-medium text-sm">
-            {isBeta ? 'Beta (Full Access)' : config.label}
+            {config.label}
           </span>
-          {isBeta && tier.expires_at && (
+          {tier.expires_at && (tier.plan === 'core' || tier.plan === 'full') && (
             <p className="text-xs opacity-70">
               {formatExpiration(tier.expires_at)}
             </p>

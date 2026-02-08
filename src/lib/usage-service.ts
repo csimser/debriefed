@@ -72,7 +72,7 @@ export async function getUserTier(userId: string): Promise<UserTierInfo> {
     };
   }
 
-  // Check profiles table for tier (legacy or beta code granted)
+  // Check profiles table for tier (legacy or direct grant)
   const { data: profile } = await supabase
     .from('profiles')
     .select('tier')

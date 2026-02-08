@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
     const baseUrl = appUrl || 'http://localhost:3000';
 
-    // TEMP: Payments disabled during beta - grant access without Stripe
+    // When payments are disabled, grant access directly without Stripe
     if (!PAYMENTS_ENABLED) {
       const now = new Date();
       const duration = tierConfig.duration || 30;
@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
         .upsert(
           {
             user_id: user.id,
-            stripe_customer_id: 'beta_bypass', // TEMP: Placeholder for beta
-            stripe_payment_id: `beta_${Date.now()}`, // TEMP: Placeholder for beta
+            stripe_customer_id: 'direct_bypass',
+            stripe_payment_id: `direct_${Date.now()}`,
             tier: tier,
             status: 'active',
             started_at: now.toISOString(),
@@ -71,9 +71,9 @@ export async function POST(request: NextRequest) {
         );
 
       if (subError) {
-        console.error('Error creating beta subscription:', subError);
+        console.error('Error creating subscription:', subError);
         return NextResponse.json(
-          { error: 'Failed to activate beta access' },
+          { error: 'Failed to activate access' },
           { status: 500 }
         );
       }
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
           details: {
             tier: tier,
             duration: duration,
-            beta_bypass: true, // TEMP: Flag for beta bypass
+            direct_bypass: true,
             expires_at: expiresAt.toISOString(),
           },
         });
@@ -108,16 +108,15 @@ export async function POST(request: NextRequest) {
       }
 
       console.log(
-        `Beta access granted for user ${user.id}: ${tier} tier, expires ${expiresAt.toISOString()}`
+        `Direct access granted for user ${user.id}: ${tier} tier, expires ${expiresAt.toISOString()}`
       );
 
       // Return success URL directly (no Stripe redirect needed)
       return NextResponse.json({
-        url: `${baseUrl}/dashboard?payment=success&tier=${tier}&beta=true`,
-        betaBypass: true,
+        url: `${baseUrl}/dashboard?payment=success&tier=${tier}`,
+        directBypass: true,
       });
     }
-    // END TEMP: Payments disabled during beta
 
     const priceId = STRIPE_PRICE_IDS[tier];
 

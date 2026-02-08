@@ -53,7 +53,7 @@ function CallbackHandler() {
       }
 
       // For email verification (signup), the code exchange verifies the email
-      // Sign out and redirect to login - user needs beta code to log in
+      // Sign out and redirect to login
       if (type === 'signup' || type === 'email') {
         await supabase.auth.signOut()
         router.replace('/login?confirmed=true')

@@ -28,8 +28,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // For email verification (signup), sign out and redirect to login
-    // During beta period, users need a beta code to log in
+    // For email verification (signup), redirect to login
     if (type === 'signup' || type === 'email') {
       await supabase.auth.signOut()
       return NextResponse.json({ success: true, redirect: '/login?confirmed=true', isNewUser: true })
@@ -63,13 +62,6 @@ export async function POST(request: Request) {
       // Auto-populate rank from paygrade
       const rank = branch && paygrade ? getRankFromPaygrade(branch, paygrade) : ''
 
-      // Check if user signed up with a beta code - grant full tier for 48 hours
-      const betaCodeUsed = metadata.beta_code_used === true
-      const tier = betaCodeUsed ? 'full' : 'free'
-      const planExpiresAt = betaCodeUsed
-        ? new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
-        : null
-
       await supabase
         .from('profiles')
         .insert({
@@ -81,10 +73,10 @@ export async function POST(request: Request) {
           branch,
           paygrade,
           rank,
-          tier: tier,
-          subscription_tier: tier,
-          plan: tier,
-          plan_expires_at: planExpiresAt,
+          tier: 'free',
+          subscription_tier: 'free',
+          plan: 'free',
+          plan_expires_at: null,
           onboarding_step: 0,
           onboarding_completed: false,
           created_at: new Date().toISOString(),
@@ -100,43 +92,8 @@ export async function POST(request: Request) {
       }
       return NextResponse.json({ success: true, redirect: '/onboarding', isNewUser: true })
     } else {
-      // Profile exists (likely created by database trigger)
-      const metadata = user.user_metadata || {}
-      const betaCodeUsed = metadata.beta_code_used === true
-
-      console.log('Callback POST - Profile exists. User:', user.id, 'Type:', type, 'Beta code used:', betaCodeUsed)
-
-      // If user signed up with beta code, update their tier (trigger created profile with 'free')
-      if (betaCodeUsed && (type === 'signup' || type === 'email')) {
-        const planExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
-
-        console.log('Attempting to update profile to full tier for user:', user.id)
-
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            tier: 'full',
-            subscription_tier: 'full',
-            plan: 'full',
-            plan_expires_at: planExpiresAt,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('user_id', user.id)
-
-        if (updateError) {
-          console.error('Failed to update beta user profile tier:', updateError)
-        } else {
-          console.log('Successfully updated profile to full tier for user:', user.id)
-        }
-
-        // Track IP for new signup
-        await trackUserIP(user.id, ip, userAgent, 'signup')
-
-        // Redirect to login with confirmed message
-        return NextResponse.json({ success: true, redirect: '/login?confirmed=true', isNewUser: true })
-      }
-
-      // Regular login - track IP
+      // Profile exists - regular login
+      // Track IP
       await trackUserIP(user.id, ip, userAgent, 'login')
 
       // Check if onboarding is complete
@@ -192,8 +149,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/reset-password`)
   }
 
-  // For email verification (signup), sign out and redirect to login
-  // During beta period, users need a beta code to log in
+  // For email verification (signup), redirect to login
   if (type === 'signup' || type === 'email') {
     await supabase.auth.signOut()
     return NextResponse.redirect(`${origin}/login?confirmed=true`)
@@ -226,13 +182,6 @@ export async function GET(request: Request) {
       const paygrade = metadata.paygrade || ''
       const rank = branch && paygrade ? getRankFromPaygrade(branch, paygrade) : ''
 
-      // Check if user signed up with a beta code - grant full tier for 48 hours
-      const betaCodeUsed = metadata.beta_code_used === true
-      const tier = betaCodeUsed ? 'full' : 'free'
-      const planExpiresAt = betaCodeUsed
-        ? new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
-        : null
-
       await supabase
         .from('profiles')
         .insert({
@@ -244,10 +193,10 @@ export async function GET(request: Request) {
           branch,
           paygrade,
           rank,
-          tier: tier,
-          subscription_tier: tier,
-          plan: tier,
-          plan_expires_at: planExpiresAt,
+          tier: 'free',
+          subscription_tier: 'free',
+          plan: 'free',
+          plan_expires_at: null,
           onboarding_step: 0,
           onboarding_completed: false,
           created_at: new Date().toISOString(),
@@ -263,43 +212,8 @@ export async function GET(request: Request) {
       }
       return NextResponse.redirect(`${origin}/onboarding`)
     } else {
-      // Profile exists (likely created by database trigger)
-      const metadata = user.user_metadata || {}
-      const betaCodeUsed = metadata.beta_code_used === true
-
-      console.log('Callback GET - Profile exists. User:', user.id, 'Type:', type, 'Beta code used:', betaCodeUsed)
-
-      // If user signed up with beta code, update their tier (trigger created profile with 'free')
-      if (betaCodeUsed && (type === 'signup' || type === 'email')) {
-        const planExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
-
-        console.log('GET handler - Attempting to update profile to full tier for user:', user.id)
-
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            tier: 'full',
-            subscription_tier: 'full',
-            plan: 'full',
-            plan_expires_at: planExpiresAt,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('user_id', user.id)
-
-        if (updateError) {
-          console.error('GET handler - Failed to update beta user profile tier:', updateError)
-        } else {
-          console.log('GET handler - Successfully updated profile to full tier for user:', user.id)
-        }
-
-        // Track IP for new signup
-        await trackUserIP(user.id, ip, userAgent, 'signup')
-
-        // Redirect to login with confirmed message
-        return NextResponse.redirect(`${origin}/login?confirmed=true`)
-      }
-
-      // Regular login - track IP
+      // Profile exists - regular login
+      // Track IP
       await trackUserIP(user.id, ip, userAgent, 'login')
 
       // Check if onboarding is complete

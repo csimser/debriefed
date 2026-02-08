@@ -123,17 +123,6 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
   const getTierLabel = () => {
     const tierName = tier?.toLowerCase()
 
-    // Check if this is a beta user with expiring access
-    if (tierName === 'full' && planExpiresAt) {
-      const expiresAt = new Date(planExpiresAt)
-      const now = new Date()
-      const hoursRemaining = Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60)))
-
-      if (hoursRemaining > 0) {
-        return `Full Tier (${hoursRemaining}h left)`
-      }
-    }
-
     switch (tierName) {
       case 'full': return 'Full Tier'
       case 'core': return 'Core Tier'
@@ -325,6 +314,25 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
             )}
           </div>
         </nav>
+
+        {/* Upgrade Button - Free tier only */}
+        {tier?.toLowerCase() === 'free' && (
+          <div className="px-4 pb-2">
+            <Link
+              href="/pricing"
+              onClick={handleLinkClick}
+              className={cn(
+                'flex items-center gap-2 px-3 py-2.5 bg-gold-dim border border-gold/30 rounded-lg text-gold hover:bg-gold hover:text-bg-primary transition-all',
+                isCollapsed && 'justify-center px-2'
+              )}
+            >
+              <span className="text-sm">★</span>
+              {!isCollapsed && (
+                <span className="font-heading text-xs font-bold uppercase tracking-wider">Upgrade</span>
+              )}
+            </Link>
+          </div>
+        )}
 
         {/* User Card Footer */}
         <div className="p-4 border-t border-border">

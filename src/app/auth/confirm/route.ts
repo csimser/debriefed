@@ -26,45 +26,6 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${origin}/reset-password`)
       }
 
-      // For email verification, handle beta tier upgrade
-      if (type === 'email') {
-        try {
-          // Get the current user (session is established after verifyOtp)
-          const { data: { user } } = await supabase.auth.getUser()
-
-          if (user) {
-            const metadata = user.user_metadata || {}
-            const betaCodeUsed = metadata.beta_code_used === true
-
-            console.log('Email confirmation - User:', user.id, 'Beta code used:', betaCodeUsed)
-
-            if (betaCodeUsed) {
-              const planExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
-
-              // Update profile tier for beta users
-              const { error: updateError } = await supabase
-                .from('profiles')
-                .update({
-                  tier: 'full',
-                  subscription_tier: 'full',
-                  plan: 'full',
-                  plan_expires_at: planExpiresAt,
-                  updated_at: new Date().toISOString(),
-                })
-                .eq('user_id', user.id)
-
-              if (updateError) {
-                console.error('Failed to update beta user tier:', updateError)
-              } else {
-                console.log('Successfully updated beta user tier to full for user:', user.id)
-              }
-            }
-          }
-        } catch (err) {
-          console.error('Error updating beta tier during email confirmation:', err)
-        }
-      }
-
       // Redirect to login with success message
       return NextResponse.redirect(`${origin}/login?confirmed=true`)
     }

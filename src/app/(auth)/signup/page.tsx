@@ -10,7 +10,7 @@ import { BRANCHES, getRankFromPaygrade, getValidPaygradesForBranch } from '@/lib
 
 function SignupForm() {
   const searchParams = useSearchParams()
-  const fromWaitlist = searchParams.get('source') === 'waitlist'
+  void searchParams // preserve Suspense boundary
 
   const [formData, setFormData] = useState({
     email: '',
@@ -106,18 +106,18 @@ function SignupForm() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-4">You're on the List!</h2>
+          <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-4">Account Created!</h2>
           <div className="bg-gold-dim border border-gold/30 rounded-md p-4 mb-6 text-left">
             <p className="text-sm text-gold mb-3">
-              <span className="font-medium">Thanks for signing up early!</span>
+              <span className="font-medium">Welcome to Debriefed!</span>
             </p>
             <p className="text-sm text-text-muted">
-              Beta access codes have already been distributed to selected testers. You'll be notified via email once we go live.
+              Your account has been created. Check your inbox and verify your email to get started.
             </p>
           </div>
           <div className="bg-bg-tertiary rounded-md p-4 mb-6">
             <p className="text-sm text-text-muted">
-              <span className="font-medium text-text">Next step:</span> Check your inbox and verify your email so you're ready when the time comes.
+              <span className="font-medium text-text">Next step:</span> Check your inbox for a verification email, then sign in to start building your resume.
             </p>
           </div>
           <div className="space-y-3">
@@ -126,10 +126,6 @@ function SignupForm() {
                 Go to Sign In
               </Button>
             </Link>
-            <p className="text-xs text-text-muted">
-              Already have a beta code?{' '}
-              <Link href="/login" className="text-gold hover:text-gold-bright">Sign in here</Link>
-            </p>
           </div>
         </div>
       </Card>
@@ -140,20 +136,10 @@ function SignupForm() {
     <Card className="p-8">
       <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-center mb-4">Create Account</h2>
 
-      {/* Waitlist closed notice */}
-      {fromWaitlist && (
-        <div className="bg-bg-tertiary border border-border rounded-md p-3 mb-4">
-          <p className="text-sm text-text">
-            <span className="font-medium">Beta waitlist is now closed.</span>{' '}
-            <span className="text-text-muted">Create an account to be notified when we go live.</span>
-          </p>
-        </div>
-      )}
-
-      {/* Early signup notice */}
+      {/* Welcome notice */}
       <div className="bg-gold-dim border border-gold/30 rounded-md p-3 mb-6">
         <p className="text-sm text-gold">
-          <span className="font-medium">Early Access:</span> Sign up now to be ready when we launch. Beta testers with codes can log in immediately.
+          <span className="font-medium">Start free.</span> Create your first resume at no cost. Upgrade anytime for more.
         </p>
       </div>
 

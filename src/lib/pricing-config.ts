@@ -1,8 +1,8 @@
 // Pricing tiers configuration for Debriefed
 // Defines all subscription tiers, their limits, and features
 
-// TEMP: Payments disabled during beta - set to true to enable Stripe payments
-export const PAYMENTS_ENABLED = process.env.NEXT_PUBLIC_PAYMENTS_ENABLED === "true";
+// Payments enabled by default. Set NEXT_PUBLIC_PAYMENTS_ENABLED=false to disable Stripe and grant access directly.
+export const PAYMENTS_ENABLED = process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== "false";
 
 export type TierId = 'free' | 'core' | 'full' | 'expired';
 

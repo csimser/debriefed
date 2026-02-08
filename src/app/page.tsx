@@ -38,7 +38,7 @@ export default async function HomePage({
           <span className="text-status-green">SYSTEMS OPERATIONAL</span>
         </div>
         <div className="text-text-muted">
-          <span>BETA v1.0</span>
+          <span>v1.0</span>
         </div>
       </div>
 
@@ -245,9 +245,9 @@ export default async function HomePage({
           <div className="bg-bg-primary border border-border p-8 flex flex-col hover:border-border-bright transition-all">
             <div className="font-heading text-2xl font-bold uppercase mb-2">Free</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">Try before you commit</div>
-            {/* TEMP: Prices hidden during beta - original: $0 forever */}
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-status-green">Beta</span>
+              <span className="font-heading text-3xl font-bold text-status-green">$0</span>
+              <span className="text-sm text-text-muted ml-1">forever</span>
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Private Resume" limit="1" />
@@ -277,9 +277,9 @@ export default async function HomePage({
             </div>
             <div className="font-heading text-2xl font-bold uppercase mb-2">Core</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">Everything you need to land the job</div>
-            {/* TEMP: Prices hidden during beta - original: $35 / 30 days */}
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">Coming Soon</span>
+              <span className="font-heading text-3xl font-bold text-gold">$35</span>
+              <span className="text-sm text-text-muted ml-1">/ 30 days</span>
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Private Resumes" limit="5" />
@@ -307,9 +307,9 @@ export default async function HomePage({
           <div className="bg-bg-primary border border-border p-8 flex flex-col hover:border-border-bright transition-all">
             <div className="font-heading text-2xl font-bold uppercase mb-2">Full</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">For serious job searches & SkillBridge</div>
-            {/* TEMP: Prices hidden during beta - original: $75 / 90 days */}
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">Coming Soon</span>
+              <span className="font-heading text-3xl font-bold text-gold">$75</span>
+              <span className="text-sm text-text-muted ml-1">/ 90 days</span>
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Private Resumes" limit="30" />
