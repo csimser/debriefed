@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     // Check if we're past the hard expiration date
     if (now >= HARD_EXPIRATION) {
       return NextResponse.json(
-        { success: false, error: 'Beta testing period has ended' },
+        { success: false, error: 'Code redemption period has ended' },
         { status: 400 }
       );
     }

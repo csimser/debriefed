@@ -150,7 +150,7 @@ export async function POST(req: Request) {
               </p>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #8b949e;">
-                Beta codes are limited, and not everyone will be selected for this round. If you're chosen, you'll receive an email with your beta code and instructions to get started.
+                Access codes are limited, and not everyone will be selected for this round. If you're chosen, you'll receive an email with your access code and instructions to get started.
               </p>
 
               <p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.6; color: #8b949e;">

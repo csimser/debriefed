@@ -17,10 +17,10 @@ export function RedeemCodeCard({ userId, currentPlan }: RedeemCodeCardProps) {
   return (
     <Card className="p-6">
       <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-        <span className="text-gold">◈</span> Have a Beta Code?
+        <span className="text-gold">◈</span> Have a Code?
       </h3>
       <p className="text-sm text-text-muted mb-4">
-        Enter your beta access code to unlock premium features.
+        Enter your access code to unlock premium features.
       </p>
       <BetaCodeInput
         mode="redeem"

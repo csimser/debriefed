@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: '◉' },
   { href: '/admin/users', label: 'Users', icon: '◎' },
-  { href: '/admin/beta-codes', label: 'Beta Codes', icon: '◈' },
+  { href: '/admin/beta-codes', label: 'Access Codes', icon: '◈' },
   { href: '/admin/promo-codes', label: 'Promo Codes', icon: '◇' },
   { href: '/admin/feedback', label: 'Feedback', icon: '◫' },
   { href: '/admin/settings', label: 'Settings', icon: '⚙' },

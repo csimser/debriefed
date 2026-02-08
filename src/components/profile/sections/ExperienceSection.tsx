@@ -201,6 +201,51 @@ export function ExperienceSection({
     setEditingBulletText('')
   }
 
+  // Move bullet up or down within an experience
+  const moveBullet = async (bulletId: string, experienceId: string, direction: 'up' | 'down') => {
+    const exp = experiences.find(e => e.id === experienceId)
+    if (!exp) return
+
+    const sortedBullets = [...(exp.bullets || [])].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    const currentIndex = sortedBullets.findIndex((b: any) => b.id === bulletId)
+    if (currentIndex === -1) return
+
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+    if (targetIndex < 0 || targetIndex >= sortedBullets.length) return
+
+    const currentBullet = sortedBullets[currentIndex]
+    const targetBullet = sortedBullets[targetIndex]
+
+    // Swap sort_order values in database
+    const currentOrder = currentBullet.sort_order ?? currentIndex
+    const targetOrder = targetBullet.sort_order ?? targetIndex
+
+    const results = await Promise.all([
+      supabase.from('experience_bullets').update({ sort_order: targetOrder }).eq('id', currentBullet.id),
+      supabase.from('experience_bullets').update({ sort_order: currentOrder }).eq('id', targetBullet.id),
+    ])
+
+    if (results.some(r => r.error)) {
+      alert('Failed to reorder bullets')
+      return
+    }
+
+    // Update local state
+    const updatedBullets = sortedBullets.map((b: any) => {
+      if (b.id === currentBullet.id) return { ...b, sort_order: targetOrder }
+      if (b.id === targetBullet.id) return { ...b, sort_order: currentOrder }
+      return b
+    })
+
+    const updatedExperiences = experiences.map(e => {
+      if (e.id === experienceId) {
+        return { ...e, bullets: updatedBullets }
+      }
+      return e
+    })
+    onUpdate(updatedExperiences)
+  }
+
   // Add new bullet to experience
   const addBulletToExperience = async (experienceId: string) => {
     // Get current max sort_order
@@ -496,7 +541,7 @@ export function ExperienceSection({
       <div className="space-y-4">
         {experiences.map((exp) => {
           const isExpanded = expandedExperiences.has(exp.id)
-          const bullets = exp.bullets || []
+          const bullets = [...(exp.bullets || [])].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
           const visibleBullets = isExpanded ? bullets : bullets.slice(0, 3)
           const hiddenCount = bullets.length - 3
           const isEditing = editingId === exp.id
@@ -641,10 +686,33 @@ export function ExperienceSection({
                             </div>
                           ) : (
                             // Display mode
-                            <div className="flex items-start gap-2">
-                              <span className="text-gold mt-0.5">•</span>
+                            <div className="flex items-start gap-1">
+                              {/* Bullet reorder buttons */}
+                              <div className="flex flex-col -my-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => moveBullet(bullet.id, exp.id, 'up')}
+                                  disabled={bullets.findIndex((b: any) => b.id === bullet.id) === 0}
+                                  className="p-0 h-3.5 text-text-dim hover:text-gold disabled:opacity-20 disabled:hover:text-text-dim transition-colors"
+                                  title="Move up"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => moveBullet(bullet.id, exp.id, 'down')}
+                                  disabled={bullets.findIndex((b: any) => b.id === bullet.id) === bullets.length - 1}
+                                  className="p-0 h-3.5 text-text-dim hover:text-gold disabled:opacity-20 disabled:hover:text-text-dim transition-colors"
+                                  title="Move down"
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </button>
+                              </div>
+                              <span className="text-gold mt-0.5 flex-shrink-0">•</span>
                               <span className="flex-1 text-sm text-text-muted">{bullet.translated_text || bullet.original_text}</span>
-                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
                                   onClick={() => startEditBullet(bullet.id, bullet.translated_text || bullet.original_text)}
                                   className="p-1 text-text-muted hover:text-white"

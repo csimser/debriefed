@@ -216,7 +216,7 @@ export default function AdminBetaCodesPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="font-heading text-3xl font-bold uppercase tracking-wider">
-            Beta Codes
+            Access Codes
           </h1>
           <p className="text-text-muted">
             {totalCodes} total codes
@@ -370,7 +370,7 @@ export default function AdminBetaCodesPage() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md p-6">
-            <h2 className="font-heading text-xl font-bold uppercase mb-4">Create Beta Code</h2>
+            <h2 className="font-heading text-xl font-bold uppercase mb-4">Create Access Code</h2>
             <form onSubmit={handleCreateCode} className="space-y-4">
               <div>
                 <label className="block text-xs text-text-muted uppercase mb-1">Code (optional - will auto-generate)</label>
@@ -378,7 +378,7 @@ export default function AdminBetaCodesPage() {
                   <Input
                     value={createForm.code}
                     onChange={(e) => setCreateForm({ code: e.target.value.toUpperCase() })}
-                    placeholder="BETA-XXXXXXXX"
+                    placeholder="CODE-XXXXXXXX"
                     className="flex-1 font-mono"
                   />
                   <Button type="button" variant="secondary" onClick={generateCode}>

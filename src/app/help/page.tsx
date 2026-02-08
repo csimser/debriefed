@@ -19,7 +19,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: 'How do I cancel or get a refund?',
-        a: "Debriefed uses one-time purchases, not recurring subscriptions - so there's nothing to cancel. If you're unsatisfied within 7 days of purchase and haven't used a significant portion of your limits, contact support@debriefed.io for refund consideration.",
+        a: "Debriefed uses one-time purchases, not recurring subscriptions - so there's nothing to cancel. If you're unsatisfied within 7 days of purchase and haven't used a significant portion of your limits, contact support@getdebriefed.co for refund consideration.",
       },
       {
         q: 'What happens when my paid plan expires?',
@@ -74,7 +74,7 @@ const FAQ_SECTIONS = [
     questions: [
       {
         q: "Why isn't my data saving?",
-        a: "Check your internet connection first. Debriefed auto-saves your work, but requires connectivity. If issues persist, try refreshing the page. Your data is stored securely in our database, not just your browser. If you're still having trouble, contact support@debriefed.io with your browser and device info.",
+        a: "Check your internet connection first. Debriefed auto-saves your work, but requires connectivity. If issues persist, try refreshing the page. Your data is stored securely in our database, not just your browser. If you're still having trouble, contact support@getdebriefed.co with your browser and device info.",
       },
       {
         q: 'How do I reset my password?',
@@ -586,12 +586,15 @@ export default function HelpPage() {
         <section className="mt-16 text-center">
           <Card className="p-8 md:p-12">
             <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-2">Still Need Help?</h2>
-            <p className="text-text-muted mb-6">
+            <p className="text-text-muted mb-4">
               Can't find what you're looking for? Our support team is here to help.
+            </p>
+            <p className="text-text-muted text-sm mb-6">
+              Found a bug? Use the Feedback button or email support@getdebriefed.co
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:support@debriefed.io"
+                href="mailto:support@getdebriefed.co"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gold text-bg-primary font-heading text-sm font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

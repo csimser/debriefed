@@ -81,7 +81,7 @@ export function BetaCodeInput({ onValidCode, onCodeChange, userId, mode }: BetaC
         <Input
           value={code}
           onChange={(e) => handleCodeChange(e.target.value)}
-          placeholder="BETA-XXXXXXXX"
+          placeholder="Enter code"
           className="font-mono uppercase"
         />
         <Button onClick={handleSubmit} disabled={loading || !code.trim()}>

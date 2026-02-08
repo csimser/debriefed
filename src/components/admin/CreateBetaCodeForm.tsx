@@ -55,7 +55,7 @@ export function CreateBetaCodeForm() {
           <input
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="BETA-XXXXXXXX"
+            placeholder="CODE-XXXXXXXX"
             className="flex-1 bg-bg-secondary border border-border rounded-md px-4 py-2.5 text-text font-mono focus:outline-none focus:border-gold"
             required
           />

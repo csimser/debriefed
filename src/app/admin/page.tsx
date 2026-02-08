@@ -144,7 +144,7 @@ export default async function AdminDashboardPage() {
         />
         <StatCard
           icon="◈"
-          label="Active Beta Codes"
+          label="Active Access Codes"
           value={stats.activeBetaCodes}
           color="green"
           href="/admin/beta-codes"
