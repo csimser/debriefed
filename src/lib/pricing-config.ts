@@ -2,7 +2,7 @@
 // Defines all subscription tiers, their limits, and features
 
 // TEMP: Payments disabled during beta - set to true to enable Stripe payments
-export const PAYMENTS_ENABLED = false;
+export const PAYMENTS_ENABLED = process.env.NEXT_PUBLIC_PAYMENTS_ENABLED === "true";
 
 export type TierId = 'free' | 'core' | 'full' | 'expired';
 
