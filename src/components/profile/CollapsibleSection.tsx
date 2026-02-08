@@ -16,7 +16,7 @@ export function CollapsibleSection({ title, icon, defaultOpen = false, children,
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <Card className="overflow-hidden">
+    <Card>
       {/* Changed from <button> to <div> to allow nested buttons in actions */}
       <div className="w-full px-6 py-4 flex items-center justify-between hover:bg-bg-hover transition-colors">
         {/* Left side - clickable to toggle */}

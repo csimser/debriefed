@@ -49,59 +49,18 @@ export async function logApiUsage(
 }
 
 /**
- * Increment a cumulative usage counter for a user
+ * Increment a cumulative usage counter for a user (atomic via RPC)
  */
 export async function incrementUsage(userId: string, field: UsageField) {
   try {
-    // First try to get existing record
-    const { data: existing, error: selectError } = await supabase
-      .from('usage')
-      .select('id, ' + field)
-      .eq('user_id', userId)
-      .single()
+    const { data, error } = await supabase.rpc('increment_usage_field', {
+      p_user_id: userId,
+      p_field: field,
+      p_amount: 1,
+    })
 
-    if (selectError && selectError.code !== 'PGRST116') {
-      // PGRST116 = no rows returned, which is fine
-      console.error('Error checking usage:', selectError)
-      return
-    }
-
-    if (existing) {
-      // Update existing record
-      const currentValue = (existing as Record<string, any>)[field] || 0
-      const { error: updateError } = await supabase
-        .from('usage')
-        .update({
-          [field]: currentValue + 1,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId)
-
-      if (updateError) {
-        console.error('Error updating usage:', updateError)
-      }
-    } else {
-      // Create new record
-      const { error: insertError } = await supabase
-        .from('usage')
-        .insert({
-          user_id: userId,
-          [field]: 1,
-          resumes_created: field === 'resumes_created' ? 1 : 0,
-          resumes_downloaded: field === 'resumes_downloaded' ? 1 : 0,
-          cover_letters: field === 'cover_letters' ? 1 : 0,
-          job_matches: field === 'job_matches' ? 1 : 0,
-          eval_uploads: field === 'eval_uploads' ? 1 : 0,
-          bullet_rewrites: field === 'bullet_rewrites' ? 1 : 0,
-          ai_summaries: field === 'ai_summaries' ? 1 : 0,
-          private_downloads: field === 'private_downloads' ? 1 : 0,
-          federal_downloads: field === 'federal_downloads' ? 1 : 0,
-          resume_imports: field === 'resume_imports' ? 1 : 0,
-        })
-
-      if (insertError) {
-        console.error('Error inserting usage:', insertError)
-      }
+    if (error) {
+      console.error('Error incrementing usage:', error)
     }
   } catch (err) {
     console.error('Failed to increment usage:', err)

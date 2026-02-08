@@ -1,19 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
-import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
-import { incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
+import { withAISecurity, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
-
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 /**
  * Post-process cover letter to remove any AI patterns that slipped through
@@ -130,55 +121,23 @@ CRITICAL RULES - NEVER use these phrases:
 Keep the same structure, greeting, and sign-off unless specifically asked to change them.
 Output only the refined cover letter, no explanation or commentary.`
 
-export async function POST(request: NextRequest) {
-  try {
-    // Auth check
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+interface RefineCoverLetterInput {
+  action: string
+  currentLetter: string
+  jobTitle?: string
+  companyName?: string
+}
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+export const POST = withAISecurity<RefineCoverLetterInput>(
+  { feature: 'cover_letters', inputType: 'cover_letter_context' },
+  async (request, input, ctx) => {
     // Check API key first
     if (!process.env.ANTHROPIC_API_KEY) {
       console.error('ANTHROPIC_API_KEY is not configured')
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }
 
-    // Pre-check usage limits before processing
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('subscription_tier, email')
-      .eq('user_id', user.id)
-      .single()
-
-    const { data: usage } = await supabaseAdmin
-      .from('usage')
-      .select('cover_letters')
-      .eq('user_id', user.id)
-      .single()
-
-    // Admin bypass
-    if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
-      const rawTier = profile?.subscription_tier || 'free'
-      const tier: TierId = ['core', 'full'].includes(rawTier) ? rawTier as TierId :
-        rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
-
-      const tierConfig = PRICING_TIERS[tier]
-      const currentCount = usage?.cover_letters || 0
-      const limit = tierConfig.limits.cover_letters
-
-      if (currentCount >= limit) {
-        return NextResponse.json({
-          error: `You've used all ${limit} cover letter${limit !== 1 ? 's' : ''}. ${tier === 'free' ? 'Upgrade to Core for more.' : tier === 'core' ? 'Upgrade to Full for more.' : 'Monthly limit reached.'}`,
-          limitReached: true,
-          tier
-        }, { status: 403 })
-      }
-    }
-
-    const { action, currentLetter, jobTitle, companyName } = await request.json()
+    const { action, currentLetter, jobTitle, companyName } = input
 
     if (!currentLetter || !action) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -244,11 +203,9 @@ Output the version with more numbers:`,
     // Validate the result
     const validation = validateCoverLetter(refined)
 
-    // Track usage
+    // Track token usage (feature count handled by withAISecurity wrapper)
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 1000
-    await logApiUsage(user.id, 'refine-cover-letter', tokensUsed, 'claude-sonnet-4-20250514')
-    await incrementUsage(user.id, 'cover_letters')
-    await incrementPeriodUsage(user.id, 'cover_letters')
+    await logAPIUsage(ctx.userId, 'refine-cover-letter', tokensUsed, 'claude-sonnet-4-20250514')
 
     console.log('Cover letter refined successfully')
 
@@ -256,10 +213,5 @@ Output the version with more numbers:`,
       refined,
       validationIssues: validation.issues.length > 0 ? validation.issues : undefined
     })
-  } catch (error: any) {
-    console.error('Cover letter refinement error:', error.message)
-    return NextResponse.json({
-      error: `Failed to refine cover letter: ${error.message || 'Unknown error'}`
-    }, { status: 500 })
   }
-}
+)

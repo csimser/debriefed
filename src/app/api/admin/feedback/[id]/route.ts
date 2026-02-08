@@ -45,7 +45,56 @@ async function logAdminAction(
   }
 }
 
-// PATCH - Update feedback status or admin notes
+// DELETE - Remove feedback
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const authClient = await createClient()
+
+  const auth = await verifyAdmin(authClient)
+  if ('error' in auth) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status })
+  }
+
+  try {
+    // Get feedback details for logging before deletion
+    const { data: feedback } = await serviceClient
+      .from('user_feedback')
+      .select('type, message, status')
+      .eq('id', id)
+      .single()
+
+    if (!feedback) {
+      return NextResponse.json({ error: 'Feedback not found' }, { status: 404 })
+    }
+
+    const { error } = await serviceClient
+      .from('user_feedback')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error deleting feedback:', error)
+      return NextResponse.json({ error: 'Failed to delete feedback' }, { status: 500 })
+    }
+
+    await logAdminAction(auth.user.id, 'feedback_deleted', {
+      admin_email: auth.adminProfile.email,
+      feedback_id: id,
+      feedback_type: feedback.type,
+      feedback_status: feedback.status,
+    })
+
+    return NextResponse.json({ message: 'Feedback deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting feedback:', error)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
+}
+
+// PATCH - Update feedback status, admin notes, or admin response
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -60,7 +109,7 @@ export async function PATCH(
 
   try {
     const body = await request.json()
-    const { status, admin_notes } = body
+    const { status, admin_notes, admin_response } = body
 
     // Validate status if provided
     const validStatuses = ['new', 'reviewed', 'resolved']
@@ -92,6 +141,10 @@ export async function PATCH(
       updates.admin_notes = admin_notes
     }
 
+    if (admin_response !== undefined) {
+      updates.admin_response = admin_response
+    }
+
     // Update feedback using service client
     const { error } = await serviceClient
       .from('user_feedback')
@@ -110,6 +163,7 @@ export async function PATCH(
       previous_status: currentFeedback.status,
       new_status: status || currentFeedback.status,
       notes_updated: admin_notes !== undefined,
+      response_updated: admin_response !== undefined,
       feedback_type: currentFeedback.type,
     })
 

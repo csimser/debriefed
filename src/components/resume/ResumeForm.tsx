@@ -155,11 +155,15 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
                 newExps[idx] = updated
                 updateContent('experiences', newExps)
               }}
+              onDelete={() => {
+                const newExps = content.experiences.filter((_: any, i: number) => i !== idx)
+                updateContent('experiences', newExps)
+              }}
               userProfile={userProfile}
             />
           ))}
           {(!content.experiences || content.experiences.length === 0) && (
-            <p className="text-text-muted text-center py-4">No experience added. Add experience in your Profile first.</p>
+            <p className="text-text-muted text-center py-4">No experience added. Add experience in your <a href="/profile" className="text-gold hover:underline">Profile</a> first.</p>
           )}
         </div>
       </FormSection>
@@ -168,14 +172,22 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
       <FormSection title="Education" icon="◇">
         <div className="space-y-3">
           {content.education?.map((edu: any, idx: number) => (
-            <Card key={edu.id || idx} className="p-4 bg-bg-tertiary">
-              <div className="font-heading font-bold">{formatFullDegree(edu)}</div>
-              <div className="text-text-muted text-sm">{getSchoolName(edu)}</div>
-              <div className="text-text-dim text-xs">{formatGraduationDate(edu.graduation_month, edu.graduation_year, edu.graduation_date)}</div>
-            </Card>
+            <EducationItem
+              key={edu.id || idx}
+              education={edu}
+              onChange={(updated) => {
+                const newEdu = [...content.education]
+                newEdu[idx] = updated
+                updateContent('education', newEdu)
+              }}
+              onDelete={() => {
+                const newEdu = content.education.filter((_: any, i: number) => i !== idx)
+                updateContent('education', newEdu)
+              }}
+            />
           ))}
           {(!content.education || content.education.length === 0) && (
-            <p className="text-text-muted text-center py-4">No education added.</p>
+            <p className="text-text-muted text-center py-4">No education added. Add in your <a href="/profile" className="text-gold hover:underline">Profile</a>.</p>
           )}
         </div>
       </FormSection>
@@ -415,15 +427,25 @@ function SkillCertSelector({
   )
 }
 
-function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
+function ExperienceItem({ experience, resumeType, onChange, onDelete, userProfile }: {
   experience: any
   resumeType: 'private' | 'federal'
   onChange: (exp: any) => void
+  onDelete: () => void
   userProfile: any
 }) {
   const [translating, setTranslating] = useState<string | null>(null)
   const [editingBulletIdx, setEditingBulletIdx] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
+  const [editingHeader, setEditingHeader] = useState(false)
+  const [headerForm, setHeaderForm] = useState({
+    job_title: experience.job_title || '',
+    civilian_title: experience.civilian_title || '',
+    organization: experience.organization || '',
+    start_date: experience.start_date || '',
+    end_date: experience.end_date || '',
+    is_current: experience.is_current || false,
+  })
 
   const handleStartEdit = (bulletIdx: number, text: string) => {
     setEditingBulletIdx(bulletIdx)
@@ -528,6 +550,28 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
     onChange({ ...experience, bullets: newBullets })
   }
 
+  const handleSaveHeader = () => {
+    onChange({ ...experience, ...headerForm })
+    setEditingHeader(false)
+  }
+
+  const handleCancelHeader = () => {
+    setHeaderForm({
+      job_title: experience.job_title || '',
+      civilian_title: experience.civilian_title || '',
+      organization: experience.organization || '',
+      start_date: experience.start_date || '',
+      end_date: experience.end_date || '',
+      is_current: experience.is_current || false,
+    })
+    setEditingHeader(false)
+  }
+
+  const handleDeleteExperience = () => {
+    if (!confirm('Remove this experience from the resume?')) return
+    onDelete()
+  }
+
   // Separate active and excluded bullets
   const activeBullets = (experience.bullets || []).map((b: any, idx: number) => ({ ...b, _idx: idx })).filter((b: any) => b.status !== 'excluded')
   const excludedBullets = (experience.bullets || []).map((b: any, idx: number) => ({ ...b, _idx: idx })).filter((b: any) => b.status === 'excluded')
@@ -568,13 +612,105 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
   return (
     <Card className="p-4 bg-bg-tertiary">
       <div className="flex justify-between items-start mb-3">
-        <div>
-          <div className="font-heading font-bold">{experience.job_title}</div>
-          <div className="text-text-muted text-sm">{experience.organization}</div>
-          <div className="text-text-dim text-xs">
-            {experience.start_date} — {experience.is_current ? 'Present' : experience.end_date}
+        {editingHeader ? (
+          <div className="flex-1 space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1">Job Title</label>
+                <input
+                  type="text"
+                  value={headerForm.job_title}
+                  onChange={(e) => setHeaderForm({ ...headerForm, job_title: e.target.value })}
+                  className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1">Organization</label>
+                <input
+                  type="text"
+                  value={headerForm.organization}
+                  onChange={(e) => setHeaderForm({ ...headerForm, organization: e.target.value })}
+                  className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1">Civilian Title</label>
+                <input
+                  type="text"
+                  value={headerForm.civilian_title}
+                  onChange={(e) => setHeaderForm({ ...headerForm, civilian_title: e.target.value })}
+                  className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1">Start Date</label>
+                <input
+                  type="month"
+                  value={headerForm.start_date}
+                  onChange={(e) => setHeaderForm({ ...headerForm, start_date: e.target.value })}
+                  className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1">End Date</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="month"
+                    value={headerForm.end_date}
+                    onChange={(e) => setHeaderForm({ ...headerForm, end_date: e.target.value })}
+                    disabled={headerForm.is_current}
+                    className="flex-1 px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 disabled:opacity-50"
+                  />
+                  <label className="flex items-center gap-1 text-xs whitespace-nowrap cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={headerForm.is_current}
+                      onChange={(e) => setHeaderForm({ ...headerForm, is_current: e.target.checked, end_date: e.target.checked ? '' : headerForm.end_date })}
+                      className="w-3 h-3 accent-gold"
+                    />
+                    Current
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleSaveHeader}>Save</Button>
+              <Button size="sm" variant="ghost" onClick={handleCancelHeader}>Cancel</Button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            <div>
+              <div className="font-heading font-bold">{experience.civilian_title || experience.job_title}</div>
+              <div className="text-text-muted text-sm">{experience.organization}</div>
+              <div className="text-text-dim text-xs">
+                {experience.start_date} — {experience.is_current ? 'Present' : experience.end_date}
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setEditingHeader(true)}
+                className="p-1.5 text-text-muted hover:text-gold transition-colors rounded"
+                title="Edit experience details"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+              <button
+                onClick={handleDeleteExperience}
+                className="p-1.5 text-text-muted hover:text-status-red transition-colors rounded"
+                title="Remove from resume"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Bulk Actions for Bullets */}
@@ -767,6 +903,158 @@ function ExperienceItem({ experience, resumeType, onChange, userProfile }: {
           </details>
         </div>
       )}
+    </Card>
+  )
+}
+
+function EducationItem({ education, onChange, onDelete }: {
+  education: any
+  onChange: (edu: any) => void
+  onDelete: () => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState({
+    school_name: education.school_name || education.institution || '',
+    degree_type: education.degree_type || education.degree || '',
+    field_of_study: education.field_of_study || '',
+    graduation_month: education.graduation_month || '',
+    graduation_year: education.graduation_year || '',
+    gpa: education.gpa?.toString() || '',
+  })
+
+  const handleSave = () => {
+    onChange({
+      ...education,
+      school_name: form.school_name,
+      institution: form.school_name,
+      degree_type: form.degree_type,
+      field_of_study: form.field_of_study,
+      graduation_month: form.graduation_month,
+      graduation_year: form.graduation_year,
+      gpa: form.gpa ? parseFloat(form.gpa) : null,
+    })
+    setEditing(false)
+  }
+
+  const handleCancel = () => {
+    setForm({
+      school_name: education.school_name || education.institution || '',
+      degree_type: education.degree_type || education.degree || '',
+      field_of_study: education.field_of_study || '',
+      graduation_month: education.graduation_month || '',
+      graduation_year: education.graduation_year || '',
+      gpa: education.gpa?.toString() || '',
+    })
+    setEditing(false)
+  }
+
+  const handleDelete = () => {
+    if (!confirm('Remove this education from the resume?')) return
+    onDelete()
+  }
+
+  if (editing) {
+    return (
+      <Card className="p-4 bg-bg-tertiary border-gold/30">
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1">School</label>
+              <input
+                type="text"
+                value={form.school_name}
+                onChange={(e) => setForm({ ...form, school_name: e.target.value })}
+                className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1">Degree</label>
+              <input
+                type="text"
+                value={form.degree_type}
+                onChange={(e) => setForm({ ...form, degree_type: e.target.value })}
+                className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1">Field of Study</label>
+              <input
+                type="text"
+                value={form.field_of_study}
+                onChange={(e) => setForm({ ...form, field_of_study: e.target.value })}
+                className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1">Graduation</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={form.graduation_month}
+                  onChange={(e) => setForm({ ...form, graduation_month: e.target.value })}
+                  placeholder="Month"
+                  className="w-1/2 px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
+                />
+                <input
+                  type="text"
+                  value={form.graduation_year}
+                  onChange={(e) => setForm({ ...form, graduation_year: e.target.value })}
+                  placeholder="Year"
+                  className="w-1/2 px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1">GPA</label>
+              <input
+                type="text"
+                value={form.gpa}
+                onChange={(e) => setForm({ ...form, gpa: e.target.value })}
+                placeholder="e.g., 3.8"
+                className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
+              />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={handleSave}>Save</Button>
+            <Button size="sm" variant="ghost" onClick={handleCancel}>Cancel</Button>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="p-4 bg-bg-tertiary">
+      <div className="flex justify-between items-start">
+        <div>
+          <div className="font-heading font-bold">{formatFullDegree(education)}</div>
+          <div className="text-text-muted text-sm">{getSchoolName(education)}</div>
+          <div className="text-text-dim text-xs">{formatGraduationDate(education.graduation_month, education.graduation_year, education.graduation_date)}</div>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setEditing(true)}
+            className="p-1.5 text-text-muted hover:text-gold transition-colors rounded"
+            title="Edit education"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
+          <button
+            onClick={handleDelete}
+            className="p-1.5 text-text-muted hover:text-status-red transition-colors rounded"
+            title="Remove from resume"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
     </Card>
   )
 }

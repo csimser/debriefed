@@ -356,59 +356,32 @@ export async function incrementUsage(
     periodEnd = new Date('2099-12-31');
   }
 
-  // Upsert usage tracking record
-  const { error: usageError } = await supabase
-    .from('usage_tracking')
-    .upsert(
-      {
-        user_id: userId,
-        feature,
-        period_start: periodStart.toISOString(),
-        period_end: periodEnd.toISOString(),
-        count: 1,
-        updated_at: now.toISOString(),
-      },
-      {
-        onConflict: 'user_id,feature,period_start',
-      }
-    );
+  // Atomic increment of usage_tracking via RPC (INSERT ... ON CONFLICT)
+  const { error: usageError } = await supabase.rpc('increment_usage_tracking', {
+    p_user_id: userId,
+    p_feature: feature,
+    p_period_start: periodStart.toISOString(),
+    p_period_end: periodEnd.toISOString(),
+    p_amount: 1,
+  });
 
   if (usageError) {
-    // If upsert failed, try to increment existing record
-    const { error: incrementError } = await supabase.rpc('increment_usage', {
-      p_user_id: userId,
-      p_feature: feature,
-      p_period_start: periodStart.toISOString(),
-    });
-
-    if (incrementError) {
-      console.error('Failed to increment usage:', incrementError);
-      return false;
-    }
+    console.error('Failed to increment usage:', usageError);
+    return false;
   }
 
-  // Also track daily usage for Core and Full tiers
+  // Also track daily usage for Core and Full tiers (atomic via RPC)
   if (tier === 'core' || tier === 'full') {
-    await supabase
-      .from('daily_usage')
-      .upsert(
-        {
-          user_id: userId,
-          feature,
-          date: today,
-          count: 1,
-        },
-        {
-          onConflict: 'user_id,feature,date',
-        }
-      );
-
-    // Try to increment if upsert created with count 1
-    await supabase.rpc('increment_daily_usage', {
+    const { error: dailyError } = await supabase.rpc('increment_daily_usage', {
       p_user_id: userId,
       p_feature: feature,
       p_date: today,
+      p_amount: 1,
     });
+
+    if (dailyError) {
+      console.error('Failed to increment daily usage:', dailyError);
+    }
   }
 
   return true;

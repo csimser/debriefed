@@ -14,6 +14,7 @@ interface Feedback {
   page_url: string | null
   status: string | null
   admin_notes: string | null
+  admin_response: string | null
   created_at: string
   updated_at: string
   user_email: string
@@ -76,6 +77,14 @@ export default function AdminFeedbackPage() {
   const [expandedNotes, setExpandedNotes] = useState<string | null>(null)
   const [notesInput, setNotesInput] = useState('')
   const [savingNotes, setSavingNotes] = useState(false)
+
+  // Reply state
+  const [expandedReply, setExpandedReply] = useState<string | null>(null)
+  const [replyInput, setReplyInput] = useState('')
+  const [savingReply, setSavingReply] = useState(false)
+
+  // Deleting state
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   // Fetch feedback
   const fetchFeedback = useCallback(async () => {
@@ -145,6 +154,55 @@ export default function AdminFeedbackPage() {
     } else {
       setExpandedNotes(item.id)
       setNotesInput(item.admin_notes || '')
+    }
+  }
+
+  // Delete feedback
+  const deleteFeedback = async (id: string) => {
+    if (!confirm('Delete this feedback permanently? This cannot be undone.')) return
+    setDeletingId(id)
+    try {
+      const response = await fetch(`/api/admin/feedback/${id}`, { method: 'DELETE' })
+      if (response.ok) {
+        fetchFeedback()
+      } else {
+        alert('Failed to delete feedback')
+      }
+    } catch (error) {
+      console.error('Error deleting feedback:', error)
+      alert('Failed to delete feedback')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  // Toggle reply expansion
+  const toggleReply = (item: Feedback) => {
+    if (expandedReply === item.id) {
+      setExpandedReply(null)
+    } else {
+      setExpandedReply(item.id)
+      setReplyInput(item.admin_response || '')
+    }
+  }
+
+  // Save admin reply
+  const saveReply = async (id: string) => {
+    setSavingReply(true)
+    try {
+      const response = await fetch(`/api/admin/feedback/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ admin_response: replyInput }),
+      })
+      if (response.ok) {
+        setExpandedReply(null)
+        fetchFeedback()
+      }
+    } catch (error) {
+      console.error('Error saving reply:', error)
+    } finally {
+      setSavingReply(false)
     }
   }
 
@@ -292,10 +350,18 @@ export default function AdminFeedbackPage() {
                     <p className="text-text whitespace-pre-wrap">{item.message}</p>
                   </div>
 
-                  {/* Admin Notes (if exists and not expanded) */}
+                  {/* Admin Response (visible to user) */}
+                  {item.admin_response && expandedReply !== item.id && (
+                    <div className="bg-status-green/5 border border-status-green/20 rounded-md p-3 mb-4">
+                      <p className="text-xs text-status-green uppercase mb-1">Admin Reply (visible to user)</p>
+                      <p className="text-sm text-text whitespace-pre-wrap">{item.admin_response}</p>
+                    </div>
+                  )}
+
+                  {/* Admin Notes (internal, if exists and not expanded) */}
                   {item.admin_notes && !isExpanded && (
                     <div className="bg-[#1a365d]/20 border border-[#1a365d]/30 rounded-md p-3 mb-4">
-                      <p className="text-xs text-text-muted uppercase mb-1">Admin Notes</p>
+                      <p className="text-xs text-text-muted uppercase mb-1">Admin Notes (internal)</p>
                       <p className="text-sm text-text-muted whitespace-pre-wrap">{item.admin_notes}</p>
                     </div>
                   )}
@@ -330,18 +396,63 @@ export default function AdminFeedbackPage() {
                       </Button>
                     )}
                     <button
+                      onClick={() => toggleReply(item)}
+                      className="text-sm text-status-green hover:text-status-green/80 transition-colors"
+                    >
+                      {expandedReply === item.id ? 'Cancel Reply' : item.admin_response ? 'Edit Reply' : 'Reply'}
+                    </button>
+                    <button
                       onClick={() => toggleNotes(item)}
-                      className="text-sm text-text-muted hover:text-gold transition-colors ml-auto"
+                      className="text-sm text-text-muted hover:text-gold transition-colors"
                     >
                       {isExpanded ? 'Cancel' : item.admin_notes ? 'Edit Notes' : 'Add Notes'}
                     </button>
+                    <button
+                      onClick={() => deleteFeedback(item.id)}
+                      disabled={deletingId === item.id}
+                      className="text-sm text-status-red/70 hover:text-status-red transition-colors ml-auto"
+                    >
+                      {deletingId === item.id ? 'Deleting...' : 'Delete'}
+                    </button>
                   </div>
+
+                  {/* Expanded Reply Editor */}
+                  {expandedReply === item.id && (
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <label className="block text-xs text-status-green uppercase mb-2">
+                        Reply to User
+                      </label>
+                      <textarea
+                        value={replyInput}
+                        onChange={(e) => setReplyInput(e.target.value)}
+                        placeholder="Write a response that the user will see..."
+                        rows={3}
+                        className="w-full bg-bg-secondary border border-status-green/30 rounded-md px-4 py-3 text-text focus:border-status-green focus:ring-1 focus:ring-status-green/25 resize-none"
+                      />
+                      <div className="flex justify-end gap-2 mt-2">
+                        <Button
+                          variant="secondary"
+                          onClick={() => setExpandedReply(null)}
+                          className="text-sm"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={() => saveReply(item.id)}
+                          disabled={savingReply}
+                          className="text-sm"
+                        >
+                          {savingReply ? 'Saving...' : 'Save Reply'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Expanded Notes Editor */}
                   {isExpanded && (
                     <div className="mt-4 pt-4 border-t border-border">
                       <label className="block text-xs text-text-muted uppercase mb-2">
-                        Admin Notes
+                        Admin Notes (internal only)
                       </label>
                       <textarea
                         value={notesInput}

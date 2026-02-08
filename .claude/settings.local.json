@@ -25,7 +25,9 @@
       "Bash(head:*)",
       "Bash(npx next build:*)",
       "Bash(git log:*)",
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "Bash(for file in src/app/api/{job-match,generate-cover-letter,parse-eval,refine-cover-letter,parse-linkedin-pdf,analyze-linkedin,enhance-summary,generate-linkedin,translate,import-resume,eval/extract}/route.ts)",
+      "Bash(do echo \"=== $file ===\" sed -n '/^export async function POST/,+5p' \"$file\")"
     ]
   }
 }

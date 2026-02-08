@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { searchOccupations, getOccupationSkills } from '@/lib/onet-api'
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
-import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
-import { incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
+import { logActivity } from '@/lib/usage-tracking'
+import { withAISecurity, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import crypto from 'crypto'
 
@@ -81,27 +79,25 @@ Use this to validate your keyword extraction - these skills are commonly require
   return ''
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    // Auth check
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+interface JobMatchInput {
+  resumeContent: any
+  jobPosting: { title?: string; company?: string; description: string }
+}
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { resumeContent, jobPosting } = await request.json()
+export const POST = withAISecurity<JobMatchInput>(
+  { feature: 'job_match_analysis', inputType: 'job_posting' },
+  async (request, input, ctx) => {
+    const { resumeContent, jobPosting } = input
 
     if (!resumeContent || !jobPosting?.description) {
       return NextResponse.json({ error: 'Missing resume or job description' }, { status: 400 })
     }
 
-    // Pre-check usage limits before processing
+    // Get profile data for prompt context (not for auth/tier)
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, email, target_role, target_industry, rating_mos, branch')
-      .eq('user_id', user.id)
+      .select('target_role, target_industry, rating_mos, branch')
+      .eq('user_id', ctx.userId)
       .single()
 
     const targetRole = profile?.target_role || ''
@@ -116,32 +112,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { data: usage } = await supabaseAdmin
-      .from('usage')
-      .select('job_matches')
-      .eq('user_id', user.id)
-      .single()
-
-    // Admin bypass
-    if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
-      const rawTier = profile?.subscription_tier || 'free'
-      const tier: TierId = ['core', 'full'].includes(rawTier) ? rawTier as TierId :
-        rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
-
-      const tierConfig = PRICING_TIERS[tier]
-      const currentCount = usage?.job_matches || 0
-      const limit = tierConfig.limits.job_match_analysis
-
-      if (currentCount >= limit) {
-        return NextResponse.json({
-          error: `You've used all ${limit} job match anal${limit !== 1 ? 'yses' : 'ysis'}. ${tier === 'free' ? 'Upgrade to Core for more.' : tier === 'core' ? 'Upgrade to Full for more.' : 'Monthly limit reached.'}`,
-          limitReached: true,
-          tier
-        }, { status: 403 })
-      }
-    }
-
-    // Check cache first (only after limit check passes)
+    // Check cache first (only after limit check passes — wrapper already checked)
     const cacheKey = createCacheKey(resumeContent, jobPosting.description)
     const cached = analysisCache.get(cacheKey)
     if (cached && cached.expires > Date.now()) {
@@ -454,16 +425,14 @@ JOB-SPECIFIC TAILORING:
     // Post-process to enforce scoring rules
     analysis = enforceScoring(analysis)
 
-    // Track usage
+    // Track token usage (feature count handled by withAISecurity wrapper)
     const inputTokens = response.usage?.input_tokens || 0
     const outputTokens = response.usage?.output_tokens || 0
     const tokensUsed = inputTokens + outputTokens
-    await logApiUsage(user.id, 'job-match', tokensUsed, 'claude-sonnet-4-20250514')
-    await incrementUsage(user.id, 'job_matches')
-    await incrementPeriodUsage(user.id, 'job_match_analysis')
+    await logAPIUsage(ctx.userId, 'job-match', tokensUsed, 'claude-sonnet-4-20250514')
 
     // Log activity
-    await logActivity(user.id, 'job_analysis_run', {
+    await logActivity(ctx.userId, 'job_analysis_run', {
       match_score: analysis.overallMatch?.score,
       key_matches: analysis.keyMatches?.length,
       tokens_used: tokensUsed,
@@ -476,11 +445,8 @@ JOB-SPECIFIC TAILORING:
     })
 
     return NextResponse.json({ analysis })
-  } catch (error) {
-    console.error('Job match error:', error)
-    return NextResponse.json({ error: 'Analysis failed' }, { status: 500 })
   }
-}
+)
 
 function buildCandidateProfile(content: any): string {
   const parts: string[] = []
@@ -659,29 +625,21 @@ function enforceScoring(analysis: any): any {
   }
 
   // === FIX BUG 1: Recalculate skills score based on actual data ===
-  // If 0 missing required skills, score should be high (85-100%)
-  // The score formula: (matched_required/total_required)*70 + (matched_preferred/total_preferred)*30
   if (missingRequiredSkills === 0) {
-    // No missing required skills = full points for required portion
-    let recalculatedSkillScore = 70 // Base 70% for meeting all required
+    let recalculatedSkillScore = 70
 
-    // Add preferred skills portion
     if (preferredSkills > 0) {
       const preferredMatched = preferredSkills - missingPreferredSkills
       const preferredRatio = preferredMatched / preferredSkills
       recalculatedSkillScore += Math.round(preferredRatio * 30)
     } else {
-      // No preferred skills listed = benefit of doubt
       recalculatedSkillScore += 20
     }
 
-    // Ensure score is at least 85% if no required skills are missing
     categoryScores.skills = Math.max(recalculatedSkillScore, 85)
   } else {
-    // Cap skills score based on how many required skills are missing
     const maxSkillScore = missingRequiredSkills >= 3 ? 50 : missingRequiredSkills >= 2 ? 65 : 80
 
-    // Recalculate based on actual match ratio
     const totalRequired = requiredSkills || (matchedSkills + missingRequiredSkills)
     if (totalRequired > 0) {
       const matchRatio = matchedSkills / totalRequired
@@ -694,9 +652,9 @@ function enforceScoring(analysis: any): any {
 
   // === FIX: Recalculate certifications score ===
   if (noCertsRequired) {
-    categoryScores.certifications = 100 // No certs required = 100%
+    categoryScores.certifications = 100
   } else if (missingRequiredCerts === 0) {
-    categoryScores.certifications = 100 // Has all required = 100%
+    categoryScores.certifications = 100
   } else {
     const maxCertScore = missingRequiredCerts >= 2 ? 30 : 50
     categoryScores.certifications = Math.min(categoryScores.certifications || 0, maxCertScore)
@@ -704,7 +662,6 @@ function enforceScoring(analysis: any): any {
 
   // === FIX: Recalculate experience score ===
   if (experienceGap === 0) {
-    // Meets or exceeds requirement
     categoryScores.experience = categoryDetails.experience?.requiredYears ? 100 : 85
   } else {
     const maxExpScore = experienceGap >= 3 ? 40 : experienceGap >= 2 ? 60 : 75
@@ -716,11 +673,10 @@ function enforceScoring(analysis: any): any {
     const edu = categoryDetails.education
     const noEduRequired = !edu.required || edu.required === 'Not specified' || edu.required === 'N/A'
     if (noEduRequired) {
-      categoryScores.education = 85 // No requirement = benefit of doubt
+      categoryScores.education = 85
     } else if (edu.meetsRequirement) {
       categoryScores.education = 100
     }
-    // If doesn't meet, keep AI's score (already penalized)
   }
 
   // === FIX: Recalculate clearance score ===
@@ -728,11 +684,11 @@ function enforceScoring(analysis: any): any {
     const cl = categoryDetails.clearance
     const noClearanceRequired = !cl.required || cl.required === 'None' || cl.required === 'N/A'
     if (noClearanceRequired) {
-      categoryScores.clearance = null // Exclude from calculation
+      categoryScores.clearance = null
     } else if (cl.meetsRequirement) {
       categoryScores.clearance = 100
     } else {
-      categoryScores.clearance = 40 // Can potentially obtain
+      categoryScores.clearance = 40
     }
   }
 
@@ -751,45 +707,37 @@ function enforceScoring(analysis: any): any {
 
   for (const [key, weight] of Object.entries(weights)) {
     const score = categoryScores[key]
-    // Only include if score is a valid number (not null/undefined)
     if (score !== null && score !== undefined && typeof score === 'number') {
       weightedScore += score * weight
       totalWeight += weight
     }
   }
 
-  // Calculate normalized weighted average
-  // This ensures the average is out of 100, not out of totalWeight
   let baseScore = totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 50
 
-  // Apply penalties for missing REQUIRED items (on top of category score reductions)
   let totalPenalty = 0
 
-  // Only apply additional penalties if there are significant gaps
   if (missingRequiredSkills >= 2) {
-    totalPenalty += 5 // Additional penalty for multiple missing required skills
+    totalPenalty += 5
   }
 
   if (missingRequiredCerts >= 1) {
-    totalPenalty += 5 // Additional penalty for missing required certification
+    totalPenalty += 5
   }
 
   if (experienceGap >= 2) {
-    totalPenalty += 5 // Additional penalty for significant experience gap
+    totalPenalty += 5
   }
 
   if (missingClearance) {
-    totalPenalty += 10 // Missing required clearance is serious
+    totalPenalty += 10
   }
 
-  // Apply penalties and enforce caps
   let finalScore = Math.round(baseScore - totalPenalty)
 
-  // Absolute caps
-  finalScore = Math.max(finalScore, 15) // Floor at 15%
-  finalScore = Math.min(finalScore, 92) // Ceiling at 92% (100% impossible)
+  finalScore = Math.max(finalScore, 15)
+  finalScore = Math.min(finalScore, 92)
 
-  // Additional cap if missing multiple required items
   const totalMissingRequired = missingRequiredSkills + missingRequiredCerts + (experienceGap >= 2 ? 1 : 0) + (missingClearance ? 1 : 0)
   if (totalMissingRequired >= 3) {
     finalScore = Math.min(finalScore, 55)
@@ -802,7 +750,6 @@ function enforceScoring(analysis: any): any {
   analysis.overallScore = finalScore
   analysis.categoryScores = categoryScores
 
-  // Set assessment level based on final score
   if (finalScore >= 80) {
     analysis.assessmentLevel = 'Strong Candidate'
   } else if (finalScore >= 65) {
@@ -813,7 +760,6 @@ function enforceScoring(analysis: any): any {
     analysis.assessmentLevel = 'Consider Other Roles'
   }
 
-  // Ensure competitive position is realistic
   if (totalMissingRequired >= 2) {
     analysis.competitivePosition = 'May be filtered out due to missing requirements'
   } else if (totalMissingRequired === 1 && missingRequiredCerts > 0) {

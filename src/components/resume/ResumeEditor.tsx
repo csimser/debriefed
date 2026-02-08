@@ -177,6 +177,34 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
         )
     }
 
+    // Sync experiences from profile if resume has none
+    if ((!content.experiences || content.experiences.length === 0) && profileData.experiences?.length > 0) {
+      synced.experiences = profileData.experiences.map((exp: any) => ({
+        id: exp.id,
+        job_title: exp.job_title || '',
+        civilian_title: exp.civilian_title || '',
+        organization: exp.organization || '',
+        location: exp.location || '',
+        start_date: exp.start_date || '',
+        end_date: exp.end_date || '',
+        is_current: exp.is_current || false,
+        bullets: exp.bullets || [],
+        city: exp.city || '',
+        state: exp.state || '',
+        hours_per_week: exp.hours_per_week || 40,
+        salary: exp.salary || '',
+        grade_level: exp.grade_level || '',
+        supervisor_name: exp.supervisor_name || '',
+        supervisor_phone: exp.supervisor_phone || '',
+        supervisor_can_contact: exp.supervisor_can_contact !== false,
+      }))
+    }
+
+    // Sync education from profile if resume has none
+    if ((!content.education || content.education.length === 0) && profileData.education?.length > 0) {
+      synced.education = [...profileData.education]
+    }
+
     return synced
   }
 

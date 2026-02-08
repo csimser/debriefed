@@ -4,10 +4,9 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
 import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary'
-import { PRICING_TIERS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
 import { hasCriticalPII, redactMinorPII } from '@/lib/pii-scanner'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
-import { incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage as incrementPeriodUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
 
 const anthropic = new Anthropic()
 
@@ -170,7 +169,7 @@ export async function POST(request: NextRequest) {
     // Pre-check usage limits and get target role for context-aware translations
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, email, target_role, target_industry, rating_mos, branch')
+      .select('target_role, target_industry, rating_mos, branch')
       .eq('user_id', user.id)
       .single()
 
@@ -189,27 +188,19 @@ Use this context to make translations more relevant to their career path.\n`
       }
     }
 
-    const { data: usage } = await supabaseAdmin
-      .from('usage')
-      .select('eval_uploads')
-      .eq('user_id', user.id)
-      .single()
-
-    // Admin bypass
-    if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
-      const rawTier = profile?.subscription_tier || 'free'
-      const tier: TierId = ['core', 'full'].includes(rawTier) ? rawTier as TierId :
-        rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
-
-      const tierConfig = PRICING_TIERS[tier]
-      const currentUploads = usage?.eval_uploads || 0
-      const limit = tierConfig.limits.eval_uploads
-
-      if (currentUploads >= limit) {
+    // Check usage limits (period + daily) via canUseFeature
+    const userEmail = await getUserEmail(user.id)
+    if (!isAdmin(userEmail)) {
+      const usageCheck = await canUseFeature(user.id, 'eval_uploads')
+      if (!usageCheck.allowed) {
         return NextResponse.json({
-          error: `You've used all ${limit} eval upload${limit !== 1 ? 's' : ''}. ${tier === 'free' ? 'Upgrade to Core for more.' : tier === 'core' ? 'Upgrade to Full for more.' : 'Monthly limit reached.'}`,
+          error: usageCheck.reason || 'Usage limit reached',
           limitReached: true,
-          tier
+          details: {
+            remaining: usageCheck.remaining,
+            limit: usageCheck.limit,
+            used: usageCheck.used,
+          }
         }, { status: 403 })
       }
     }
