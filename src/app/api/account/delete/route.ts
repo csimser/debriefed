@@ -8,6 +8,17 @@ const supabaseAdmin = createAdminClient(
 )
 
 export async function DELETE(request: Request) {
+  // Auth check first — before any body parsing or DB operations
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    )
+  }
+
   try {
     const { confirmation } = await request.json()
 
@@ -16,17 +27,6 @@ export async function DELETE(request: Request) {
       return NextResponse.json(
         { error: 'Please type DELETE to confirm account deletion' },
         { status: 400 }
-      )
-    }
-
-    // Get authenticated user
-    const supabase = await createClient()
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
       )
     }
 
