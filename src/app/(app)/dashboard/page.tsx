@@ -108,6 +108,23 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      {/* Feedback Banner */}
+      <div className="bg-accent-gold/10 border border-accent-gold/30 rounded-lg p-4 mb-6">
+        <div className="flex items-start gap-3">
+          <span className="text-accent-gold text-xl">💡</span>
+          <div className="flex-1">
+            <p className="text-text-light text-sm">
+              <strong>Welcome to Debriefed!</strong> This is a new platform and we&apos;re actively improving it.
+              Please report any bugs or feature suggestions using the{' '}
+              <span className="text-accent-gold font-medium">Feedback</span> button or email{' '}
+              <a href="mailto:support@getdebriefed.co" className="text-accent-gold hover:underline">
+                support@getdebriefed.co
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         <StatCard
