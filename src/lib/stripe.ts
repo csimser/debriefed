@@ -11,9 +11,14 @@ export default stripe;
 
 // Stripe price IDs for each tier
 export const STRIPE_PRICE_IDS = {
-  core: process.env.STRIPE_CORE_PRICE_ID || 'price_1SrKywC8kNeYMuJLssBl9sDb',
-  full: process.env.STRIPE_FULL_PRICE_ID || 'price_1SrKzfC8kNeYMuJLpH0KdkhJ',
+  core: process.env.STRIPE_CORE_PRICE_ID!,
+  full: process.env.STRIPE_FULL_PRICE_ID!,
 };
+
+// Fail loudly if price IDs are missing in production
+if (process.env.NODE_ENV === 'production' && (!process.env.STRIPE_CORE_PRICE_ID || !process.env.STRIPE_FULL_PRICE_ID)) {
+  throw new Error('STRIPE_CORE_PRICE_ID and STRIPE_FULL_PRICE_ID must be set in production');
+}
 
 // Get the duration in days for a tier
 export function getTierDuration(tier: 'core' | 'full'): number {
