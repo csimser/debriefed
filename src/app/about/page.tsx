@@ -169,7 +169,7 @@ export default function AboutPage() {
                 <p className="text-gold font-mono text-sm">Founder, Senior Chief Petty Officer</p>
                 <p className="text-text-muted mt-2">
                   20+ years U.S. Navy • Damage Controlman • MBA, PMP<br/>
-                  Retiring in 2026 • Gulf Coast
+                  Retiring in 2026 • Las Vegas
                 </p>
               </div>
             </div>
