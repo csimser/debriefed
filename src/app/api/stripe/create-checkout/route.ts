@@ -12,6 +12,11 @@ const supabaseAdmin = createAdminClient(
 );
 
 export async function POST(request: NextRequest) {
+  console.log('STRIPE_SECRET_KEY prefix:', process.env.STRIPE_SECRET_KEY?.substring(0, 10));
+  console.log('STRIPE_CORE_PRICE_ID:', process.env.STRIPE_CORE_PRICE_ID);
+  console.log('STRIPE_FULL_PRICE_ID:', process.env.STRIPE_FULL_PRICE_ID);
+  console.log('PAYMENTS_ENABLED:', PAYMENTS_ENABLED);
+
   const supabase = await createClient();
 
   // Verify user is authenticated

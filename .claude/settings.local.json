@@ -30,7 +30,8 @@
       "Bash(do echo \"=== $file ===\" sed -n '/^export async function POST/,+5p' \"$file\")",
       "Bash(echo:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
