@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -23,17 +23,45 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   // Mode toggle
   const [mode, setMode] = useState<'generate' | 'analyze'>('generate')
 
-  // Generate mode state
-  const [targetRole, setTargetRole] = useState('')
+  // Generate mode state - restore from sessionStorage if available
+  const [targetRole, setTargetRole] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('linkedin_targetRole') || ''
+    }
+    return ''
+  })
   const [generating, setGenerating] = useState(false)
   const [regeneratingHeadline, setRegeneratingHeadline] = useState(false)
   const [regeneratingAbout, setRegeneratingAbout] = useState(false)
   const [results, setResults] = useState<{
     headline: string
     summary: string
-  } | null>(null)
+  } | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('linkedin_results')
+      if (saved) {
+        try { return JSON.parse(saved) } catch { return null }
+      }
+    }
+    return null
+  })
   const [error, setError] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
+
+  // Persist generated results and target role to sessionStorage
+  useEffect(() => {
+    if (results) {
+      sessionStorage.setItem('linkedin_results', JSON.stringify(results))
+    } else {
+      sessionStorage.removeItem('linkedin_results')
+    }
+  }, [results])
+
+  useEffect(() => {
+    if (targetRole) {
+      sessionStorage.setItem('linkedin_targetRole', targetRole)
+    }
+  }, [targetRole])
 
   // Refinement options
   const [tone, setTone] = useState<'professional' | 'conversational' | 'bold'>('professional')

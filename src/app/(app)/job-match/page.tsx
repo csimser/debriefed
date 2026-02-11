@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { JobMatchWorkspace } from '@/components/job-match/JobMatchWorkspace'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
-import { getUserTier, getTierLimit } from '@/lib/tier-utils'
+import { checkLimit } from '@/lib/usage-service'
 
 export default async function JobMatchPage() {
   const supabase = await createClient()
@@ -19,16 +19,14 @@ export default async function JobMatchPage() {
     .eq('user_id', user?.id)
     .order('updated_at', { ascending: false })
 
-  const { data: usage } = await supabase
-    .from('usage')
-    .select('job_matches')
-    .eq('user_id', user?.id)
-    .single()
+  // Read usage from usage_tracking table (same source the backend checks)
+  const usageCheck = user?.id
+    ? await checkLimit(user.id, 'job_match_analysis')
+    : { used: 0, limit: 1, remaining: 1, allowed: true }
 
-  const userTier = getUserTier(profile)
   const tier = profile?.tier || 'free'
-  const currentUsage = usage?.job_matches || 0
-  const limit = getTierLimit(userTier, 'job_analyses')
+  const currentUsage = usageCheck.used
+  const limit = usageCheck.limit
 
   return (
     <div className="h-full -m-8">

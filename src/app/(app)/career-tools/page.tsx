@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { CareerToolsHub } from '@/components/career-tools/CareerToolsHub'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
-import { getUserTier, getTierLimit } from '@/lib/tier-utils'
+import { checkLimit } from '@/lib/usage-service'
 
 export default async function CareerToolsPage() {
   const supabase = await createClient()
@@ -11,12 +11,6 @@ export default async function CareerToolsPage() {
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('user_id', user?.id)
-    .single()
-
-  const { data: usage } = await supabase
-    .from('usage')
-    .select('cover_letters, linkedin_generations')
     .eq('user_id', user?.id)
     .single()
 
@@ -42,10 +36,18 @@ export default async function CareerToolsPage() {
     .select('*')
     .eq('user_id', user?.id)
 
-  const userTier = getUserTier(profile)
+  // Read usage from usage_tracking table (same source the backend checks)
+  const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
+  const coverLetterCheck = user?.id
+    ? await checkLimit(user.id, 'cover_letters')
+    : defaultUsage
+  const linkedinCheck = user?.id
+    ? await checkLimit(user.id, 'linkedin_headline')
+    : defaultUsage
+
   const tier = profile?.tier || 'free'
-  const coverLetterUsage = usage?.cover_letters || 0
-  const coverLetterLimit = getTierLimit(userTier, 'cover_letters')
+  const coverLetterUsage = coverLetterCheck.used
+  const coverLetterLimit = coverLetterCheck.limit
 
   return (
     <div className="animate-fade-in space-y-4">
@@ -69,8 +71,8 @@ export default async function CareerToolsPage() {
         education={education || []}
         coverLetterUsage={coverLetterUsage}
         coverLetterLimit={coverLetterLimit}
-        linkedinUsage={usage?.linkedin_generations || 0}
-        linkedinLimit={getTierLimit(userTier, 'linkedin_headlines')}
+        linkedinUsage={linkedinCheck.used}
+        linkedinLimit={linkedinCheck.limit}
       />
     </div>
   )

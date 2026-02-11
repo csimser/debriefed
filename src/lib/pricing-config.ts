@@ -121,16 +121,16 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
     limits: {
       private_resumes: 30,
       federal_resumes: 30,
-      resume_imports: 999999,
+      resume_imports: -1,       // unlimited
       eval_uploads: 30,
       bullet_translations: 150,
       job_match_analysis: 45,
       cover_letters: 30,
-      ai_summaries: 999999,
-      linkedin_headline: 999999,
-      linkedin_summary: 999999,
-      linkedin_profile_analysis: 999999,
-      linkedin_recommendations: 999999,
+      ai_summaries: -1,        // unlimited
+      linkedin_headline: -1,   // unlimited
+      linkedin_summary: -1,    // unlimited
+      linkedin_profile_analysis: -1, // unlimited
+      linkedin_recommendations: -1,  // unlimited
       downloads: 999,
     },
     templates: ['clean', 'ats', 'classic', 'modern', 'minimal', 'federal'],

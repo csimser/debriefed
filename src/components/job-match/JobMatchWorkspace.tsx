@@ -168,8 +168,8 @@ export function JobMatchWorkspace({
       return
     }
 
-    if (remaining <= 0 && !isPro) {
-      setError('You have reached your free analysis limit. Upgrade to Core for more.')
+    if (remaining <= 0) {
+      setError('You have reached your analysis limit. Upgrade for more.')
       return
     }
 

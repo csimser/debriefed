@@ -25,7 +25,7 @@ const templateStyles: Record<TemplateId, {
     headerAlign: 'text-center',
     nameStyle: 'text-2xl font-bold uppercase tracking-wide',
     sectionTitle: 'text-sm font-bold uppercase tracking-wider border-b border-gray-300 pb-1 mb-2',
-    fontFamily: 'Georgia, serif',
+    fontFamily: 'Helvetica, Arial, sans-serif',
     accentColor: '#1a1a1a',
   },
   federal: {
@@ -33,7 +33,7 @@ const templateStyles: Record<TemplateId, {
     headerAlign: 'text-left',
     nameStyle: 'text-xl font-bold uppercase',
     sectionTitle: 'text-sm font-bold uppercase bg-gray-100 px-2 py-1 mb-2 border-l-4 border-gray-800',
-    fontFamily: 'Arial, sans-serif',
+    fontFamily: 'Times New Roman, Times, serif',
     accentColor: '#000000',
   },
   classic: {

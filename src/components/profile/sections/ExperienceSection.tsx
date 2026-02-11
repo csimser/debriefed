@@ -546,10 +546,285 @@ export function ExperienceSection({
           const hiddenCount = bullets.length - 3
           const isEditing = editingId === exp.id
 
-          // If editing this experience, show the form instead
-          if (isEditing) return null
-
           const isCivilianExp = exp.employment_type === 'civilian'
+
+          // If editing this experience, show the inline edit form
+          if (isEditing) {
+            return (
+              <Card key={exp.id} className="p-4 bg-bg-tertiary border-gold">
+                <div className="text-xs text-gold uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  Editing Experience
+                </div>
+
+                {/* Employment Type Toggle */}
+                <div className="mb-6">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                    Employment Type
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormExp(prev => ({ ...prev, employment_type: 'military' }))}
+                      className={`flex-1 px-4 py-2 rounded text-sm font-semibold transition-all ${
+                        formExp.employment_type === 'military'
+                          ? 'bg-gold text-bg-primary'
+                          : 'bg-bg-secondary text-text-muted hover:text-text border border-border'
+                      }`}
+                    >
+                      Military
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormExp(prev => ({ ...prev, employment_type: 'civilian' }))}
+                      className={`flex-1 px-4 py-2 rounded text-sm font-semibold transition-all ${
+                        formExp.employment_type === 'civilian'
+                          ? 'bg-gold text-bg-primary'
+                          : 'bg-bg-secondary text-text-muted hover:text-text border border-border'
+                      }`}
+                    >
+                      Civilian
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                      {formExp.employment_type === 'military' ? 'Job Title (Military)' : 'Job Title'} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formExp.job_title}
+                      onChange={e => setFormExp({ ...formExp, job_title: e.target.value })}
+                      placeholder={formExp.employment_type === 'military' ? 'e.g., Damage Controlman Chief' : 'e.g., Project Manager'}
+                      className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                      {formExp.employment_type === 'military' ? 'Organization' : 'Company Name'} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formExp.employment_type === 'military' ? formExp.organization : formExp.company_name}
+                      onChange={e => setFormExp({
+                        ...formExp,
+                        [formExp.employment_type === 'military' ? 'organization' : 'company_name']: e.target.value
+                      })}
+                      placeholder={formExp.employment_type === 'military' ? 'e.g., USS Sterett (DDG-104)' : 'e.g., Acme Corporation'}
+                      className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                    />
+                  </div>
+                </div>
+
+                {formExp.employment_type === 'military' && formExp.job_title.length >= 2 && (
+                  <div className="mt-4">
+                    <CivilianTitleSuggestions
+                      militaryTitle={formExp.job_title}
+                      selectedTitle={formExp.civilian_title}
+                      onSelect={(title) => setFormExp(prev => ({ ...prev, civilian_title: title }))}
+                    />
+                  </div>
+                )}
+
+                {formExp.employment_type === 'military' && (
+                  <div className="mt-4">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                      Civilian Job Title (for resume)
+                    </label>
+                    <input
+                      type="text"
+                      value={formExp.civilian_title}
+                      onChange={e => setFormExp({ ...formExp, civilian_title: e.target.value })}
+                      placeholder="Select above or type your own"
+                      className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                    />
+                    <p className="text-xs text-text-dim mt-1">This is what will appear on your resume</p>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">City</label>
+                    <input
+                      type="text"
+                      value={formExp.city}
+                      onChange={e => setFormExp({ ...formExp, city: e.target.value })}
+                      placeholder="e.g., San Diego"
+                      className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">State</label>
+                    <select
+                      value={formExp.state}
+                      onChange={e => setFormExp({ ...formExp, state: e.target.value })}
+                      className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                    >
+                      <option value="">Select State</option>
+                      {US_STATES.map((state) => (
+                        <option key={state.value} value={state.value}>{state.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">Start Date</label>
+                    <input
+                      type="month"
+                      value={formExp.start_date}
+                      onChange={e => setFormExp({ ...formExp, start_date: e.target.value })}
+                      className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">End Date</label>
+                    <input
+                      type="month"
+                      value={formExp.end_date}
+                      onChange={e => setFormExp({ ...formExp, end_date: e.target.value })}
+                      disabled={formExp.is_current}
+                      className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 disabled:opacity-50"
+                    />
+                  </div>
+                  <div className="flex items-center pt-8">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formExp.is_current}
+                        onChange={e => setFormExp({
+                          ...formExp,
+                          is_current: e.target.checked,
+                          end_date: e.target.checked ? '' : formExp.end_date
+                        })}
+                        className="w-4 h-4 rounded border-border text-gold focus:ring-gold"
+                      />
+                      <span className="text-sm">Current Position</span>
+                    </label>
+                  </div>
+                </div>
+
+                {formExp.employment_type === 'military' && (
+                <div className="mt-4 pt-4 border-t border-border/50">
+                  <button
+                    type="button"
+                    onClick={() => setShowFederalFields(!showFederalFields)}
+                    className="flex items-center gap-2 text-sm text-text-muted hover:text-gold transition-colors"
+                  >
+                    <svg
+                      className={`w-4 h-4 transition-transform ${showFederalFields ? 'rotate-90' : ''}`}
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                    Federal Resume Fields (USAJOBS)
+                  </button>
+
+                  {showFederalFields && (
+                    <div className="space-y-4 mt-4 p-4 bg-bg-secondary/50 rounded-lg border border-border/30">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">Hours per Week</label>
+                          <input
+                            type="number"
+                            value={formExp.hours_per_week}
+                            onChange={e => setFormExp({ ...formExp, hours_per_week: parseInt(e.target.value) || 40 })}
+                            placeholder="40"
+                            min="1"
+                            max="80"
+                            className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">Series/Grade (if federal)</label>
+                          <input
+                            type="text"
+                            value={formExp.grade_level}
+                            onChange={e => setFormExp({ ...formExp, grade_level: e.target.value })}
+                            placeholder="e.g., GS-12, E-8, WG-10"
+                            className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">Salary (Optional)</label>
+                          <input
+                            type="text"
+                            value={formExp.salaryDisplay}
+                            onChange={e => {
+                              const raw = e.target.value.replace(/[^0-9]/g, '')
+                              setFormExp({ ...formExp, salaryDisplay: raw, salary: raw })
+                            }}
+                            onBlur={() => {
+                              const parsed = parseSalary(formExp.salaryDisplay)
+                              setFormExp({
+                                ...formExp,
+                                salaryDisplay: parsed ? formatSalary(parsed) : '',
+                                salary: parsed ? String(parsed) : ''
+                              })
+                            }}
+                            placeholder="$85,000"
+                            className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          />
+                        </div>
+                      </div>
+                      <div className="pt-3 border-t border-border/30">
+                        <p className="text-xs text-text-dim mb-3">Supervisor Information (for federal applications)</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">Supervisor Name</label>
+                            <input
+                              type="text"
+                              value={formExp.supervisor_name}
+                              onChange={e => setFormExp({ ...formExp, supervisor_name: e.target.value })}
+                              placeholder="John Smith"
+                              className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                            />
+                          </div>
+                          <div>
+                            <InternationalPhoneInput
+                              label="Supervisor Phone"
+                              value={formExp.supervisor_phone}
+                              onChange={(value) => setFormExp({ ...formExp, supervisor_phone: value })}
+                            />
+                          </div>
+                        </div>
+                        <div className="mt-3">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formExp.supervisor_can_contact}
+                              onChange={e => setFormExp({ ...formExp, supervisor_can_contact: e.target.checked })}
+                              className="w-4 h-4 rounded border-border text-gold focus:ring-gold"
+                            />
+                            <span className="text-sm text-text-muted">May contact this supervisor</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                )}
+
+                <div className="flex gap-2 mt-6">
+                  <Button size="sm" onClick={handleSave}>Update</Button>
+                  <Button size="sm" variant="ghost" onClick={handleCancelEdit}>Cancel</Button>
+                </div>
+              </Card>
+            )
+          }
 
           return (
             <Card key={exp.id} className="p-4 bg-bg-tertiary">
@@ -770,17 +1045,8 @@ export function ExperienceSection({
           )
         })}
 
-        {(adding || editingId) && (
-          <Card className={`p-4 bg-bg-tertiary ${editingId ? 'border-gold' : 'border-gold/30'}`}>
-            {editingId && (
-              <div className="text-xs text-gold uppercase tracking-wider mb-4 flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-                Editing Experience
-              </div>
-            )}
-
+        {adding && (
+          <Card className="p-4 bg-bg-tertiary border-gold/30">
             {/* Employment Type Toggle */}
             <div className="mb-6">
               <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
@@ -813,7 +1079,6 @@ export function ExperienceSection({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Job Title */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
                   {formExp.employment_type === 'military' ? 'Job Title (Military)' : 'Job Title'} *
@@ -826,8 +1091,6 @@ export function ExperienceSection({
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
                 />
               </div>
-
-              {/* Organization/Company */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
                   {formExp.employment_type === 'military' ? 'Organization' : 'Company Name'} *
@@ -845,7 +1108,6 @@ export function ExperienceSection({
               </div>
             </div>
 
-            {/* Civilian Title Suggestions - Only for military employment */}
             {formExp.employment_type === 'military' && formExp.job_title.length >= 2 && (
               <div className="mt-4">
                 <CivilianTitleSuggestions
@@ -856,7 +1118,6 @@ export function ExperienceSection({
               </div>
             )}
 
-            {/* Civilian Job Title - Only for military employment */}
             {formExp.employment_type === 'military' && (
               <div className="mt-4">
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
@@ -873,12 +1134,9 @@ export function ExperienceSection({
               </div>
             )}
 
-            {/* City and State */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  City
-                </label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">City</label>
                 <input
                   type="text"
                   value={formExp.city}
@@ -887,11 +1145,8 @@ export function ExperienceSection({
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
                 />
               </div>
-
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  State
-                </label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">State</label>
                 <select
                   value={formExp.state}
                   onChange={e => setFormExp({ ...formExp, state: e.target.value })}
@@ -899,20 +1154,15 @@ export function ExperienceSection({
                 >
                   <option value="">Select State</option>
                   {US_STATES.map((state) => (
-                    <option key={state.value} value={state.value}>
-                      {state.label}
-                    </option>
+                    <option key={state.value} value={state.value}>{state.label}</option>
                   ))}
                 </select>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              {/* Start Date - MONTH PICKER */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  Start Date
-                </label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">Start Date</label>
                 <input
                   type="month"
                   value={formExp.start_date}
@@ -923,11 +1173,8 @@ export function ExperienceSection({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              {/* End Date - MONTH PICKER */}
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  End Date
-                </label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">End Date</label>
                 <input
                   type="month"
                   value={formExp.end_date}
@@ -936,8 +1183,6 @@ export function ExperienceSection({
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 disabled:opacity-50"
                 />
               </div>
-
-              {/* Current Position Checkbox */}
               <div className="flex items-center pt-8">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -955,135 +1200,8 @@ export function ExperienceSection({
               </div>
             </div>
 
-            {/* Federal Resume Fields Toggle - Only for military */}
-            {formExp.employment_type === 'military' && (
-            <div className="mt-4 pt-4 border-t border-border/50">
-              <button
-                type="button"
-                onClick={() => setShowFederalFields(!showFederalFields)}
-                className="flex items-center gap-2 text-sm text-text-muted hover:text-gold transition-colors"
-              >
-                <svg
-                  className={`w-4 h-4 transition-transform ${showFederalFields ? 'rotate-90' : ''}`}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
-                Federal Resume Fields (USAJOBS)
-              </button>
-
-              {showFederalFields && (
-                <div className="space-y-4 mt-4 p-4 bg-bg-secondary/50 rounded-lg border border-border/30">
-                  {/* Row 1: Hours and Pay Grade */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                        Hours per Week
-                      </label>
-                      <input
-                        type="number"
-                        value={formExp.hours_per_week}
-                        onChange={e => setFormExp({ ...formExp, hours_per_week: parseInt(e.target.value) || 40 })}
-                        placeholder="40"
-                        min="1"
-                        max="80"
-                        className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                        Series/Grade (if federal)
-                      </label>
-                      <input
-                        type="text"
-                        value={formExp.grade_level}
-                        onChange={e => setFormExp({ ...formExp, grade_level: e.target.value })}
-                        placeholder="e.g., GS-12, E-8, WG-10"
-                        className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Row 2: Salary */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                        Salary (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={formExp.salaryDisplay}
-                        onChange={e => {
-                          // Allow typing numbers only
-                          const raw = e.target.value.replace(/[^0-9]/g, '')
-                          setFormExp({ ...formExp, salaryDisplay: raw, salary: raw })
-                        }}
-                        onBlur={() => {
-                          // Format on blur
-                          const parsed = parseSalary(formExp.salaryDisplay)
-                          setFormExp({
-                            ...formExp,
-                            salaryDisplay: parsed ? formatSalary(parsed) : '',
-                            salary: parsed ? String(parsed) : ''
-                          })
-                        }}
-                        placeholder="$85,000"
-                        className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Row 3: Supervisor Info */}
-                  <div className="pt-3 border-t border-border/30">
-                    <p className="text-xs text-text-dim mb-3">Supervisor Information (for federal applications)</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                          Supervisor Name
-                        </label>
-                        <input
-                          type="text"
-                          value={formExp.supervisor_name}
-                          onChange={e => setFormExp({ ...formExp, supervisor_name: e.target.value })}
-                          placeholder="John Smith"
-                          className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
-                        />
-                      </div>
-
-                      <div>
-                        <InternationalPhoneInput
-                          label="Supervisor Phone"
-                          value={formExp.supervisor_phone}
-                          onChange={(value) => setFormExp({ ...formExp, supervisor_phone: value })}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="mt-3">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formExp.supervisor_can_contact}
-                          onChange={e => setFormExp({ ...formExp, supervisor_can_contact: e.target.checked })}
-                          className="w-4 h-4 rounded border-border text-gold focus:ring-gold"
-                        />
-                        <span className="text-sm text-text-muted">May contact this supervisor</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            )}
-
             <div className="flex gap-2 mt-6">
-              <Button size="sm" onClick={handleSave}>
-                {editingId ? 'Update' : 'Save'}
-              </Button>
+              <Button size="sm" onClick={handleSave}>Save</Button>
               <Button size="sm" variant="ghost" onClick={handleCancelEdit}>Cancel</Button>
             </div>
           </Card>

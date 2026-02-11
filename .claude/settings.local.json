@@ -31,7 +31,8 @@
       "Bash(echo:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(NEXT_LINT_DISABLED=true npx next build:*)"
     ]
   }
 }

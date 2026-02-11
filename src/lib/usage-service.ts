@@ -200,16 +200,38 @@ export async function checkLimit(
     };
   }
 
+  // -1 means unlimited
+  if (limit === -1) {
+    return {
+      allowed: true,
+      remaining: Infinity,
+      limit: -1,
+      used: 0,
+    };
+  }
+
   // Get current usage
   let currentUsage = 0;
 
   if (tier === 'free' || tier === 'expired') {
     // Free/expired tier: count all-time usage from usage_tracking
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('usage_tracking')
       .select('count')
       .eq('user_id', userId)
       .eq('feature', feature);
+
+    if (error) {
+      console.error('Failed to query usage_tracking:', error);
+      // FAIL SAFE: deny access on query error to prevent unlimited usage
+      return {
+        allowed: false,
+        remaining: 0,
+        limit,
+        used: limit,
+        reason: 'Unable to verify usage. Please try again.',
+      };
+    }
 
     currentUsage = data?.reduce((sum, row) => sum + (row.count || 0), 0) || 0;
   } else if (subscriptionId) {
@@ -221,12 +243,23 @@ export async function checkLimit(
       .single();
 
     if (subscription) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('usage_tracking')
         .select('count')
         .eq('user_id', userId)
         .eq('feature', feature)
         .gte('period_start', subscription.started_at);
+
+      if (error) {
+        console.error('Failed to query usage_tracking for paid tier:', error);
+        return {
+          allowed: false,
+          remaining: 0,
+          limit,
+          used: limit,
+          reason: 'Unable to verify usage. Please try again.',
+        };
+      }
 
       currentUsage = data?.reduce((sum, row) => sum + (row.count || 0), 0) || 0;
     }
@@ -366,8 +399,46 @@ export async function incrementUsage(
   });
 
   if (usageError) {
-    console.error('Failed to increment usage:', usageError);
-    return false;
+    console.error('RPC increment_usage_tracking failed, trying direct upsert:', usageError);
+    // Fallback: direct query if RPC doesn't exist (migration not applied)
+    const pStart = periodStart.toISOString();
+    const pEnd = periodEnd.toISOString();
+
+    // Try to update existing row first
+    const { data: existing } = await supabase
+      .from('usage_tracking')
+      .select('id, count')
+      .eq('user_id', userId)
+      .eq('feature', feature)
+      .eq('period_start', pStart)
+      .maybeSingle();
+
+    if (existing) {
+      const { error: updateError } = await supabase
+        .from('usage_tracking')
+        .update({ count: existing.count + 1, updated_at: new Date().toISOString() })
+        .eq('id', existing.id);
+
+      if (updateError) {
+        console.error('Fallback update also failed:', updateError);
+        return false;
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from('usage_tracking')
+        .insert({
+          user_id: userId,
+          feature,
+          count: 1,
+          period_start: pStart,
+          period_end: pEnd,
+        });
+
+      if (insertError) {
+        console.error('Fallback insert also failed:', insertError);
+        return false;
+      }
+    }
   }
 
   // Also track daily usage for Core and Full tiers (atomic via RPC)

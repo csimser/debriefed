@@ -117,7 +117,7 @@ export function UsageLimitModal({
 
   // Format the limit display - show "Unlimited" for very high values
   const formatLimit = (limitValue: number) => {
-    return limitValue >= 999999 ? 'Unlimited' : limitValue.toString();
+    return (limitValue === -1 || limitValue >= 999999) ? 'Unlimited' : limitValue.toString();
   };
 
   return (

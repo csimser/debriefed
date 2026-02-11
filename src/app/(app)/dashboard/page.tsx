@@ -2,22 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { getUserTier, isPaidTier as checkPaidTier, getTierLimit } from '@/lib/tier-utils'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
+import { checkLimit, getSubscriptionInfo } from '@/lib/usage-service'
+import { PRICING_TIERS } from '@/lib/pricing-config'
 import Link from 'next/link'
-
-function getDashboardLimits(tier: string) {
-  const normalizedTier = getUserTier({ tier })
-  return {
-    private_downloads: getTierLimit(normalizedTier, 'resumes'),
-    federal_downloads: getTierLimit(normalizedTier, 'resumes'),
-    job_analyses: getTierLimit(normalizedTier, 'job_analyses'),
-    cover_letters: getTierLimit(normalizedTier, 'cover_letters'),
-    linkedin_analyses: getTierLimit(normalizedTier, 'linkedin_analyses'),
-    resume_imports: getTierLimit(normalizedTier, 'resume_imports'),
-    ai_summaries: getTierLimit(normalizedTier, 'ai_summaries'),
-  }
-}
 
 // Profile fields for completeness calculation
 const PROFILE_FIELDS = [
@@ -72,18 +60,37 @@ export default async function DashboardPage() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user?.id)
 
-  // Fetch profile and usage
+  // Fetch profile and usage from usage_tracking (authoritative source)
   const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user?.id).single()
-  const { data: usage } = await supabase.from('usage').select('*').eq('user_id', user?.id).single()
+  // Legacy usage table for download counts (still tracked there by export routes)
+  const { data: legacyUsage } = await supabase.from('usage').select('private_downloads, federal_downloads').eq('user_id', user?.id).single()
+
+  // Get authoritative tier from subscriptions (not profiles table directly)
+  const subscriptionInfo = user?.id
+    ? await getSubscriptionInfo(user.id)
+    : { tier: 'free' as const, tierName: 'Free', expiresAt: null, daysRemaining: null, isActive: true }
+  const tier = subscriptionInfo.tier
+  const isPaid = tier === 'core' || tier === 'full'
+
+  // AI feature usage from usage_tracking (authoritative source for limits)
+  // checkLimit uses the same getUserTier() so limits match backend enforcement
+  const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
+  const [jobMatchUsage, coverLetterUsage, linkedinUsage] = user?.id
+    ? await Promise.all([
+        checkLimit(user.id, 'job_match_analysis'),
+        checkLimit(user.id, 'cover_letters'),
+        checkLimit(user.id, 'linkedin_profile_analysis'),
+      ])
+    : [defaultUsage, defaultUsage, defaultUsage]
+
+  // Download limits from pricing-config using the authoritative tier
+  const tierConfig = PRICING_TIERS[tier]
+  const downloadLimit = tierConfig.limits.private_resumes
+  const federalDownloadLimit = tierConfig.limits.federal_resumes
 
   const daysUntilEAS = profile?.eas_date
     ? Math.ceil((new Date(profile.eas_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null
-
-  // Get tier and limits
-  const tier = profile?.subscription_tier || profile?.tier || 'free'
-  const limits = getDashboardLimits(tier)
-  const isPaid = checkPaidTier(getUserTier({ tier }))
 
   // Calculate profile completeness
   const profileComplete = calculateProfileCompleteness(profile)
@@ -136,7 +143,7 @@ export default async function DashboardPage() {
         <StatCard
           icon="◈"
           color="green"
-          value={(usage?.job_matches || 0).toString()}
+          value={(jobMatchUsage.used || 0).toString()}
           label="Jobs Analyzed"
         />
         <StatCard
@@ -148,7 +155,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Upgrade Banner - shows for free users at 50%+ usage */}
-      {!isPaid && (usage?.job_matches || 0) + (usage?.cover_letters || 0) + (usage?.private_downloads || 0) > 0 && (
+      {!isPaid && (jobMatchUsage.used || 0) + (coverLetterUsage.used || 0) + (legacyUsage?.private_downloads || 0) > 0 && (
         <UpgradeBanner
           feature="features"
           tier={tier}
@@ -168,28 +175,28 @@ export default async function DashboardPage() {
           <div className="space-y-4">
             <UsageMeter
               label="Private Resume Downloads"
-              current={usage?.private_downloads || 0}
-              limit={limits.private_downloads}
+              current={legacyUsage?.private_downloads || 0}
+              limit={downloadLimit}
             />
             <UsageMeter
               label="Federal Resume Downloads"
-              current={usage?.federal_downloads || 0}
-              limit={limits.federal_downloads}
+              current={legacyUsage?.federal_downloads || 0}
+              limit={federalDownloadLimit}
             />
             <UsageMeter
               label="Job Match Analyses"
-              current={usage?.job_matches || 0}
-              limit={limits.job_analyses}
+              current={jobMatchUsage.used || 0}
+              limit={jobMatchUsage.limit || 1}
             />
             <UsageMeter
               label="Cover Letters"
-              current={usage?.cover_letters || 0}
-              limit={limits.cover_letters}
+              current={coverLetterUsage.used || 0}
+              limit={coverLetterUsage.limit || 1}
             />
             <UsageMeter
               label="LinkedIn Analyses"
-              current={usage?.linkedin_analyses || 0}
-              limit={limits.linkedin_analyses}
+              current={linkedinUsage.used || 0}
+              limit={linkedinUsage.limit || 1}
             />
           </div>
           {!isPaid && (
@@ -294,12 +301,12 @@ function TierBadge({ tier }: { tier: string }) {
 }
 
 function UsageMeter({ label, current, limit }: { label: string; current: number; limit: number }) {
-  const isUnlimited = limit >= 999999
+  const isUnlimited = limit === -1 || limit >= 999999
   const pct = isUnlimited ? 0 : Math.min((current / limit) * 100, 100)
   const isNearLimit = !isUnlimited && current >= limit * 0.8
   const isAtLimit = !isUnlimited && current >= limit
 
-  const formatLimit = (l: number) => l >= 999999 ? '∞' : l.toString()
+  const formatLimit = (l: number) => (l === -1 || l >= 999999) ? '∞' : l.toString()
 
   const getBarColor = () => {
     if (isAtLimit) return 'bg-status-red'

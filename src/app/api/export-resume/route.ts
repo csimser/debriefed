@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { TemplateId } from '@/lib/templates'
 import { PRICING_TIERS, DAILY_RATE_LIMITS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
+import { getUserTier as getAuthoritativeTier } from '@/lib/usage-service'
 import { logActivity, logApiUsage } from '@/lib/usage-tracking'
 import React from 'react'
 
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     const { data: profile } = await supabaseAdmin
       .from('profiles')
-      .select('subscription_tier, email')
+      .select('email')
       .eq('user_id', userId)
       .single()
 
@@ -73,10 +74,9 @@ export async function POST(request: NextRequest) {
     if (profile?.email && ADMIN_BYPASS_EMAILS.includes(profile.email)) {
       console.log('Admin bypass for:', profile.email)
     } else {
-      // Determine tier and limits
-      const rawTier = profile?.subscription_tier || 'free'
-      const tier: TierId = ['core', 'full', 'expired'].includes(rawTier) ? rawTier as TierId :
-        rawTier === 'pro' ? 'full' : rawTier === 'basic' ? 'core' : 'free'
+      // Determine tier using centralized function (checks subscriptions table first)
+      const tierInfo = await getAuthoritativeTier(userId)
+      const tier: TierId = tierInfo.tier
 
       const tierConfig = PRICING_TIERS[tier]
 

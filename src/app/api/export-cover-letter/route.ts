@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import { Document as DocxDocument, Packer, Paragraph, TextRun, AlignmentType, convertInchesToTwip, BorderStyle } from 'docx'
+import { formatPhoneForDisplay } from '@/lib/formatPhone'
 
 interface CoverLetterData {
   content: string
@@ -113,10 +114,11 @@ export async function POST(request: NextRequest) {
 
     const { greeting, bodyParagraphs, closing, signatureName } = parseCoverLetter(content, applicantName)
 
-    // Build contact line
+    // Build contact line (format phone for display)
+    const formattedPhone = formatPhoneForDisplay(applicantPhone)
     const contactParts: string[] = []
     if (applicantEmail) contactParts.push(applicantEmail)
-    if (applicantPhone) contactParts.push(applicantPhone)
+    if (formattedPhone) contactParts.push(formattedPhone)
     const locationPart = [applicantCity, applicantState].filter(Boolean).join(', ')
     if (locationPart) contactParts.push(locationPart)
 

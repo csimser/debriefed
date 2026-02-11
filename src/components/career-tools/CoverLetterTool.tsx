@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
+import { formatPhoneForDisplay } from '@/lib/formatPhone'
 
 interface CoverLetterToolProps {
   userId: string
@@ -81,7 +82,7 @@ export function CoverLetterTool({
   // Build applicant info for display
   const applicantName = `${userProfile?.first_name || ''} ${userProfile?.last_name || ''}`.trim() || 'Your Name'
   const applicantEmail = userProfile?.email || ''
-  const applicantPhone = userProfile?.phone || ''
+  const applicantPhone = formatPhoneForDisplay(userProfile?.phone) || ''
   const applicantCity = userProfile?.city || ''
   const applicantState = userProfile?.state || ''
   const applicantLinkedIn = userProfile?.linkedin_url || ''
@@ -107,8 +108,8 @@ export function CoverLetterTool({
       return
     }
 
-    if (remaining <= 0 && !isRegenerate) {
-      setError('You have reached your cover letter limit. Upgrade to Core for more.')
+    if (remaining <= 0) {
+      setError('You have reached your cover letter limit. Upgrade for more.')
       return
     }
 
