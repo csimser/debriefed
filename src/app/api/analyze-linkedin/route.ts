@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
-import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
-import { canUseFeature, incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
+import { logApiUsage } from '@/lib/usage-tracking'
+import { canUseFeature, incrementUsage } from '@/lib/usage-service'
 import crypto from 'crypto'
 
 const anthropic = new Anthropic({
@@ -474,19 +474,32 @@ Return ONLY valid JSON.`
       skills: analysis.sections?.skills?.score,
     })
 
-    // Track usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 6000
-    await logApiUsage(user.id, 'analyze-linkedin', tokensUsed, 'claude-sonnet-4-20250514')
-    await incrementPeriodUsage(user.id, 'linkedin_profile_analysis')
-    await incrementUsage(user.id, 'ai_summaries')
+    const hasValidAnalysis = analysis && analysis.overallScore !== undefined
 
     // Cache the result
-    analysisCache.set(cacheKey, {
-      result: analysis,
-      expires: Date.now() + CACHE_TTL,
+    if (hasValidAnalysis) {
+      analysisCache.set(cacheKey, {
+        result: analysis,
+        expires: Date.now() + CACHE_TTL,
+      })
+    }
+
+    // Return response to client first, then track usage
+    const jsonResponse = NextResponse.json({ analysis })
+
+    after(async () => {
+      try {
+        await logApiUsage(user.id, 'analyze-linkedin', tokensUsed, 'claude-sonnet-4-20250514')
+        if (hasValidAnalysis) {
+          await incrementUsage(user.id, 'linkedin_profile_analysis')
+        }
+      } catch (err) {
+        console.error('Post-response usage tracking failed:', err)
+      }
     })
 
-    return NextResponse.json({ analysis })
+    return jsonResponse
   } catch (error: any) {
     console.error('LinkedIn analysis error:', error)
     return NextResponse.json({

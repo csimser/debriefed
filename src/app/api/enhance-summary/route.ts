@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
+import { logApiUsage } from '@/lib/usage-tracking'
 import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
-import { canUseFeature, incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { translateTerm } from '@/lib/debriefed-token-saver/termLookup'
 
@@ -143,13 +143,23 @@ Return ONLY the improved summary, nothing else.`
 
     const enhanced = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
 
-    // Track usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 400
-    await logApiUsage(user.id, 'enhance-summary', tokensUsed, 'claude-sonnet-4-20250514')
-    await incrementUsage(user.id, 'ai_summaries')
-    await incrementPeriodUsage(user.id, 'ai_summaries')
 
-    return NextResponse.json({ enhanced })
+    // Return response to client first, then track usage
+    const jsonResponse = NextResponse.json({ enhanced })
+
+    after(async () => {
+      try {
+        await logApiUsage(user.id, 'enhance-summary', tokensUsed, 'claude-sonnet-4-20250514')
+        if (enhanced && enhanced.trim().length > 10) {
+          await incrementUsage(user.id, 'ai_summaries')
+        }
+      } catch (err) {
+        console.error('Post-response usage tracking failed:', err)
+      }
+    })
+
+    return jsonResponse
   } catch (error) {
     console.error('Enhancement error:', error)
     return NextResponse.json({ error: 'Enhancement failed' }, { status: 500 })

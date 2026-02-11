@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ProfileForm } from '@/components/profile/ProfileForm'
-import { getUserTier, getTierLimit } from '@/lib/tier-utils'
+import { EvalHistorySection } from '@/components/eval/EvalHistorySection'
+import { checkLimit } from '@/lib/usage-service'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -21,15 +22,18 @@ export default async function ProfilePage() {
     { data: education },
     { data: certifications },
     { data: skills },
-    { data: usage }
+    { data: evalUploads }
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
     supabase.from('experience').select('*, experience_bullets(*)').eq('user_id', user.id).order('sort_order'),
     supabase.from('education').select('*').eq('user_id', user.id).order('sort_order'),
     supabase.from('certifications').select('*').eq('user_id', user.id).order('sort_order'),
     supabase.from('skills').select('*').eq('user_id', user.id).order('sort_order'),
-    supabase.from('usage').select('*').eq('user_id', user.id).maybeSingle()
+    supabase.from('eval_uploads').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
   ])
+
+  // Usage from usage_tracking (single source of truth)
+  const resumeImportCheck = await checkLimit(user.id, 'resume_imports')
 
   console.log('2. Profile fetch result:', { profile, profileError })
   console.log('3. Profile fields:', profile ? {
@@ -44,6 +48,11 @@ export default async function ProfilePage() {
     console.error('Error loading profile:', profileError)
   }
 
+  const mappedExperiences = (experiences || []).map(exp => ({
+    ...exp,
+    bullets: exp.experience_bullets || []
+  }))
+
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-8">
@@ -56,18 +65,25 @@ export default async function ProfilePage() {
         userId={user.id}
         initialData={{
           profile: profile || {},
-          // Map experience_bullets to bullets for component compatibility
-          experiences: (experiences || []).map(exp => ({
-            ...exp,
-            bullets: exp.experience_bullets || []
-          })),
+          experiences: mappedExperiences,
           education: education || [],
           certifications: certifications || [],
           skills: skills || []
         }}
-        resumeImportUsage={usage?.resume_imports || 0}
-        resumeImportLimit={getTierLimit(getUserTier(profile), 'resume_imports')}
+        resumeImportUsage={resumeImportCheck.used}
+        resumeImportLimit={resumeImportCheck.limit}
       />
+
+      {/* Eval Upload History — shows past uploads with re-import capability */}
+      {(evalUploads && evalUploads.length > 0) && (
+        <div className="mt-8">
+          <EvalHistorySection
+            uploads={evalUploads}
+            experiences={mappedExperiences}
+            userId={user.id}
+          />
+        </div>
+      )}
     </div>
   )
 }

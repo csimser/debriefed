@@ -80,13 +80,18 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
       return
     }
 
+    if (remaining <= 0) {
+      setError('Free tier limit reached — upgrade to regenerate')
+      return
+    }
+
     if (regenerateOnly === 'headline') {
       setRegeneratingHeadline(true)
     } else if (regenerateOnly === 'about') {
       setRegeneratingAbout(true)
     } else {
       setGenerating(true)
-      setResults(null)
+      // Don't clear results here — preserve them in case of error (e.g. 403 limit reached)
     }
     setError('')
 
@@ -361,9 +366,12 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                 </h3>
                 {results?.headline && (
                   <div className="flex items-center gap-3">
+                    {remaining <= 0 ? (
+                      <span className="text-xs text-text-dim">Limit reached</span>
+                    ) : (
                     <button
                       onClick={regenerateHeadline}
-                      disabled={regeneratingHeadline}
+                      disabled={regeneratingHeadline || remaining <= 0}
                       className="text-xs text-text-muted hover:text-text flex items-center gap-1 disabled:opacity-50"
                     >
                       <svg className={`w-3 h-3 ${regeneratingHeadline ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -371,6 +379,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                       </svg>
                       {regeneratingHeadline ? 'Regenerating...' : 'Regenerate'}
                     </button>
+                    )}
                     <button
                       onClick={() => handleCopy(results.headline, 'headline')}
                       className="text-xs text-text-muted hover:text-text"
@@ -405,9 +414,12 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                 </h3>
                 {results?.summary && (
                   <div className="flex items-center gap-3">
+                    {remaining <= 0 ? (
+                      <span className="text-xs text-text-dim">Limit reached</span>
+                    ) : (
                     <button
                       onClick={regenerateAbout}
-                      disabled={regeneratingAbout}
+                      disabled={regeneratingAbout || remaining <= 0}
                       className="text-xs text-text-muted hover:text-text flex items-center gap-1 disabled:opacity-50"
                     >
                       <svg className={`w-3 h-3 ${regeneratingAbout ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -415,6 +427,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                       </svg>
                       {regeneratingAbout ? 'Regenerating...' : 'Regenerate'}
                     </button>
+                    )}
                     <button
                       onClick={() => handleCopy(results.summary, 'summary')}
                       className="text-xs text-text-muted hover:text-text"

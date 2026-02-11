@@ -118,12 +118,42 @@ export async function GET(
 
   const totalTokensUsed = tokenSum?.reduce((sum, row) => sum + (row.tokens_used || 0), 0) || 0
 
-  // Get cumulative usage stats
-  const { data: usageStats } = await serviceClient
-    .from('usage')
-    .select('*')
+  // Get usage stats from usage_tracking (single source of truth)
+  const { data: usageTrackingRows } = await serviceClient
+    .from('usage_tracking')
+    .select('feature, count')
     .eq('user_id', id)
-    .single()
+
+  // Aggregate per feature into the expected shape
+  const usageStats: Record<string, number> = {
+    resumes_created: resumes?.length || 0,
+    resumes_downloaded: 0,
+    cover_letters: 0,
+    job_matches: 0,
+    eval_uploads: 0,
+    bullet_rewrites: 0,
+    ai_summaries: 0,
+    private_downloads: 0,
+    federal_downloads: 0,
+  }
+  for (const row of usageTrackingRows || []) {
+    const count = row.count || 0
+    switch (row.feature) {
+      case 'cover_letters': usageStats.cover_letters += count; break
+      case 'job_match_analysis': usageStats.job_matches += count; break
+      case 'eval_uploads': usageStats.eval_uploads += count; break
+      case 'bullet_translations': usageStats.bullet_rewrites += count; break
+      case 'ai_summaries': usageStats.ai_summaries += count; break
+      case 'private_resumes':
+        usageStats.private_downloads += count
+        usageStats.resumes_downloaded += count
+        break
+      case 'federal_resumes':
+        usageStats.federal_downloads += count
+        usageStats.resumes_downloaded += count
+        break
+    }
+  }
 
   return NextResponse.json({
     user: profile,
@@ -135,17 +165,7 @@ export async function GET(
     activityLog: activityLog || [],
     apiUsage: apiUsage || [],
     totalTokensUsed,
-    usageStats: usageStats || {
-      resumes_created: 0,
-      resumes_downloaded: 0,
-      cover_letters: 0,
-      job_matches: 0,
-      eval_uploads: 0,
-      bullet_rewrites: 0,
-      ai_summaries: 0,
-      private_downloads: 0,
-      federal_downloads: 0,
-    },
+    usageStats,
   })
 }
 
@@ -365,8 +385,10 @@ export async function DELETE(
   // Delete activity log
   await serviceClient.from('activity_log').delete().eq('user_id', id)
 
-  // Delete usage
+  // Delete usage data from all usage tables
   await serviceClient.from('usage').delete().eq('user_id', id)
+  await serviceClient.from('usage_tracking').delete().eq('user_id', id)
+  await serviceClient.from('daily_usage').delete().eq('user_id', id)
 
   // Delete profile
   const { error: profileError } = await serviceClient

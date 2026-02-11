@@ -1,19 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { pdf } from '@react-pdf/renderer'
 import { ResumeDocument } from '@/lib/pdf/ResumeDocument'
 import { generateDocx } from '@/lib/docx/generateDocx'
 import { TemplateId } from '@/lib/templates'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
-import { PRICING_TIERS, DAILY_RATE_LIMITS, ADMIN_BYPASS_EMAILS, TierId } from '@/lib/pricing-config'
-import { getUserTier as getAuthoritativeTier } from '@/lib/usage-service'
+import { logApiUsage, logActivity } from '@/lib/usage-tracking'
+import { canUseFeature, incrementUsage, getUserTier } from '@/lib/usage-service'
 import React from 'react'
-
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,100 +36,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid format. Use pdf or docx.' }, { status: 400 })
     }
 
-    // Check usage limits before processing
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('email')
-      .eq('user_id', user.id)
-      .single()
+    // Tailored resumes require Core tier or above (free tier gate)
+    const tierInfo = await getUserTier(user.id)
+    if (tierInfo.tier === 'free') {
+      return NextResponse.json({
+        error: 'Tailored resumes require Core tier.',
+        limitReached: true,
+        tier: 'free'
+      }, { status: 403 })
+    }
 
-    const { data: usage } = await supabaseAdmin
-      .from('usage')
-      .select('private_downloads, monthly_private_downloads, daily_private_downloads, monthly_reset_date, daily_reset_date')
-      .eq('user_id', user.id)
-      .single()
+    // Check usage limit via usage_tracking (single source of truth)
+    // canUseFeature handles: admin bypass, period limits, daily limits
+    // Tailored resumes count against private_resumes
+    const usageCheck = await canUseFeature(user.id, 'private_resumes')
 
-    // Determine tier using centralized function (checks subscriptions table first)
-    const tierInfo = await getAuthoritativeTier(user.id)
-    const tier: TierId = tierInfo.tier
-
-    // Admin bypass
-    if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
-      const tierConfig = PRICING_TIERS[tier]
-      const privateDownloads = usage?.private_downloads || 0
-
-      // Expired tier: allow downloads (skip limit checks)
-      if (tier === 'expired') {
-        // Downloads are allowed for expired tier, skip all limit checks
-      }
-      // Free tier: tailored resumes require Core tier
-      else if (tier === 'free') {
-        return NextResponse.json({
-          error: 'Tailored resumes require Core tier.',
-          limitReached: true,
-          tier: 'free'
-        }, { status: 403 })
-      }
-      // Core tier: tailored resumes count against private_resumes limit
-      else if (tier === 'core') {
-        const limit = tierConfig.limits.private_resumes
-
-        // Check daily limits for Core tier
-        const now = new Date()
-        const dailyResetDate = usage?.daily_reset_date ? new Date(usage.daily_reset_date) : null
-        const needsDailyReset = !dailyResetDate || dailyResetDate <= now
-        const dailyPrivate = needsDailyReset ? 0 : (usage?.daily_private_downloads || 0)
-        const dailyLimit = DAILY_RATE_LIMITS.core.private_resumes
-
-        if (dailyPrivate >= dailyLimit) {
-          return NextResponse.json({
-            error: 'Daily resume download limit reached. Resets at midnight.',
-            limitReached: true,
-            tier: 'core',
-            isDailyLimit: true
-          }, { status: 403 })
-        }
-
-        if (privateDownloads >= limit) {
-          return NextResponse.json({
-            error: `You've used all ${limit} resume downloads. Upgrade to Full for more.`,
-            limitReached: true,
-            tier: 'core'
-          }, { status: 403 })
-        }
-      }
-      // Full tier: monthly and daily limits
-      else if (tier === 'full') {
-        const now = new Date()
-        const monthlyResetDate = usage?.monthly_reset_date ? new Date(usage.monthly_reset_date) : null
-        const dailyResetDate = usage?.daily_reset_date ? new Date(usage.daily_reset_date) : null
-
-        const needsMonthlyReset = !monthlyResetDate || monthlyResetDate <= now
-        const needsDailyReset = !dailyResetDate || dailyResetDate <= now
-
-        const monthlyPrivate = needsMonthlyReset ? 0 : (usage?.monthly_private_downloads || 0)
-        const dailyPrivate = needsDailyReset ? 0 : (usage?.daily_private_downloads || 0)
-
-        const monthlyLimit = tierConfig.limits.private_resumes // 30
-        const dailyLimit = DAILY_RATE_LIMITS.full.private_resumes // 10
-
-        if (dailyPrivate >= dailyLimit) {
-          return NextResponse.json({
-            error: 'Daily resume download limit reached. Resets at midnight.',
-            limitReached: true,
-            tier: 'full',
-            isDailyLimit: true
-          }, { status: 403 })
-        }
-        if (monthlyPrivate >= monthlyLimit) {
-          return NextResponse.json({
-            error: 'Monthly resume download limit reached.',
-            limitReached: true,
-            tier: 'full',
-            isMonthlyLimit: true
-          }, { status: 403 })
-        }
-      }
+    if (!usageCheck.allowed) {
+      return NextResponse.json({
+        error: usageCheck.reason,
+        limitReached: true,
+        remaining: usageCheck.remaining,
+        used: usageCheck.used,
+        limit: usageCheck.limit,
+      }, { status: 403 })
     }
 
     // Filter out excluded bullets before generating
@@ -154,7 +76,6 @@ export async function POST(request: NextRequest) {
     let extension: string
 
     if (format === 'pdf') {
-      console.log('Generating PDF from content with template:', template)
       const doc = React.createElement(ResumeDocument, {
         content: filteredContent,
         resumeType: resumeType,
@@ -165,62 +86,44 @@ export async function POST(request: NextRequest) {
       arrayBuffer = await blob.arrayBuffer()
       contentType = 'application/pdf'
       extension = 'pdf'
-      console.log('PDF generated, size:', arrayBuffer.byteLength)
     } else {
-      console.log('Generating DOCX from content with template:', template)
       const buffer = await generateDocx(filteredContent, resumeType, template as TemplateId)
-      // Convert Node Buffer to ArrayBuffer properly
       arrayBuffer = new Uint8Array(buffer).buffer
       contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       extension = 'docx'
-      console.log('DOCX generated, size:', arrayBuffer.byteLength)
     }
 
-    // Increment usage - tailored resumes count against private downloads
-    await supabaseAdmin.rpc('increment_private_downloads', { p_user_id: user.id })
-
-    // For Core and Full tiers, also increment monthly and daily counters
-    if (tier === 'core' || tier === 'full') {
-      const now = new Date()
-      const tomorrow = new Date(now)
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      tomorrow.setHours(0, 0, 0, 0)
-
-      const nextMonth = new Date(now)
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
-      nextMonth.setDate(1)
-      nextMonth.setHours(0, 0, 0, 0)
-
-      await supabaseAdmin.rpc('increment_monthly_private_downloads', {
-        p_user_id: user.id,
-        p_reset_date: nextMonth.toISOString()
-      })
-      await supabaseAdmin.rpc('increment_daily_private_downloads', {
-        p_user_id: user.id,
-        p_reset_date: tomorrow.toISOString()
-      })
-    }
-
-    // Track API usage and activity
-    await logApiUsage(user.id, 'export-tailored', 0, 'pdf-generation')
-    await logActivity(user.id, 'resume_downloaded', {
-      type: 'tailored',
-      resume_type: resumeType,
-      format,
-      template,
-      tier,
-    })
-
-    // Return file
+    // Return file to client first, then track usage
     const timestamp = new Date().toISOString().split('T')[0]
     const filename = `tailored-resume-${timestamp}.${extension}`
 
-    return new NextResponse(arrayBuffer, {
+    const fileResponse = new NextResponse(arrayBuffer, {
       headers: {
         'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${filename}"`,
       },
     })
+
+    // Defer usage tracking to after response is sent
+    after(async () => {
+      try {
+        // Increment usage in usage_tracking + daily_usage (single source of truth)
+        await incrementUsage(user.id, 'private_resumes')
+
+        await logApiUsage(user.id, 'export-tailored', 0, 'pdf-generation')
+        await logActivity(user.id, 'resume_downloaded', {
+          type: 'tailored',
+          resume_type: resumeType,
+          format,
+          template,
+          tier: tierInfo.tier,
+        })
+      } catch (err) {
+        console.error('Post-response usage tracking failed:', err)
+      }
+    })
+
+    return fileResponse
   } catch (error: any) {
     console.error('Tailored export error:', error)
     return NextResponse.json(

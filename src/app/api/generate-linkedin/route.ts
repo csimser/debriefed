@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage, incrementUsage, logActivity } from '@/lib/usage-tracking'
+import { logApiUsage, logActivity } from '@/lib/usage-tracking'
 import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
-import { canUseFeature, incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 
 const anthropic = new Anthropic({
@@ -352,27 +352,39 @@ Generate the About section with proper paragraph breaks.`
       totalTokens: tokensUsed,
     })
 
-    // Track actual token usage (not hardcoded estimates)
-    await logApiUsage(user.id, 'generate-linkedin', tokensUsed, 'claude-sonnet-4-20250514')
-    await incrementPeriodUsage(user.id, 'linkedin_headline')
-    await incrementPeriodUsage(user.id, 'linkedin_summary')
-    await incrementUsage(user.id, 'ai_summaries')
+    // Validate output before counting as used
+    const headlineValid = headline && headline.trim().length > 5
+    const summaryValid = summary && summary.trim().length > 10
 
-    // Log activity
-    await logActivity(user.id, 'linkedin_content_generated', {
-      target_role: targetRole,
-      tone,
-      about_length: aboutLength,
-      regenerate_only: regenerateOnly,
-      headline_length: headline.length,
-      summary_length: summary.length,
-      tokens_used: tokensUsed,
+    // Return response to client first, then track usage
+    const response = NextResponse.json({ headline, summary })
+
+    after(async () => {
+      try {
+        await logApiUsage(user.id, 'generate-linkedin', tokensUsed, 'claude-sonnet-4-20250514')
+
+        // Only increment features that were actually generated and produced valid output
+        if (headlineValid && (!regenerateOnly || regenerateOnly === 'headline')) {
+          await incrementUsage(user.id, 'linkedin_headline')
+        }
+        if (summaryValid && (!regenerateOnly || regenerateOnly === 'about')) {
+          await incrementUsage(user.id, 'linkedin_summary')
+        }
+        await logActivity(user.id, 'linkedin_content_generated', {
+          target_role: targetRole,
+          tone,
+          about_length: aboutLength,
+          regenerate_only: regenerateOnly,
+          headline_length: headline.length,
+          summary_length: summary.length,
+          tokens_used: tokensUsed,
+        })
+      } catch (err) {
+        console.error('Post-response usage tracking failed:', err)
+      }
     })
 
-    return NextResponse.json({
-      headline,
-      summary,
-    })
+    return response
   } catch (error) {
     console.error('LinkedIn generation error:', error)
     return NextResponse.json({ error: 'Failed to generate' }, { status: 500 })

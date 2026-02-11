@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
 import { CoverLetterTool } from './CoverLetterTool'
 import { LinkedInTool } from './LinkedInTool'
+import { EvalHistorySection } from '@/components/eval/EvalHistorySection'
+import { EvalUploadModal } from '@/components/profile/EvalUploadModal'
 import { getUserTier, isPaidTier } from '@/lib/tier-utils'
 
 interface CareerToolsHubProps {
@@ -19,11 +22,15 @@ interface CareerToolsHubProps {
   coverLetterLimit: number
   linkedinUsage: number
   linkedinLimit: number
+  evalUsage?: number
+  evalLimit?: number
+  evalUploads?: any[]
 }
 
 const TOOLS = [
   { id: 'cover-letter', name: 'Cover Letter Generator', icon: '◈', description: 'Custom cover letters tailored to job postings', requiresPaid: false },
   { id: 'linkedin', name: 'LinkedIn Optimizer', icon: '◎', description: 'Optimize your LinkedIn summary and headline', requiresPaid: false },
+  { id: 'eval-upload', name: 'Eval Translator', icon: '◫', description: 'Upload military evals & translate bullets to civilian STAR format', requiresPaid: false },
 ]
 
 export function CareerToolsHub({
@@ -38,6 +45,9 @@ export function CareerToolsHub({
   coverLetterLimit,
   linkedinUsage,
   linkedinLimit,
+  evalUsage = 0,
+  evalLimit = 2,
+  evalUploads = [],
 }: CareerToolsHubProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -45,6 +55,7 @@ export function CareerToolsHub({
 
   // Use URL param as the source of truth
   const [activeTool, setActiveToolState] = useState<string | null>(toolFromUrl)
+  const [showEvalUpload, setShowEvalUpload] = useState(false)
   const userTier = getUserTier({ tier: userPlan })
   const hasPaidAccess = isPaidTier(userTier)
 
@@ -133,6 +144,84 @@ export function CareerToolsHub({
           usageLimit={linkedinLimit}
           onBack={() => setActiveTool(null)}
         />
+      )}
+
+      {activeTool === 'eval-upload' && (
+        <div className="space-y-6">
+          <button
+            onClick={() => setActiveTool(null)}
+            className="flex items-center gap-2 text-sm text-text-muted hover:text-gold transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Tools
+          </button>
+
+          <div>
+            <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-1">Eval Translator</h2>
+            <p className="text-text-muted text-sm">Upload military evaluations and translate bullets to civilian STAR format</p>
+          </div>
+
+          {experiences.length === 0 ? (
+            <Card className="p-6 text-center">
+              <div className="text-text-dim text-3xl mb-3">&#9672;</div>
+              <p className="font-heading text-sm font-semibold mb-2">Create an Experience First</p>
+              <p className="text-text-muted text-sm mb-4">
+                Add a job experience on your Profile page first, then come back to import eval bullets into it.
+              </p>
+              <a
+                href="/profile"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-bg-primary rounded font-heading font-bold uppercase text-sm hover:bg-gold-bright transition-colors"
+              >
+                Go to Profile
+              </a>
+            </Card>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <Badge variant={evalLimit - evalUsage <= 0 ? 'red' : evalLimit - evalUsage <= 1 ? 'amber' : 'default'}>
+                  {Math.max(0, evalLimit - evalUsage)} Remaining
+                </Badge>
+                <button
+                  onClick={() => setShowEvalUpload(true)}
+                  disabled={evalLimit - evalUsage <= 0}
+                  className="px-4 py-2 bg-gold text-bg-primary rounded font-heading font-bold uppercase text-sm hover:bg-gold-bright disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Upload Evaluation
+                </button>
+              </div>
+
+              {evalUploads.length > 0 && (
+                <EvalHistorySection
+                  uploads={evalUploads}
+                  experiences={experiences}
+                  userId={userId}
+                />
+              )}
+            </>
+          )}
+
+          {showEvalUpload && (
+            <EvalUploadModal
+              isOpen={showEvalUpload}
+              onClose={() => setShowEvalUpload(false)}
+              onExtracted={() => {
+                setShowEvalUpload(false)
+                router.refresh()
+              }}
+              onBulletsSaved={() => router.refresh()}
+              userId={userId}
+              experiences={experiences.map(exp => ({
+                id: exp.id,
+                job_title: exp.job_title || exp.civilian_title || 'Untitled',
+                organization: exp.organization || exp.company_name || '',
+                start_date: exp.start_date || '',
+                end_date: exp.end_date || '',
+              }))}
+            />
+          )}
+        </div>
       )}
     </div>
   )

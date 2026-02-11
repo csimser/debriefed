@@ -1,11 +1,11 @@
 export const runtime = 'nodejs'
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
-import { canUseFeature, incrementUsage as incrementPeriodUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
+import { logApiUsage } from '@/lib/usage-tracking'
+import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { translateMilitaryToCivilian, cleanEvalText } from '@/lib/constants/military-dictionary'
 import { hasCriticalPII } from '@/lib/pii-scanner'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
@@ -372,19 +372,30 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
       return NextResponse.json({ error: 'Failed to save upload' }, { status: 500 })
     }
 
-    // Track usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 2000
-    await logApiUsage(user.id, 'parse-eval', tokensUsed, 'claude-sonnet-4-20250514')
-    await incrementUsage(user.id, 'eval_uploads')
-    await incrementPeriodUsage(user.id, 'eval_uploads')
+    const hasUsableBullets = processedBullets.length > 0
 
-    return NextResponse.json({
+    // Return response to client first, then track usage
+    const jsonResponse = NextResponse.json({
       uploadId: upload.id,
       bullets: processedBullets,
       count: processedBullets.length,
       evalPeriod,
       jobTitle,
     })
+
+    after(async () => {
+      try {
+        await logApiUsage(user.id, 'parse-eval', tokensUsed, 'claude-sonnet-4-20250514')
+        if (hasUsableBullets) {
+          await incrementUsage(user.id, 'eval_uploads')
+        }
+      } catch (err) {
+        console.error('Post-response usage tracking failed:', err)
+      }
+    })
+
+    return jsonResponse
   } catch (error) {
     console.error('Eval parse error:', error)
     return NextResponse.json({ error: 'Failed to parse evaluation' }, { status: 500 })

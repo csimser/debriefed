@@ -60,7 +60,7 @@ export function EvalHistory({ uploads, experiences, userId, onImportComplete }: 
                 </div>
 
                 <div>
-                  <div className="font-heading text-sm font-semibold">{upload.filename}</div>
+                  <div className="font-heading text-sm font-semibold">{upload.file_name || upload.filename}</div>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="default">{EVAL_TYPE_NAMES[upload.eval_type] || upload.eval_type}</Badge>
                     <span className="text-xs text-text-muted">

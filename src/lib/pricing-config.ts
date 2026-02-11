@@ -146,8 +146,8 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
     price: 0,
     duration: null,
     limits: {
-      private_resumes: 0,
-      federal_resumes: 0,
+      private_resumes: 999,
+      federal_resumes: 999,
       resume_imports: 0,
       eval_uploads: 0,
       bullet_translations: 0,

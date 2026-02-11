@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { logApiUsage, incrementUsage as incrementCumulativeUsage } from '@/lib/usage-tracking'
+import { logApiUsage } from '@/lib/usage-tracking'
 import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
-import { canUseFeature, incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 
 const anthropic = new Anthropic()
@@ -247,20 +247,29 @@ ${resumeText.substring(0, 15000)}${resumeText.length > 15000 ? '\n...[truncated]
       await saveToDatabase(user.id, result)
     }
 
-    // Track usage - period-based (usage_tracking table) and cumulative (usage table)
-    await incrementPeriodUsage(user.id, 'resume_imports')
-    await incrementCumulativeUsage(user.id, 'resume_imports')
-
-    // Track API usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 4000
-    await logApiUsage(user.id, 'import-resume', tokensUsed, 'claude-sonnet-4-20250514')
+    const hasUsableData = result && (result.experiences?.length > 0 || result.skills?.length > 0 || result.professional_summary)
 
-    return NextResponse.json({
+    // Return response to client first, then track usage
+    const jsonResponse = NextResponse.json({
       success: true,
       saved: shouldSave,
       data: result,
       extractedTextLength: resumeText.length,
     })
+
+    after(async () => {
+      try {
+        await logApiUsage(user.id, 'import-resume', tokensUsed, 'claude-sonnet-4-20250514')
+        if (hasUsableData) {
+          await incrementUsage(user.id, 'resume_imports')
+        }
+      } catch (err) {
+        console.error('Post-response usage tracking failed:', err)
+      }
+    })
+
+    return jsonResponse
   } catch (error: any) {
     console.error('Resume import error:', error)
     return NextResponse.json({ error: error?.message || 'Failed to import resume' }, { status: 500 })

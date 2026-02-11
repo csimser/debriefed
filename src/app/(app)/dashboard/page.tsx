@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
 import { checkLimit, getSubscriptionInfo } from '@/lib/usage-service'
-import { PRICING_TIERS } from '@/lib/pricing-config'
 import Link from 'next/link'
 
 // Profile fields for completeness calculation
@@ -60,10 +59,8 @@ export default async function DashboardPage() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user?.id)
 
-  // Fetch profile and usage from usage_tracking (authoritative source)
+  // Fetch profile
   const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user?.id).single()
-  // Legacy usage table for download counts (still tracked there by export routes)
-  const { data: legacyUsage } = await supabase.from('usage').select('private_downloads, federal_downloads').eq('user_id', user?.id).single()
 
   // Get authoritative tier from subscriptions (not profiles table directly)
   const subscriptionInfo = user?.id
@@ -72,21 +69,17 @@ export default async function DashboardPage() {
   const tier = subscriptionInfo.tier
   const isPaid = tier === 'core' || tier === 'full'
 
-  // AI feature usage from usage_tracking (authoritative source for limits)
-  // checkLimit uses the same getUserTier() so limits match backend enforcement
+  // All usage from usage_tracking (single source of truth for everything)
   const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
-  const [jobMatchUsage, coverLetterUsage, linkedinUsage] = user?.id
+  const [jobMatchUsage, coverLetterUsage, linkedinUsage, privateDownloadUsage, federalDownloadUsage] = user?.id
     ? await Promise.all([
         checkLimit(user.id, 'job_match_analysis'),
         checkLimit(user.id, 'cover_letters'),
         checkLimit(user.id, 'linkedin_profile_analysis'),
+        checkLimit(user.id, 'private_resumes'),
+        checkLimit(user.id, 'federal_resumes'),
       ])
-    : [defaultUsage, defaultUsage, defaultUsage]
-
-  // Download limits from pricing-config using the authoritative tier
-  const tierConfig = PRICING_TIERS[tier]
-  const downloadLimit = tierConfig.limits.private_resumes
-  const federalDownloadLimit = tierConfig.limits.federal_resumes
+    : [defaultUsage, defaultUsage, defaultUsage, defaultUsage, defaultUsage]
 
   const daysUntilEAS = profile?.eas_date
     ? Math.ceil((new Date(profile.eas_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -155,7 +148,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Upgrade Banner - shows for free users at 50%+ usage */}
-      {!isPaid && (jobMatchUsage.used || 0) + (coverLetterUsage.used || 0) + (legacyUsage?.private_downloads || 0) > 0 && (
+      {!isPaid && (jobMatchUsage.used || 0) + (coverLetterUsage.used || 0) + (privateDownloadUsage.used || 0) > 0 && (
         <UpgradeBanner
           feature="features"
           tier={tier}
@@ -175,13 +168,13 @@ export default async function DashboardPage() {
           <div className="space-y-4">
             <UsageMeter
               label="Private Resume Downloads"
-              current={legacyUsage?.private_downloads || 0}
-              limit={downloadLimit}
+              current={privateDownloadUsage.used || 0}
+              limit={privateDownloadUsage.limit || 1}
             />
             <UsageMeter
               label="Federal Resume Downloads"
-              current={legacyUsage?.federal_downloads || 0}
-              limit={federalDownloadLimit}
+              current={federalDownloadUsage.used || 0}
+              limit={federalDownloadUsage.limit || 1}
             />
             <UsageMeter
               label="Job Match Analyses"

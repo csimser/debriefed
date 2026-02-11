@@ -49,7 +49,7 @@ export async function logApiUsage(
 }
 
 /**
- * Increment a cumulative usage counter for a user (atomic via RPC)
+ * @deprecated Use incrementUsage from usage-service.ts instead. This writes to the legacy "usage" table.
  */
 export async function incrementUsage(userId: string, field: UsageField) {
   try {
@@ -68,7 +68,7 @@ export async function incrementUsage(userId: string, field: UsageField) {
 }
 
 /**
- * Log daily feature usage for rate limiting and analytics
+ * @deprecated Use incrementUsage from usage-service.ts which handles daily_usage atomically via RPC.
  */
 export async function logDailyUsage(userId: string, feature: string) {
   try {
@@ -119,7 +119,7 @@ export async function logDailyUsage(userId: string, feature: string) {
 }
 
 /**
- * Get user's daily usage count for a feature (for rate limiting)
+ * @deprecated Use getDailyUsage from usage-service.ts instead.
  */
 export async function getDailyUsageCount(userId: string, feature: string): Promise<number> {
   try {
@@ -146,7 +146,7 @@ export async function getDailyUsageCount(userId: string, feature: string): Promi
 }
 
 /**
- * Get user's total usage stats
+ * @deprecated Use getAllUsage from usage-service.ts instead. This reads from the legacy "usage" table.
  */
 export async function getUserUsageStats(userId: string) {
   try {
@@ -276,7 +276,7 @@ export async function getUserActivity(userId: string, limit: number = 50) {
 }
 
 /**
- * Ensure user has a usage record (create if not exists)
+ * @deprecated Legacy "usage" table is no longer the source of truth. No-op candidate for removal.
  */
 export async function ensureUsageRecord(userId: string) {
   try {

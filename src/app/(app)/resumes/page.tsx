@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { ResumeEditor } from '@/components/resume/ResumeEditor'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
+import { checkLimit } from '@/lib/usage-service'
 
 export default async function ResumesPage() {
   const supabase = await createClient()
@@ -14,7 +15,6 @@ export default async function ResumesPage() {
     { data: education },
     { data: certifications },
     { data: skills },
-    { data: usage }
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('user_id', user?.id).maybeSingle(),
     supabase.from('resumes').select('*, downloaded_at').eq('user_id', user?.id).order('updated_at', { ascending: false }),
@@ -22,8 +22,23 @@ export default async function ResumesPage() {
     supabase.from('education').select('*').eq('user_id', user?.id).order('sort_order'),
     supabase.from('certifications').select('*').eq('user_id', user?.id).order('sort_order'),
     supabase.from('skills').select('*').eq('user_id', user?.id).order('sort_order'),
-    supabase.from('usage').select('private_downloads, federal_downloads, bullet_rewrites').eq('user_id', user?.id).maybeSingle()
   ])
+
+  // Usage from usage_tracking (single source of truth)
+  const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
+  const [privateCheck, federalCheck, bulletCheck] = user?.id
+    ? await Promise.all([
+        checkLimit(user.id, 'private_resumes'),
+        checkLimit(user.id, 'federal_resumes'),
+        checkLimit(user.id, 'bullet_translations'),
+      ])
+    : [defaultUsage, defaultUsage, defaultUsage]
+
+  const usage = {
+    private_downloads: privateCheck.used,
+    federal_downloads: federalCheck.used,
+    bullet_rewrites: bulletCheck.used,
+  }
 
   const userProfile = profile || {}
   const tier = profile?.tier || 'free'

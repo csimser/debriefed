@@ -459,7 +459,9 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
 
         // Notify parent that bullets were saved
         onBulletsSaved?.()
-        handleClose()
+        // Bypass handleClose() to avoid triggering the unsaved bullets confirmation dialog
+        resetState()
+        onClose()
       } catch (err) {
         console.error('Error saving bullets:', err)
         alert('Failed to save bullets')
@@ -469,11 +471,26 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
     } else {
       // No experience selected - pass to BulletAssignmentModal via onExtracted
       onExtracted(bulletsToSave, null)
-      handleClose()
+      // Bypass handleClose() to avoid triggering the unsaved bullets confirmation dialog
+      resetState()
+      onClose()
     }
   }
 
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false)
+
   const handleClose = () => {
+    // If we have processed bullets that haven't been saved, confirm before closing
+    if (step === 'review' && bulletItems.length > 0) {
+      setShowCloseConfirm(true)
+      return
+    }
+    resetState()
+    onClose()
+  }
+
+  const handleConfirmClose = () => {
+    setShowCloseConfirm(false)
     resetState()
     onClose()
   }
@@ -956,6 +973,33 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
             </button>
           )}
         </div>
+
+        {/* Unsaved bullets confirmation dialog */}
+        {showCloseConfirm && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10 rounded-t-2xl md:rounded-lg">
+            <div className="bg-bg-card border border-border rounded-lg p-6 mx-4 max-w-sm shadow-xl">
+              <h3 className="font-heading text-base font-bold uppercase mb-2">Unsaved Bullets</h3>
+              <p className="text-sm text-text-muted mb-4">
+                You have {bulletItems.length} extracted bullet{bulletItems.length !== 1 ? 's' : ''} that haven&apos;t been saved.
+                You can re-import them later from your Eval History on the Profile page.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCloseConfirm(false)}
+                  className="flex-1 px-4 py-2.5 bg-bg-tertiary border border-border rounded font-heading font-bold uppercase text-xs tracking-wider hover:bg-bg-hover transition-colors"
+                >
+                  Go Back
+                </button>
+                <button
+                  onClick={handleConfirmClose}
+                  className="flex-1 px-4 py-2.5 bg-status-red/20 text-status-red border border-status-red/30 rounded font-heading font-bold uppercase text-xs tracking-wider hover:bg-status-red/30 transition-colors"
+                >
+                  Close Anyway
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

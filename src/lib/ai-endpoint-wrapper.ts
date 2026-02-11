@@ -1,7 +1,7 @@
 // AI Endpoint Wrapper for Debriefed
 // Provides security, usage tracking, and rate limiting for all AI endpoints
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service';
 import {
@@ -139,9 +139,15 @@ export function withAISecurity<T>(
       // Call the actual handler
       const response = await handler(request, sanitizedInput, context);
 
-      // If successful, increment usage (skip for admins)
+      // Defer usage increment to after response is sent (skip for admins)
       if (response.status === 200 && !adminStatus) {
-        await incrementUsage(userId, feature);
+        after(async () => {
+          try {
+            await incrementUsage(userId, feature);
+          } catch (err) {
+            console.error(`Post-response usage increment failed (${feature}):`, err);
+          }
+        });
       }
 
       return response;

@@ -136,10 +136,10 @@ export async function GET() {
       .order('created_at', { ascending: false })
       .limit(10),
 
-    // Aggregate usage stats from usage table
+    // Aggregate usage stats from usage_tracking (single source of truth)
     serviceClient
-      .from('usage')
-      .select('resumes_created, resumes_downloaded, cover_letters, job_matches, eval_uploads, bullet_rewrites, ai_summaries, private_downloads, federal_downloads'),
+      .from('usage_tracking')
+      .select('feature, count'),
   ])
 
   // Calculate total API tokens used today
@@ -155,32 +155,37 @@ export async function GET() {
     return !isExpired && !isExhausted
   }).length
 
-  // Aggregate usage stats across all users
-  const usageRows = aggregateUsageResult.data || []
-  const totalUsageStats = usageRows.reduce(
-    (acc, row) => ({
-      resumes_created: acc.resumes_created + (row.resumes_created || 0),
-      resumes_downloaded: acc.resumes_downloaded + (row.resumes_downloaded || 0),
-      cover_letters: acc.cover_letters + (row.cover_letters || 0),
-      job_matches: acc.job_matches + (row.job_matches || 0),
-      eval_uploads: acc.eval_uploads + (row.eval_uploads || 0),
-      bullet_rewrites: acc.bullet_rewrites + (row.bullet_rewrites || 0),
-      ai_summaries: acc.ai_summaries + (row.ai_summaries || 0),
-      private_downloads: acc.private_downloads + (row.private_downloads || 0),
-      federal_downloads: acc.federal_downloads + (row.federal_downloads || 0),
-    }),
-    {
-      resumes_created: 0,
-      resumes_downloaded: 0,
-      cover_letters: 0,
-      job_matches: 0,
-      eval_uploads: 0,
-      bullet_rewrites: 0,
-      ai_summaries: 0,
-      private_downloads: 0,
-      federal_downloads: 0,
+  // Aggregate usage stats from usage_tracking by feature
+  const trackingRows = aggregateUsageResult.data || []
+  const totalUsageStats: Record<string, number> = {
+    resumes_created: totalResumesResult.count || 0,
+    resumes_downloaded: 0,
+    cover_letters: 0,
+    job_matches: 0,
+    eval_uploads: 0,
+    bullet_rewrites: 0,
+    ai_summaries: 0,
+    private_downloads: 0,
+    federal_downloads: 0,
+  }
+  for (const row of trackingRows) {
+    const count = row.count || 0
+    switch (row.feature) {
+      case 'cover_letters': totalUsageStats.cover_letters += count; break
+      case 'job_match_analysis': totalUsageStats.job_matches += count; break
+      case 'eval_uploads': totalUsageStats.eval_uploads += count; break
+      case 'bullet_translations': totalUsageStats.bullet_rewrites += count; break
+      case 'ai_summaries': totalUsageStats.ai_summaries += count; break
+      case 'private_resumes':
+        totalUsageStats.private_downloads += count
+        totalUsageStats.resumes_downloaded += count
+        break
+      case 'federal_resumes':
+        totalUsageStats.federal_downloads += count
+        totalUsageStats.resumes_downloaded += count
+        break
     }
-  )
+  }
 
   return NextResponse.json({
     totalUsers: totalUsersResult.count || 0,

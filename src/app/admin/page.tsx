@@ -65,8 +65,8 @@ export default async function AdminDashboardPage() {
     serviceClient.from('user_feedback').select('*', { count: 'exact', head: true }).or('status.eq.new,status.eq.pending,status.is.null'),
     serviceClient.from('api_usage').select('tokens_used').gte('created_at', todayStart),
     serviceClient.from('profiles').select('id, user_id, email, first_name, last_name, tier, branch, created_at').order('created_at', { ascending: false }).limit(10),
-    // Aggregate usage stats
-    serviceClient.from('usage').select('resumes_created, resumes_downloaded, cover_letters, job_matches, eval_uploads, bullet_rewrites, ai_summaries, private_downloads, federal_downloads'),
+    // Aggregate usage stats from usage_tracking (single source of truth)
+    serviceClient.from('usage_tracking').select('feature, count'),
   ])
 
   // Calculate API tokens
@@ -80,28 +80,27 @@ export default async function AdminDashboardPage() {
   const coreUsers = tierData.filter((u: any) => u.tier === 'core').length
   const fullUsers = tierData.filter((u: any) => u.tier === 'full' || u.tier === 'pro').length
 
-  // Aggregate usage stats across all users
-  const usageRows = aggregateUsageResult.data || []
-  const totalUsageStats = usageRows.reduce(
-    (acc: any, row: any) => ({
-      resumes_created: acc.resumes_created + (row.resumes_created || 0),
-      cover_letters: acc.cover_letters + (row.cover_letters || 0),
-      job_matches: acc.job_matches + (row.job_matches || 0),
-      eval_uploads: acc.eval_uploads + (row.eval_uploads || 0),
-      ai_summaries: acc.ai_summaries + (row.ai_summaries || 0),
-      private_downloads: acc.private_downloads + (row.private_downloads || 0),
-      federal_downloads: acc.federal_downloads + (row.federal_downloads || 0),
-    }),
-    {
-      resumes_created: 0,
-      cover_letters: 0,
-      job_matches: 0,
-      eval_uploads: 0,
-      ai_summaries: 0,
-      private_downloads: 0,
-      federal_downloads: 0,
+  // Aggregate usage stats from usage_tracking by feature
+  const trackingRows = aggregateUsageResult.data || []
+  const totalUsageStats = {
+    cover_letters: 0,
+    job_matches: 0,
+    eval_uploads: 0,
+    ai_summaries: 0,
+    private_downloads: 0,
+    federal_downloads: 0,
+  }
+  for (const row of trackingRows) {
+    const count = row.count || 0
+    switch (row.feature) {
+      case 'cover_letters': totalUsageStats.cover_letters += count; break
+      case 'job_match_analysis': totalUsageStats.job_matches += count; break
+      case 'eval_uploads': totalUsageStats.eval_uploads += count; break
+      case 'ai_summaries': totalUsageStats.ai_summaries += count; break
+      case 'private_resumes': totalUsageStats.private_downloads += count; break
+      case 'federal_resumes': totalUsageStats.federal_downloads += count; break
     }
-  )
+  }
 
   const stats = {
     totalUsers: totalUsersResult.count || 0,
@@ -210,7 +209,7 @@ export default async function AdminDashboardPage() {
           <StatCard
             icon="◫"
             label="Resumes Created"
-            value={totalUsageStats.resumes_created}
+            value={stats.totalResumes}
             color="gold"
           />
           <StatCard

@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
-import { logApiUsage, incrementUsage } from '@/lib/usage-tracking'
+import { logApiUsage } from '@/lib/usage-tracking'
 import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary'
 import { hasCriticalPII, redactMinorPII } from '@/lib/pii-scanner'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
-import { canUseFeature, incrementUsage as incrementPeriodUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
 
 const anthropic = new Anthropic()
 
@@ -384,17 +384,28 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
     // DO NOT store the image - only return extracted data
     // The original image data is discarded after this request completes
 
-    // Track usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 4000
-    await logApiUsage(user.id, 'eval-extract', tokensUsed, 'claude-sonnet-4-20250514')
-    await incrementUsage(user.id, 'eval_uploads')
-    await incrementPeriodUsage(user.id, 'eval_uploads')
+    const hasUsableBullets = result.bullets.length > 0
 
-    return NextResponse.json({
+    // Return response to client first, then track usage
+    const jsonResponse = NextResponse.json({
       ...result,
       evalType,
       extractedAt: new Date().toISOString(),
     })
+
+    after(async () => {
+      try {
+        await logApiUsage(user.id, 'eval-extract', tokensUsed, 'claude-sonnet-4-20250514')
+        if (hasUsableBullets) {
+          await incrementUsage(user.id, 'eval_uploads')
+        }
+      } catch (err) {
+        console.error('Post-response usage tracking failed:', err)
+      }
+    })
+
+    return jsonResponse
   } catch (error: any) {
     console.error('Extraction error:', error)
     return NextResponse.json(

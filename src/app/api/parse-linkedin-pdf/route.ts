@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage } from '@/lib/usage-tracking'
 import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
-import { canUseFeature, incrementUsage as incrementPeriodUsage } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage } from '@/lib/usage-service'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -185,12 +185,23 @@ Return ONLY valid JSON, no other text.`
       skillsCount: linkedInProfile.skills?.length,
     })
 
-    // Track usage
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 3000
-    await logApiUsage(user.id, 'parse-linkedin-pdf', tokensUsed, 'claude-sonnet-4-20250514')
-    await incrementPeriodUsage(user.id, 'linkedin_profile_analysis')
 
-    return NextResponse.json({ profileData: linkedInProfile })
+    // Return response to client first, then track usage
+    const jsonResponse = NextResponse.json({ profileData: linkedInProfile })
+
+    after(async () => {
+      try {
+        await logApiUsage(user.id, 'parse-linkedin-pdf', tokensUsed, 'claude-sonnet-4-20250514')
+        if (linkedInProfile.name || linkedInProfile.experience?.length > 0) {
+          await incrementUsage(user.id, 'linkedin_profile_analysis')
+        }
+      } catch (err) {
+        console.error('Post-response usage tracking failed:', err)
+      }
+    })
+
+    return jsonResponse
   } catch (error: any) {
     console.error('LinkedIn PDF parse error:', error)
     return NextResponse.json({
