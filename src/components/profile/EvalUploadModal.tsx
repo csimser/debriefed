@@ -582,7 +582,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                 <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-gold/50 transition-all">
                   <input
                     type="file"
-                    accept=".pdf,image/*"
+                    accept="image/png,image/jpeg,image/*,.pdf"
                     onChange={handleFileSelect}
                     className="hidden"
                     id="eval-upload-modal"
@@ -605,8 +605,8 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                           <line x1="12" y1="3" x2="12" y2="15"/>
                         </svg>
                         <p className="text-text mb-1">Click to upload or drag and drop</p>
-                        <p className="text-sm text-text-muted">PDF (recommended) or Image (PNG, JPG)</p>
-                        <p className="text-xs text-gold mt-2">PDFs are processed directly - images require cropping</p>
+                        <p className="text-sm text-text-muted">PNG, JPG, or PDF</p>
+                        <p className="text-xs text-gold mt-2">Images are processed directly - PDFs may require extra processing</p>
                       </>
                     )}
                   </label>
@@ -614,6 +614,16 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                 {!evalType && (
                   <p className="text-xs text-status-amber mt-2">Please select an evaluation type first</p>
                 )}
+              </div>
+
+              {/* PNG Tip */}
+              <div className="flex items-start gap-2 p-3 bg-bg-tertiary rounded-lg border border-border">
+                <svg className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-xs text-text-muted">
+                  <strong className="text-gold">Pro tip:</strong> For best results, screenshot or convert your eval write-ups to PNG images before uploading. PDFs from government systems can sometimes cause parsing issues.
+                </p>
               </div>
 
               {/* PII Warning */}

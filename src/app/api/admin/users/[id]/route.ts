@@ -205,7 +205,63 @@ export async function PATCH(
 
   if (tier !== undefined && tier !== currentUser.tier) {
     updates.tier = tier
+    updates.subscription_tier = tier
     changes.push(`tier: ${currentUser.tier || 'free'} → ${tier}`)
+
+    // Sync subscriptions table so getUserTier() returns the correct tier
+    const now = new Date()
+    if (tier === 'free') {
+      // Cancel any active subscription
+      const { data: activeSub } = await serviceClient
+        .from('subscriptions')
+        .select('id')
+        .eq('user_id', id)
+        .eq('status', 'active')
+        .limit(1)
+        .single()
+
+      if (activeSub) {
+        await serviceClient
+          .from('subscriptions')
+          .update({ status: 'cancelled' })
+          .eq('id', activeSub.id)
+      }
+    } else {
+      // Upsert an active subscription for core/full tiers
+      const durationDays = tier === 'full' ? 90 : 30
+      const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000)
+
+      // Check if an active subscription already exists
+      const { data: existingSub } = await serviceClient
+        .from('subscriptions')
+        .select('id')
+        .eq('user_id', id)
+        .eq('status', 'active')
+        .limit(1)
+        .single()
+
+      if (existingSub) {
+        await serviceClient
+          .from('subscriptions')
+          .update({
+            tier,
+            expires_at: expiresAt.toISOString(),
+          })
+          .eq('id', existingSub.id)
+      } else {
+        await serviceClient
+          .from('subscriptions')
+          .insert({
+            user_id: id,
+            tier,
+            status: 'active',
+            started_at: now.toISOString(),
+            expires_at: expiresAt.toISOString(),
+            stripe_customer_id: 'admin_grant',
+            stripe_payment_id: 'admin_grant',
+          })
+      }
+    }
 
     await logAdminAction(auth.user.id, auth.adminProfile.email, id, 'tier_changed', {
       previous_tier: currentUser.tier || 'free',

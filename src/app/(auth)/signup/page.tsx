@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
@@ -23,6 +23,7 @@ function SignupForm() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const submittingRef = useRef(false)
   const router = useRouter()
 
   const validPaygrades = getValidPaygradesForBranch(formData.branch)
@@ -39,6 +40,9 @@ function SignupForm() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
+    // Ref-based guard prevents double-submission even before React state updates
+    if (submittingRef.current) return
+    submittingRef.current = true
     setLoading(true)
     setError('')
 
@@ -59,6 +63,7 @@ function SignupForm() {
 
     if (!email || !password || !firstName || !lastName || !branch || !paygrade) {
       setError('Please fill in all required fields')
+      submittingRef.current = false
       setLoading(false)
       return
     }
@@ -85,6 +90,7 @@ function SignupForm() {
         } else {
           setError(data.error)
         }
+        submittingRef.current = false
         setLoading(false)
         return
       }
@@ -93,6 +99,7 @@ function SignupForm() {
       setSuccess(true)
     } catch {
       setError('Registration failed. Please try again.')
+      submittingRef.current = false
       setLoading(false)
     }
   }
@@ -118,6 +125,10 @@ function SignupForm() {
           <div className="bg-bg-tertiary rounded-md p-4 mb-6">
             <p className="text-sm text-text-muted">
               <span className="font-medium text-text">Next step:</span> Check your inbox for a verification email, then sign in to start building your resume.
+            </p>
+            <p className="text-xs text-text-dim mt-2">
+              Don&apos;t see it? Check your spam or junk folder. Emails come from{' '}
+              <span className="text-text-muted font-mono">noreply@getdebriefed.co</span>
             </p>
           </div>
           <div className="space-y-3">

@@ -3,7 +3,6 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 
@@ -37,20 +36,22 @@ function VerifyEmailContent() {
     setError('')
 
     try {
-      const supabase = createClient()
-
-      const { error: resendError } = await supabase.auth.resend({
-        type: 'signup',
-        email: email,
+      // Route through the rate-limited API endpoint instead of calling Supabase directly
+      const response = await fetch('/api/auth/resend-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
       })
 
-      if (resendError) {
-        setError(resendError.message || 'Failed to resend email')
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to resend email')
       } else {
         setResent(true)
         setCooldown(60) // 60 second cooldown
       }
-    } catch (err) {
+    } catch {
       setError('Failed to resend email. Please try again.')
     } finally {
       setResending(false)
@@ -97,9 +98,12 @@ function VerifyEmailContent() {
           </div>
         )}
 
-        <p className="text-text-muted text-sm mb-8">
+        <p className="text-text-muted text-sm mb-2">
           Click the link in the email to verify your account and get started.
-          Check your spam folder if you don't see it.
+        </p>
+        <p className="text-text-dim text-xs mb-8">
+          Don&apos;t see it? Check your spam or junk folder. Emails come from{' '}
+          <span className="text-text-muted font-mono">noreply@getdebriefed.co</span>
         </p>
 
         {/* Error Message */}
@@ -113,6 +117,9 @@ function VerifyEmailContent() {
         {resent && (
           <div className="bg-status-green/10 border border-status-green/20 rounded-md p-3 mb-4">
             <p className="text-sm text-status-green">Verification email sent!</p>
+            <p className="text-xs text-status-green/70 mt-1">
+              Check your spam or junk folder if you don&apos;t see it within a minute.
+            </p>
           </div>
         )}
 

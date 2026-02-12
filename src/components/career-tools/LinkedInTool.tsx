@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
+import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
 
 interface LinkedInToolProps {
   userProfile: any
@@ -31,8 +32,6 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     return ''
   })
   const [generating, setGenerating] = useState(false)
-  const [regeneratingHeadline, setRegeneratingHeadline] = useState(false)
-  const [regeneratingAbout, setRegeneratingAbout] = useState(false)
   const [results, setResults] = useState<{
     headline: string
     summary: string
@@ -73,26 +72,26 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   const [analysis, setAnalysis] = useState<any>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [showLastUseWarning, setShowLastUseWarning] = useState(false)
 
-  const generateContent = async (regenerateOnly?: 'headline' | 'about') => {
+  const handleGenerate = async () => {
     if (!targetRole) {
       setError('Please enter your target role')
       return
     }
 
     if (remaining <= 0) {
-      setError('Free tier limit reached — upgrade to regenerate')
+      setError('Limit reached — upgrade for more generations')
       return
     }
 
-    if (regenerateOnly === 'headline') {
-      setRegeneratingHeadline(true)
-    } else if (regenerateOnly === 'about') {
-      setRegeneratingAbout(true)
-    } else {
-      setGenerating(true)
-      // Don't clear results here — preserve them in case of error (e.g. 403 limit reached)
+    if (remaining === 1 && !showLastUseWarning) {
+      setShowLastUseWarning(true)
+      return
     }
+    setShowLastUseWarning(false)
+
+    setGenerating(true)
     setError('')
 
     try {
@@ -106,11 +105,9 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
           skills,
           certifications: certifications || userProfile?.certifications || [],
           education: education || userProfile?.education || [],
-          // Refinement options
           tone,
           aboutLength,
           emphasis,
-          regenerateOnly,
         }),
       })
 
@@ -119,26 +116,14 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
       if (data.error) {
         setError(data.error)
       } else {
-        if (regenerateOnly === 'headline') {
-          setResults(prev => prev ? { ...prev, headline: data.headline } : { headline: data.headline, summary: '' })
-        } else if (regenerateOnly === 'about') {
-          setResults(prev => prev ? { ...prev, summary: data.summary } : { headline: '', summary: data.summary })
-        } else {
-          setResults(data)
-        }
+        setResults(data)
       }
     } catch (err) {
       setError('Failed to generate. Please try again.')
     } finally {
       setGenerating(false)
-      setRegeneratingHeadline(false)
-      setRegeneratingAbout(false)
     }
   }
-
-  const handleGenerate = () => generateContent()
-  const regenerateHeadline = () => generateContent('headline')
-  const regenerateAbout = () => generateContent('about')
 
   const handleCopy = (text: string, section: string) => {
     navigator.clipboard.writeText(text)
@@ -365,32 +350,16 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                   <span className="text-gold">◆</span> Headline
                 </h3>
                 {results?.headline && (
-                  <div className="flex items-center gap-3">
-                    {remaining <= 0 ? (
-                      <span className="text-xs text-text-dim">Limit reached</span>
-                    ) : (
-                    <button
-                      onClick={regenerateHeadline}
-                      disabled={regeneratingHeadline || remaining <= 0}
-                      className="text-xs text-text-muted hover:text-text flex items-center gap-1 disabled:opacity-50"
-                    >
-                      <svg className={`w-3 h-3 ${regeneratingHeadline ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      {regeneratingHeadline ? 'Regenerating...' : 'Regenerate'}
-                    </button>
-                    )}
-                    <button
-                      onClick={() => handleCopy(results.headline, 'headline')}
-                      className="text-xs text-text-muted hover:text-text"
-                    >
-                      {copied === 'headline' ? 'Copied!' : 'Copy'}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleCopy(results.headline, 'headline')}
+                    className="text-xs text-text-muted hover:text-text"
+                  >
+                    {copied === 'headline' ? 'Copied!' : 'Copy'}
+                  </button>
                 )}
               </div>
 
-              {generating || regeneratingHeadline ? (
+              {generating ? (
                 <div className="h-16 flex items-center justify-center">
                   <div className="animate-pulse text-text-muted">Generating...</div>
                 </div>
@@ -413,32 +382,16 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                   <span className="text-gold">◫</span> About / Summary
                 </h3>
                 {results?.summary && (
-                  <div className="flex items-center gap-3">
-                    {remaining <= 0 ? (
-                      <span className="text-xs text-text-dim">Limit reached</span>
-                    ) : (
-                    <button
-                      onClick={regenerateAbout}
-                      disabled={regeneratingAbout || remaining <= 0}
-                      className="text-xs text-text-muted hover:text-text flex items-center gap-1 disabled:opacity-50"
-                    >
-                      <svg className={`w-3 h-3 ${regeneratingAbout ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      {regeneratingAbout ? 'Regenerating...' : 'Regenerate'}
-                    </button>
-                    )}
-                    <button
-                      onClick={() => handleCopy(results.summary, 'summary')}
-                      className="text-xs text-text-muted hover:text-text"
-                    >
-                      {copied === 'summary' ? 'Copied!' : 'Copy'}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleCopy(results.summary, 'summary')}
+                    className="text-xs text-text-muted hover:text-text"
+                  >
+                    {copied === 'summary' ? 'Copied!' : 'Copy'}
+                  </button>
                 )}
               </div>
 
-              {generating || regeneratingAbout ? (
+              {generating ? (
                 <div className="h-48 flex items-center justify-center">
                   <div className="animate-pulse text-text-muted">Generating...</div>
                 </div>
@@ -469,6 +422,21 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
           setIsUploading={setIsUploading}
           targetRole={targetRole}
           isPro={isPro}
+        />
+      )}
+
+      {showLastUseWarning && (
+        <LastUseWarningModal
+          featureName="LinkedIn Generation"
+          tier={isPro ? 'core' : 'free'}
+          limitType="tier"
+          onContinue={() => {
+            setShowLastUseWarning(false)
+            handleGenerate()
+          }}
+          onViewPricing={() => {
+            setShowLastUseWarning(false)
+          }}
         />
       )}
     </div>

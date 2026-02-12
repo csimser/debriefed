@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
 import { checkLimit, getSubscriptionInfo } from '@/lib/usage-service'
+import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
 import Link from 'next/link'
 
 // Profile fields for completeness calculation
@@ -107,6 +108,9 @@ export default async function DashboardPage() {
           </Card>
         )}
       </div>
+
+      {/* Government Computer Notice */}
+      <GovComputerBanner />
 
       {/* Feedback Banner */}
       <div className="bg-accent-gold/10 border border-accent-gold/30 rounded-lg p-4 mb-6">

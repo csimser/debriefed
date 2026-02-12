@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { getUserTier, isPaidTier } from '@/lib/tier-utils'
 import { TEMPLATES, TemplateId } from '@/lib/templates'
 import { ResumePreview } from '@/components/resume/ResumePreview'
+import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
 
 interface JobMatchWorkspaceProps {
   userId: string
@@ -157,6 +158,7 @@ export function JobMatchWorkspace({
   const [resumePreviewOpen, setResumePreviewOpen] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('clean')
+  const [showLastUseWarning, setShowLastUseWarning] = useState(false)
 
   const selectedResume = resumes.find(r => r.id === selectedResumeId)
   const remaining = usageLimit - currentUsage
@@ -172,6 +174,12 @@ export function JobMatchWorkspace({
       setError('You have reached your analysis limit. Upgrade for more.')
       return
     }
+
+    if (remaining === 1 && !showLastUseWarning) {
+      setShowLastUseWarning(true)
+      return
+    }
+    setShowLastUseWarning(false)
 
     setAnalyzing(true)
     setError('')
@@ -1123,6 +1131,18 @@ export function JobMatchWorkspace({
           </Card>
         )}
       </div>
+
+      {showLastUseWarning && (
+        <LastUseWarningModal
+          featureName="Job Match Analysis"
+          tier={isPro ? (userPlan === 'full' ? 'full' : 'core') : 'free'}
+          limitType="tier"
+          onContinue={() => {
+            setShowLastUseWarning(false)
+            handleAnalyze()
+          }}
+        />
+      )}
     </div>
   )
 }

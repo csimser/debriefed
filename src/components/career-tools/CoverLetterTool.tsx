@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { formatPhoneForDisplay } from '@/lib/formatPhone'
+import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
 
 interface CoverLetterToolProps {
   userId: string
@@ -57,6 +58,8 @@ export function CoverLetterTool({
   const [showRefinementPanel, setShowRefinementPanel] = useState(false)
   const [copied, setCopied] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [showLastUseWarning, setShowLastUseWarning] = useState(false)
+  const [pendingIsRegenerate, setPendingIsRegenerate] = useState(false)
 
   const remaining = usageLimit - currentUsage
 
@@ -112,6 +115,13 @@ export function CoverLetterTool({
       setError('You have reached your cover letter limit. Upgrade for more.')
       return
     }
+
+    if (remaining === 1 && !showLastUseWarning) {
+      setPendingIsRegenerate(isRegenerate)
+      setShowLastUseWarning(true)
+      return
+    }
+    setShowLastUseWarning(false)
 
     if (isRegenerate) {
       setIsRefining(true)
@@ -788,6 +798,21 @@ export function CoverLetterTool({
             </div>
           ) : null}
         </Card>
+      )}
+
+      {showLastUseWarning && (
+        <LastUseWarningModal
+          featureName="Cover Letter"
+          tier={userPlan === 'full' ? 'full' : userPlan === 'core' ? 'core' : 'free'}
+          limitType="tier"
+          onContinue={() => {
+            setShowLastUseWarning(false)
+            handleGenerate(pendingIsRegenerate)
+          }}
+          onViewPricing={() => {
+            setShowLastUseWarning(false)
+          }}
+        />
       )}
     </div>
   )

@@ -44,8 +44,12 @@ export default function ForgotPasswordPage() {
           <p className="text-text-muted mb-6">
             We sent a password reset link to <strong>{email}</strong>
           </p>
-          <p className="text-sm text-text-dim mb-6">
-            Didn't receive it? Check your spam folder or try again.
+          <p className="text-sm text-text-dim mb-2">
+            Don&apos;t see it? Check your spam or junk folder. Emails come from{' '}
+            <span className="text-text-muted font-mono">noreply@getdebriefed.co</span>
+          </p>
+          <p className="text-xs text-text-dim mb-6">
+            If you still don&apos;t receive it after a few minutes, try again.
           </p>
           <Link href="/login">
             <Button variant="secondary" className="w-full">

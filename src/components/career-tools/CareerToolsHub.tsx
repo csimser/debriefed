@@ -9,6 +9,7 @@ import { LinkedInTool } from './LinkedInTool'
 import { EvalHistorySection } from '@/components/eval/EvalHistorySection'
 import { EvalUploadModal } from '@/components/profile/EvalUploadModal'
 import { getUserTier, isPaidTier } from '@/lib/tier-utils'
+import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
 
 interface CareerToolsHubProps {
   userId: string
@@ -56,6 +57,7 @@ export function CareerToolsHub({
   // Use URL param as the source of truth
   const [activeTool, setActiveToolState] = useState<string | null>(toolFromUrl)
   const [showEvalUpload, setShowEvalUpload] = useState(false)
+  const [showEvalLastUseWarning, setShowEvalLastUseWarning] = useState(false)
   const userTier = getUserTier({ tier: userPlan })
   const hasPaidAccess = isPaidTier(userTier)
 
@@ -184,7 +186,14 @@ export function CareerToolsHub({
                   {Math.max(0, evalLimit - evalUsage)} Remaining
                 </Badge>
                 <button
-                  onClick={() => setShowEvalUpload(true)}
+                  onClick={() => {
+                    const evalRemaining = evalLimit - evalUsage
+                    if (evalRemaining === 1) {
+                      setShowEvalLastUseWarning(true)
+                    } else {
+                      setShowEvalUpload(true)
+                    }
+                  }}
                   disabled={evalLimit - evalUsage <= 0}
                   className="px-4 py-2 bg-gold text-bg-primary rounded font-heading font-bold uppercase text-sm hover:bg-gold-bright disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
@@ -219,6 +228,21 @@ export function CareerToolsHub({
                 start_date: exp.start_date || '',
                 end_date: exp.end_date || '',
               }))}
+            />
+          )}
+
+          {showEvalLastUseWarning && (
+            <LastUseWarningModal
+              featureName="Eval Upload"
+              tier={userPlan === 'full' ? 'full' : userPlan === 'core' ? 'core' : 'free'}
+              limitType="tier"
+              onContinue={() => {
+                setShowEvalLastUseWarning(false)
+                setShowEvalUpload(true)
+              }}
+              onViewPricing={() => {
+                setShowEvalLastUseWarning(false)
+              }}
             />
           )}
         </div>

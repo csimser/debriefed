@@ -24,6 +24,24 @@ export async function POST(req: Request) {
     const formattedFirstName = capitalizeName(firstName);
     const formattedLastName = capitalizeName(lastName);
 
+    // Idempotency guard: if a profile already exists for this email, the user already
+    // signed up. Return success without calling signUp() again, which would re-send
+    // the confirmation email (causing duplicate "Welcome" emails).
+    const normalizedEmail = email.toLowerCase().trim();
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('user_id')
+      .eq('email', normalizedEmail)
+      .single();
+
+    if (existingProfile) {
+      return NextResponse.json({
+        success: true,
+        message: 'Account created successfully. Please check your email to verify your account.',
+        user: { id: existingProfile.user_id, email: normalizedEmail }
+      });
+    }
+
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://getdebriefed.co';
 
     // Create the user account

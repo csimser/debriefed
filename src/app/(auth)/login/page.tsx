@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
+import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -79,7 +80,7 @@ function LoginForm() {
       const data = await response.json()
 
       if (response.ok) {
-        setResendMessage('Confirmation email sent! Please check your inbox.')
+        setResendMessage('Confirmation email sent! Check your inbox (and spam/junk folder) for an email from noreply@getdebriefed.co.')
         setShowResendConfirmation(false)
       } else {
         setResendMessage(data.error || 'Failed to resend confirmation email.')
@@ -217,6 +218,8 @@ export default function LoginPage() {
           <h1 className="font-heading text-2xl font-bold tracking-wide uppercase">Debriefed</h1>
           <p className="font-mono text-xs text-text-muted mt-1">MISSION: TRANSITION</p>
         </Link>
+
+        <GovComputerBanner />
 
         <Suspense fallback={<LoginFormLoading />}>
           <LoginForm />

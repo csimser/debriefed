@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Input } from '@/components/ui/Input'
+import { ResumePreview } from '@/components/resume/ResumePreview'
 
 interface UserProfile {
   id: string
@@ -1090,114 +1091,15 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                 </Button>
               </div>
             </div>
-            <div className="overflow-auto flex-1 bg-white text-black p-6 rounded">
+            <div className="overflow-auto flex-1 bg-white rounded">
               {previewResume.content ? (
-                <div className="space-y-4">
-                  {/* Header */}
-                  {previewResume.content.header && (
-                    <div className="border-b pb-4">
-                      <h1 className="text-2xl font-bold">
-                        {previewResume.content.header.name || 'No Name'}
-                      </h1>
-                      <div className="text-sm text-gray-600 mt-1">
-                        {[
-                          previewResume.content.header.email,
-                          previewResume.content.header.phone,
-                          previewResume.content.header.location,
-                        ]
-                          .filter(Boolean)
-                          .join(' | ')}
-                      </div>
-                      {previewResume.content.header.linkedin && (
-                        <div className="text-sm text-blue-600">
-                          {previewResume.content.header.linkedin}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Summary */}
-                  {previewResume.content.summary && (
-                    <div>
-                      <h2 className="text-lg font-bold uppercase text-gray-700 mb-2">Summary</h2>
-                      <p className="text-sm">{previewResume.content.summary}</p>
-                    </div>
-                  )}
-
-                  {/* Experience */}
-                  {previewResume.content.experience && previewResume.content.experience.length > 0 && (
-                    <div>
-                      <h2 className="text-lg font-bold uppercase text-gray-700 mb-2">Experience</h2>
-                      {previewResume.content.experience.map((exp: any, idx: number) => (
-                        <div key={idx} className="mb-4">
-                          <div className="flex justify-between">
-                            <div>
-                              <div className="font-semibold">{exp.title || exp.job_title}</div>
-                              <div className="text-sm text-gray-600">{exp.company || exp.organization}</div>
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {exp.startDate || exp.start_date} - {exp.endDate || exp.end_date || 'Present'}
-                            </div>
-                          </div>
-                          {exp.bullets && exp.bullets.length > 0 && (
-                            <ul className="list-disc list-inside text-sm mt-2 space-y-1">
-                              {exp.bullets.map((bullet: any, bidx: number) => (
-                                <li key={bidx}>
-                                  {typeof bullet === 'string' ? bullet : bullet.text || bullet.translated_text || bullet.original_text}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Education */}
-                  {previewResume.content.education && previewResume.content.education.length > 0 && (
-                    <div>
-                      <h2 className="text-lg font-bold uppercase text-gray-700 mb-2">Education</h2>
-                      {previewResume.content.education.map((edu: any, idx: number) => (
-                        <div key={idx} className="mb-2">
-                          <div className="font-semibold">{edu.degree}</div>
-                          <div className="text-sm text-gray-600">
-                            {edu.school || edu.institution}
-                            {edu.graduationDate && ` - ${edu.graduationDate}`}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Skills */}
-                  {previewResume.content.skills && previewResume.content.skills.length > 0 && (
-                    <div>
-                      <h2 className="text-lg font-bold uppercase text-gray-700 mb-2">Skills</h2>
-                      <div className="text-sm">
-                        {previewResume.content.skills
-                          .map((s: any) => (typeof s === 'string' ? s : s.name))
-                          .join(', ')}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Certifications */}
-                  {previewResume.content.certifications && previewResume.content.certifications.length > 0 && (
-                    <div>
-                      <h2 className="text-lg font-bold uppercase text-gray-700 mb-2">Certifications</h2>
-                      <ul className="text-sm space-y-1">
-                        {previewResume.content.certifications.map((cert: any, idx: number) => (
-                          <li key={idx}>
-                            {typeof cert === 'string' ? cert : cert.name}
-                            {cert.issuer && ` - ${cert.issuer}`}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
+                <ResumePreview
+                  template={previewResume.template || 'clean'}
+                  resumeType={previewResume.resume_type || 'private'}
+                  content={previewResume.content}
+                />
               ) : (
-                <p className="text-gray-500 italic">No content available for this resume</p>
+                <p className="text-gray-500 italic p-6">No content available for this resume</p>
               )}
             </div>
           </Card>
