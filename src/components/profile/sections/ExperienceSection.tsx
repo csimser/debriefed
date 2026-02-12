@@ -1372,11 +1372,13 @@ export function ExperienceSection({
                                 <div className="ml-6 mt-1.5">
                                   <button
                                     onClick={() => translateBullet(bullet.id, exp.id)}
-                                    disabled={translatingBulletId === bullet.id}
+                                    disabled={translatingBulletId === bullet.id || localTranslationRemaining <= 0}
                                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold transition-all ${
-                                      bullet.original_text && bullet.translated_text && bullet.original_text !== bullet.translated_text
-                                        ? 'bg-bg-secondary text-text-dim border border-border hover:text-amber-400 hover:border-amber-400/30'
-                                        : 'bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25'
+                                      localTranslationRemaining <= 0
+                                        ? 'bg-bg-secondary text-text-dim border border-border opacity-50 cursor-not-allowed'
+                                        : bullet.original_text && bullet.translated_text && bullet.original_text !== bullet.translated_text
+                                          ? 'bg-bg-secondary text-text-dim border border-border hover:text-amber-400 hover:border-amber-400/30'
+                                          : 'bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25'
                                     }`}
                                     title="Convert military language to civilian-friendly wording"
                                   >
@@ -1388,6 +1390,8 @@ export function ExperienceSection({
                                         </svg>
                                         Translating...
                                       </>
+                                    ) : localTranslationRemaining <= 0 ? (
+                                      'Limit Reached'
                                     ) : (
                                       <>
                                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
