@@ -33,7 +33,10 @@ export default async function ProfilePage() {
   ])
 
   // Usage from usage_tracking (single source of truth)
-  const resumeImportCheck = await checkLimit(user.id, 'resume_imports')
+  const [resumeImportCheck, bulletTranslationCheck] = await Promise.all([
+    checkLimit(user.id, 'resume_imports'),
+    checkLimit(user.id, 'bullet_translations'),
+  ])
 
   console.log('2. Profile fetch result:', { profile, profileError })
   console.log('3. Profile fields:', profile ? {
@@ -72,6 +75,8 @@ export default async function ProfilePage() {
         }}
         resumeImportUsage={resumeImportCheck.used}
         resumeImportLimit={resumeImportCheck.limit}
+        bulletTranslationUsage={bulletTranslationCheck}
+        userBranch={profile?.branch || ''}
       />
 
       {/* Eval Upload History — shows past uploads with re-import capability */}

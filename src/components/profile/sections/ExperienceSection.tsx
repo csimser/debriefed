@@ -13,6 +13,8 @@ import { US_STATES } from '@/lib/constants/states'
 import { formatSalary, parseSalary } from '@/lib/formatSalary'
 import { toE164 } from '@/lib/formatPhone'
 import { InternationalPhoneInput } from '@/components/ui/InternationalPhoneInput'
+import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
+import { BulletTemplateModal } from '../BulletTemplateModal'
 
 interface ExtractedBullet {
   original: string
@@ -33,6 +35,8 @@ interface ExperienceSectionProps {
   onUpdate: (experiences: any[]) => void
   pendingBullets?: ExtractedBullet[]
   onBulletsSaved?: () => void
+  bulletTranslationUsage?: { used: number; limit: number; remaining: number; allowed: boolean }
+  userBranch?: string
 }
 
 export function ExperienceSection({
@@ -40,7 +44,9 @@ export function ExperienceSection({
   experiences,
   onUpdate,
   pendingBullets = [],
-  onBulletsSaved
+  onBulletsSaved,
+  bulletTranslationUsage,
+  userBranch,
 }: ExperienceSectionProps) {
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -73,6 +79,28 @@ export function ExperienceSection({
   // State for editing individual bullets
   const [editingBulletId, setEditingBulletId] = useState<string | null>(null)
   const [editingBulletText, setEditingBulletText] = useState('')
+
+  // Translate bullet state
+  const [translatingBulletId, setTranslatingBulletId] = useState<string | null>(null)
+  const [translationResult, setTranslationResult] = useState<{ bulletId: string; original: string; translated: string } | null>(null)
+  const [translateError, setTranslateError] = useState<string | null>(null)
+  const [showTranslateWarning, setShowTranslateWarning] = useState(false)
+  const [pendingTranslateBulletId, setPendingTranslateBulletId] = useState<string | null>(null)
+  const [pendingTranslateExpId, setPendingTranslateExpId] = useState<string | null>(null)
+  const [localTranslationRemaining, setLocalTranslationRemaining] = useState(bulletTranslationUsage?.remaining ?? 0)
+
+  // Bulk paste state
+  const [showBulkPasteForExp, setShowBulkPasteForExp] = useState<string | null>(null)
+  const [bulkPasteText, setBulkPasteText] = useState('')
+  const [bulkPastePreview, setBulkPastePreview] = useState<string[] | null>(null)
+
+  // Voice input state
+  const [recordingBulletId, setRecordingBulletId] = useState<string | null>(null)
+  const [speechSupported, setSpeechSupported] = useState(false)
+  const [recognitionRef, setRecognitionRef] = useState<any>(null)
+
+  // Template modal state
+  const [showTemplateForExp, setShowTemplateForExp] = useState<string | null>(null)
 
   const [formExp, setFormExp] = useState(emptyExp)
   const [showFederalFields, setShowFederalFields] = useState(false)
@@ -246,11 +274,18 @@ export function ExperienceSection({
     onUpdate(updatedExperiences)
   }
 
-  // Add new bullet to experience
+  // Add new bullet to experience (inserts at TOP)
   const addBulletToExperience = async (experienceId: string) => {
-    // Get current max sort_order
+    // Shift all existing bullets' sort_order up by 1
     const exp = experiences.find(e => e.id === experienceId)
-    const maxOrder = exp?.bullets?.reduce((max: number, b: any) => Math.max(max, b.sort_order || 0), -1) ?? -1
+    const existingBullets = exp?.bullets || []
+
+    if (existingBullets.length > 0) {
+      const shiftPromises = existingBullets.map((b: any) =>
+        supabase.from('experience_bullets').update({ sort_order: (b.sort_order ?? 0) + 1 }).eq('id', b.id)
+      )
+      await Promise.all(shiftPromises)
+    }
 
     const { data, error } = await supabase
       .from('experience_bullets')
@@ -258,7 +293,7 @@ export function ExperienceSection({
         experience_id: experienceId,
         original_text: '',
         translated_text: 'New bullet - click to edit',
-        sort_order: maxOrder + 1,
+        sort_order: 0,
         status: 'accepted',
       })
       .select()
@@ -267,17 +302,23 @@ export function ExperienceSection({
     if (error) {
       alert(`Failed to add bullet: ${error.message}`)
     } else if (data) {
-      // Update local state and start editing the new bullet
+      // Update local state — prepend new bullet and shift existing sort_orders
       const updatedExperiences = experiences.map(exp => {
         if (exp.id === experienceId) {
+          const shiftedBullets = (exp.bullets || []).map((b: any) => ({
+            ...b,
+            sort_order: (b.sort_order ?? 0) + 1,
+          }))
           return {
             ...exp,
-            bullets: [...(exp.bullets || []), data]
+            bullets: [data, ...shiftedBullets]
           }
         }
         return exp
       })
       onUpdate(updatedExperiences)
+      // Auto-expand the experience so the new bullet is visible
+      setExpandedExperiences(prev => new Set([...prev, experienceId]))
       startEditBullet(data.id, 'New bullet - click to edit')
     }
   }
@@ -288,6 +329,263 @@ export function ExperienceSection({
       setShowBulletModal(true)
     }
   }, [pendingBullets])
+
+  // Check speech recognition support on client
+  useEffect(() => {
+    setSpeechSupported(
+      typeof window !== 'undefined' &&
+      ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+    )
+  }, [])
+
+  // Sync local remaining counter with prop
+  useEffect(() => {
+    if (bulletTranslationUsage) {
+      setLocalTranslationRemaining(bulletTranslationUsage.remaining)
+    }
+  }, [bulletTranslationUsage])
+
+  // Translate a bullet via /api/translate
+  const translateBullet = async (bulletId: string, experienceId: string) => {
+    // Find bullet text
+    const exp = experiences.find(e => e.id === experienceId)
+    const bullet = exp?.bullets?.find((b: any) => b.id === bulletId)
+    if (!bullet) return
+
+    const bulletText = bullet.translated_text || bullet.original_text
+    if (!bulletText || bulletText === 'New bullet - click to edit') return
+
+    setTranslateError(null)
+
+    // Check remaining
+    if (localTranslationRemaining <= 0) {
+      setTranslateError('No translations remaining. Upgrade for more.')
+      return
+    }
+
+    // Show warning if last use
+    if (localTranslationRemaining === 1 && !showTranslateWarning) {
+      setShowTranslateWarning(true)
+      setPendingTranslateBulletId(bulletId)
+      setPendingTranslateExpId(experienceId)
+      return
+    }
+
+    setTranslatingBulletId(bulletId)
+
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bullet: bulletText,
+          context: { branch: userBranch },
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setTranslateError(data.error || 'Translation failed. Try again.')
+        return
+      }
+
+      const data = await res.json()
+      setTranslationResult({
+        bulletId,
+        original: bulletText,
+        translated: data.translated,
+      })
+      setLocalTranslationRemaining(prev => Math.max(0, prev - 1))
+    } catch {
+      setTranslateError('Translation failed. Check your connection.')
+    } finally {
+      setTranslatingBulletId(null)
+    }
+  }
+
+  // Accept translation — replace bullet text
+  const acceptTranslation = async (bulletId: string, experienceId: string) => {
+    if (!translationResult) return
+
+    const { error } = await supabase
+      .from('experience_bullets')
+      .update({ translated_text: translationResult.translated })
+      .eq('id', bulletId)
+
+    if (error) {
+      alert(`Failed to update: ${error.message}`)
+    } else {
+      const updatedExperiences = experiences.map(exp => {
+        if (exp.id === experienceId) {
+          return {
+            ...exp,
+            bullets: exp.bullets?.map((b: any) =>
+              b.id === bulletId ? { ...b, translated_text: translationResult.translated } : b
+            ) || []
+          }
+        }
+        return exp
+      })
+      onUpdate(updatedExperiences)
+    }
+    setTranslationResult(null)
+  }
+
+  // Dismiss translation suggestion
+  const dismissTranslation = () => {
+    setTranslationResult(null)
+  }
+
+  // Continue after last-use warning
+  const handleTranslateWarningContinue = () => {
+    setShowTranslateWarning(false)
+    if (pendingTranslateBulletId && pendingTranslateExpId) {
+      // Call translate directly, bypassing the remaining===1 check this time
+      const bulletId = pendingTranslateBulletId
+      const expId = pendingTranslateExpId
+      setPendingTranslateBulletId(null)
+      setPendingTranslateExpId(null)
+      translateBullet(bulletId, expId)
+    }
+  }
+
+  // Parse bulk paste text into bullet lines
+  const parseBulkPaste = (text: string): string[] => {
+    return text
+      .split('\n')
+      .map(line => stripLeadingBulletChars(line))
+      .filter(line => line.length > 0)
+  }
+
+  // Handle bulk paste submit
+  const handleBulkPasteSubmit = async (experienceId: string) => {
+    const lines = parseBulkPaste(bulkPasteText)
+    if (lines.length === 0) return
+
+    const exp = experiences.find(e => e.id === experienceId)
+    const maxOrder = exp?.bullets?.reduce((max: number, b: any) => Math.max(max, b.sort_order || 0), -1) ?? -1
+
+    const bulletsToInsert = lines.map((line, idx) => ({
+      experience_id: experienceId,
+      original_text: '',
+      translated_text: line,
+      sort_order: maxOrder + idx + 1,
+      status: 'accepted',
+    }))
+
+    const { data, error } = await supabase
+      .from('experience_bullets')
+      .insert(bulletsToInsert)
+      .select()
+
+    if (error) {
+      alert(`Failed to add bullets: ${error.message}`)
+    } else if (data) {
+      const updatedExperiences = experiences.map(e => {
+        if (e.id === experienceId) {
+          return { ...e, bullets: [...(e.bullets || []), ...data] }
+        }
+        return e
+      })
+      onUpdate(updatedExperiences)
+    }
+
+    setShowBulkPasteForExp(null)
+    setBulkPasteText('')
+    setBulkPastePreview(null)
+  }
+
+  // Voice input for bullet editing
+  const startVoiceInput = (bulletId: string) => {
+    if (!speechSupported) return
+
+    // Stop any existing recording
+    if (recognitionRef) {
+      recognitionRef.abort()
+      setRecognitionRef(null)
+      setRecordingBulletId(null)
+      return
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+    recognition.continuous = false
+    recognition.interimResults = true
+    recognition.lang = 'en-US'
+
+    recognition.onresult = (event: any) => {
+      let transcript = ''
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript
+      }
+      setEditingBulletText(prev => {
+        // If prev is placeholder text, replace it entirely
+        if (prev === 'New bullet - click to edit') return transcript
+        return prev + ' ' + transcript
+      })
+    }
+
+    recognition.onend = () => {
+      setRecordingBulletId(null)
+      setRecognitionRef(null)
+    }
+
+    recognition.onerror = () => {
+      setRecordingBulletId(null)
+      setRecognitionRef(null)
+    }
+
+    recognition.start()
+    setRecordingBulletId(bulletId)
+    setRecognitionRef(recognition)
+  }
+
+  // Handle template selection — insert as new bullet at TOP
+  const handleTemplateSelect = async (template: string) => {
+    const experienceId = showTemplateForExp
+    if (!experienceId) return
+
+    // Shift existing bullets' sort_order up by 1
+    const exp = experiences.find(e => e.id === experienceId)
+    const existingBullets = exp?.bullets || []
+
+    if (existingBullets.length > 0) {
+      const shiftPromises = existingBullets.map((b: any) =>
+        supabase.from('experience_bullets').update({ sort_order: (b.sort_order ?? 0) + 1 }).eq('id', b.id)
+      )
+      await Promise.all(shiftPromises)
+    }
+
+    const { data, error } = await supabase
+      .from('experience_bullets')
+      .insert({
+        experience_id: experienceId,
+        original_text: '',
+        translated_text: template,
+        sort_order: 0,
+        status: 'accepted',
+      })
+      .select()
+      .single()
+
+    if (error) {
+      alert(`Failed to add bullet: ${error.message}`)
+    } else if (data) {
+      const updatedExperiences = experiences.map(exp => {
+        if (exp.id === experienceId) {
+          const shiftedBullets = (exp.bullets || []).map((b: any) => ({
+            ...b,
+            sort_order: (b.sort_order ?? 0) + 1,
+          }))
+          return { ...exp, bullets: [data, ...shiftedBullets] }
+        }
+        return exp
+      })
+      onUpdate(updatedExperiences)
+      setExpandedExperiences(prev => new Set([...prev, experienceId]))
+      startEditBullet(data.id, template)
+    }
+  }
 
   const handleSave = async () => {
     // Different validation based on employment type
@@ -919,6 +1217,26 @@ export function ExperienceSection({
                       Import Eval
                     </button>
                     <button
+                      onClick={() => { setShowBulkPasteForExp(exp.id); setBulkPasteText(''); setBulkPastePreview(null) }}
+                      className="flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded hover:bg-blue-500/30 transition-colors text-xs"
+                      title="Paste multiple bullets at once"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      Paste Multiple
+                    </button>
+                    <button
+                      onClick={() => setShowTemplateForExp(exp.id)}
+                      className="flex items-center gap-1 px-2 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded hover:bg-purple-500/30 transition-colors text-xs"
+                      title="Choose from pre-built bullet templates"
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                      </svg>
+                      Use Template
+                    </button>
+                    <button
                       onClick={() => addBulletToExperience(exp.id)}
                       className="flex items-center gap-1 px-2 py-1 bg-gold/20 text-gold border border-gold/30 rounded hover:bg-gold/30 transition-colors text-xs"
                     >
@@ -937,13 +1255,37 @@ export function ExperienceSection({
                           {editingBulletId === bullet.id ? (
                             // Editing mode
                             <div className="flex flex-col gap-2 p-3 bg-bg-tertiary rounded-lg">
-                              <textarea
-                                value={editingBulletText}
-                                onChange={(e) => setEditingBulletText(e.target.value)}
-                                className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-white text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
-                                rows={3}
-                                autoFocus
-                              />
+                              <div className="relative">
+                                <textarea
+                                  value={editingBulletText}
+                                  onChange={(e) => setEditingBulletText(e.target.value)}
+                                  className="w-full bg-bg-secondary border border-border rounded px-3 py-2 pr-10 text-white text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
+                                  rows={3}
+                                  autoFocus
+                                />
+                                {speechSupported && (
+                                  <button
+                                    type="button"
+                                    onClick={() => startVoiceInput(bullet.id)}
+                                    className={`absolute right-2 top-2 p-1.5 rounded-md transition-all ${
+                                      recordingBulletId === bullet.id
+                                        ? 'bg-status-red/20 text-status-red animate-pulse ring-2 ring-status-red/40'
+                                        : 'bg-bg-tertiary text-text-muted hover:text-gold hover:bg-gold/10'
+                                    }`}
+                                    title={recordingBulletId === bullet.id ? 'Click to stop recording' : 'Dictate your bullet'}
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-14 0m7 7v4m-4 0h8M12 1a3 3 0 00-3 3v7a3 3 0 006 0V4a3 3 0 00-3-3z" />
+                                    </svg>
+                                    {recordingBulletId === bullet.id && (
+                                      <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-status-red rounded-full animate-ping" />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                              {recordingBulletId === bullet.id && (
+                                <p className="text-xs text-status-red animate-pulse">Recording... speak now. Click mic to stop.</p>
+                              )}
                               <div className="flex gap-2 justify-end">
                                 <button
                                   onClick={cancelEditBullet}
@@ -961,52 +1303,139 @@ export function ExperienceSection({
                             </div>
                           ) : (
                             // Display mode
-                            <div className="flex items-start gap-1">
-                              {/* Bullet reorder buttons */}
-                              <div className="flex flex-col -my-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() => moveBullet(bullet.id, exp.id, 'up')}
-                                  disabled={bullets.findIndex((b: any) => b.id === bullet.id) === 0}
-                                  className="p-0 h-3.5 text-text-dim hover:text-gold disabled:opacity-20 disabled:hover:text-text-dim transition-colors"
-                                  title="Move up"
-                                >
-                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => moveBullet(bullet.id, exp.id, 'down')}
-                                  disabled={bullets.findIndex((b: any) => b.id === bullet.id) === bullets.length - 1}
-                                  className="p-0 h-3.5 text-text-dim hover:text-gold disabled:opacity-20 disabled:hover:text-text-dim transition-colors"
-                                  title="Move down"
-                                >
-                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                  </svg>
-                                </button>
+                            <div>
+                              <div className="flex items-start gap-1">
+                                {/* Bullet reorder buttons */}
+                                <div className="flex flex-col -my-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => moveBullet(bullet.id, exp.id, 'up')}
+                                    disabled={bullets.findIndex((b: any) => b.id === bullet.id) === 0}
+                                    className="p-0 h-3.5 text-text-dim hover:text-gold disabled:opacity-20 disabled:hover:text-text-dim transition-colors"
+                                    title="Move up"
+                                  >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => moveBullet(bullet.id, exp.id, 'down')}
+                                    disabled={bullets.findIndex((b: any) => b.id === bullet.id) === bullets.length - 1}
+                                    className="p-0 h-3.5 text-text-dim hover:text-gold disabled:opacity-20 disabled:hover:text-text-dim transition-colors"
+                                    title="Move down"
+                                  >
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                  </button>
+                                </div>
+                                <span className="text-gold mt-0.5 flex-shrink-0">•</span>
+                                <span className="flex-1 text-sm text-text-muted">{bullet.translated_text || bullet.original_text}</span>
+                                <div className="flex gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  {speechSupported && (
+                                    <button
+                                      onClick={() => {
+                                        startEditBullet(bullet.id, bullet.translated_text || bullet.original_text)
+                                        // Start voice input after a tick so edit mode renders first
+                                        setTimeout(() => startVoiceInput(bullet.id), 100)
+                                      }}
+                                      className="p-1 text-text-muted hover:text-amber-400"
+                                      title="Dictate your bullet"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-14 0m7 7v4m-4 0h8M12 1a3 3 0 00-3 3v7a3 3 0 006 0V4a3 3 0 00-3-3z" />
+                                      </svg>
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => startEditBullet(bullet.id, bullet.translated_text || bullet.original_text)}
+                                    className="p-1 text-text-muted hover:text-white"
+                                    title="Edit"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => deleteBullet(bullet.id, exp.id)}
+                                    className="p-1 text-text-muted hover:text-status-red"
+                                    title="Delete"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                </div>
                               </div>
-                              <span className="text-gold mt-0.5 flex-shrink-0">•</span>
-                              <span className="flex-1 text-sm text-text-muted">{bullet.translated_text || bullet.original_text}</span>
-                              <div className="flex gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() => startEditBullet(bullet.id, bullet.translated_text || bullet.original_text)}
-                                  className="p-1 text-text-muted hover:text-white"
-                                  title="Edit"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                  </svg>
-                                </button>
-                                <button
-                                  onClick={() => deleteBullet(bullet.id, exp.id)}
-                                  className="p-1 text-text-muted hover:text-status-red"
-                                  title="Delete"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                </button>
-                              </div>
+
+                              {/* Translate to Civilian button — always visible below bullet */}
+                              {(bullet.translated_text || bullet.original_text) && (bullet.translated_text || bullet.original_text) !== 'New bullet - click to edit' && (
+                                <div className="ml-6 mt-1.5">
+                                  <button
+                                    onClick={() => translateBullet(bullet.id, exp.id)}
+                                    disabled={translatingBulletId === bullet.id}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold transition-all ${
+                                      bullet.original_text && bullet.translated_text && bullet.original_text !== bullet.translated_text
+                                        ? 'bg-bg-secondary text-text-dim border border-border hover:text-amber-400 hover:border-amber-400/30'
+                                        : 'bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25'
+                                    }`}
+                                    title="Convert military language to civilian-friendly wording"
+                                  >
+                                    {translatingBulletId === bullet.id ? (
+                                      <>
+                                        <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                        </svg>
+                                        Translating...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                                        </svg>
+                                        {bullet.original_text && bullet.translated_text && bullet.original_text !== bullet.translated_text
+                                          ? 'Re-translate'
+                                          : 'Translate to Civilian'}
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Translation suggestion */}
+                              {translationResult?.bulletId === bullet.id && (
+                                <div className="ml-6 mt-1.5 p-3 bg-status-green/10 border border-status-green/20 rounded text-sm">
+                                  <p className="text-status-green text-xs uppercase tracking-wider font-semibold mb-1">Suggested Translation</p>
+                                  <p className="text-text">{translationResult.translated}</p>
+                                  <div className="flex gap-2 mt-2">
+                                    <button
+                                      onClick={() => acceptTranslation(bullet.id, exp.id)}
+                                      className="px-3 py-1 text-xs bg-status-green text-white rounded hover:bg-status-green/90"
+                                    >
+                                      Accept
+                                    </button>
+                                    <button
+                                      onClick={() => { startEditBullet(bullet.id, translationResult.translated); setTranslationResult(null) }}
+                                      className="px-3 py-1 text-xs bg-bg-secondary text-text-muted border border-border rounded hover:text-white"
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={dismissTranslation}
+                                      className="px-3 py-1 text-xs text-text-dim hover:text-text-muted"
+                                    >
+                                      Dismiss
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Translation error */}
+                              {translateError && translatingBulletId === null && !translationResult && (
+                                <div className="ml-6 mt-1 text-xs text-status-red">
+                                  {translateError}
+                                </div>
+                              )}
                             </div>
                           )}
                         </li>
@@ -1262,6 +1691,90 @@ export function ExperienceSection({
             end_date: exp.end_date,
           }))}
           defaultExperienceId={showEvalUploadForExp}
+        />
+      )}
+
+      {/* Bulk Paste Modal */}
+      {showBulkPasteForExp && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-lg p-6">
+            <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-gold mb-4">Paste Multiple Bullets</h3>
+            <p className="text-text-muted text-sm mb-3">Paste your bullets below, one per line. Leading bullet characters (-, *, etc.) will be removed automatically.</p>
+            <textarea
+              value={bulkPasteText}
+              onChange={(e) => {
+                setBulkPasteText(e.target.value)
+                setBulkPastePreview(null)
+              }}
+              className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-white text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
+              rows={8}
+              placeholder={"- Managed a team of 15 personnel\n- Conducted daily safety inspections\n- Trained 50+ junior staff members"}
+              autoFocus
+            />
+            {bulkPastePreview && (
+              <div className="mt-3 p-3 bg-bg-tertiary rounded border border-border">
+                <p className="text-xs text-gold uppercase tracking-wider mb-2">
+                  Found {bulkPastePreview.length} bullet{bulkPastePreview.length !== 1 ? 's' : ''}
+                </p>
+                <ul className="space-y-1 max-h-40 overflow-y-auto">
+                  {bulkPastePreview.map((line, i) => (
+                    <li key={i} className="flex items-start gap-1 text-sm text-text-muted">
+                      <span className="text-gold flex-shrink-0">•</span>
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <div className="flex gap-2 mt-4 justify-end">
+              <button
+                onClick={() => { setShowBulkPasteForExp(null); setBulkPasteText(''); setBulkPastePreview(null) }}
+                className="px-4 py-2 text-sm text-text-muted hover:text-white"
+              >
+                Cancel
+              </button>
+              {!bulkPastePreview ? (
+                <button
+                  onClick={() => {
+                    const parsed = parseBulkPaste(bulkPasteText)
+                    if (parsed.length === 0) {
+                      alert('No bullets found. Enter one bullet per line.')
+                      return
+                    }
+                    setBulkPastePreview(parsed)
+                  }}
+                  disabled={!bulkPasteText.trim()}
+                  className="px-4 py-2 text-sm bg-gold text-bg-primary rounded hover:bg-gold/90 disabled:opacity-50"
+                >
+                  Preview
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleBulkPasteSubmit(showBulkPasteForExp)}
+                  className="px-4 py-2 text-sm bg-status-green text-white rounded hover:bg-status-green/90"
+                >
+                  Add {bulkPastePreview.length} Bullet{bulkPastePreview.length !== 1 ? 's' : ''}
+                </button>
+              )}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Bullet Template Modal */}
+      <BulletTemplateModal
+        isOpen={showTemplateForExp !== null}
+        onClose={() => setShowTemplateForExp(null)}
+        onSelect={handleTemplateSelect}
+      />
+
+      {/* Last Use Warning for Translation */}
+      {showTranslateWarning && (
+        <LastUseWarningModal
+          featureName="Bullet Translation"
+          tier={(bulletTranslationUsage?.limit === 10 ? 'free' : bulletTranslationUsage?.limit === 50 ? 'core' : 'full') as any}
+          limitType="tier"
+          onContinue={handleTranslateWarningContinue}
         />
       )}
     </CollapsibleSection>

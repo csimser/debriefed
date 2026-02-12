@@ -27,6 +27,8 @@ interface ProfileFormProps {
   }
   resumeImportUsage?: number
   resumeImportLimit?: number
+  bulletTranslationUsage?: { used: number; limit: number; remaining: number; allowed: boolean }
+  userBranch?: string
 }
 
 // Use consistent military constants (with empty option for select)
@@ -51,7 +53,7 @@ const CLEARANCES = [
   { value: 'ts_sci', label: 'TS/SCI' },
 ]
 
-export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImportLimit }: ProfileFormProps) {
+export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImportLimit, bulletTranslationUsage, userBranch }: ProfileFormProps) {
   const supabase = createClient()
 
   // Initialize state from initialData
@@ -702,6 +704,8 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
         onUpdate={setExperiences}
         pendingBullets={pendingBullets}
         onBulletsSaved={() => setPendingBullets([])}
+        bulletTranslationUsage={bulletTranslationUsage}
+        userBranch={userBranch}
       />
 
       {/* Education Section */}
