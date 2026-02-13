@@ -8,30 +8,35 @@ export default async function CareerToolsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // All user data is in the profiles table
+  // All data + usage checks in one parallel batch
+  const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
   const [
     { data: profile },
     { data: experiences },
     { data: skills },
     { data: certifications },
     { data: education },
-    { data: evalUploads }
-  ] = await Promise.all([
-    supabase.from('profiles').select('*').eq('user_id', user?.id).single(),
-    supabase.from('experience').select('*, experience_bullets(*)').eq('user_id', user?.id).order('sort_order').limit(3),
-    supabase.from('skills').select('name').eq('user_id', user?.id),
-    supabase.from('certifications').select('*').eq('user_id', user?.id),
-    supabase.from('education').select('*').eq('user_id', user?.id),
-    supabase.from('eval_uploads').select('*').eq('user_id', user?.id).order('created_at', { ascending: false })
-  ])
-
-  // Read usage from usage_tracking table (same source the backend checks)
-  const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
-  const [coverLetterCheck, linkedinCheck, evalCheck] = await Promise.all([
-    user?.id ? checkLimit(user.id, 'cover_letters') : defaultUsage,
-    user?.id ? checkLimit(user.id, 'linkedin_headline') : defaultUsage,
-    user?.id ? checkLimit(user.id, 'eval_uploads') : defaultUsage,
-  ])
+    { data: evalUploads },
+    coverLetterCheck,
+    linkedinCheck,
+    evalCheck,
+  ] = user?.id
+    ? await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', user.id).single(),
+        supabase.from('experience').select('*, experience_bullets(*)').eq('user_id', user.id).order('sort_order').limit(3),
+        supabase.from('skills').select('name').eq('user_id', user.id),
+        supabase.from('certifications').select('*').eq('user_id', user.id),
+        supabase.from('education').select('*').eq('user_id', user.id),
+        supabase.from('eval_uploads').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+        checkLimit(user.id, 'cover_letters'),
+        checkLimit(user.id, 'linkedin_headline'),
+        checkLimit(user.id, 'eval_uploads'),
+      ])
+    : [
+        { data: null }, { data: null }, { data: null },
+        { data: null }, { data: null }, { data: null },
+        defaultUsage, defaultUsage, defaultUsage,
+      ]
 
   const tier = profile?.tier || 'free'
   const coverLetterUsage = coverLetterCheck.used

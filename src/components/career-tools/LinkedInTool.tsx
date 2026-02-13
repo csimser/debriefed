@@ -176,7 +176,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
           }`}
         >
           {!isPro && (
-            <div className="absolute top-2 right-2 px-2 py-0.5 bg-gold text-black text-xs font-bold rounded">
+            <div className="absolute top-2 right-2 px-2 py-0.5 bg-gold text-bg-primary text-xs font-bold rounded">
               CORE
             </div>
           )}
@@ -250,7 +250,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                         onClick={() => setTone(t.id as any)}
                         className={`flex-1 py-1.5 px-2 text-xs rounded transition-all ${
                           tone === t.id
-                            ? 'bg-gold text-black font-medium'
+                            ? 'bg-gold text-bg-primary font-medium'
                             : 'bg-bg-secondary text-text-muted hover:text-text'
                         }`}
                       >
@@ -275,7 +275,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                         onClick={() => setAboutLength(l.id as any)}
                         className={`flex-1 py-1.5 px-2 text-xs rounded transition-all ${
                           aboutLength === l.id
-                            ? 'bg-gold text-black font-medium'
+                            ? 'bg-gold text-bg-primary font-medium'
                             : 'bg-bg-secondary text-text-muted hover:text-text'
                         }`}
                       >
@@ -313,7 +313,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                           }}
                           className={`px-2 py-1 text-xs rounded transition-all ${
                             isSelected
-                              ? 'bg-gold text-black'
+                              ? 'bg-gold text-bg-primary'
                               : 'bg-bg-secondary text-text-dim hover:text-text-muted'
                           }`}
                         >
@@ -540,9 +540,9 @@ function AnalyzeMode({
   }
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-400'
-    if (score >= 60) return 'text-yellow-400'
-    return 'text-red-400'
+    if (score >= 80) return 'text-status-green'
+    if (score >= 60) return 'text-status-amber'
+    return 'text-status-red'
   }
 
   // Recommendations Paywall Component for free users
@@ -652,7 +652,7 @@ function AnalyzeMode({
             <ul className="space-y-2">
               {analysis.quickWins.map((win: string, index: number) => (
                 <li key={index} className="flex items-start gap-2 text-sm text-text-muted">
-                  <span className="text-green-400">•</span>
+                  <span className="text-status-green">•</span>
                   {win}
                 </li>
               ))}
@@ -685,7 +685,7 @@ function AnalyzeMode({
               </div>
               <div>
                 <p className="text-xs text-text-dim mb-1">Suggested</p>
-                <p className="text-text bg-green-500/10 border border-green-500/30 rounded-lg p-3">{analysis.sections.headline.suggested}</p>
+                <p className="text-text bg-status-green-dim border border-status-green/30 rounded-lg p-3">{analysis.sections.headline.suggested}</p>
               </div>
             </div>
           </Card>
@@ -716,7 +716,7 @@ function AnalyzeMode({
               </div>
               <div>
                 <p className="text-xs text-text-dim mb-1">Suggested</p>
-                <p className="text-text bg-green-500/10 border border-green-500/30 rounded-lg p-3 whitespace-pre-wrap max-h-48 overflow-auto">{analysis.sections.about.suggested}</p>
+                <p className="text-text bg-status-green-dim border border-status-green/30 rounded-lg p-3 whitespace-pre-wrap max-h-48 overflow-auto">{analysis.sections.about.suggested}</p>
               </div>
             </div>
           </Card>
@@ -766,19 +766,19 @@ function AnalyzeMode({
                       <div className="flex items-center gap-3 flex-wrap">
                         <h4 className="font-medium text-text">{position.originalTitle}</h4>
                         <span className={`text-xs px-2 py-0.5 rounded ${
-                          position.score >= 80 ? 'bg-green-500/20 text-green-400' :
-                          position.score >= 60 ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-red-500/20 text-red-400'
+                          position.score >= 80 ? 'bg-status-green-dim text-status-green' :
+                          position.score >= 60 ? 'bg-status-amber-dim text-status-amber' :
+                          'bg-status-red-dim text-status-red'
                         }`}>
                           {position.score}/100
                         </span>
                         {/* Disposition Badge */}
                         {position.disposition && (
                           <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                            position.disposition === 'keep' ? 'bg-green-500/20 text-green-400' :
+                            position.disposition === 'keep' ? 'bg-status-green-dim text-status-green' :
                             position.disposition === 'enhance' ? 'bg-gold/20 text-gold' :
-                            position.disposition === 'condense' ? 'bg-blue-500/20 text-blue-400' :
-                            'bg-red-500/20 text-red-400'
+                            position.disposition === 'condense' ? 'bg-status-blue/20 text-status-blue' :
+                            'bg-status-red-dim text-status-red'
                           }`}>
                             {position.disposition === 'keep' ? '✓ Keep' :
                              position.disposition === 'enhance' ? '↑ Enhance' :
@@ -791,8 +791,8 @@ function AnalyzeMode({
                       {/* Disposition Reason */}
                       {position.dispositionReason && (
                         <p className={`text-xs mt-1 ${
-                          position.disposition === 'remove' ? 'text-red-400' :
-                          position.disposition === 'condense' ? 'text-blue-400' :
+                          position.disposition === 'remove' ? 'text-status-red' :
+                          position.disposition === 'condense' ? 'text-status-blue' :
                           'text-gold'
                         }`}>
                           {position.dispositionReason}
@@ -800,7 +800,7 @@ function AnalyzeMode({
                       )}
                       {/* Title Suggestion */}
                       {position.suggestedTitle && position.suggestedTitle !== position.originalTitle && (
-                        <p className="text-xs text-green-400 mt-1">
+                        <p className="text-xs text-status-green mt-1">
                           Suggested title: {position.suggestedTitle}
                         </p>
                       )}
@@ -823,9 +823,9 @@ function AnalyzeMode({
                           {/* Original Bullet */}
                           <div className="flex items-start gap-3">
                             <span className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                              bullet.score >= 80 ? 'bg-green-500/20 text-green-400' :
-                              bullet.score >= 60 ? 'bg-yellow-500/20 text-yellow-400' :
-                              'bg-red-500/20 text-red-400'
+                              bullet.score >= 80 ? 'bg-status-green-dim text-status-green' :
+                              bullet.score >= 60 ? 'bg-status-amber-dim text-status-amber' :
+                              'bg-status-red-dim text-status-red'
                             }`}>
                               {bullet.score}
                             </span>
@@ -836,7 +836,7 @@ function AnalyzeMode({
                               {bullet.issues?.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {bullet.issues.map((issue: string, i: number) => (
-                                    <span key={i} className="text-xs px-2 py-0.5 bg-red-500/10 text-red-400 rounded">
+                                    <span key={i} className="text-xs px-2 py-0.5 bg-status-red-dim text-status-red rounded">
                                       {issue}
                                     </span>
                                   ))}
@@ -870,7 +870,7 @@ function AnalyzeMode({
                           <ul className="space-y-2">
                             {position.missingBullets.map((bullet: string, i: number) => (
                               <li key={i} className="flex items-start gap-2 text-sm">
-                                <span className="text-green-400">+</span>
+                                <span className="text-status-green">+</span>
                                 <span className="text-text-muted">{bullet}</span>
                               </li>
                             ))}
@@ -913,16 +913,16 @@ function AnalyzeMode({
               </span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <p className="text-xs text-green-400 font-semibold mb-2">Add These Skills</p>
+              <div className="p-3 bg-status-green-dim border border-status-green/30 rounded-lg">
+                <p className="text-xs text-status-green font-semibold mb-2">Add These Skills</p>
                 <ul className="space-y-1">
                   {analysis.sections.skills.add?.map((skill: string, i: number) => (
                     <li key={i} className="text-sm text-text-muted">+ {skill}</li>
                   ))}
                 </ul>
               </div>
-              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                <p className="text-xs text-red-400 font-semibold mb-2">Consider Removing</p>
+              <div className="p-3 bg-status-red-dim border border-status-red/30 rounded-lg">
+                <p className="text-xs text-status-red font-semibold mb-2">Consider Removing</p>
                 <ul className="space-y-1">
                   {analysis.sections.skills.remove?.map((skill: string, i: number) => (
                     <li key={i} className="text-sm text-text-muted">- {skill}</li>
@@ -961,9 +961,9 @@ function AnalyzeMode({
                       <span className="text-sm text-text">{cert.name}</span>
                       <div className="flex items-center gap-2">
                         <span className={`text-xs px-2 py-0.5 rounded ${
-                          cert.relevance === 'high' ? 'bg-green-500/20 text-green-400' :
-                          cert.relevance === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                          'bg-red-500/20 text-red-400'
+                          cert.relevance === 'high' ? 'bg-status-green-dim text-status-green' :
+                          cert.relevance === 'medium' ? 'bg-status-amber-dim text-status-amber' :
+                          'bg-status-red-dim text-status-red'
                         }`}>
                           {cert.relevance}
                         </span>
@@ -976,8 +976,8 @@ function AnalyzeMode({
 
             {/* Recommended Certifications */}
             {analysis.sections.certifications.recommended?.length > 0 && (
-              <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg mb-4">
-                <p className="text-xs text-green-400 font-semibold mb-2">Recommended to Pursue</p>
+              <div className="p-3 bg-status-green-dim border border-status-green/30 rounded-lg mb-4">
+                <p className="text-xs text-status-green font-semibold mb-2">Recommended to Pursue</p>
                 <ul className="space-y-1">
                   {analysis.sections.certifications.recommended.map((cert: string, i: number) => (
                     <li key={i} className="text-sm text-text-muted">+ {cert}</li>
@@ -1021,9 +1021,9 @@ function AnalyzeMode({
                         <p className="text-sm text-text-muted">{edu.degree}</p>
                       </div>
                       <span className={`text-xs px-2 py-0.5 rounded ${
-                        edu.relevance === 'high' ? 'bg-green-500/20 text-green-400' :
-                        edu.relevance === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-red-500/20 text-red-400'
+                        edu.relevance === 'high' ? 'bg-status-green-dim text-status-green' :
+                        edu.relevance === 'medium' ? 'bg-status-amber-dim text-status-amber' :
+                        'bg-status-red-dim text-status-red'
                       }`}>
                         {edu.relevance}
                       </span>
@@ -1061,7 +1061,7 @@ function AnalyzeMode({
                 <p className="text-xs text-text-dim mb-2">Missing Keywords</p>
                 <div className="flex flex-wrap gap-2">
                   {analysis.sections.keywords.missing?.map((kw: string, i: number) => (
-                    <span key={i} className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs">{kw}</span>
+                    <span key={i} className="px-2 py-1 bg-status-red-dim text-status-red rounded text-xs">{kw}</span>
                   ))}
                 </div>
               </div>
@@ -1069,7 +1069,7 @@ function AnalyzeMode({
                 <p className="text-xs text-text-dim mb-2">Present Keywords</p>
                 <div className="flex flex-wrap gap-2">
                   {analysis.sections.keywords.present?.map((kw: string, i: number) => (
-                    <span key={i} className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">{kw}</span>
+                    <span key={i} className="px-2 py-1 bg-status-green-dim text-status-green rounded text-xs">{kw}</span>
                   ))}
                 </div>
               </div>
@@ -1086,22 +1086,22 @@ function AnalyzeMode({
             <div className="space-y-3">
               {analysis.priorityActions.map((action: any, i: number) => (
                 <div key={i} className="flex items-center gap-4 p-3 bg-bg-secondary rounded-lg">
-                  <span className="w-8 h-8 flex items-center justify-center bg-gold text-black font-bold rounded-full text-sm">
+                  <span className="w-8 h-8 flex items-center justify-center bg-gold text-bg-primary font-bold rounded-full text-sm">
                     {i + 1}
                   </span>
                   <span className="flex-1 text-text">{action.action}</span>
                   <div className="flex gap-2">
                     <span className={`px-2 py-1 rounded text-xs ${
-                      action.impact === 'high' ? 'bg-green-500/20 text-green-400' :
-                      action.impact === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                      action.impact === 'high' ? 'bg-status-green-dim text-status-green' :
+                      action.impact === 'medium' ? 'bg-status-amber-dim text-status-amber' :
                       'bg-bg-tertiary text-text-muted'
                     }`}>
                       {action.impact}
                     </span>
                     <span className={`px-2 py-1 rounded text-xs ${
-                      action.effort === 'easy' ? 'bg-blue-500/20 text-blue-400' :
-                      action.effort === 'medium' ? 'bg-purple-500/20 text-purple-400' :
-                      'bg-red-500/20 text-red-400'
+                      action.effort === 'easy' ? 'bg-status-blue/20 text-status-blue' :
+                      action.effort === 'medium' ? 'bg-status-amber-dim text-status-amber' :
+                      'bg-status-red-dim text-status-red'
                     }`}>
                       {action.effort}
                     </span>
@@ -1131,9 +1131,9 @@ function AnalyzeMode({
   if (linkedInPDF) {
     return (
       <div className="space-y-6">
-        <Card className="p-4 border-green-500/30">
+        <Card className="p-4 border-status-green/30">
           <div className="flex items-center gap-3">
-            <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-status-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
             <div className="flex-1">
@@ -1238,19 +1238,19 @@ function AnalyzeMode({
           <div className="p-4 pt-0 border-t border-border">
             <ol className="space-y-3 text-sm text-text-muted">
               <li className="flex gap-3">
-                <span className="w-6 h-6 bg-gold text-black rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+                <span className="w-6 h-6 bg-gold text-bg-primary rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
                 <span>Go to your LinkedIn profile (click "Me" → "View Profile")</span>
               </li>
               <li className="flex gap-3">
-                <span className="w-6 h-6 bg-gold text-black rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+                <span className="w-6 h-6 bg-gold text-bg-primary rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
                 <span>Click the <strong className="text-text">"Resources"</strong> button in your profile header</span>
               </li>
               <li className="flex gap-3">
-                <span className="w-6 h-6 bg-gold text-black rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+                <span className="w-6 h-6 bg-gold text-bg-primary rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
                 <span>Select <strong className="text-text">"Save to PDF"</strong> from the dropdown</span>
               </li>
               <li className="flex gap-3">
-                <span className="w-6 h-6 bg-gold text-black rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">4</span>
+                <span className="w-6 h-6 bg-gold text-bg-primary rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">4</span>
                 <span>Upload the downloaded PDF below</span>
               </li>
             </ol>

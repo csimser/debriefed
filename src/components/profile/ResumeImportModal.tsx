@@ -282,7 +282,7 @@ export function ResumeImportModal({ isOpen, onClose, onImport, currentUsage, usa
                       <div key={idx} className="border-l-2 border-border pl-4">
                         <div className="flex items-center gap-2">
                           <p className="font-semibold">{exp.civilian_title || exp.job_title}</p>
-                          <span className={`px-2 py-0.5 text-xs rounded ${exp.employment_type === 'civilian' ? 'bg-blue-500/20 text-blue-400' : 'bg-gold/20 text-gold'}`}>
+                          <span className={`px-2 py-0.5 text-xs rounded ${exp.employment_type === 'civilian' ? 'bg-status-blue/20 text-status-blue' : 'bg-gold/20 text-gold'}`}>
                             {exp.employment_type}
                           </span>
                         </div>

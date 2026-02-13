@@ -2,12 +2,14 @@
 
 import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
+import { useTheme } from '@/components/providers/ThemeProvider'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -207,17 +209,39 @@ function LoginFormLoading() {
   )
 }
 
+function LoginBranding() {
+  const { theme } = useTheme()
+  const isLightBg = theme.style === 'corporate' || theme.style === 'minimal'
+
+  return (
+    <Link href="/" className="block text-center mb-8 hover:opacity-80 transition-opacity">
+      {theme.logo && !isLightBg ? (
+        <div className="flex justify-center mb-4">
+          <Image src={theme.logo} alt={theme.logoAlt || theme.appName} width={64} height={64} className="h-16 w-auto" />
+        </div>
+      ) : isLightBg && theme.logo ? (
+        /* Light background: show styled text instead of white SVG */
+        <div className="mb-4">
+          <span className="font-heading font-bold text-4xl tracking-wide" style={{ color: theme.colors.primary }}>{theme.name}</span>
+        </div>
+      ) : (
+        <div className="w-16 h-16 bg-gold rounded-lg flex items-center justify-center mx-auto mb-4">
+          <span className="font-heading font-bold text-bg-primary text-3xl">{theme.logoIcon || 'D'}</span>
+        </div>
+      )}
+      <h1 className="font-heading text-2xl font-bold tracking-wide uppercase">{theme.appName}</h1>
+      {theme.tagline && (
+        <p className="font-mono text-xs text-text-muted mt-1">{theme.tagline.toUpperCase()}</p>
+      )}
+    </Link>
+  )
+}
+
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-bg-primary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Link href="/" className="block text-center mb-8 hover:opacity-80 transition-opacity">
-          <div className="w-16 h-16 bg-gold rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="font-heading font-bold text-bg-primary text-3xl">D</span>
-          </div>
-          <h1 className="font-heading text-2xl font-bold tracking-wide uppercase">Debriefed</h1>
-          <p className="font-mono text-xs text-text-muted mt-1">MISSION: TRANSITION</p>
-        </Link>
+        <LoginBranding />
 
         <GovComputerBanner />
 

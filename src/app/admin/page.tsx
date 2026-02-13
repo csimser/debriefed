@@ -295,8 +295,8 @@ export default async function AdminDashboardPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-[#1a365d]/20">
-              <tr className="text-left text-xs text-text-muted uppercase border-b border-[#1a365d]/30">
+            <thead className="bg-navy/20">
+              <tr className="text-left text-xs text-text-muted uppercase border-b border-navy/30">
                 <th className="px-4 py-3">User</th>
                 <th className="px-4 py-3">Branch</th>
                 <th className="px-4 py-3">Tier</th>
@@ -396,34 +396,34 @@ interface StatCardProps {
 function StatCard({ icon, label, value, subtitle, color = 'default', href }: StatCardProps) {
   const colorClasses = {
     navy: {
-      bg: 'bg-[#1a365d]/20',
-      border: 'border-[#1a365d]/40',
-      text: 'text-[#63b3ed]',
-      icon: 'bg-[#1a365d]/40 text-[#63b3ed]',
+      bg: 'bg-navy/20',
+      border: 'border-navy/40',
+      text: 'text-status-blue',
+      icon: 'bg-navy/40 text-status-blue',
     },
     gold: {
-      bg: 'bg-[#b8860b]/10',
-      border: 'border-[#b8860b]/30',
-      text: 'text-[#b8860b]',
-      icon: 'bg-[#b8860b]/20 text-[#b8860b]',
+      bg: 'bg-gold/10',
+      border: 'border-gold/30',
+      text: 'text-gold',
+      icon: 'bg-gold/20 text-gold',
     },
     green: {
-      bg: 'bg-emerald-500/10',
-      border: 'border-emerald-500/30',
-      text: 'text-emerald-400',
-      icon: 'bg-emerald-500/20 text-emerald-400',
+      bg: 'bg-status-green/10',
+      border: 'border-status-green/30',
+      text: 'text-status-green',
+      icon: 'bg-status-green/20 text-status-green',
     },
     blue: {
-      bg: 'bg-blue-500/10',
-      border: 'border-blue-500/30',
-      text: 'text-blue-400',
-      icon: 'bg-blue-500/20 text-blue-400',
+      bg: 'bg-status-blue/10',
+      border: 'border-status-blue/30',
+      text: 'text-status-blue',
+      icon: 'bg-status-blue/20 text-status-blue',
     },
     red: {
-      bg: 'bg-red-500/10',
-      border: 'border-red-500/30',
-      text: 'text-red-400',
-      icon: 'bg-red-500/20 text-red-400',
+      bg: 'bg-status-red/10',
+      border: 'border-status-red/30',
+      text: 'text-status-red',
+      icon: 'bg-status-red/20 text-status-red',
     },
     default: {
       bg: 'bg-bg-tertiary',

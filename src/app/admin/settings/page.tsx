@@ -42,10 +42,10 @@ interface ApiUsage {
 }
 
 const ANNOUNCEMENT_TYPES = [
-  { value: 'info', label: 'Info', color: 'bg-blue-500/20 border-blue-500/50 text-blue-300' },
-  { value: 'warning', label: 'Warning', color: 'bg-amber-500/20 border-amber-500/50 text-amber-300' },
-  { value: 'error', label: 'Error', color: 'bg-red-500/20 border-red-500/50 text-red-300' },
-  { value: 'success', label: 'Success', color: 'bg-green-500/20 border-green-500/50 text-green-300' },
+  { value: 'info', label: 'Info', color: 'bg-status-blue/20 border-status-blue/50 text-status-blue' },
+  { value: 'warning', label: 'Warning', color: 'bg-status-amber/20 border-status-amber/50 text-status-amber' },
+  { value: 'error', label: 'Error', color: 'bg-status-red/20 border-status-red/50 text-status-red' },
+  { value: 'success', label: 'Success', color: 'bg-status-green/20 border-status-green/50 text-status-green' },
 ]
 
 const FEATURE_LABELS: Record<keyof FeatureFlags, string> = {
@@ -226,7 +226,7 @@ export default function AdminSettingsPage() {
 
       {/* Announcement Banner Section */}
       <Card className="overflow-hidden">
-        <div className="p-4 border-b border-border bg-[#1a365d]/20">
+        <div className="p-4 border-b border-border bg-navy/20">
           <h2 className="font-heading text-lg font-bold uppercase tracking-wider">
             Announcement Banner
           </h2>
@@ -306,7 +306,7 @@ export default function AdminSettingsPage() {
 
       {/* Feature Flags Section */}
       <Card className="overflow-hidden">
-        <div className="p-4 border-b border-border bg-[#1a365d]/20">
+        <div className="p-4 border-b border-border bg-navy/20">
           <h2 className="font-heading text-lg font-bold uppercase tracking-wider">Feature Flags</h2>
         </div>
         <div className="p-6 space-y-4">
@@ -325,7 +325,7 @@ export default function AdminSettingsPage() {
                 className={`relative w-12 h-6 rounded-full transition-colors ${
                   features[key]
                     ? key === 'maintenance_mode'
-                      ? 'bg-red-500'
+                      ? 'bg-status-red'
                       : 'bg-gold'
                     : 'bg-bg-tertiary'
                 }`}
@@ -355,7 +355,7 @@ export default function AdminSettingsPage() {
 
       {/* System Health Section */}
       <Card className="overflow-hidden">
-        <div className="p-4 border-b border-border bg-[#1a365d]/20 flex items-center justify-between">
+        <div className="p-4 border-b border-border bg-navy/20 flex items-center justify-between">
           <h2 className="font-heading text-lg font-bold uppercase tracking-wider">System Health</h2>
           <Button variant="secondary" onClick={runHealthChecks} disabled={checkingHealth}>
             {checkingHealth ? 'Checking...' : 'Check Now'}
@@ -410,7 +410,7 @@ export default function AdminSettingsPage() {
                 </div>
               </div>
               {apiHealth.onet.message && (
-                <p className="mt-2 text-xs text-red-400 ml-14">
+                <p className="mt-2 text-xs text-status-red ml-14">
                   {apiHealth.onet.message}
                 </p>
               )}
@@ -422,7 +422,7 @@ export default function AdminSettingsPage() {
 
       {/* API Usage Summary Section */}
       <Card className="overflow-hidden">
-        <div className="p-4 border-b border-border bg-[#1a365d]/20">
+        <div className="p-4 border-b border-border bg-navy/20">
           <h2 className="font-heading text-lg font-bold uppercase tracking-wider">API Usage Summary</h2>
         </div>
         <div className="p-6 space-y-6">
@@ -434,11 +434,11 @@ export default function AdminSettingsPage() {
             </div>
             <div className="bg-bg-secondary/50 rounded-md p-4 text-center">
               <p className="text-xs text-text-muted uppercase mb-1">Tokens This Week</p>
-              <p className="text-2xl font-bold text-blue-400">{formatNumber(apiUsage.tokensWeek)}</p>
+              <p className="text-2xl font-bold text-status-blue">{formatNumber(apiUsage.tokensWeek)}</p>
             </div>
             <div className="bg-bg-secondary/50 rounded-md p-4 text-center">
               <p className="text-xs text-text-muted uppercase mb-1">Tokens This Month</p>
-              <p className="text-2xl font-bold text-green-400">{formatNumber(apiUsage.tokensMonth)}</p>
+              <p className="text-2xl font-bold text-status-green">{formatNumber(apiUsage.tokensMonth)}</p>
             </div>
           </div>
 

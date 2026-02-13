@@ -21,10 +21,10 @@ export function CivilianTitleSuggestions({
   if (suggestions.length === 0) return null
 
   return (
-    <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+    <div className="p-3 bg-status-blue/10 border border-status-blue/30 rounded-lg">
       <div className="flex items-center gap-2 mb-2">
         <span className="text-gold">&#9670;</span>
-        <span className="text-xs font-semibold text-blue-400">Civilian Equivalents:</span>
+        <span className="text-xs font-semibold text-status-blue">Civilian Equivalents:</span>
       </div>
       <div className="flex flex-wrap gap-2">
         {suggestions.map((title, idx) => (

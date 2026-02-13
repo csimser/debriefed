@@ -125,24 +125,24 @@ export function DeleteResumeModal({
           </p>
 
           {/* Usage Warning */}
-          <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg mb-4">
+          <div className="p-4 bg-status-amber-dim border border-status-amber/30 rounded-lg mb-4">
             <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg className="w-5 h-5 text-status-amber flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                 <line x1="12" y1="9" x2="12" y2="13"/>
                 <line x1="12" y1="17" x2="12.01" y2="17"/>
               </svg>
               <div>
-                <p className="text-yellow-200 text-sm">
+                <p className="text-status-amber text-sm">
                   <strong>Current usage:</strong> {currentUsage} of {limit >= 999999 ? '∞' : limit} {resumeType} resume downloads used.
                 </p>
                 {isAtLimit && resume.has_been_downloaded && (
-                  <p className="text-yellow-200 text-sm mt-2">
+                  <p className="text-status-amber text-sm mt-2">
                     You've reached your download limit. Deleting this resume means you won't be able to create and download another {resumeType} resume without upgrading.
                   </p>
                 )}
                 {isFree && !isAtLimit && (
-                  <p className="text-yellow-200/80 text-sm mt-2">
+                  <p className="text-status-amber/80 text-sm mt-2">
                     You have <strong>{limit - currentUsage}</strong> {resumeType} download{limit - currentUsage !== 1 ? 's' : ''} remaining on your free plan.
                   </p>
                 )}
@@ -151,8 +151,8 @@ export function DeleteResumeModal({
           </div>
 
           {/* Permanent warning */}
-          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg mb-4">
-            <p className="text-red-400 text-sm font-semibold flex items-center gap-2">
+          <div className="p-4 bg-status-red-dim border border-status-red/30 rounded-lg mb-4">
+            <p className="text-status-red text-sm font-semibold flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
@@ -188,7 +188,7 @@ export function DeleteResumeModal({
           <button
             onClick={handleDelete}
             disabled={deleting || (requiresConfirmText && confirmText !== 'DELETE')}
-            className="flex-1 px-4 py-3.5 md:py-3 bg-status-red text-white rounded-lg md:rounded font-heading font-bold uppercase tracking-wider hover:bg-red-600 active:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[48px]"
+            className="flex-1 px-4 py-3.5 md:py-3 bg-status-red text-white rounded-lg md:rounded font-heading font-bold uppercase tracking-wider hover:bg-status-red/90 active:bg-status-red/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[48px]"
           >
             {deleting ? 'Deleting...' : 'Delete'}
           </button>

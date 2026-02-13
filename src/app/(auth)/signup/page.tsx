@@ -2,15 +2,18 @@
 
 import { useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { BRANCHES, getRankFromPaygrade, getValidPaygradesForBranch } from '@/lib/constants/military'
+import { useTheme } from '@/components/providers/ThemeProvider'
 
 function SignupForm() {
   const searchParams = useSearchParams()
   void searchParams // preserve Suspense boundary
+  const { theme } = useTheme()
 
   const [formData, setFormData] = useState({
     email: '',
@@ -116,7 +119,7 @@ function SignupForm() {
           <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-4">Account Created!</h2>
           <div className="bg-gold-dim border border-gold/30 rounded-md p-4 mb-6 text-left">
             <p className="text-sm text-gold mb-3">
-              <span className="font-medium">Welcome to Debriefed!</span>
+              <span className="font-medium">Welcome to {theme.appName}!</span>
             </p>
             <p className="text-sm text-text-muted">
               Your account has been created. Check your inbox and verify your email to get started.
@@ -300,17 +303,38 @@ function SignupFormLoading() {
   )
 }
 
+function SignupBranding() {
+  const { theme } = useTheme()
+  const isLightBg = theme.style === 'corporate' || theme.style === 'minimal'
+
+  return (
+    <Link href="/" className="block text-center mb-8 hover:opacity-80 transition-opacity">
+      {theme.logo && !isLightBg ? (
+        <div className="flex justify-center mb-4">
+          <Image src={theme.logo} alt={theme.logoAlt || theme.appName} width={64} height={64} className="h-16 w-auto" />
+        </div>
+      ) : isLightBg && theme.logo ? (
+        <div className="mb-4">
+          <span className="font-heading font-bold text-4xl tracking-wide" style={{ color: theme.colors.primary }}>{theme.name}</span>
+        </div>
+      ) : (
+        <div className="w-16 h-16 bg-gold rounded-lg flex items-center justify-center mx-auto mb-4">
+          <span className="font-heading font-bold text-bg-primary text-3xl">{theme.logoIcon || 'D'}</span>
+        </div>
+      )}
+      <h1 className="font-heading text-2xl font-bold tracking-wide uppercase">{theme.appName}</h1>
+      {theme.tagline && (
+        <p className="font-mono text-xs text-text-muted mt-1">{theme.tagline.toUpperCase()}</p>
+      )}
+    </Link>
+  )
+}
+
 export default function SignupPage() {
   return (
     <div className="min-h-screen bg-bg-primary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Link href="/" className="block text-center mb-8 hover:opacity-80 transition-opacity">
-          <div className="w-16 h-16 bg-gold rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="font-heading font-bold text-bg-primary text-3xl">D</span>
-          </div>
-          <h1 className="font-heading text-2xl font-bold tracking-wide uppercase">Debriefed</h1>
-          <p className="font-mono text-xs text-text-muted mt-1">BEGIN YOUR MISSION</p>
-        </Link>
+        <SignupBranding />
 
         <Suspense fallback={<SignupFormLoading />}>
           <SignupForm />

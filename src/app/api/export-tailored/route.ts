@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server'
 import { pdf } from '@react-pdf/renderer'
 import { ResumeDocument } from '@/lib/pdf/ResumeDocument'
 import { generateDocx } from '@/lib/docx/generateDocx'
-import { TemplateId } from '@/lib/templates'
+import { TemplateId, resolveTemplate } from '@/lib/templates'
 import { createClient } from '@/lib/supabase/server'
 import { logApiUsage, logActivity } from '@/lib/usage-tracking'
 import { canUseFeature, incrementUsage, getUserTier } from '@/lib/usage-service'
@@ -18,7 +18,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { content, format = 'pdf', resumeType = 'private', template = 'clean' } = await request.json()
+    const { content, format = 'pdf', resumeType = 'private', template: rawTemplate = 'classic_professional' } = await request.json()
+    const template = resolveTemplate(rawTemplate)
 
     if (!content) {
       return NextResponse.json({ error: 'Missing resume content' }, { status: 400 })
@@ -61,12 +62,22 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    // Filter out excluded bullets before generating
+    // Filter out excluded and placeholder bullets before generating
+    const isPlaceholder = (text: string) => {
+      if (!text || text.trim() === '') return true
+      const lower = text.trim().toLowerCase()
+      return lower.includes('new bullet') || lower.includes('click to edit') || lower.includes('[x]')
+    }
+    const getBulletText = (b: any) => b.status === 'accepted' ? b.translated_text : (b.translated_text || b.original_text)
+
     const filteredContent = {
       ...content,
       experiences: content.experiences?.map((exp: any) => ({
         ...exp,
-        bullets: exp.bullets?.filter((bullet: any) => bullet.status !== 'excluded'),
+        bullets: exp.bullets?.filter((bullet: any) => {
+          if (bullet.status === 'excluded') return false
+          return !isPlaceholder(getBulletText(bullet))
+        }),
       })),
     }
 
@@ -79,7 +90,7 @@ export async function POST(request: NextRequest) {
       const doc = React.createElement(ResumeDocument, {
         content: filteredContent,
         resumeType: resumeType,
-        template: template as TemplateId,
+        template,
       })
       const pdfInstance = pdf(doc as any)
       const blob = await pdfInstance.toBlob()
@@ -87,7 +98,7 @@ export async function POST(request: NextRequest) {
       contentType = 'application/pdf'
       extension = 'pdf'
     } else {
-      const buffer = await generateDocx(filteredContent, resumeType, template as TemplateId)
+      const buffer = await generateDocx(filteredContent, resumeType, template)
       arrayBuffer = new Uint8Array(buffer).buffer
       contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       extension = 'docx'

@@ -21,7 +21,7 @@ export type FeatureName =
   | 'linkedin_recommendations'
   | 'downloads';
 
-export type TemplateName = 'clean' | 'ats' | 'classic' | 'modern' | 'minimal' | 'federal';
+export type TemplateName = 'executive' | 'classic_professional' | 'federal' | 'modern' | 'minimal' | 'twocol';
 
 export interface TierLimits {
   private_resumes: number;
@@ -77,7 +77,7 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
       linkedin_recommendations: 0,
       downloads: 999,
     },
-    templates: ['clean', 'ats'],
+    templates: ['classic_professional', 'federal', 'modern', 'minimal', 'twocol'],
     features: {
       smart_apply_skills: true,
       linkedin_profile_analysis: true,
@@ -105,7 +105,7 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
       linkedin_recommendations: 999999,
       downloads: 999,
     },
-    templates: ['clean', 'ats', 'classic', 'modern', 'minimal', 'federal'],
+    templates: ['executive', 'classic_professional', 'federal', 'modern', 'minimal', 'twocol'],
     features: {
       smart_apply_skills: true,
       linkedin_profile_analysis: true,
@@ -133,7 +133,7 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
       linkedin_recommendations: -1,  // unlimited
       downloads: 999,
     },
-    templates: ['clean', 'ats', 'classic', 'modern', 'minimal', 'federal'],
+    templates: ['executive', 'classic_professional', 'federal', 'modern', 'minimal', 'twocol'],
     features: {
       smart_apply_skills: true,
       linkedin_profile_analysis: true,
@@ -160,7 +160,7 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
       linkedin_recommendations: 0,
       downloads: 999,
     },
-    templates: ['clean', 'ats', 'classic', 'modern', 'minimal', 'federal'],
+    templates: ['executive', 'classic_professional', 'federal', 'modern', 'minimal', 'twocol'],
     features: {
       smart_apply_skills: false,
       linkedin_profile_analysis: false,
@@ -205,9 +205,8 @@ export const DAILY_RATE_LIMITS: Record<'core' | 'full', TierLimits> = {
 
 // Admin emails that bypass all limits
 export const ADMIN_BYPASS_EMAILS = [
-  'chris.simser@gmail.com',
-  'carlajo22@gmail.com',
   'admin@debriefed.io',
+  'thecoinlockersales@gmail.com',
 ];
 
 // Feature display names for UI

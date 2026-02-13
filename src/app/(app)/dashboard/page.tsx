@@ -54,33 +54,38 @@ export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch resume count
-  const { count: resumeCount } = await supabase
-    .from('resumes')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user?.id)
-
-  // Fetch profile
-  const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user?.id).single()
-
-  // Get authoritative tier from subscriptions (not profiles table directly)
-  const subscriptionInfo = user?.id
-    ? await getSubscriptionInfo(user.id)
-    : { tier: 'free' as const, tierName: 'Free', expiresAt: null, daysRemaining: null, isActive: true }
-  const tier = subscriptionInfo.tier
-  const isPaid = tier === 'core' || tier === 'full'
-
-  // All usage from usage_tracking (single source of truth for everything)
+  const defaultSubscription = { tier: 'free' as const, tierName: 'Free', expiresAt: null, daysRemaining: null, isActive: true }
   const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
-  const [jobMatchUsage, coverLetterUsage, linkedinUsage, privateDownloadUsage, federalDownloadUsage] = user?.id
+
+  // Run ALL queries in parallel — they all only need user.id
+  const [
+    { count: resumeCount },
+    { data: profile },
+    subscriptionInfo,
+    jobMatchUsage,
+    coverLetterUsage,
+    linkedinUsage,
+    privateDownloadUsage,
+    federalDownloadUsage,
+  ] = user?.id
     ? await Promise.all([
+        supabase.from('resumes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('profiles').select('first_name, last_name, branch, rank, rating_mos, years_of_service, target_role, eas_date, tier').eq('user_id', user.id).single(),
+        getSubscriptionInfo(user.id),
         checkLimit(user.id, 'job_match_analysis'),
         checkLimit(user.id, 'cover_letters'),
         checkLimit(user.id, 'linkedin_profile_analysis'),
         checkLimit(user.id, 'private_resumes'),
         checkLimit(user.id, 'federal_resumes'),
       ])
-    : [defaultUsage, defaultUsage, defaultUsage, defaultUsage, defaultUsage]
+    : [
+        { count: 0 }, { data: null },
+        defaultSubscription,
+        defaultUsage, defaultUsage, defaultUsage, defaultUsage, defaultUsage,
+      ]
+
+  const tier = subscriptionInfo.tier
+  const isPaid = tier === 'core' || tier === 'full'
 
   const daysUntilEAS = profile?.eas_date
     ? Math.ceil((new Date(profile.eas_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -113,15 +118,15 @@ export default async function DashboardPage() {
       <GovComputerBanner />
 
       {/* Feedback Banner */}
-      <div className="bg-accent-gold/10 border border-accent-gold/30 rounded-lg p-4 mb-6">
+      <div className="bg-gold-dim border border-gold/30 rounded-lg p-4 mb-6">
         <div className="flex items-start gap-3">
-          <span className="text-accent-gold text-xl">💡</span>
+          <span className="text-gold text-xl">💡</span>
           <div className="flex-1">
-            <p className="text-text-light text-sm">
-              <strong>Welcome to Debriefed!</strong> This is a new platform and we&apos;re actively improving it.
+            <p className="text-sm">
+              <strong>Welcome!</strong> This is a new platform and we&apos;re actively improving it.
               Please report any bugs or feature suggestions using the{' '}
-              <span className="text-accent-gold font-medium">Feedback</span> button or email{' '}
-              <a href="mailto:support@getdebriefed.co" className="text-accent-gold hover:underline">
+              <span className="text-gold font-medium">Feedback</span> button or email{' '}
+              <a href="mailto:support@getdebriefed.co" className="text-gold hover:underline">
                 support@getdebriefed.co
               </a>
             </p>

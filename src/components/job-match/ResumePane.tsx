@@ -109,7 +109,7 @@ export function ResumePane({ resume, analysis }: ResumePaneProps) {
                   <span
                     key={idx}
                     className={`text-xs px-2 py-0.5 rounded ${
-                      isFound ? 'bg-green-100 text-green-800' : 'bg-gray-100'
+                      isFound ? 'bg-status-green-dim text-status-green' : 'bg-bg-tertiary text-text-muted'
                     }`}
                   >
                     {skill.name}

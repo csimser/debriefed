@@ -341,7 +341,7 @@ function UsersPageContent() {
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-[#1a365d]/30 border-b border-[#1a365d]/50">
+            <thead className="bg-navy/30 border-b border-navy/50">
               <tr className="text-left text-xs text-text-muted uppercase">
                 <th
                   className="px-4 py-3 cursor-pointer hover:text-text transition-colors"
@@ -450,7 +450,7 @@ function UsersPageContent() {
                       <div className="flex items-center gap-2">
                         {isOnline(user.last_login_at) && (
                           <span
-                            className="w-2 h-2 rounded-full bg-green-500 animate-pulse"
+                            className="w-2 h-2 rounded-full bg-status-green animate-pulse"
                             title="Online"
                           />
                         )}
@@ -470,7 +470,7 @@ function UsersPageContent() {
                       <div className="flex items-center gap-3">
                         <Link
                           href={`/admin/users/${user.user_id}?edit=true`}
-                          className="text-sm text-blue-400 hover:text-blue-300 hover:underline"
+                          className="text-sm text-gold hover:text-gold-bright hover:underline"
                         >
                           Edit
                         </Link>

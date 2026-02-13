@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useTheme } from '@/components/providers/ThemeProvider'
 
 // Main nav items (shown in desktop sidebar and bottom nav on mobile)
 const mainNavItems = [
@@ -45,6 +47,8 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+  const { theme } = useTheme()
+  const isFiveAndFly = theme.id === 'five-and-fly'
 
   // Initialize state from localStorage and handle responsive behavior
   useEffect(() => {
@@ -140,7 +144,7 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
   // Prevent hydration mismatch by not rendering until mounted
   if (!isHydrated) {
     return (
-      <aside className="w-64 bg-bg-secondary border-r border-border flex flex-col h-full">
+      <aside className="w-64 bg-t-sidebar border-r border-border flex flex-col h-full">
         <div className="p-4 border-b border-border h-[72px]" />
       </aside>
     )
@@ -151,12 +155,18 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
   return (
     <>
       {/* Mobile Header with Hamburger - Only on mobile (<768px) */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-bg-secondary border-b border-border px-4 py-3 flex items-center justify-between">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-t-sidebar border-b border-border px-4 py-3 flex items-center justify-between text-t-sidebar-fg">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gold rounded flex items-center justify-center">
-            <span className="font-heading font-bold text-bg-primary">D</span>
-          </div>
-          <span className="font-heading font-bold tracking-wide">DEBRIEFED</span>
+          {theme.logo ? (
+            <Image src={theme.logo} alt={theme.logoAlt || theme.appName} width={120} height={32} className="h-8 w-auto max-w-[120px]" />
+          ) : (
+            <>
+              <div className="w-8 h-8 bg-gold rounded flex items-center justify-center">
+                <span className="font-heading font-bold text-bg-primary">{theme.logoIcon || 'D'}</span>
+              </div>
+              <span className="font-heading font-bold tracking-wide">{theme.appName.toUpperCase()}</span>
+            </>
+          )}
         </Link>
 
         <button
@@ -185,7 +195,7 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
       {/* Sidebar */}
       <aside
         className={cn(
-          'bg-bg-secondary border-r border-border flex flex-col h-screen sticky top-0 transition-all duration-300 ease-in-out z-50',
+          'bg-t-sidebar text-t-sidebar-fg border-r border-border flex flex-col h-screen sticky top-0 transition-all duration-300 ease-in-out z-50',
           // Mobile (<768px): overlay from left, hidden by default
           'max-md:fixed max-md:top-0 max-md:bottom-0 max-md:left-0 max-md:h-full',
           isMobileOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full',
@@ -205,17 +215,33 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
             )}
             onClick={handleLinkClick}
           >
-            <div className="w-10 h-10 bg-bg-tertiary rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <path d="M9 9h6M9 13h6M9 17h4"/>
-              </svg>
-            </div>
-            {!isCollapsed && (
-              <div className="overflow-hidden">
-                <div className="font-heading font-bold text-lg tracking-wide whitespace-nowrap">DEBRIEFED</div>
-                <div className="font-mono text-[10px] text-text-muted whitespace-nowrap">MISSION: TRANSITION</div>
-              </div>
+            {theme.logo ? (
+              /* Theme has logo SVG: show only the logo, no text */
+              <Image
+                src={theme.logo}
+                alt={theme.logoAlt || theme.appName}
+                width={140}
+                height={40}
+                className={cn('h-auto flex-shrink-0', isCollapsed ? 'max-w-[40px]' : 'max-w-[140px]')}
+              />
+            ) : (
+              /* No logo: show icon + text app name */
+              <>
+                <div className="w-10 h-10 bg-bg-tertiary rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <path d="M9 9h6M9 13h6M9 17h4"/>
+                  </svg>
+                </div>
+                {!isCollapsed && (
+                  <div className="overflow-hidden">
+                    <div className="font-heading font-bold text-lg tracking-wide whitespace-nowrap">{theme.appName.toUpperCase()}</div>
+                    {theme.tagline && (
+                      <div className="font-mono text-[10px] text-text-muted whitespace-nowrap">{theme.tagline.toUpperCase()}</div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
           </Link>
         </div>
@@ -243,7 +269,7 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
         <nav className="flex-1 p-4 overflow-auto">
           {/* Mobile: Only show secondary nav items (Settings, Help) since main items are in bottom nav */}
           <div className="md:hidden space-y-1">
-            <p className="text-xs text-text-dim uppercase tracking-wider px-4 py-2 font-heading">Menu</p>
+            <p className={cn("text-xs text-text-dim uppercase tracking-wider px-4 py-2 font-nav", isFiveAndFly && "font-medium tracking-[1px]")}>Menu</p>
             {secondaryNavItems.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -255,6 +281,7 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
                   isActive={isActive}
                   isCollapsed={false}
                   onClick={handleLinkClick}
+                  isFiveAndFly={isFiveAndFly}
                 />
               )
             })}
@@ -270,6 +297,7 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
                   isCollapsed={false}
                   onClick={handleLinkClick}
                   isAdmin
+                  isFiveAndFly={isFiveAndFly}
                 />
               </div>
             )}
@@ -294,6 +322,7 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
                   isActive={isActive}
                   isCollapsed={isCollapsed}
                   onClick={handleLinkClick}
+                  isFiveAndFly={isFiveAndFly}
                 />
               )
             })}
@@ -309,6 +338,7 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
                   isCollapsed={isCollapsed}
                   onClick={handleLinkClick}
                   isAdmin
+                  isFiveAndFly={isFiveAndFly}
                 />
               </div>
             )}
@@ -328,7 +358,7 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
             >
               <span className="text-sm">★</span>
               {!isCollapsed && (
-                <span className="font-heading text-xs font-bold uppercase tracking-wider">Upgrade</span>
+                <span className="font-nav text-xs font-bold uppercase tracking-wider">Upgrade</span>
               )}
             </Link>
           </div>
@@ -388,6 +418,7 @@ function NavItem({
   isCollapsed,
   onClick,
   isAdmin = false,
+  isFiveAndFly = false,
 }: {
   href: string
   icon: string
@@ -396,6 +427,7 @@ function NavItem({
   isCollapsed: boolean
   onClick?: () => void
   isAdmin?: boolean
+  isFiveAndFly?: boolean
 }) {
   return (
     <Link
@@ -415,13 +447,13 @@ function NavItem({
     >
       <span className={cn('text-lg', isCollapsed && 'text-xl')}>{icon}</span>
       {!isCollapsed && (
-        <span className="font-heading uppercase tracking-wider text-xs whitespace-nowrap">{label}</span>
+        <span className={cn("font-nav uppercase tracking-wider text-xs whitespace-nowrap", isFiveAndFly && "font-semibold tracking-[1px]")}>{label}</span>
       )}
 
       {/* Tooltip for collapsed state */}
       {isCollapsed && (
         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-bg-tertiary border border-border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
-          <span className="font-heading uppercase tracking-wider text-xs">{label}</span>
+          <span className={cn("font-nav uppercase tracking-wider text-xs", isFiveAndFly && "font-semibold tracking-[1px]")}>{label}</span>
         </div>
       )}
     </Link>

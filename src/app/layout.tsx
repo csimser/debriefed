@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import './globals.css'
 import { PageViewTracker } from '@/components/analytics/PageViewTracker'
 import { FeedbackWrapper } from '@/components/layout/FeedbackWrapper'
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
 
 export const metadata: Metadata = {
   title: 'Debriefed | Military to Civilian Resume Builder',
@@ -23,9 +25,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <PageViewTracker />
-        {children}
-        <FeedbackWrapper />
+        <Suspense>
+          <ThemeProvider>
+            <PageViewTracker />
+            {children}
+            <FeedbackWrapper />
+          </ThemeProvider>
+        </Suspense>
       </body>
     </html>
   )

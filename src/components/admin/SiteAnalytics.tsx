@@ -47,7 +47,7 @@ export function SiteAnalytics() {
   if (error) {
     return (
       <Card className="p-8 text-center">
-        <p className="text-red-400">Error: {error}</p>
+        <p className="text-status-red">Error: {error}</p>
       </Card>
     )
   }
@@ -83,7 +83,7 @@ export function SiteAnalytics() {
 
       {/* Views Chart */}
       <Card className="overflow-hidden">
-        <div className="p-4 border-b border-border bg-[#1a365d]/20">
+        <div className="p-4 border-b border-border bg-navy/20">
           <h3 className="font-heading text-lg font-bold uppercase tracking-wider">
             Daily Page Views (Last 30 Days)
           </h3>
@@ -127,15 +127,15 @@ export function SiteAnalytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Pages */}
         <Card className="overflow-hidden">
-          <div className="p-4 border-b border-border bg-[#1a365d]/20">
+          <div className="p-4 border-b border-border bg-navy/20">
             <h3 className="font-heading text-lg font-bold uppercase tracking-wider">
               Top Pages
             </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#1a365d]/10">
-                <tr className="text-left text-xs text-text-muted uppercase border-b border-[#1a365d]/30">
+              <thead className="bg-navy/10">
+                <tr className="text-left text-xs text-text-muted uppercase border-b border-navy/30">
                   <th className="px-4 py-3">Page</th>
                   <th className="px-4 py-3 text-right">Views</th>
                 </tr>
@@ -171,15 +171,15 @@ export function SiteAnalytics() {
 
         {/* Top Referrers */}
         <Card className="overflow-hidden">
-          <div className="p-4 border-b border-border bg-[#1a365d]/20">
+          <div className="p-4 border-b border-border bg-navy/20">
             <h3 className="font-heading text-lg font-bold uppercase tracking-wider">
               Top Referrers
             </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#1a365d]/10">
-                <tr className="text-left text-xs text-text-muted uppercase border-b border-[#1a365d]/30">
+              <thead className="bg-navy/10">
+                <tr className="text-left text-xs text-text-muted uppercase border-b border-navy/30">
                   <th className="px-4 py-3">Source</th>
                   <th className="px-4 py-3 text-right">Visits</th>
                 </tr>
@@ -227,22 +227,22 @@ interface AnalyticsStatCardProps {
 function AnalyticsStatCard({ icon, label, value, color }: AnalyticsStatCardProps) {
   const colorClasses = {
     navy: {
-      bg: 'bg-[#1a365d]/20',
-      border: 'border-[#1a365d]/40',
-      text: 'text-[#63b3ed]',
-      icon: 'bg-[#1a365d]/40 text-[#63b3ed]',
+      bg: 'bg-navy/20',
+      border: 'border-navy/40',
+      text: 'text-status-blue',
+      icon: 'bg-navy/40 text-status-blue',
     },
     gold: {
-      bg: 'bg-[#b8860b]/10',
-      border: 'border-[#b8860b]/30',
-      text: 'text-[#b8860b]',
-      icon: 'bg-[#b8860b]/20 text-[#b8860b]',
+      bg: 'bg-gold/10',
+      border: 'border-gold/30',
+      text: 'text-gold',
+      icon: 'bg-gold/20 text-gold',
     },
     green: {
-      bg: 'bg-emerald-500/10',
-      border: 'border-emerald-500/30',
-      text: 'text-emerald-400',
-      icon: 'bg-emerald-500/20 text-emerald-400',
+      bg: 'bg-status-green/10',
+      border: 'border-status-green/30',
+      text: 'text-status-green',
+      icon: 'bg-status-green/20 text-status-green',
     },
   }
 

@@ -188,19 +188,19 @@ export default function AdminPromoCodesPage() {
         </Card>
         <Card className="p-4">
           <p className="text-text-muted text-xs uppercase">Active</p>
-          <p className="text-2xl font-bold text-green-500">{activeCodes}</p>
+          <p className="text-2xl font-bold text-status-green">{activeCodes}</p>
         </Card>
         <Card className="p-4">
           <p className="text-text-muted text-xs uppercase">Expired</p>
-          <p className="text-2xl font-bold text-red-500">{expiredCodes}</p>
+          <p className="text-2xl font-bold text-status-red">{expiredCodes}</p>
         </Card>
         <Card className="p-4">
           <p className="text-text-muted text-xs uppercase">Exhausted</p>
-          <p className="text-2xl font-bold text-amber-500">{exhaustedCodes}</p>
+          <p className="text-2xl font-bold text-status-amber">{exhaustedCodes}</p>
         </Card>
         <Card className="p-4">
           <p className="text-text-muted text-xs uppercase">Total Redemptions</p>
-          <p className="text-2xl font-bold text-blue-400">{totalRedemptions}</p>
+          <p className="text-2xl font-bold text-status-blue">{totalRedemptions}</p>
         </Card>
       </div>
 
@@ -211,7 +211,7 @@ export default function AdminPromoCodesPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-[#1a365d]/30 border-b border-[#1a365d]/50">
+            <thead className="bg-navy/30 border-b border-navy/50">
               <tr className="text-left text-xs text-text-muted uppercase">
                 <th className="px-4 py-3">Code</th>
                 <th className="px-4 py-3">Discount</th>
@@ -254,7 +254,7 @@ export default function AdminPromoCodesPage() {
                         >
                           {code.code}
                           {copiedCode === code.code ? (
-                            <span className="text-green-500 text-xs">Copied</span>
+                            <span className="text-status-green text-xs">Copied</span>
                           ) : (
                             <span className="text-text-dim text-xs">Copy</span>
                           )}
@@ -278,7 +278,7 @@ export default function AdminPromoCodesPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
-                          <span className={`text-sm ${isExhausted(code) ? 'text-red-400' : ''}`}>
+                          <span className={`text-sm ${isExhausted(code) ? 'text-status-red' : ''}`}>
                             {code.current_uses || 0} / {code.max_uses ?? '∞'}
                           </span>
                           {code.max_uses && (
@@ -286,10 +286,10 @@ export default function AdminPromoCodesPage() {
                               <div
                                 className={`h-full transition-all ${
                                   isExhausted(code)
-                                    ? 'bg-red-500'
+                                    ? 'bg-status-red'
                                     : (code.current_uses || 0) > 0
                                     ? 'bg-gold'
-                                    : 'bg-green-500'
+                                    : 'bg-status-green'
                                 }`}
                                 style={{ width: `${Math.min(((code.current_uses || 0) / code.max_uses) * 100, 100)}%` }}
                               />
@@ -312,7 +312,7 @@ export default function AdminPromoCodesPage() {
                       <td className="px-4 py-3">
                         <button
                           onClick={() => setShowDeleteModal(code)}
-                          className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                          className="text-xs text-status-red hover:text-status-red transition-colors"
                         >
                           Delete
                         </button>
@@ -333,7 +333,7 @@ export default function AdminPromoCodesPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-[#1a365d]/30 border-b border-[#1a365d]/50">
+            <thead className="bg-navy/30 border-b border-navy/50">
               <tr className="text-left text-xs text-text-muted uppercase">
                 <th className="px-4 py-3">Code</th>
                 <th className="px-4 py-3">User Email</th>
@@ -483,7 +483,7 @@ export default function AdminPromoCodesPage() {
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-sm p-6">
-            <h2 className="font-heading text-xl font-bold uppercase mb-4 text-red-400">Delete Promo Code</h2>
+            <h2 className="font-heading text-xl font-bold uppercase mb-4 text-status-red">Delete Promo Code</h2>
             <p className="text-text-muted mb-4">
               Are you sure you want to delete the code{' '}
               <code className="bg-bg-tertiary px-2 py-1 rounded">{showDeleteModal.code}</code>?
@@ -502,7 +502,7 @@ export default function AdminPromoCodesPage() {
               </Button>
               <Button
                 onClick={handleDeleteCode}
-                className="flex-1 bg-red-600 hover:bg-red-500"
+                className="flex-1 bg-status-red hover:bg-status-red/90"
               >
                 Delete
               </Button>

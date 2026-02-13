@@ -777,7 +777,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                   {pendingBullets.length > 0 && (
                     <button
                       onClick={acceptAllBullets}
-                      className="flex items-center gap-1 px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded text-xs hover:bg-green-500/30 transition-colors"
+                      className="flex items-center gap-1 px-3 py-1 bg-status-green-dim text-status-green border border-status-green/30 rounded text-xs hover:bg-status-green/20 transition-colors"
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -802,7 +802,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                       bullet.status === 'excluded'
                         ? 'bg-bg-tertiary border-border/50 opacity-50'
                         : bullet.status === 'accepted'
-                          ? 'bg-green-500/5 border-green-500/30'
+                          ? 'bg-status-green/5 border-status-green/30'
                           : 'bg-bg-secondary border-border'
                     }`}
                   >
@@ -810,13 +810,13 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         {bullet.status === 'accepted' && (
-                          <span className="px-2 py-0.5 text-xs bg-green-500/20 text-green-400 rounded">Accepted</span>
+                          <span className="px-2 py-0.5 text-xs bg-status-green-dim text-status-green rounded">Accepted</span>
                         )}
                         {bullet.status === 'excluded' && (
-                          <span className="px-2 py-0.5 text-xs bg-gray-500/20 text-gray-400 rounded">Excluded</span>
+                          <span className="px-2 py-0.5 text-xs bg-bg-tertiary text-text-dim rounded">Excluded</span>
                         )}
                         {bullet.status === 'pending' && (
-                          <span className="px-2 py-0.5 text-xs bg-yellow-500/20 text-yellow-400 rounded">Pending</span>
+                          <span className="px-2 py-0.5 text-xs bg-status-amber-dim text-status-amber rounded">Pending</span>
                         )}
                       </div>
                     </div>
@@ -827,14 +827,14 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                         <textarea
                           value={editingText}
                           onChange={(e) => setEditingText(e.target.value)}
-                          className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-white text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-text text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
                           rows={3}
                           autoFocus
                         />
                         <div className="flex gap-2">
                           <button
                             onClick={cancelEditBullet}
-                            className="px-3 py-1 text-sm text-text-muted hover:text-white"
+                            className="px-3 py-1 text-sm text-text-muted hover:text-text"
                           >
                             Cancel
                           </button>
@@ -856,7 +856,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                         ) : (
                           <div className="mb-3">
                             <p className="text-xs text-gold uppercase mb-1">Translated:</p>
-                            <p className="text-sm text-white">{bullet.translated}</p>
+                            <p className="text-sm text-text">{bullet.translated}</p>
                           </div>
                         )}
 
@@ -881,7 +881,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                           {bullet.status !== 'accepted' && (
                             <button
                               onClick={() => acceptBullet(bullet.id)}
-                              className="flex items-center gap-1 px-3 py-1.5 bg-green-500/20 text-green-400 border border-green-500/30 rounded text-xs hover:bg-green-500/30"
+                              className="flex items-center gap-1 px-3 py-1.5 bg-status-green-dim text-status-green border border-status-green/30 rounded text-xs hover:bg-status-green/20"
                             >
                               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -892,7 +892,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                           <button
                             onClick={() => retryBullet(bullet.id)}
                             disabled={retryingBulletId === bullet.id}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-xs hover:bg-blue-500/30 disabled:opacity-50"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-status-blue/20 text-status-blue border border-status-blue/30 rounded text-xs hover:bg-status-blue/30 disabled:opacity-50"
                           >
                             <svg className={`w-3 h-3 ${retryingBulletId === bullet.id ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -901,7 +901,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                           </button>
                           <button
                             onClick={() => startEditBullet(bullet.id, bullet.translated)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded text-xs hover:bg-yellow-500/30"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-status-amber-dim text-status-amber border border-status-amber/30 rounded text-xs hover:bg-status-amber/20"
                           >
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -928,7 +928,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                           )}
                           <button
                             onClick={() => deleteBullet(bullet.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded text-xs hover:bg-red-500/30"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-status-red-dim text-status-red border border-status-red/30 rounded text-xs hover:bg-status-red/20"
                           >
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

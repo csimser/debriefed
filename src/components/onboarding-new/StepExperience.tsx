@@ -340,7 +340,7 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-heading font-bold">{exp.civilian_title || exp.job_title}</span>
                     <span className={`px-2 py-0.5 text-xs rounded ${
-                      exp.employment_type === 'civilian' ? 'bg-blue-500/20 text-blue-400' : 'bg-gold/20 text-gold'
+                      exp.employment_type === 'civilian' ? 'bg-status-blue/20 text-status-blue' : 'bg-gold/20 text-gold'
                     }`}>
                       {exp.employment_type === 'civilian' ? 'Civilian' : 'Military'}
                     </span>

@@ -98,7 +98,7 @@ export function TierBadge() {
     core: {
       label: 'Core',
       icon: '◐',
-      className: 'bg-blue-900/30 text-blue-400 border-blue-800'
+      className: 'bg-status-blue/20 text-status-blue border-status-blue/50'
     },
     full: {
       label: 'Full Access',

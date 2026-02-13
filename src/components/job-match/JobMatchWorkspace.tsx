@@ -157,7 +157,7 @@ export function JobMatchWorkspace({
   // UI state
   const [resumePreviewOpen, setResumePreviewOpen] = useState(false)
   const [downloading, setDownloading] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('clean')
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('classic_professional')
   const [showLastUseWarning, setShowLastUseWarning] = useState(false)
 
   const selectedResume = resumes.find(r => r.id === selectedResumeId)
@@ -1065,7 +1065,7 @@ export function JobMatchWorkspace({
                     </div>
 
                     {/* Resume Preview */}
-                    <div className="bg-white rounded-lg shadow-lg overflow-hidden" style={{ maxHeight: '600px', overflow: 'auto' }}>
+                    <div className="bg-bg-card rounded-lg shadow-lg overflow-hidden" style={{ maxHeight: '600px', overflow: 'auto' }}>
                       <ResumePreview
                         template={selectedTemplate}
                         resumeType="private"

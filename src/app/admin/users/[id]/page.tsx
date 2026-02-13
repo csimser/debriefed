@@ -287,36 +287,6 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
     }
   }
 
-  // Impersonate user
-  const handleImpersonate = async () => {
-    if (!user) return
-
-    if (!confirm(`Are you sure you want to impersonate ${user.email}? You will be redirected to the dashboard as this user.`)) {
-      return
-    }
-
-    setSaving(true)
-
-    try {
-      const response = await fetch(`/api/admin/users/${userId}/impersonate`, {
-        method: 'POST',
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        // Redirect to dashboard as impersonated user
-        window.location.href = data.redirectTo || '/dashboard'
-      } else {
-        const data = await response.json()
-        alert(data.error || 'Failed to start impersonation')
-      }
-    } catch (error) {
-      console.error('Error impersonating user:', error)
-    } finally {
-      setSaving(false)
-    }
-  }
-
   // Open edit modal with current values
   const openEditModal = () => {
     if (!user) return
@@ -454,7 +424,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
       </Link>
 
       {/* User Header */}
-      <Card className="p-6 bg-[#1a365d]/20 border-[#1a365d]/30">
+      <Card className="p-6 bg-navy/20 border-navy/30">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-3 mb-2">
@@ -487,7 +457,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
               User ID: {user.user_id}
             </p>
             {user.suspended && user.suspend_reason && (
-              <p className="text-red-400 text-sm mt-2">
+              <p className="text-status-red text-sm mt-2">
                 Suspend reason: {user.suspend_reason}
               </p>
             )}
@@ -496,7 +466,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
             <p>Joined {new Date(user.created_at).toLocaleDateString()}</p>
             <p>Last updated {new Date(user.updated_at).toLocaleDateString()}</p>
             {user.suspended_at && (
-              <p className="text-red-400">Suspended {new Date(user.suspended_at).toLocaleDateString()}</p>
+              <p className="text-status-red">Suspended {new Date(user.suspended_at).toLocaleDateString()}</p>
             )}
           </div>
         </div>
@@ -621,7 +591,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                               size="sm"
                               onClick={() => handleDownloadResume(resume, 'pdf')}
                               disabled={downloading === resume.id}
-                              className="text-blue-400 hover:bg-blue-500/10"
+                              className="text-status-blue hover:bg-status-blue/10"
                             >
                               {downloading === resume.id ? 'Downloading...' : 'PDF'}
                             </Button>
@@ -630,7 +600,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                               size="sm"
                               onClick={() => handleDownloadResume(resume, 'docx')}
                               disabled={downloading === resume.id}
-                              className="text-green-400 hover:bg-green-500/10"
+                              className="text-status-green hover:bg-status-green/10"
                             >
                               DOCX
                             </Button>
@@ -696,7 +666,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                                   {bullet.original_text}
                                 </div>
                                 {bullet.translated_text && (
-                                  <div className="text-green-400">
+                                  <div className="text-status-green">
                                     <span className="text-xs text-text-dim mr-2">Translated:</span>
                                     {bullet.translated_text}
                                   </div>
@@ -762,7 +732,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
             <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">
               API Usage
             </h2>
-            <div className="mb-4 p-3 bg-[#1a365d]/20 rounded-lg">
+            <div className="mb-4 p-3 bg-navy/20 rounded-lg">
               <div className="text-sm text-text-muted">Total Tokens Used</div>
               <div className="text-2xl font-bold text-gold">{totalTokensUsed.toLocaleString()}</div>
             </div>
@@ -864,25 +834,23 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                   }
                 }}
                 disabled={saving}
-                className={`w-full ${user.suspended ? 'text-green-400 hover:bg-green-500/10' : 'text-amber-400 hover:bg-amber-500/10'}`}
+                className={`w-full ${user.suspended ? 'text-status-green hover:bg-status-green/10' : 'text-status-amber hover:bg-status-amber/10'}`}
               >
                 {user.suspended ? 'Unsuspend Account' : 'Suspend Account'}
               </Button>
             </div>
 
-            {/* Impersonate */}
+            {/* View As User */}
             <div className="mb-4">
               <label className="block text-xs text-text-muted uppercase tracking-wider mb-2">
-                Impersonation
+                User View
               </label>
-              <Button
-                variant="secondary"
-                onClick={handleImpersonate}
-                disabled={saving}
-                className="w-full text-blue-400 hover:bg-blue-500/10"
+              <Link
+                href={`/admin/users/${userId}/view`}
+                className="block w-full text-center bg-bg-secondary border border-border rounded-md px-4 py-2 text-gold hover:bg-gold/10 transition-colors text-sm font-medium"
               >
-                Impersonate User
-              </Button>
+                View As User (Read-Only)
+              </Link>
             </div>
 
             {/* Delete Account */}
@@ -977,7 +945,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
       {showSuspendModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="p-6 max-w-md w-full">
-            <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-amber-400 mb-4">
+            <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-status-amber mb-4">
               Suspend User Account
             </h2>
             <p className="text-text-muted mb-4">
@@ -1008,7 +976,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                 variant="primary"
                 onClick={handleSuspendToggle}
                 disabled={saving}
-                className="flex-1 bg-amber-600 hover:bg-amber-500"
+                className="flex-1 bg-status-amber hover:bg-status-amber/90"
               >
                 {saving ? 'Suspending...' : 'Suspend User'}
               </Button>
@@ -1094,12 +1062,12 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
             <div className="overflow-auto flex-1 bg-white rounded">
               {previewResume.content ? (
                 <ResumePreview
-                  template={previewResume.template || 'clean'}
+                  template={previewResume.template || 'classic_professional'}
                   resumeType={previewResume.resume_type || 'private'}
                   content={previewResume.content}
                 />
               ) : (
-                <p className="text-gray-500 italic p-6">No content available for this resume</p>
+                <p className="text-text-muted italic p-6">No content available for this resume</p>
               )}
             </div>
           </Card>

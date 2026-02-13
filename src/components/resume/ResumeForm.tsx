@@ -88,7 +88,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
             </label>
-            <div className="w-full bg-bg-tertiary/50 border border-border rounded-lg px-4 py-3 text-white/70 cursor-not-allowed">
+            <div className="w-full bg-bg-tertiary/50 border border-border rounded-lg px-4 py-3 text-text-muted cursor-not-allowed">
               {userProfile?.first_name || ''} {userProfile?.last_name || ''}
             </div>
             <p className="text-xs text-text-dim mt-1">
@@ -105,7 +105,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
               </svg>
             </label>
-            <div className="w-full bg-bg-tertiary/50 border border-border rounded-lg px-4 py-3 text-white/70 cursor-not-allowed">
+            <div className="w-full bg-bg-tertiary/50 border border-border rounded-lg px-4 py-3 text-text-muted cursor-not-allowed">
               {userProfile?.email || ''}
             </div>
             <p className="text-xs text-text-dim mt-1">
@@ -156,6 +156,8 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
             <ExperienceItem
               key={exp.id || idx}
               experience={exp}
+              experienceIndex={idx}
+              totalExperiences={content.experiences?.length || 0}
               resumeType={resumeType}
               onChange={(updated) => {
                 const newExps = [...content.experiences]
@@ -237,7 +239,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               <select
                 value={content.citizenship || ''}
                 onChange={(e) => updateContent('citizenship', e.target.value)}
-                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-gold focus:ring-1 focus:ring-gold/25"
+                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
               >
                 {CITIZENSHIP_OPTIONS.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -253,7 +255,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               <select
                 value={content.veterans_preference || ''}
                 onChange={(e) => updateContent('veterans_preference', e.target.value)}
-                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-gold focus:ring-1 focus:ring-gold/25"
+                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
               >
                 {VETERANS_PREFERENCE_OPTIONS.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -269,7 +271,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               <select
                 value={content.security_clearance || userProfile?.clearance || ''}
                 onChange={(e) => updateContent('security_clearance', e.target.value)}
-                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-gold focus:ring-1 focus:ring-gold/25"
+                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
               >
                 {CLEARANCE_OPTIONS.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -285,7 +287,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               <select
                 value={content.clearance_status || ''}
                 onChange={(e) => updateContent('clearance_status', e.target.value)}
-                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-gold focus:ring-1 focus:ring-gold/25"
+                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
               >
                 {CLEARANCE_STATUS_OPTIONS.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -303,7 +305,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
                 value={content.federal_status || ''}
                 onChange={(e) => updateContent('federal_status', e.target.value)}
                 placeholder="e.g., N/A, GS-12, WG-10"
-                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-white focus:border-gold focus:ring-1 focus:ring-gold/25"
+                className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
               <p className="text-xs text-text-dim mt-1">
                 Enter your current or most recent federal pay grade if applicable
@@ -438,8 +440,39 @@ function SkillCertSelector({
   )
 }
 
-function ExperienceItem({ experience, resumeType, onChange, onDelete, userProfile, translationRemaining = 999 }: {
+// Returns recommended bullet range based on experience position (0 = most recent)
+function getBulletRecommendation(index: number): { min: number; max: number } {
+  if (index === 0) return { min: 5, max: 6 }
+  if (index === 1) return { min: 4, max: 5 }
+  return { min: 3, max: 4 }
+}
+
+function BulletCountIndicator({ count, index }: { count: number; index: number }) {
+  const { min, max } = getBulletRecommendation(index)
+
+  let color = 'text-status-green'
+  let message = `${count} of ${min}–${max} recommended`
+
+  if (count < min) {
+    color = 'text-status-amber'
+  } else if (count > max + 2) {
+    color = 'text-status-red'
+    message = `${count} of ${min}–${max} recommended — consider trimming to your strongest accomplishments`
+  } else if (count > max) {
+    color = 'text-status-amber'
+  }
+
+  return (
+    <span className={`text-xs ${color}`}>
+      {message}
+    </span>
+  )
+}
+
+function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeType, onChange, onDelete, userProfile, translationRemaining = 999 }: {
   experience: any
+  experienceIndex: number
+  totalExperiences: number
   resumeType: 'private' | 'federal'
   onChange: (exp: any) => void
   onDelete: () => void
@@ -725,6 +758,90 @@ function ExperienceItem({ experience, resumeType, onChange, onDelete, userProfil
         )}
       </div>
 
+      {/* Federal Experience Fields — always visible for federal resumes */}
+      {resumeType === 'federal' && (
+        <div className="mb-3 p-3 bg-bg-secondary rounded-lg border border-border/50">
+          <div className="text-xs font-semibold uppercase tracking-wider text-text-dim mb-2">Federal Details</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-text-dim mb-1">Grade / GS Level</label>
+              <input
+                type="text"
+                value={experience.grade_level || ''}
+                onChange={(e) => onChange({ ...experience, grade_level: e.target.value })}
+                placeholder="e.g., GS-12"
+                className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-text-dim mb-1">Hours / Week</label>
+              <input
+                type="number"
+                value={experience.hours_per_week ?? 40}
+                onChange={(e) => onChange({ ...experience, hours_per_week: parseInt(e.target.value) || 40 })}
+                className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-text-dim mb-1">Salary</label>
+              <input
+                type="text"
+                value={experience.salary || ''}
+                onChange={(e) => onChange({ ...experience, salary: e.target.value })}
+                placeholder="e.g., $85,000"
+                className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-text-dim mb-1">Location</label>
+              <input
+                type="text"
+                value={experience.city && experience.state ? `${experience.city}, ${experience.state}` : experience.city || experience.state || experience.location || ''}
+                onChange={(e) => {
+                  const parts = e.target.value.split(',').map((s: string) => s.trim())
+                  onChange({ ...experience, city: parts[0] || '', state: parts[1] || '' })
+                }}
+                placeholder="City, ST"
+                className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-text-dim mb-1">Supervisor Name</label>
+              <input
+                type="text"
+                value={experience.supervisor_name || ''}
+                onChange={(e) => onChange({ ...experience, supervisor_name: e.target.value })}
+                placeholder="Supervisor name"
+                className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-semibold uppercase tracking-wider text-text-dim mb-1">Supervisor Phone</label>
+              <input
+                type="text"
+                value={experience.supervisor_phone || ''}
+                onChange={(e) => onChange({ ...experience, supervisor_phone: e.target.value })}
+                placeholder="(555) 555-5555"
+                className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
+              />
+            </div>
+            <div className="flex items-end pb-1">
+              <label className="flex items-center gap-2 text-xs text-text-muted cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={experience.supervisor_can_contact !== false}
+                  onChange={(e) => onChange({ ...experience, supervisor_can_contact: e.target.checked })}
+                  className="w-3.5 h-3.5 accent-gold"
+                />
+                May contact supervisor
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bulk Actions for Bullets */}
       {pendingBullets.length > 0 && (
         <div className="flex gap-2 mb-3 p-2 bg-bg-secondary rounded">
@@ -745,8 +862,14 @@ function ExperienceItem({ experience, resumeType, onChange, onDelete, userProfil
         </div>
       )}
 
+      {/* Bullet Count Recommendation */}
+      <div className="flex items-center justify-between mt-3 mb-1">
+        <span className="text-xs text-text-dim font-medium uppercase tracking-wider">Bullets</span>
+        <BulletCountIndicator count={activeBullets.length} index={experienceIndex} />
+      </div>
+
       {/* Active Bullets */}
-      <div className="space-y-3 mt-4">
+      <div className="space-y-3 mt-2">
         {activeBullets.map((bullet: any) => (
           <div key={bullet.id || bullet._idx} className="pl-4 border-l-2 border-border group">
             {editingBulletIdx === bullet._idx ? (

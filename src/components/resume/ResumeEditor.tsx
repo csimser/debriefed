@@ -3,15 +3,15 @@
 import { useState, useEffect } from 'react'
 import { ResumeSidebar } from './ResumeSidebar'
 import { ResumeToolbar } from './ResumeToolbar'
-import { TemplateSelector } from './TemplateSelector'
 import { ResumeForm } from './ResumeForm'
 import { ResumePreview } from './ResumePreview'
 import { DeleteResumeModal } from './DeleteResumeModal'
+
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { createClient } from '@/lib/supabase/client'
-import { TemplateId } from '@/lib/templates'
+import { TEMPLATES, SELECTABLE_TEMPLATES, TemplateId, resolveTemplate } from '@/lib/templates'
 import { getUserTier, isPaidTier, TIER_LIMITS } from '@/lib/tier-utils'
 
 interface ResumeEditorProps {
@@ -92,11 +92,11 @@ function buildInitialContent(profileData: ResumeEditorProps['profileData']) {
 export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profileData, usage = { private_downloads: 0, federal_downloads: 0 } }: ResumeEditorProps) {
   const [resumes, setResumes] = useState(initialResumes)
   const [selectedId, setSelectedId] = useState<string | null>(resumes[0]?.id || null)
-  const [showTemplates, setShowTemplates] = useState(false)
   const [saving, setSaving] = useState(false)
   const [translating, setTranslating] = useState(false)
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+
 
   const supabase = createClient()
 
@@ -141,7 +141,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
   // Current resume state
   const [currentResume, setCurrentResume] = useState({
     name: 'Untitled Resume',
-    template: 'clean' as TemplateId,
+    template: 'classic_professional' as TemplateId,
     resume_type: 'private' as 'private' | 'federal',
     content: initialContent,
   })
@@ -222,10 +222,11 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
 
         setCurrentResume({
           name: resume.name,
-          template: resume.template || 'clean',
+          template: resolveTemplate(resume.template),
           resume_type: resume.resume_type || 'private',
           content,
         })
+
       }
     }
   }, [selectedId])
@@ -276,7 +277,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
         .insert({
           user_id: userId,
           name: 'Untitled Resume',
-          template: 'clean',
+          template: 'classic_professional',
           resume_type: 'private',
           content: newContent,
         })
@@ -370,7 +371,12 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
           userId={userId}
           resumeType={currentResume.resume_type}
           template={currentResume.template}
-          onToggleType={(type) => setCurrentResume(prev => ({ ...prev, resume_type: type }))}
+          onToggleType={(type) => setCurrentResume(prev => ({
+            ...prev,
+            resume_type: type,
+            // Auto-switch template: federal type → federal template, private type → restore to classic if currently federal
+            template: type === 'federal' ? 'federal' : (prev.template === 'federal' ? 'classic_professional' : prev.template),
+          }))}
           onTranslateAll={handleTranslateAll}
           onDelete={() => setShowDeleteModal(true)}
           translating={translating}
@@ -433,6 +439,48 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                   </div>
                 )}
 
+                {/* Template Strip — hidden for federal resumes (always uses federal template) */}
+                {currentResume.resume_type !== 'federal' && (
+                <div className="mb-6">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                    Template
+                  </label>
+                  <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
+                    {Object.values(SELECTABLE_TEMPLATES).map((template) => {
+                      const isSelected = currentResume.template === template.id
+                      const isTemplateLocked = !template.free && isFreeUser
+                      return (
+                        <button
+                          key={template.id}
+                          onClick={() => {
+                            if (!isLocked && !isTemplateLocked) {
+                              setCurrentResume(prev => ({ ...prev, template: template.id as TemplateId }))
+                            }
+                          }}
+                          disabled={isLocked || isTemplateLocked}
+                          className={`relative flex-shrink-0 w-28 rounded-lg border p-2.5 text-left transition-all ${
+                            isSelected
+                              ? 'border-gold bg-gold-dim ring-1 ring-gold/40'
+                              : 'border-border bg-bg-tertiary hover:border-border-bright'
+                          } ${isTemplateLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="font-heading text-xs font-bold uppercase truncate">{template.name}</div>
+                          <div className="text-[10px] text-text-dim truncate mt-0.5">{template.description}</div>
+                          {isTemplateLocked && (
+                            <span className="absolute top-1.5 right-1.5 text-[10px] font-bold text-gold bg-gold/10 px-1 rounded">
+                              PRO
+                            </span>
+                          )}
+                          {isSelected && (
+                            <span className="absolute top-1.5 right-1.5 text-gold text-xs font-bold">✓</span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                )}
+
                 {/* Resume Name */}
                 <div className="mb-6">
                   <Input
@@ -442,31 +490,6 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                     placeholder="My Resume"
                     disabled={isLocked}
                   />
-                </div>
-
-                {/* Template Selector Toggle */}
-                <div className="mb-6">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => !isLocked && setShowTemplates(!showTemplates)}
-                    disabled={isLocked}
-                  >
-                    {showTemplates ? 'Hide Templates' : 'Change Template'}
-                  </Button>
-
-                  {showTemplates && !isLocked && (
-                    <div className="mt-4">
-                      <TemplateSelector
-                        selected={currentResume.template}
-                        onSelect={(id) => {
-                          setCurrentResume(prev => ({ ...prev, template: id }))
-                          setShowTemplates(false)
-                        }}
-                        userPlan={userPlan}
-                      />
-                    </div>
-                  )}
                 </div>
 
                 {/* Form - blocked by overlay when locked */}

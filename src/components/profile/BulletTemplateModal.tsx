@@ -269,7 +269,7 @@ export function BulletTemplateModal({ isOpen, onClose, onSelect }: BulletTemplat
             </h3>
             <button
               onClick={onClose}
-              className="p-1 text-text-dim hover:text-white transition-colors"
+              className="p-1 text-text-dim hover:text-text transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -285,7 +285,7 @@ export function BulletTemplateModal({ isOpen, onClose, onSelect }: BulletTemplat
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search templates... (e.g., budget, training, safety)"
-              className="w-full pl-10 pr-4 py-2.5 bg-bg-secondary border border-border rounded text-sm text-white placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
+              className="w-full pl-10 pr-4 py-2.5 bg-bg-secondary border border-border rounded text-sm text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
               autoFocus
             />
             {search && (
@@ -374,11 +374,11 @@ function TemplateRow({ template, onSelect }: { template: string; onSelect: (t: s
     <li>
       <button
         onClick={() => onSelect(template)}
-        className="w-full text-left px-3 py-2 rounded text-sm text-text-muted hover:bg-gold/10 hover:text-white transition-colors"
+        className="w-full text-left px-3 py-2 rounded text-sm text-text-muted hover:bg-gold/10 hover:text-text transition-colors"
       >
         {parts.map((part, i) =>
           part.startsWith('[') && part.endsWith(']') ? (
-            <span key={i} className="bg-amber-500/20 text-amber-300 px-0.5 rounded">
+            <span key={i} className="bg-status-amber-dim text-status-amber px-0.5 rounded">
               {part}
             </span>
           ) : (

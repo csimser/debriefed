@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { AnnouncementBanner } from '@/components/layout/AnnouncementBanner'
+import { ThemeSwitcher } from '@/components/layout/ThemeSwitcher'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -13,10 +14,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/login')
   }
 
-  // Fetch profile - all data is in the profiles table
+  // Fetch only the profile fields needed for layout, sidebar, and plan expiry check
   let { data: profile } = await supabase
     .from('profiles')
-    .select('*')
+    .select('first_name, last_name, rank, tier, subscription_tier, plan, plan_expires_at, is_admin, onboarding_completed')
     .eq('user_id', user.id)
     .single()
 
@@ -89,6 +90,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       {/* Bottom Navigation - mobile only */}
       <BottomNav />
+
+      {/* Theme Switcher - admin only */}
+      <ThemeSwitcher isAdmin={profile?.is_admin || false} />
     </div>
   )
 }

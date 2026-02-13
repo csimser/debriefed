@@ -63,7 +63,7 @@ export function SecurityMetrics() {
   if (error) {
     return (
       <Card className="p-8 text-center">
-        <p className="text-red-400">Error: {error}</p>
+        <p className="text-status-red">Error: {error}</p>
       </Card>
     )
   }
@@ -71,10 +71,10 @@ export function SecurityMetrics() {
   if (!data) return null
 
   const severityColors = {
-    low: 'text-blue-400 bg-blue-500/10',
-    medium: 'text-yellow-400 bg-yellow-500/10',
-    high: 'text-orange-400 bg-orange-500/10',
-    critical: 'text-red-400 bg-red-500/10',
+    low: 'text-status-blue bg-status-blue/10',
+    medium: 'text-status-amber bg-status-amber/10',
+    high: 'text-status-red bg-status-red/10',
+    critical: 'text-status-red bg-status-red/10',
   }
 
   return (
@@ -130,15 +130,15 @@ export function SecurityMetrics() {
       {/* Recent Abuse Incidents */}
       {data.recentAbuseIncidents.length > 0 && (
         <Card className="overflow-hidden">
-          <div className="p-4 border-b border-border bg-red-500/10">
-            <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-red-400">
+          <div className="p-4 border-b border-border bg-status-red/10">
+            <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-status-red">
               Recent Security Incidents
             </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#1a365d]/10">
-                <tr className="text-left text-xs text-text-muted uppercase border-b border-[#1a365d]/30">
+              <thead className="bg-navy/10">
+                <tr className="text-left text-xs text-text-muted uppercase border-b border-navy/30">
                   <th className="px-4 py-3">Time</th>
                   <th className="px-4 py-3">User</th>
                   <th className="px-4 py-3">Action</th>
@@ -189,15 +189,15 @@ export function SecurityMetrics() {
       {/* Suspended Users */}
       {data.suspendedUsers.length > 0 && (
         <Card className="overflow-hidden">
-          <div className="p-4 border-b border-border bg-red-500/10">
-            <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-red-400">
+          <div className="p-4 border-b border-border bg-status-red/10">
+            <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-status-red">
               Suspended Users
             </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-[#1a365d]/10">
-                <tr className="text-left text-xs text-text-muted uppercase border-b border-[#1a365d]/30">
+              <thead className="bg-navy/10">
+                <tr className="text-left text-xs text-text-muted uppercase border-b border-navy/30">
                   <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Suspended At</th>
                 </tr>
@@ -224,8 +224,8 @@ export function SecurityMetrics() {
 
       {/* No Issues */}
       {data.abuseIncidentsWeek === 0 && data.suspendedCount === 0 && (
-        <Card className="p-8 text-center bg-emerald-500/5 border-emerald-500/20">
-          <p className="text-emerald-400 font-medium">No security incidents in the past week</p>
+        <Card className="p-8 text-center bg-status-green/5 border-status-green/20">
+          <p className="text-status-green font-medium">No security incidents in the past week</p>
         </Card>
       )}
     </div>
@@ -242,16 +242,16 @@ interface SecurityStatCardProps {
 function SecurityStatCard({ icon, label, value, color }: SecurityStatCardProps) {
   const colorClasses = {
     red: {
-      bg: 'bg-red-500/10',
-      border: 'border-red-500/30',
-      text: 'text-red-400',
-      icon: 'bg-red-500/20 text-red-400',
+      bg: 'bg-status-red/10',
+      border: 'border-status-red/30',
+      text: 'text-status-red',
+      icon: 'bg-status-red/20 text-status-red',
     },
     orange: {
-      bg: 'bg-orange-500/10',
-      border: 'border-orange-500/30',
-      text: 'text-orange-400',
-      icon: 'bg-orange-500/20 text-orange-400',
+      bg: 'bg-status-amber/10',
+      border: 'border-status-amber/30',
+      text: 'text-status-amber',
+      icon: 'bg-status-amber/20 text-status-amber',
     },
     default: {
       bg: 'bg-bg-tertiary',

@@ -240,15 +240,15 @@ export default function AdminBetaCodesPage() {
         </Card>
         <Card className="p-4">
           <p className="text-text-muted text-xs uppercase">Available</p>
-          <p className="text-2xl font-bold text-green-500">{availableCodes}</p>
+          <p className="text-2xl font-bold text-status-green">{availableCodes}</p>
         </Card>
         <Card className="p-4">
           <p className="text-text-muted text-xs uppercase">Used</p>
-          <p className="text-2xl font-bold text-blue-400">{usedCodes}</p>
+          <p className="text-2xl font-bold text-status-blue">{usedCodes}</p>
         </Card>
         <Card className="p-4">
           <p className="text-text-muted text-xs uppercase">Revoked</p>
-          <p className="text-2xl font-bold text-red-400">{revokedCodes}</p>
+          <p className="text-2xl font-bold text-status-red">{revokedCodes}</p>
         </Card>
       </div>
 
@@ -262,7 +262,7 @@ export default function AdminBetaCodesPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-[#1a365d]/30 border-b border-[#1a365d]/50">
+            <thead className="bg-navy/30 border-b border-navy/50">
               <tr className="text-left text-xs text-text-muted uppercase">
                 <th className="px-4 py-3">Code</th>
                 <th className="px-4 py-3">Status</th>
@@ -301,7 +301,7 @@ export default function AdminBetaCodesPage() {
                       >
                         {code.code}
                         {copiedCode === code.code ? (
-                          <span className="text-green-500 text-xs">Copied</span>
+                          <span className="text-status-green text-xs">Copied</span>
                         ) : (
                           <span className="text-text-dim text-xs">Copy</span>
                         )}
@@ -337,7 +337,7 @@ export default function AdminBetaCodesPage() {
                         {code.used && !code.revoked && (
                           <button
                             onClick={() => setShowRevokeModal(code)}
-                            className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                            className="text-xs text-status-amber hover:text-status-amber transition-colors"
                           >
                             Revoke
                           </button>
@@ -345,14 +345,14 @@ export default function AdminBetaCodesPage() {
                         {code.revoked && (
                           <button
                             onClick={() => setShowRevokeModal(code)}
-                            className="text-xs text-green-400 hover:text-green-300 transition-colors"
+                            className="text-xs text-status-green hover:text-status-green transition-colors"
                           >
                             Reinstate
                           </button>
                         )}
                         <button
                           onClick={() => setShowDeleteModal(code)}
-                          className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                          className="text-xs text-status-red hover:text-status-red transition-colors"
                         >
                           Delete
                         </button>
@@ -388,8 +388,8 @@ export default function AdminBetaCodesPage() {
               </div>
 
               {createError && (
-                <div className="bg-red-900/30 border border-red-500/50 rounded-md p-3">
-                  <p className="text-sm text-red-400">{createError}</p>
+                <div className="bg-status-red/30 border border-status-red/50 rounded-md p-3">
+                  <p className="text-sm text-status-red">{createError}</p>
                 </div>
               )}
 
@@ -419,7 +419,7 @@ export default function AdminBetaCodesPage() {
 
             {bulkResult ? (
               <div className="space-y-4">
-                <p className="text-green-500">Successfully created {bulkResult.length} codes:</p>
+                <p className="text-status-green">Successfully created {bulkResult.length} codes:</p>
                 <div className="bg-bg-tertiary rounded-md p-3 max-h-60 overflow-y-auto">
                   <pre className="text-sm font-mono">
                     {bulkResult.join('\n')}
@@ -449,8 +449,8 @@ export default function AdminBetaCodesPage() {
                 </div>
 
                 {bulkError && (
-                  <div className="bg-red-900/30 border border-red-500/50 rounded-md p-3">
-                    <p className="text-sm text-red-400">{bulkError}</p>
+                  <div className="bg-status-red/30 border border-status-red/50 rounded-md p-3">
+                    <p className="text-sm text-status-red">{bulkError}</p>
                   </div>
                 )}
 
@@ -477,7 +477,7 @@ export default function AdminBetaCodesPage() {
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-sm p-6">
-            <h2 className="font-heading text-xl font-bold uppercase mb-4 text-red-400">Delete Code</h2>
+            <h2 className="font-heading text-xl font-bold uppercase mb-4 text-status-red">Delete Code</h2>
             <p className="text-text-muted mb-4">
               Are you sure you want to delete the code <code className="bg-bg-tertiary px-2 py-1 rounded">{showDeleteModal.code}</code>?
             </p>
@@ -490,7 +490,7 @@ export default function AdminBetaCodesPage() {
                     onChange={(e) => setDeleteWithRevoke(e.target.checked)}
                     className="w-4 h-4 rounded border-border bg-bg-tertiary"
                   />
-                  <span className="text-sm text-amber-400">
+                  <span className="text-sm text-status-amber">
                     Also revoke user access (downgrade to free tier)
                   </span>
                 </label>
@@ -506,7 +506,7 @@ export default function AdminBetaCodesPage() {
               </Button>
               <Button
                 onClick={handleDeleteCode}
-                className="flex-1 bg-red-600 hover:bg-red-500"
+                className="flex-1 bg-status-red hover:bg-status-red/90"
               >
                 Delete
               </Button>
@@ -519,7 +519,7 @@ export default function AdminBetaCodesPage() {
       {showRevokeModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-sm p-6">
-            <h2 className="font-heading text-xl font-bold uppercase mb-4 text-amber-400">
+            <h2 className="font-heading text-xl font-bold uppercase mb-4 text-status-amber">
               {showRevokeModal.revoked ? 'Reinstate Code' : 'Revoke Code'}
             </h2>
             <p className="text-text-muted mb-4">
@@ -530,7 +530,7 @@ export default function AdminBetaCodesPage() {
               )}
             </p>
             {!showRevokeModal.revoked && showRevokeModal.used_by_email && (
-              <p className="text-sm text-amber-400 mb-4">
+              <p className="text-sm text-status-amber mb-4">
                 User <span className="font-mono">{showRevokeModal.used_by_email}</span> will be downgraded to free tier.
               </p>
             )}
@@ -555,7 +555,7 @@ export default function AdminBetaCodesPage() {
               </Button>
               <Button
                 onClick={() => handleRevokeCode(showRevokeModal.revoked ? 'reinstate' : 'revoke')}
-                className={`flex-1 ${showRevokeModal.revoked ? 'bg-green-600 hover:bg-green-500' : 'bg-amber-600 hover:bg-amber-500'}`}
+                className={`flex-1 ${showRevokeModal.revoked ? 'bg-status-green hover:bg-status-green/90' : 'bg-status-amber hover:bg-status-amber/90'}`}
                 disabled={revokeLoading}
               >
                 {revokeLoading ? '...' : showRevokeModal.revoked ? 'Reinstate' : 'Revoke'}

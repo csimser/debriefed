@@ -2,13 +2,16 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { useTheme } from '@/components/providers/ThemeProvider'
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const emailFromParams = searchParams.get('email') || ''
+  const { theme } = useTheme()
 
   const [email, setEmail] = useState(emailFromParams)
   const [resending, setResending] = useState(false)
@@ -61,9 +64,19 @@ function VerifyEmailContent() {
   return (
     <div className="w-full max-w-md">
       <Link href="/" className="block text-center mb-8 hover:opacity-80 transition-opacity">
-        <div className="w-16 h-16 bg-gold rounded-lg flex items-center justify-center mx-auto mb-4">
-          <span className="font-heading font-bold text-bg-primary text-3xl">D</span>
-        </div>
+        {theme.logo && theme.style !== 'corporate' && theme.style !== 'minimal' ? (
+          <div className="flex justify-center mb-4">
+            <Image src={theme.logo} alt={theme.logoAlt || theme.appName} width={64} height={64} className="h-16 w-auto" />
+          </div>
+        ) : theme.logo ? (
+          <div className="mb-4">
+            <span className="font-heading font-bold text-4xl tracking-wide" style={{ color: theme.colors.primary }}>{theme.name}</span>
+          </div>
+        ) : (
+          <div className="w-16 h-16 bg-gold rounded-lg flex items-center justify-center mx-auto mb-4">
+            <span className="font-heading font-bold text-bg-primary text-3xl">{theme.logoIcon || 'D'}</span>
+          </div>
+        )}
       </Link>
 
       <Card className="p-8 text-center">
@@ -85,7 +98,7 @@ function VerifyEmailContent() {
         </p>
 
         {emailFromParams ? (
-          <p className="text-white font-semibold mb-6">{emailFromParams}</p>
+          <p className="text-text font-semibold mb-6">{emailFromParams}</p>
         ) : (
           <div className="mb-6">
             <input
@@ -93,7 +106,7 @@ function VerifyEmailContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2 text-white text-center"
+              className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2 text-text text-center"
             />
           </div>
         )}
@@ -127,7 +140,7 @@ function VerifyEmailContent() {
         <button
           onClick={handleResend}
           disabled={resending || cooldown > 0}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-bg-secondary border border-border rounded-lg text-white hover:border-gold/50 disabled:opacity-50 transition-colors w-full mb-4"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-bg-secondary border border-border rounded-lg text-text hover:border-gold/50 disabled:opacity-50 transition-colors w-full mb-4"
         >
           {resending ? (
             <>
@@ -138,7 +151,7 @@ function VerifyEmailContent() {
             </>
           ) : cooldown > 0 ? (
             <>
-              <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-status-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               Resend in {cooldown}s

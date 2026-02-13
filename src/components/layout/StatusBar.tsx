@@ -1,9 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTheme } from '@/components/providers/ThemeProvider'
 
 export function StatusBar() {
   const [time, setTime] = useState('')
+  const { theme } = useTheme()
 
   useEffect(() => {
     const updateTime = () => {
@@ -19,15 +21,15 @@ export function StatusBar() {
   }, [])
 
   return (
-    <div className="bg-bg-secondary border-b border-border px-8 py-2.5 flex items-center justify-between font-mono text-xs">
+    <div className="bg-t-sidebar text-t-sidebar-fg border-b border-border px-8 py-2.5 flex items-center justify-between font-nav text-xs">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-status-green animate-pulse" />
           <span className="text-status-green">SYSTEM ONLINE</span>
         </div>
-        <span className="text-text-muted">DEBRIEFED v1.0</span>
+        <span className="opacity-70">{theme.appName.toUpperCase()} v1.0</span>
       </div>
-      <div className="text-text-muted">
+      <div className="opacity-70">
         <span>{time}</span>
       </div>
     </div>

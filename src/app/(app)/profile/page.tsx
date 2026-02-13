@@ -8,48 +8,30 @@ export default async function ProfilePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  console.log('=== PROFILE PAGE DEBUG ===')
-  console.log('1. Auth user id:', user?.id)
-
   if (!user) {
     redirect('/login')
   }
 
-  // Load all profile-related data in parallel
+  // Load all profile data + usage checks in one parallel batch
   const [
-    { data: profile, error: profileError },
+    { data: profile },
     { data: experiences },
     { data: education },
     { data: certifications },
     { data: skills },
-    { data: evalUploads }
+    { data: evalUploads },
+    resumeImportCheck,
+    bulletTranslationCheck,
   ] = await Promise.all([
     supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
     supabase.from('experience').select('*, experience_bullets(*)').eq('user_id', user.id).order('sort_order'),
     supabase.from('education').select('*').eq('user_id', user.id).order('sort_order'),
     supabase.from('certifications').select('*').eq('user_id', user.id).order('sort_order'),
     supabase.from('skills').select('*').eq('user_id', user.id).order('sort_order'),
-    supabase.from('eval_uploads').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
-  ])
-
-  // Usage from usage_tracking (single source of truth)
-  const [resumeImportCheck, bulletTranslationCheck] = await Promise.all([
+    supabase.from('eval_uploads').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
     checkLimit(user.id, 'resume_imports'),
     checkLimit(user.id, 'bullet_translations'),
   ])
-
-  console.log('2. Profile fetch result:', { profile, profileError })
-  console.log('3. Profile fields:', profile ? {
-    first_name: profile.first_name,
-    last_name: profile.last_name,
-    email: profile.email,
-    branch: profile.branch,
-    rank: profile.rank
-  } : 'NO PROFILE')
-
-  if (profileError) {
-    console.error('Error loading profile:', profileError)
-  }
 
   const mappedExperiences = (experiences || []).map(exp => ({
     ...exp,

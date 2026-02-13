@@ -49,7 +49,7 @@ export default function AboutPage() {
             <span className="inline-block px-4 py-1 rounded-full border border-gold/30 text-gold text-xs font-mono uppercase tracking-wider mb-4">
               Our Mission
             </span>
-            <h1 className="text-4xl md:text-5xl font-heading font-bold text-white mb-6">
+            <h1 className="text-4xl md:text-5xl font-heading font-bold text-text mb-6">
               Built by a Veteran,<br/><span className="text-gold">For Veterans</span>
             </h1>
           </div>
@@ -59,7 +59,7 @@ export default function AboutPage() {
 
             {/* Section 1: The Problem */}
             <section>
-              <h2 className="text-2xl font-heading text-white mb-6">The Problem I Saw</h2>
+              <h2 className="text-2xl font-heading text-text mb-6">The Problem I Saw</h2>
 
               <p className="text-text-muted leading-relaxed text-base mb-4">
                 I've got 20+ years in the Navy. When I started looking at transition resources, I expected to find solid tools built by people who get it. Instead, I found companies charging over a grand for resume templates and "career coaches" making a living off veteran anxiety. That didn't sit right with me.
@@ -75,7 +75,7 @@ export default function AboutPage() {
 
             {/* Section 2: Why I Built This */}
             <section>
-              <h2 className="text-2xl font-heading text-white mb-6">Why I Built This</h2>
+              <h2 className="text-2xl font-heading text-text mb-6">Why I Built This</h2>
 
               <p className="text-text-muted leading-relaxed text-base mb-4">
                 I'm a Senior Chief Damage Controlman, E-8, retiring in 2026. I've got an MBA, PMP, and a bunch of cyber certs. I've trained sailors, led DC teams, and stood plenty of watches. None of that matters if I can't explain it to someone who's never been on a ship.
@@ -95,7 +95,7 @@ export default function AboutPage() {
 
             {/* Section 3: What Makes This Different - Card Grid */}
             <section>
-              <h2 className="text-2xl font-heading text-white mb-8">What Makes This Different</h2>
+              <h2 className="text-2xl font-heading text-text mb-8">What Makes This Different</h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Card 1 */}
@@ -137,7 +137,7 @@ export default function AboutPage() {
 
             {/* Section 4: Bottom Line - Highlighted Card */}
             <section className="bg-bg-secondary border border-border rounded-lg p-8">
-              <h2 className="text-2xl font-heading text-white mb-6">The Bottom Line</h2>
+              <h2 className="text-2xl font-heading text-text mb-6">The Bottom Line</h2>
 
               <p className="text-text-muted leading-relaxed text-base mb-6">
                 You did the work. You earned the experience. You shouldn't have to pay a fortune or figure it out alone just to explain what you did to people who never served.
@@ -165,7 +165,7 @@ export default function AboutPage() {
                 <span className="text-3xl font-heading font-bold text-gold">CS</span>
               </div>
               <div className="text-center md:text-left">
-                <h3 className="text-xl font-heading font-bold text-white">Chris</h3>
+                <h3 className="text-xl font-heading font-bold text-text">Chris</h3>
                 <p className="text-gold font-mono text-sm">Founder, Senior Chief Petty Officer</p>
                 <p className="text-text-muted mt-2">
                   20+ years U.S. Navy • Damage Controlman • MBA, PMP<br/>

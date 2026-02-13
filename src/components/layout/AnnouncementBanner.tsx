@@ -8,10 +8,10 @@ interface Announcement {
 }
 
 const TYPE_STYLES: Record<string, string> = {
-  info: 'bg-blue-500/20 border-blue-500/50 text-blue-300',
-  warning: 'bg-amber-500/20 border-amber-500/50 text-amber-300',
-  error: 'bg-red-500/20 border-red-500/50 text-red-300',
-  success: 'bg-green-500/20 border-green-500/50 text-green-300',
+  info: 'bg-status-blue-dim border-status-blue/50 text-status-blue',
+  warning: 'bg-status-amber-dim border-status-amber/50 text-status-amber',
+  error: 'bg-status-red-dim border-status-red/50 text-status-red',
+  success: 'bg-status-green-dim border-status-green/50 text-status-green',
 }
 
 const TYPE_ICONS: Record<string, string> = {

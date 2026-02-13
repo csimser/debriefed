@@ -1130,7 +1130,7 @@ export function ExperienceSection({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-heading font-bold">{exp.civilian_title || exp.job_title}</span>
-                    <span className={`px-2 py-0.5 text-xs rounded ${isCivilianExp ? 'bg-blue-500/20 text-blue-400' : 'bg-gold/20 text-gold'}`}>
+                    <span className={`px-2 py-0.5 text-xs rounded ${isCivilianExp ? 'bg-status-blue/20 text-status-blue' : 'bg-gold/20 text-gold'}`}>
                       {isCivilianExp ? 'Civilian' : 'Military'}
                     </span>
                   </div>
@@ -1218,7 +1218,7 @@ export function ExperienceSection({
                     </button>
                     <button
                       onClick={() => { setShowBulkPasteForExp(exp.id); setBulkPasteText(''); setBulkPastePreview(null) }}
-                      className="flex items-center gap-1 px-2 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded hover:bg-blue-500/30 transition-colors text-xs"
+                      className="flex items-center gap-1 px-2 py-1 bg-status-blue/20 text-status-blue border border-status-blue/30 rounded hover:bg-status-blue/30 transition-colors text-xs"
                       title="Paste multiple bullets at once"
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1228,7 +1228,7 @@ export function ExperienceSection({
                     </button>
                     <button
                       onClick={() => setShowTemplateForExp(exp.id)}
-                      className="flex items-center gap-1 px-2 py-1 bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded hover:bg-purple-500/30 transition-colors text-xs"
+                      className="flex items-center gap-1 px-2 py-1 bg-gold/20 text-gold border border-gold/30 rounded hover:bg-gold/30 transition-colors text-xs"
                       title="Choose from pre-built bullet templates"
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1259,7 +1259,7 @@ export function ExperienceSection({
                                 <textarea
                                   value={editingBulletText}
                                   onChange={(e) => setEditingBulletText(e.target.value)}
-                                  className="w-full bg-bg-secondary border border-border rounded px-3 py-2 pr-10 text-white text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
+                                  className="w-full bg-bg-secondary border border-border rounded px-3 py-2 pr-10 text-text text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
                                   rows={3}
                                   autoFocus
                                 />
@@ -1289,7 +1289,7 @@ export function ExperienceSection({
                               <div className="flex gap-2 justify-end">
                                 <button
                                   onClick={cancelEditBullet}
-                                  className="px-3 py-1 text-sm text-text-muted hover:text-white"
+                                  className="px-3 py-1 text-sm text-text-muted hover:text-text"
                                 >
                                   Cancel
                                 </button>
@@ -1338,7 +1338,7 @@ export function ExperienceSection({
                                         // Start voice input after a tick so edit mode renders first
                                         setTimeout(() => startVoiceInput(bullet.id), 100)
                                       }}
-                                      className="p-1 text-text-muted hover:text-amber-400"
+                                      className="p-1 text-text-muted hover:text-status-amber"
                                       title="Dictate your bullet"
                                     >
                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1348,7 +1348,7 @@ export function ExperienceSection({
                                   )}
                                   <button
                                     onClick={() => startEditBullet(bullet.id, bullet.translated_text || bullet.original_text)}
-                                    className="p-1 text-text-muted hover:text-white"
+                                    className="p-1 text-text-muted hover:text-text"
                                     title="Edit"
                                   >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1377,8 +1377,8 @@ export function ExperienceSection({
                                       localTranslationRemaining <= 0
                                         ? 'bg-bg-secondary text-text-dim border border-border opacity-50 cursor-not-allowed'
                                         : bullet.original_text && bullet.translated_text && bullet.original_text !== bullet.translated_text
-                                          ? 'bg-bg-secondary text-text-dim border border-border hover:text-amber-400 hover:border-amber-400/30'
-                                          : 'bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:bg-amber-500/25'
+                                          ? 'bg-bg-secondary text-text-dim border border-border hover:text-status-amber hover:border-status-amber/30'
+                                          : 'bg-status-amber-dim text-status-amber border border-status-amber/30 hover:bg-status-amber/20'
                                     }`}
                                     title="Convert military language to civilian-friendly wording"
                                   >
@@ -1414,13 +1414,13 @@ export function ExperienceSection({
                                   <div className="flex gap-2 mt-2">
                                     <button
                                       onClick={() => acceptTranslation(bullet.id, exp.id)}
-                                      className="px-3 py-1 text-xs bg-status-green text-white rounded hover:bg-status-green/90"
+                                      className="px-3 py-1 text-xs bg-status-green text-bg-primary rounded hover:bg-status-green/90"
                                     >
                                       Accept
                                     </button>
                                     <button
                                       onClick={() => { startEditBullet(bullet.id, translationResult.translated); setTranslationResult(null) }}
-                                      className="px-3 py-1 text-xs bg-bg-secondary text-text-muted border border-border rounded hover:text-white"
+                                      className="px-3 py-1 text-xs bg-bg-secondary text-text-muted border border-border rounded hover:text-text"
                                     >
                                       Edit
                                     </button>
@@ -1710,7 +1710,7 @@ export function ExperienceSection({
                 setBulkPasteText(e.target.value)
                 setBulkPastePreview(null)
               }}
-              className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-white text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
+              className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-text text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
               rows={8}
               placeholder={"- Managed a team of 15 personnel\n- Conducted daily safety inspections\n- Trained 50+ junior staff members"}
               autoFocus
@@ -1733,7 +1733,7 @@ export function ExperienceSection({
             <div className="flex gap-2 mt-4 justify-end">
               <button
                 onClick={() => { setShowBulkPasteForExp(null); setBulkPasteText(''); setBulkPastePreview(null) }}
-                className="px-4 py-2 text-sm text-text-muted hover:text-white"
+                className="px-4 py-2 text-sm text-text-muted hover:text-text"
               >
                 Cancel
               </button>
@@ -1755,7 +1755,7 @@ export function ExperienceSection({
               ) : (
                 <button
                   onClick={() => handleBulkPasteSubmit(showBulkPasteForExp)}
-                  className="px-4 py-2 text-sm bg-status-green text-white rounded hover:bg-status-green/90"
+                  className="px-4 py-2 text-sm bg-status-green text-bg-primary rounded hover:bg-status-green/90"
                 >
                   Add {bulkPastePreview.length} Bullet{bulkPastePreview.length !== 1 ? 's' : ''}
                 </button>

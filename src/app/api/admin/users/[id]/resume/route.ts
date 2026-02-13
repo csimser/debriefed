@@ -4,7 +4,7 @@ import { ResumeDocument } from '@/lib/pdf/ResumeDocument'
 import { generateDocx } from '@/lib/docx/generateDocx'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
-import { TemplateId } from '@/lib/templates'
+import { TemplateId, resolveTemplate } from '@/lib/templates'
 import React from 'react'
 
 // Service role client bypasses RLS for admin queries
@@ -111,7 +111,7 @@ export async function POST(
     let contentType: string
     let extension: string
 
-    const template = (resume.template || 'clean') as TemplateId
+    const template = resolveTemplate(resume.template)
 
     if (format === 'pdf') {
       const doc = React.createElement(ResumeDocument, {

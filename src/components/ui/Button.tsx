@@ -22,7 +22,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             'bg-gold text-bg-primary hover:bg-gold-bright active:bg-gold-bright disabled:opacity-50': variant === 'primary',
             'bg-bg-tertiary border border-border text-text hover:border-border-bright active:bg-bg-secondary disabled:opacity-50': variant === 'secondary',
             'bg-transparent border border-border text-text hover:bg-bg-tertiary active:bg-bg-secondary disabled:opacity-50': variant === 'ghost',
-            'bg-status-red text-white hover:bg-red-600 active:bg-red-700 disabled:opacity-50': variant === 'danger',
+            'bg-status-red text-white hover:bg-status-red/90 active:bg-status-red/80 disabled:opacity-50': variant === 'danger',
           },
           {
             // Small: still meets 44px min-height on mobile

@@ -7,22 +7,16 @@ export default async function JobMatchPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('tier')
-    .eq('user_id', user?.id)
-    .single()
+  const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
 
-  const { data: resumes } = await supabase
-    .from('resumes')
-    .select('id, name, content')
-    .eq('user_id', user?.id)
-    .order('updated_at', { ascending: false })
-
-  // Read usage from usage_tracking table (same source the backend checks)
-  const usageCheck = user?.id
-    ? await checkLimit(user.id, 'job_match_analysis')
-    : { used: 0, limit: 1, remaining: 1, allowed: true }
+  // Run all queries in parallel — they all only need user.id
+  const [{ data: profile }, { data: resumes }, usageCheck] = user?.id
+    ? await Promise.all([
+        supabase.from('profiles').select('tier').eq('user_id', user.id).single(),
+        supabase.from('resumes').select('id, name, content').eq('user_id', user.id).order('updated_at', { ascending: false }),
+        checkLimit(user.id, 'job_match_analysis'),
+      ])
+    : [{ data: null }, { data: null }, defaultUsage]
 
   const tier = profile?.tier || 'free'
   const currentUsage = usageCheck.used

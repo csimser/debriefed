@@ -360,7 +360,7 @@ export default function AdminFeedbackPage() {
 
                   {/* Admin Notes (internal, if exists and not expanded) */}
                   {item.admin_notes && !isExpanded && (
-                    <div className="bg-[#1a365d]/20 border border-[#1a365d]/30 rounded-md p-3 mb-4">
+                    <div className="bg-navy/20 border border-navy/30 rounded-md p-3 mb-4">
                       <p className="text-xs text-text-muted uppercase mb-1">Admin Notes (internal)</p>
                       <p className="text-sm text-text-muted whitespace-pre-wrap">{item.admin_notes}</p>
                     </div>

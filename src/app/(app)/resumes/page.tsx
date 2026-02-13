@@ -7,7 +7,8 @@ export default async function ResumesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Load all profile-related data in parallel
+  // Load all profile data + usage checks in one parallel batch
+  const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
   const [
     { data: profile },
     { data: resumes },
@@ -15,24 +16,26 @@ export default async function ResumesPage() {
     { data: education },
     { data: certifications },
     { data: skills },
-  ] = await Promise.all([
-    supabase.from('profiles').select('*').eq('user_id', user?.id).maybeSingle(),
-    supabase.from('resumes').select('*, downloaded_at').eq('user_id', user?.id).order('updated_at', { ascending: false }),
-    supabase.from('experience').select('*, experience_bullets(*)').eq('user_id', user?.id).order('sort_order'),
-    supabase.from('education').select('*').eq('user_id', user?.id).order('sort_order'),
-    supabase.from('certifications').select('*').eq('user_id', user?.id).order('sort_order'),
-    supabase.from('skills').select('*').eq('user_id', user?.id).order('sort_order'),
-  ])
-
-  // Usage from usage_tracking (single source of truth)
-  const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
-  const [privateCheck, federalCheck, bulletCheck] = user?.id
+    privateCheck,
+    federalCheck,
+    bulletCheck,
+  ] = user?.id
     ? await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('resumes').select('*, downloaded_at').eq('user_id', user.id).order('updated_at', { ascending: false }),
+        supabase.from('experience').select('*, experience_bullets(*)').eq('user_id', user.id).order('sort_order'),
+        supabase.from('education').select('*').eq('user_id', user.id).order('sort_order'),
+        supabase.from('certifications').select('*').eq('user_id', user.id).order('sort_order'),
+        supabase.from('skills').select('*').eq('user_id', user.id).order('sort_order'),
         checkLimit(user.id, 'private_resumes'),
         checkLimit(user.id, 'federal_resumes'),
         checkLimit(user.id, 'bullet_translations'),
       ])
-    : [defaultUsage, defaultUsage, defaultUsage]
+    : [
+        { data: null }, { data: null }, { data: null },
+        { data: null }, { data: null }, { data: null },
+        defaultUsage, defaultUsage, defaultUsage,
+      ]
 
   const usage = {
     private_downloads: privateCheck.used,

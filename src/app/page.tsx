@@ -133,17 +133,17 @@ export default async function HomePage({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
             <div className="p-4 bg-bg-secondary/50 border border-border rounded-lg">
               <div className="text-gold text-2xl mb-2">◈</div>
-              <div className="font-heading font-semibold text-white">Resume Translation</div>
+              <div className="font-heading font-semibold text-text">Resume Translation</div>
               <div className="text-sm text-text-muted">Military to civilian language</div>
             </div>
             <div className="p-4 bg-bg-secondary/50 border border-border rounded-lg">
               <div className="text-gold text-2xl mb-2">◎</div>
-              <div className="font-heading font-semibold text-white">Job Match Analysis</div>
+              <div className="font-heading font-semibold text-text">Job Match Analysis</div>
               <div className="text-sm text-text-muted">See how you fit any posting</div>
             </div>
             <div className="p-4 bg-bg-secondary/50 border border-border rounded-lg">
               <div className="text-gold text-2xl mb-2">◉</div>
-              <div className="font-heading font-semibold text-white">LinkedIn Optimizer</div>
+              <div className="font-heading font-semibold text-text">LinkedIn Optimizer</div>
               <div className="text-sm text-text-muted">Score and improve your profile</div>
             </div>
           </div>

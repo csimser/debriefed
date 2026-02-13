@@ -736,8 +736,8 @@ export function CoverLetterTool({
 
                 {/* One Page Indicator */}
                 <div className="bg-gray-100 px-8 py-2 text-xs text-gray-500 flex items-center justify-between border-t border-gray-200">
-                  <span>Preview • One Page Format</span>
-                  <span className={isOverLimit ? 'text-red-600 font-medium' : ''}>
+                  <span>Preview &bull; One Page Format</span>
+                  <span className={isOverLimit ? 'text-status-red font-medium' : ''}>
                     {wordCount} words {isOverLimit && '- exceeds limit'}
                   </span>
                 </div>

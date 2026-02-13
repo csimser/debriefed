@@ -88,7 +88,7 @@ export function AdminLayout({ children, adminEmail }: AdminLayoutProps) {
   if (!isHydrated) {
     return (
       <div className="min-h-screen bg-bg-primary flex">
-        <aside className="w-64 bg-[#1a365d] border-r border-[#1a365d]/50 flex flex-col h-screen">
+        <aside className="w-64 bg-navy border-r border-navy/50 flex flex-col h-screen">
           <div className="p-4 border-b border-white/10 h-[72px]" />
         </aside>
         <div className="flex-1">
@@ -101,10 +101,10 @@ export function AdminLayout({ children, adminEmail }: AdminLayoutProps) {
   return (
     <div className="min-h-screen bg-bg-primary flex">
       {/* Mobile Header with Hamburger - Only on mobile (<768px) */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#1a365d] border-b border-white/10 px-4 py-3 flex items-center justify-between">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-navy border-b border-white/10 px-4 py-3 flex items-center justify-between">
         <Link href="/admin" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#b8860b]/20 rounded flex items-center justify-center">
-            <span className="text-[#b8860b] font-heading font-bold">A</span>
+          <div className="w-8 h-8 bg-gold/20 rounded flex items-center justify-center">
+            <span className="text-gold font-heading font-bold">A</span>
           </div>
           <span className="font-heading font-bold tracking-wide text-white">ADMIN</span>
         </Link>
@@ -135,7 +135,7 @@ export function AdminLayout({ children, adminEmail }: AdminLayoutProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'bg-[#1a365d] border-r border-[#1a365d]/50 flex flex-col h-screen sticky top-0 transition-all duration-300 ease-in-out z-50',
+          'bg-navy border-r border-navy/50 flex flex-col h-screen sticky top-0 transition-all duration-300 ease-in-out z-50',
           // Mobile: overlay from left, hidden by default
           'max-md:fixed max-md:top-0 max-md:bottom-0 max-md:left-0 max-md:h-full',
           isMobileOpen ? 'max-md:translate-x-0' : 'max-md:-translate-x-full',
@@ -155,8 +155,8 @@ export function AdminLayout({ children, adminEmail }: AdminLayoutProps) {
             )}
             onClick={handleLinkClick}
           >
-            <div className="w-10 h-10 bg-[#b8860b]/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <span className="text-[#b8860b] text-xl">⚙</span>
+            <div className="w-10 h-10 bg-gold/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-gold text-xl">⚙</span>
             </div>
             {!isCollapsed && (
               <div>
@@ -171,8 +171,8 @@ export function AdminLayout({ children, adminEmail }: AdminLayoutProps) {
         <button
           onClick={toggleCollapse}
           className={cn(
-            'hidden md:flex absolute top-4 -right-3 w-6 h-6 bg-[#1a365d] border border-white/20 rounded-full items-center justify-center',
-            'hover:bg-[#b8860b] hover:text-[#1a365d] hover:border-[#b8860b] transition-all z-10'
+            'hidden md:flex absolute top-4 -right-3 w-6 h-6 bg-navy border border-white/20 rounded-full items-center justify-center',
+            'hover:bg-gold hover:text-navy hover:border-gold transition-all z-10'
           )}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
@@ -217,7 +217,7 @@ export function AdminLayout({ children, adminEmail }: AdminLayoutProps) {
                   'relative group flex items-center gap-3 px-4 py-3 rounded-md text-sm transition-all',
                   isCollapsed && 'justify-center px-2',
                   isActive(item.href)
-                    ? 'bg-[#b8860b]/20 text-[#b8860b] border-l-2 border-[#b8860b]'
+                    ? 'bg-gold/20 text-gold border-l-2 border-gold'
                     : 'text-white/70 hover:text-white hover:bg-white/5'
                 )}
               >
@@ -228,7 +228,7 @@ export function AdminLayout({ children, adminEmail }: AdminLayoutProps) {
 
                 {/* Tooltip for collapsed state */}
                 {isCollapsed && (
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-[#1a365d] border border-white/20 rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-navy border border-white/20 rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
                     <span className="font-heading uppercase tracking-wider text-xs text-white">{item.label}</span>
                   </div>
                 )}
@@ -241,21 +241,21 @@ export function AdminLayout({ children, adminEmail }: AdminLayoutProps) {
         <div className="p-4 border-t border-white/10">
           {isCollapsed ? (
             <div className="relative group">
-              <div className="w-12 h-12 mx-auto bg-[#b8860b]/30 rounded-lg flex items-center justify-center cursor-pointer">
-                <span className="font-heading font-bold text-sm text-[#b8860b]">
+              <div className="w-12 h-12 mx-auto bg-gold/30 rounded-lg flex items-center justify-center cursor-pointer">
+                <span className="font-heading font-bold text-sm text-gold">
                   {adminEmail?.[0]?.toUpperCase() || 'A'}
                 </span>
               </div>
               {/* Tooltip */}
-              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-[#1a365d] border border-white/20 rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-navy border border-white/20 rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
                 <div className="text-[10px] text-white/40 uppercase tracking-wider">Logged in as</div>
                 <div className="text-xs text-white/80">{adminEmail || 'Admin'}</div>
               </div>
             </div>
           ) : (
             <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-              <div className="w-8 h-8 bg-[#b8860b]/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                <span className="font-heading font-bold text-xs text-[#b8860b]">
+              <div className="w-8 h-8 bg-gold/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="font-heading font-bold text-xs text-gold">
                   {adminEmail?.[0]?.toUpperCase() || 'A'}
                 </span>
               </div>

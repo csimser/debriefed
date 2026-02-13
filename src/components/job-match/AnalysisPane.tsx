@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { TailoredResume, AnalysisResult, BulletSuggestion } from './JobMatchWorkspace'
-import { TEMPLATES, TemplateId } from '@/lib/templates'
+import { TEMPLATES, SELECTABLE_TEMPLATES, TemplateId, resolveTemplate } from '@/lib/templates'
 import { ResumePreview } from '@/components/resume/ResumePreview'
 import { getUserTier, isPaidTier } from '@/lib/tier-utils'
 
@@ -38,13 +38,13 @@ export function AnalysisPane({
   const [activeTab, setActiveTab] = useState<'overview' | 'details' | 'changes'>('overview')
   const [downloading, setDownloading] = useState(false)
   const [applySuccess, setApplySuccess] = useState(false)
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('clean')
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('classic_professional')
   const [showTemplateSelector, setShowTemplateSelector] = useState(false)
   const [showPreviewModal, setShowPreviewModal] = useState(false)
-  const [previewTemplate, setPreviewTemplate] = useState<TemplateId>('clean')
+  const [previewTemplate, setPreviewTemplate] = useState<TemplateId>('classic_professional')
 
-  // Template list for navigation
-  const templateList = Object.values(TEMPLATES)
+  // Template list for navigation (excludes federal — it's only for federal resume type)
+  const templateList = Object.values(SELECTABLE_TEMPLATES)
 
   // Keyboard navigation for preview modal
   useEffect(() => {
@@ -885,7 +885,7 @@ export function AnalysisPane({
 
               {showTemplateSelector && (
                 <div className="grid grid-cols-3 gap-2 mb-3">
-                  {Object.values(TEMPLATES).map((template) => {
+                  {Object.values(SELECTABLE_TEMPLATES).map((template) => {
                     const isLocked = !template.free && !isPro
                     const isSelected = selectedTemplate === template.id
 

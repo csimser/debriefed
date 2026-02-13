@@ -4,7 +4,7 @@ import { ResumeDocument } from '@/lib/pdf/ResumeDocument'
 import { generateDocx } from '@/lib/docx/generateDocx'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { TemplateId } from '@/lib/templates'
+import { TemplateId, resolveTemplate } from '@/lib/templates'
 import { FeatureName } from '@/lib/pricing-config'
 import { canUseFeature, incrementUsage, getUserTier } from '@/lib/usage-service'
 import { logActivity, logApiUsage } from '@/lib/usage-tracking'
@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
 
     const userId = user.id
     const body = await request.json()
-    const { resumeId, format, template = 'clean' } = body
+    const { resumeId, format, template: rawTemplate = 'classic_professional' } = body
+    const template = resolveTemplate(rawTemplate)
 
     if (!resumeId || !format) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
       const doc = React.createElement(ResumeDocument, {
         content: resume.content,
         resumeType: resume.resume_type || 'private',
-        template: template as TemplateId,
+        template,
       })
       const pdfInstance = pdf(doc as any)
       const blob = await pdfInstance.toBlob()
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
       contentType = 'application/pdf'
       extension = 'pdf'
     } else {
-      const buffer = await generateDocx(resume.content, resume.resume_type || 'private', template as TemplateId)
+      const buffer = await generateDocx(resume.content, resume.resume_type || 'private', template)
       arrayBuffer = new Uint8Array(buffer).buffer
       contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       extension = 'docx'

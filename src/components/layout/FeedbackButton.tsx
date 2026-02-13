@@ -6,9 +6,9 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 
 const FEEDBACK_TYPES = [
-  { value: 'bug', label: 'Bug Report', icon: '!', color: 'text-red-400' },
-  { value: 'feature', label: 'Feature Request', icon: '+', color: 'text-yellow-400' },
-  { value: 'general', label: 'General Feedback', icon: '?', color: 'text-blue-400' },
+  { value: 'bug', label: 'Bug Report', icon: '!', color: 'text-status-red' },
+  { value: 'feature', label: 'Feature Request', icon: '+', color: 'text-status-amber' },
+  { value: 'general', label: 'General Feedback', icon: '?', color: 'text-status-blue' },
 ]
 
 interface FeedbackButtonProps {
@@ -115,7 +115,7 @@ export function FeedbackButton({ userId, userEmail }: FeedbackButtonProps = {}) 
             {submitted ? (
               // Success State
               <div className="text-center py-6">
-                <div className="text-4xl mb-4 text-green-500">✓</div>
+                <div className="text-4xl mb-4 text-status-green">✓</div>
                 <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-2">
                   Thank You!
                 </h2>
@@ -159,7 +159,7 @@ export function FeedbackButton({ userId, userEmail }: FeedbackButtonProps = {}) 
                           }`}
                         >
                           <div className={`text-lg mb-1 ${t.color}`}>{t.icon}</div>
-                          <div className="text-xs text-white">{t.label}</div>
+                          <div className="text-xs text-text">{t.label}</div>
                         </button>
                       ))}
                     </div>
@@ -206,7 +206,7 @@ export function FeedbackButton({ userId, userEmail }: FeedbackButtonProps = {}) 
                       <span className="text-xs text-text-dim">
                         Minimum 10 characters
                       </span>
-                      <span className={`text-xs ${message.length > 4500 ? 'text-amber-500' : 'text-text-dim'}`}>
+                      <span className={`text-xs ${message.length > 4500 ? 'text-status-amber' : 'text-text-dim'}`}>
                         {message.length}/5000
                       </span>
                     </div>
@@ -214,7 +214,7 @@ export function FeedbackButton({ userId, userEmail }: FeedbackButtonProps = {}) 
 
                   {/* Error */}
                   {error && (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-md p-3 text-red-400 text-sm">
+                    <div className="bg-status-red-dim border border-status-red/30 rounded-md p-3 text-status-red text-sm">
                       {error}
                     </div>
                   )}
