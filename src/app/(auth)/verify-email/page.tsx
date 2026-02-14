@@ -2,16 +2,13 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { useTheme } from '@/components/providers/ThemeProvider'
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const emailFromParams = searchParams.get('email') || ''
-  const { theme } = useTheme()
 
   const [email, setEmail] = useState(emailFromParams)
   const [resending, setResending] = useState(false)
@@ -64,19 +61,9 @@ function VerifyEmailContent() {
   return (
     <div className="w-full max-w-md">
       <Link href="/" className="block text-center mb-8 hover:opacity-80 transition-opacity">
-        {theme.logo && theme.style !== 'corporate' && theme.style !== 'minimal' ? (
-          <div className="flex justify-center mb-4">
-            <Image src={theme.logo} alt={theme.logoAlt || theme.appName} width={64} height={64} className="h-16 w-auto" />
-          </div>
-        ) : theme.logo ? (
-          <div className="mb-4">
-            <span className="font-heading font-bold text-4xl tracking-wide" style={{ color: theme.colors.primary }}>{theme.name}</span>
-          </div>
-        ) : (
-          <div className="w-16 h-16 bg-gold rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="font-heading font-bold text-bg-primary text-3xl">{theme.logoIcon || 'D'}</span>
-          </div>
-        )}
+        <div className="w-16 h-16 bg-gold rounded-lg flex items-center justify-center mx-auto mb-4">
+          <span className="font-heading font-bold text-bg-primary text-3xl">D</span>
+        </div>
       </Link>
 
       <Card className="p-8 text-center">

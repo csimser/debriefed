@@ -193,6 +193,32 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile }: Ne
     }
   }, [step])
 
+  const handleSkip = useCallback(async () => {
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          onboarding_completed: true,
+          onboarding_skipped: true,
+          onboarding_step: step,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+
+      if (error) {
+        console.error('Error skipping onboarding:', error)
+        return
+      }
+
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('Error skipping onboarding:', error)
+    } finally {
+      setSaving(false)
+    }
+  }, [step, supabase, userId, router])
+
   const handleComplete = useCallback(async () => {
     setSaving(true)
     try {
@@ -258,6 +284,7 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile }: Ne
     onNext: handleNext,
     onBack: handleBack,
     onComplete: handleComplete,
+    onSkip: handleSkip,
     jumpToStep,
     saving,
     userId,

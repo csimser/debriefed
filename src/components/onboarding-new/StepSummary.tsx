@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { OnboardingData } from './NewOnboardingWizard'
 import { TEMPLATE_CATEGORIES, getTemplatesByCategory, SummaryTemplate } from '@/lib/summaryTemplates'
@@ -35,11 +35,11 @@ interface StepSummaryProps {
   onNext: () => void
   onBack: () => void
   onComplete: () => void
+  onSkip: () => void
   saving: boolean
 }
 
-export function StepSummary({ data, updateData, onBack, onComplete, saving }: StepSummaryProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({})
+export function StepSummary({ data, updateData, onBack, onComplete, onSkip, saving }: StepSummaryProps) {
   const [generating, setGenerating] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -71,27 +71,8 @@ export function StepSummary({ data, updateData, onBack, onComplete, saving }: St
     return data.suggested_titles?.slice(0, 5) || []
   }, [data.suggested_titles])
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!data.target_industry?.trim()) {
-      newErrors.target_industry = 'Target industry is required'
-    }
-    if (!data.target_role?.trim()) {
-      newErrors.target_role = 'Target role is required'
-    }
-    if (!data.job_search_timeline?.trim()) {
-      newErrors.job_search_timeline = 'Job search timeline is required'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
   const handleComplete = () => {
-    if (validate()) {
-      onComplete()
-    }
+    onComplete()
   }
 
   const handleGenerateSummary = async () => {
@@ -138,7 +119,6 @@ export function StepSummary({ data, updateData, onBack, onComplete, saving }: St
 
   const inputClass = "w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
   const labelClass = "block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2"
-  const errorClass = "text-xs text-status-red mt-1"
 
   // Calculate profile completeness
   const completionItems = [
@@ -172,37 +152,29 @@ export function StepSummary({ data, updateData, onBack, onComplete, saving }: St
 
         {/* Target Industry */}
         <div>
-          <label className={labelClass}>Target Industry *</label>
+          <label className={labelClass}>Target Industry</label>
           <select
             value={data.target_industry}
-            onChange={(e) => {
-              updateData({ target_industry: e.target.value })
-              if (errors.target_industry) setErrors(prev => ({ ...prev, target_industry: '' }))
-            }}
-            className={`${inputClass} ${errors.target_industry ? 'border-status-red' : ''}`}
+            onChange={(e) => updateData({ target_industry: e.target.value })}
+            className={inputClass}
           >
             <option value="">Select Industry</option>
             {TARGET_INDUSTRIES.map((industry) => (
               <option key={industry} value={industry}>{industry}</option>
             ))}
           </select>
-          {errors.target_industry && <p className={errorClass}>{errors.target_industry}</p>}
         </div>
 
         {/* Target Role */}
         <div>
-          <label className={labelClass}>Target Role *</label>
+          <label className={labelClass}>Target Role</label>
           <input
             type="text"
             value={data.target_role}
-            onChange={(e) => {
-              updateData({ target_role: e.target.value })
-              if (errors.target_role) setErrors(prev => ({ ...prev, target_role: '' }))
-            }}
+            onChange={(e) => updateData({ target_role: e.target.value })}
             placeholder="e.g., Project Manager, Operations Manager"
-            className={`${inputClass} ${errors.target_role ? 'border-status-red' : ''}`}
+            className={inputClass}
           />
-          {errors.target_role && <p className={errorClass}>{errors.target_role}</p>}
 
           {/* Role suggestions from crosswalk */}
           {suggestedRoles.length > 0 && (
@@ -224,21 +196,17 @@ export function StepSummary({ data, updateData, onBack, onComplete, saving }: St
 
         {/* Job Search Timeline */}
         <div>
-          <label className={labelClass}>Job Search Timeline *</label>
+          <label className={labelClass}>Job Search Timeline</label>
           <select
             value={data.job_search_timeline}
-            onChange={(e) => {
-              updateData({ job_search_timeline: e.target.value })
-              if (errors.job_search_timeline) setErrors(prev => ({ ...prev, job_search_timeline: '' }))
-            }}
-            className={`${inputClass} ${errors.job_search_timeline ? 'border-status-red' : ''}`}
+            onChange={(e) => updateData({ job_search_timeline: e.target.value })}
+            className={inputClass}
           >
             <option value="">When are you looking to start?</option>
             {JOB_SEARCH_TIMELINES.map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>
-          {errors.job_search_timeline && <p className={errorClass}>{errors.job_search_timeline}</p>}
         </div>
       </div>
 
@@ -386,6 +354,16 @@ export function StepSummary({ data, updateData, onBack, onComplete, saving }: St
         <Button onClick={handleComplete} disabled={saving} className="px-8">
           {saving ? 'Finishing...' : 'Finish Setup \u2192'}
         </Button>
+      </div>
+
+      <div className="text-center mt-4">
+        <button
+          onClick={onSkip}
+          disabled={saving}
+          className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
+        >
+          Skip for now — I&apos;ll complete my profile later
+        </button>
       </div>
     </div>
   )

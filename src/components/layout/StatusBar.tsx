@@ -1,11 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useTheme } from '@/components/providers/ThemeProvider'
 
 export function StatusBar() {
   const [time, setTime] = useState('')
-  const { theme } = useTheme()
 
   useEffect(() => {
     const updateTime = () => {
@@ -27,7 +25,7 @@ export function StatusBar() {
           <div className="w-2 h-2 rounded-full bg-status-green animate-pulse" />
           <span className="text-status-green">SYSTEM ONLINE</span>
         </div>
-        <span className="opacity-70">{theme.appName.toUpperCase()} v1.0</span>
+        <span className="opacity-70">DEBRIEFED v1.0</span>
       </div>
       <div className="opacity-70">
         <span>{time}</span>

@@ -27,6 +27,7 @@ interface StepEducationProps {
   updateData: (updates: Partial<OnboardingData>) => void
   onNext: () => void
   onBack: () => void
+  onSkip: () => void
   saving: boolean
   userId: string
   supabase: any
@@ -41,7 +42,7 @@ const emptyEducation: Education = {
   gpa: '',
 }
 
-export function StepEducation({ data, updateData, onNext, onBack, saving, userId, supabase }: StepEducationProps) {
+export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving, userId, supabase }: StepEducationProps) {
   const [showForm, setShowForm] = useState(data.education.length === 0)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [formData, setFormData] = useState<Education>(emptyEducation)
@@ -334,16 +335,19 @@ export function StepEducation({ data, updateData, onNext, onBack, saving, userId
         <Button variant="ghost" onClick={onBack}>
           &#8592; Back
         </Button>
-        <div className="flex gap-3">
-          {data.education.length === 0 && (
-            <Button variant="ghost" onClick={onNext}>
-              Skip for now
-            </Button>
-          )}
-          <Button onClick={onNext} disabled={saving}>
-            {saving ? 'Saving...' : 'Continue \u2192'}
-          </Button>
-        </div>
+        <Button onClick={onNext} disabled={saving}>
+          {saving ? 'Saving...' : 'Continue \u2192'}
+        </Button>
+      </div>
+
+      <div className="text-center mt-4">
+        <button
+          onClick={onSkip}
+          disabled={saving}
+          className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
+        >
+          Skip for now — I&apos;ll complete my profile later
+        </button>
       </div>
     </div>
   )

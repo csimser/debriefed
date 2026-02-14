@@ -28,6 +28,7 @@ interface StepExperienceProps {
   updateData: (updates: Partial<OnboardingData>) => void
   onNext: () => void
   onBack: () => void
+  onSkip: () => void
   saving: boolean
   userId: string
   supabase: any
@@ -46,8 +47,7 @@ const emptyExperience: Experience = {
   bullets: [],
 }
 
-export function StepExperience({ data, updateData, onNext, onBack, saving, userId, supabase }: StepExperienceProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({})
+export function StepExperience({ data, updateData, onNext, onBack, onSkip, saving, userId, supabase }: StepExperienceProps) {
   const [showForm, setShowForm] = useState(data.experiences.length === 0)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [formData, setFormData] = useState<Experience>(emptyExperience)
@@ -82,28 +82,11 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
     })
   }
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (data.experiences.length === 0 && !showForm) {
-      newErrors.general = 'Please add at least one experience'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
   const validateForm = () => {
     if (!formData.job_title.trim()) return false
     if (!formData.organization.trim()) return false
     if (!formData.start_date) return false
     return true
-  }
-
-  const handleNext = () => {
-    if (validate()) {
-      onNext()
-    }
   }
 
   const handleSaveExperience = async () => {
@@ -649,29 +632,25 @@ export function StepExperience({ data, updateData, onNext, onBack, saving, userI
         </div>
       )}
 
-      {/* Error Message */}
-      {errors.general && (
-        <p className="text-sm text-status-red mt-4 text-center">{errors.general}</p>
-      )}
-
       {/* Navigation */}
       <div className="flex justify-between mt-8">
         <Button variant="ghost" onClick={onBack}>
           &#8592; Back
         </Button>
-        <Button
-          onClick={handleNext}
-          disabled={saving || data.experiences.length === 0}
-        >
+        <Button onClick={onNext} disabled={saving}>
           {saving ? 'Saving...' : 'Continue \u2192'}
         </Button>
       </div>
 
-      {data.experiences.length === 0 && !showForm && (
-        <p className="text-xs text-text-dim text-center mt-2">
-          Add at least one experience to continue
-        </p>
-      )}
+      <div className="text-center mt-4">
+        <button
+          onClick={onSkip}
+          disabled={saving}
+          className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
+        >
+          Skip for now — I&apos;ll complete my profile later
+        </button>
+      </div>
 
       {/* Eval Upload Modal for saved experiences */}
       {showEvalUploadForExp && (

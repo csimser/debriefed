@@ -3,7 +3,6 @@ import { Suspense } from 'react'
 import './globals.css'
 import { PageViewTracker } from '@/components/analytics/PageViewTracker'
 import { FeedbackWrapper } from '@/components/layout/FeedbackWrapper'
-import { ThemeProvider } from '@/components/providers/ThemeProvider'
 
 export const metadata: Metadata = {
   title: 'Debriefed | Military to Civilian Resume Builder',
@@ -26,11 +25,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <Suspense>
-          <ThemeProvider>
-            <PageViewTracker />
-            {children}
-            <FeedbackWrapper />
-          </ThemeProvider>
+          <PageViewTracker />
+          {children}
+          <FeedbackWrapper />
         </Suspense>
       </body>
     </html>

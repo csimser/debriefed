@@ -4,7 +4,6 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { AnnouncementBanner } from '@/components/layout/AnnouncementBanner'
-import { ThemeSwitcher } from '@/components/layout/ThemeSwitcher'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -91,8 +90,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {/* Bottom Navigation - mobile only */}
       <BottomNav />
 
-      {/* Theme Switcher - admin only */}
-      <ThemeSwitcher isAdmin={profile?.is_admin || false} />
     </div>
   )
 }

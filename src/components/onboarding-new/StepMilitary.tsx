@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { BRANCHES, PAYGRADES, getRankFromPaygrade } from '@/lib/constants/military'
 import { CLEARANCE_LEVELS } from '@/lib/constants/federalEligibility'
@@ -11,11 +11,11 @@ interface StepMilitaryProps {
   updateData: (updates: Partial<OnboardingData>) => void
   onNext: () => void
   onBack: () => void
+  onSkip: () => void
   saving: boolean
 }
 
-export function StepMilitary({ data, updateData, onNext, onBack, saving }: StepMilitaryProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({})
+export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving }: StepMilitaryProps) {
   const [loadingCrosswalk, setLoadingCrosswalk] = useState(false)
   const [civilianTitles, setCivilianTitles] = useState<string[]>([])
 
@@ -77,32 +77,8 @@ export function StepMilitary({ data, updateData, onNext, onBack, saving }: StepM
     return () => clearTimeout(timeoutId)
   }, [data.rating_mos, data.branch, fetchCrosswalk])
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!data.branch) {
-      newErrors.branch = 'Branch is required'
-    }
-    if (!data.paygrade) {
-      newErrors.paygrade = 'Paygrade is required'
-    }
-    if (!data.years_of_service) {
-      newErrors.years_of_service = 'Years of service is required'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleNext = () => {
-    if (validate()) {
-      onNext()
-    }
-  }
-
   const inputClass = "w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
   const labelClass = "block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2"
-  const errorClass = "text-xs text-status-red mt-1"
 
   return (
     <div>
@@ -120,38 +96,30 @@ export function StepMilitary({ data, updateData, onNext, onBack, saving }: StepM
         {/* Branch and Paygrade row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Branch *</label>
+            <label className={labelClass}>Branch</label>
             <select
               value={data.branch}
-              onChange={(e) => {
-                updateData({ branch: e.target.value, rank: '' })
-                if (errors.branch) setErrors(prev => ({ ...prev, branch: '' }))
-              }}
-              className={`${inputClass} ${errors.branch ? 'border-status-red' : ''}`}
+              onChange={(e) => updateData({ branch: e.target.value, rank: '' })}
+              className={inputClass}
             >
               <option value="">Select Branch</option>
               {BRANCHES.map(b => (
                 <option key={b.value} value={b.value}>{b.label}</option>
               ))}
             </select>
-            {errors.branch && <p className={errorClass}>{errors.branch}</p>}
           </div>
           <div>
-            <label className={labelClass}>Paygrade *</label>
+            <label className={labelClass}>Paygrade</label>
             <select
               value={data.paygrade}
-              onChange={(e) => {
-                updateData({ paygrade: e.target.value })
-                if (errors.paygrade) setErrors(prev => ({ ...prev, paygrade: '' }))
-              }}
-              className={`${inputClass} ${errors.paygrade ? 'border-status-red' : ''}`}
+              onChange={(e) => updateData({ paygrade: e.target.value })}
+              className={inputClass}
             >
               <option value="">Select Paygrade</option>
               {PAYGRADES.map(p => (
                 <option key={p.value} value={p.value}>{p.label}</option>
               ))}
             </select>
-            {errors.paygrade && <p className={errorClass}>{errors.paygrade}</p>}
           </div>
         </div>
 
@@ -217,20 +185,16 @@ export function StepMilitary({ data, updateData, onNext, onBack, saving }: StepM
 
         {/* Years of Service */}
         <div>
-          <label className={labelClass}>Years of Service *</label>
+          <label className={labelClass}>Years of Service</label>
           <input
             type="number"
             value={data.years_of_service}
-            onChange={(e) => {
-              updateData({ years_of_service: e.target.value })
-              if (errors.years_of_service) setErrors(prev => ({ ...prev, years_of_service: '' }))
-            }}
+            onChange={(e) => updateData({ years_of_service: e.target.value })}
             placeholder="e.g., 8"
             min="0"
             max="40"
-            className={`${inputClass} ${errors.years_of_service ? 'border-status-red' : ''}`}
+            className={inputClass}
           />
-          {errors.years_of_service && <p className={errorClass}>{errors.years_of_service}</p>}
         </div>
 
         {/* Clearance */}
@@ -272,9 +236,19 @@ export function StepMilitary({ data, updateData, onNext, onBack, saving }: StepM
         <Button variant="ghost" onClick={onBack}>
           &#8592; Back
         </Button>
-        <Button onClick={handleNext} disabled={saving}>
+        <Button onClick={onNext} disabled={saving}>
           {saving ? 'Saving...' : 'Continue \u2192'}
         </Button>
+      </div>
+
+      <div className="text-center mt-4">
+        <button
+          onClick={onSkip}
+          disabled={saving}
+          className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
+        >
+          Skip for now — I&apos;ll complete my profile later
+        </button>
       </div>
     </div>
   )

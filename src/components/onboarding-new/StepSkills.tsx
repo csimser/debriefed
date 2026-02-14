@@ -48,12 +48,13 @@ interface StepSkillsProps {
   updateData: (updates: Partial<OnboardingData>) => void
   onNext: () => void
   onBack: () => void
+  onSkip: () => void
   saving: boolean
   userId: string
   supabase: any
 }
 
-export function StepSkills({ data, updateData, onNext, onBack, saving, userId, supabase }: StepSkillsProps) {
+export function StepSkills({ data, updateData, onNext, onBack, onSkip, saving, userId, supabase }: StepSkillsProps) {
   const [newSkill, setNewSkill] = useState('')
   const [newCert, setNewCert] = useState('')
   const [savingItem, setSavingItem] = useState(false)
@@ -445,6 +446,16 @@ export function StepSkills({ data, updateData, onNext, onBack, saving, userId, s
         <Button onClick={onNext} disabled={saving}>
           {saving ? 'Saving...' : 'Continue \u2192'}
         </Button>
+      </div>
+
+      <div className="text-center mt-4">
+        <button
+          onClick={onSkip}
+          disabled={saving}
+          className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
+        >
+          Skip for now — I&apos;ll complete my profile later
+        </button>
       </div>
     </div>
   )

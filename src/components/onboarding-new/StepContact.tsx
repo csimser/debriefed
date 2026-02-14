@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { InternationalPhoneInput } from '@/components/ui/InternationalPhoneInput'
 import { US_STATES } from '@/lib/constants/states'
@@ -11,38 +10,13 @@ interface StepContactProps {
   updateData: (updates: Partial<OnboardingData>) => void
   onNext: () => void
   onBack: () => void
+  onSkip: () => void
   saving: boolean
 }
 
-export function StepContact({ data, updateData, onNext, onBack, saving }: StepContactProps) {
-  const [errors, setErrors] = useState<Record<string, string>>({})
-
-  const validate = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!data.phone?.trim()) {
-      newErrors.phone = 'Phone number is required'
-    }
-    if (!data.city?.trim()) {
-      newErrors.city = 'City is required'
-    }
-    if (!data.state?.trim()) {
-      newErrors.state = 'State is required'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleNext = () => {
-    if (validate()) {
-      onNext()
-    }
-  }
-
+export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }: StepContactProps) {
   const inputClass = "w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
   const labelClass = "block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2"
-  const errorClass = "text-xs text-status-red mt-1"
 
   return (
     <div>
@@ -60,7 +34,7 @@ export function StepContact({ data, updateData, onNext, onBack, saving }: StepCo
         {/* Locked fields info */}
         <div className="bg-bg-tertiary rounded-lg p-4 text-sm">
           <p className="text-text-dim">
-            &#128274; Your name and email are set from your account and can't be changed here.
+            &#128274; Your name and email are set from your account and can&apos;t be changed here.
           </p>
         </div>
 
@@ -103,45 +77,34 @@ export function StepContact({ data, updateData, onNext, onBack, saving }: StepCo
           />
         </div>
 
-        {/* Phone (required) */}
+        {/* Phone */}
         <div>
           <InternationalPhoneInput
-            label="Phone *"
+            label="Phone"
             value={data.phone}
-            onChange={(phone) => {
-              updateData({ phone })
-              if (errors.phone) setErrors(prev => ({ ...prev, phone: '' }))
-            }}
+            onChange={(phone) => updateData({ phone })}
             hint="Include country code for international numbers"
           />
-          {errors.phone && <p className={errorClass}>{errors.phone}</p>}
         </div>
 
         {/* City and State row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>City *</label>
+            <label className={labelClass}>City</label>
             <input
               type="text"
               value={data.city}
-              onChange={(e) => {
-                updateData({ city: e.target.value })
-                if (errors.city) setErrors(prev => ({ ...prev, city: '' }))
-              }}
+              onChange={(e) => updateData({ city: e.target.value })}
               placeholder="San Diego"
-              className={`${inputClass} ${errors.city ? 'border-status-red' : ''}`}
+              className={inputClass}
             />
-            {errors.city && <p className={errorClass}>{errors.city}</p>}
           </div>
           <div>
-            <label className={labelClass}>State *</label>
+            <label className={labelClass}>State</label>
             <select
               value={data.state}
-              onChange={(e) => {
-                updateData({ state: e.target.value })
-                if (errors.state) setErrors(prev => ({ ...prev, state: '' }))
-              }}
-              className={`${inputClass} ${errors.state ? 'border-status-red' : ''}`}
+              onChange={(e) => updateData({ state: e.target.value })}
+              className={inputClass}
             >
               <option value="">Select State</option>
               {US_STATES.map((state) => (
@@ -150,7 +113,6 @@ export function StepContact({ data, updateData, onNext, onBack, saving }: StepCo
                 </option>
               ))}
             </select>
-            {errors.state && <p className={errorClass}>{errors.state}</p>}
           </div>
         </div>
 
@@ -174,9 +136,19 @@ export function StepContact({ data, updateData, onNext, onBack, saving }: StepCo
         <Button variant="ghost" onClick={onBack}>
           &#8592; Back
         </Button>
-        <Button onClick={handleNext} disabled={saving}>
+        <Button onClick={onNext} disabled={saving}>
           {saving ? 'Saving...' : 'Continue \u2192'}
         </Button>
+      </div>
+
+      <div className="text-center mt-4">
+        <button
+          onClick={onSkip}
+          disabled={saving}
+          className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
+        >
+          Skip for now — I&apos;ll complete my profile later
+        </button>
       </div>
     </div>
   )

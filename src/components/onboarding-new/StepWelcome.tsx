@@ -8,13 +8,14 @@ interface StepWelcomeProps {
   data: OnboardingData
   updateData: (updates: Partial<OnboardingData>) => void
   onNext: () => void
+  onSkip: () => void
   saving: boolean
   userId: string
   supabase: any
   loadRelatedData: () => Promise<void>
 }
 
-export function StepWelcome({ data, updateData, onNext, saving, userId, supabase, loadRelatedData }: StepWelcomeProps) {
+export function StepWelcome({ data, updateData, onNext, onSkip, saving, userId, supabase, loadRelatedData }: StepWelcomeProps) {
   const [showResumeModal, setShowResumeModal] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importSuccess, setImportSuccess] = useState(false)
@@ -294,9 +295,19 @@ export function StepWelcome({ data, updateData, onNext, saving, userId, supabase
         </div>
       </div>
 
-      <p className="text-sm text-text-dim max-w-md mx-auto">
+      <p className="text-sm text-text-dim max-w-md mx-auto mb-4">
         Your progress is saved automatically.
       </p>
+
+      <div className="text-center">
+        <button
+          onClick={onSkip}
+          disabled={saving}
+          className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
+        >
+          Skip for now — I&apos;ll complete my profile later
+        </button>
+      </div>
 
       <ResumeImportModal
         isOpen={showResumeModal}

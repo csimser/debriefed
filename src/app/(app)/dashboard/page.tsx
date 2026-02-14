@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
 import { checkLimit, getSubscriptionInfo } from '@/lib/usage-service'
 import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
+import { IncompleteProfileBanner } from '@/components/layout/IncompleteProfileBanner'
 import Link from 'next/link'
 
 // Profile fields for completeness calculation
@@ -70,7 +71,7 @@ export default async function DashboardPage() {
   ] = user?.id
     ? await Promise.all([
         supabase.from('resumes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('profiles').select('first_name, last_name, branch, rank, rating_mos, years_of_service, target_role, eas_date, tier').eq('user_id', user.id).single(),
+        supabase.from('profiles').select('first_name, last_name, branch, rank, rating_mos, years_of_service, target_role, eas_date, tier, onboarding_skipped').eq('user_id', user.id).single(),
         getSubscriptionInfo(user.id),
         checkLimit(user.id, 'job_match_analysis'),
         checkLimit(user.id, 'cover_letters'),
@@ -116,6 +117,11 @@ export default async function DashboardPage() {
 
       {/* Government Computer Notice */}
       <GovComputerBanner />
+
+      {/* Incomplete Profile Banner (skipped onboarding) */}
+      <IncompleteProfileBanner
+        show={!!(profile?.onboarding_skipped && (!profile?.first_name || !profile?.last_name || !profile?.branch || !profile?.rank))}
+      />
 
       {/* Feedback Banner */}
       <div className="bg-gold-dim border border-gold/30 rounded-lg p-4 mb-6">
