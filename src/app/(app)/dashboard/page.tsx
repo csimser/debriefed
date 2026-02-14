@@ -34,21 +34,20 @@ function calculateProfileCompleteness(profile: Record<string, unknown> | null): 
   return Math.round((completed / PROFILE_FIELDS.length) * 100)
 }
 
-// Rotating greeting function
-function getGreeting(firstName: string): string {
+function getGreeting(firstName?: string): string {
   const hour = new Date().getHours()
-  const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  let timeGreeting
+  if (hour < 12) {
+    timeGreeting = 'Good morning'
+  } else if (hour < 17) {
+    timeGreeting = 'Good afternoon'
+  } else {
+    timeGreeting = 'Good evening'
+  }
 
-  const greetings = [
-    `${timeGreeting}, ${firstName}`,
-    `Welcome back, ${firstName}`,
-    `Ready to roll, ${firstName}?`,
-    `Let's get after it today`,
-    `Good to see you, ${firstName}`,
-  ]
-
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
-  return greetings[dayOfYear % greetings.length]
+  return firstName
+    ? `${timeGreeting}, ${firstName}`
+    : timeGreeting
 }
 
 export default async function DashboardPage() {
