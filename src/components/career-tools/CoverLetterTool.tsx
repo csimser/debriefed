@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { formatPhoneForDisplay } from '@/lib/formatPhone'
 import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
+import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
 
 interface CoverLetterToolProps {
   userId: string
@@ -60,6 +61,7 @@ export function CoverLetterTool({
   const [isDownloading, setIsDownloading] = useState(false)
   const [showLastUseWarning, setShowLastUseWarning] = useState(false)
   const [pendingIsRegenerate, setPendingIsRegenerate] = useState(false)
+  const { triggerPostActionModal } = usePostActionModal()
 
   const remaining = usageLimit - currentUsage
 
@@ -208,6 +210,10 @@ export function CoverLetterTool({
           setValidationWarnings(data.validationIssues)
         }
         setShowRefinementPanel(true)
+        // Trigger post-action modal on first generation (not refinement)
+        if (!isRegenerate) {
+          setTimeout(() => triggerPostActionModal('cover-letter-complete'), 800)
+        }
       } else {
         setError('No cover letter received. Please try again.')
       }

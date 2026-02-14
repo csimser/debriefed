@@ -115,6 +115,15 @@ input::placeholder, textarea::placeholder {
   animation: fadeIn 0.3s ease forwards;
 }
 
+@keyframes postActionIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-post-action-in {
+  animation: postActionIn 0.25s ease-out forwards;
+}
+
 /* Mobile Navigation */
 @media (max-width: 768px) {
   .sidebar {

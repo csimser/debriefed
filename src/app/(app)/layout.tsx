@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { AnnouncementBanner } from '@/components/layout/AnnouncementBanner'
+import { PostActionModalProvider } from '@/components/paywall/PostActionModalProvider'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -83,7 +84,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
         {/* Main Content - add top padding on mobile for fixed header, bottom padding for bottom nav */}
         <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto pt-16 md:pt-4 pb-20 md:pb-4">
-          {children}
+          <PostActionModalProvider userId={user.id}>
+            {children}
+          </PostActionModalProvider>
         </main>
       </div>
 

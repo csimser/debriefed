@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
+import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
 
 interface LinkedInToolProps {
   userProfile: any
@@ -73,6 +74,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [showLastUseWarning, setShowLastUseWarning] = useState(false)
+  const { triggerPostActionModal } = usePostActionModal()
 
   const handleGenerate = async () => {
     if (!targetRole) {
@@ -117,6 +119,8 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
         setError(data.error)
       } else {
         setResults(data)
+        // Trigger post-action modal after results render
+        setTimeout(() => triggerPostActionModal('linkedin-complete'), 800)
       }
     } catch (err) {
       setError('Failed to generate. Please try again.')

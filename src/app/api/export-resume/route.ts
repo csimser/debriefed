@@ -4,13 +4,12 @@ import { ResumeDocument } from '@/lib/pdf/ResumeDocument'
 import { generateDocx } from '@/lib/docx/generateDocx'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { TemplateId, resolveTemplate } from '@/lib/templates'
-import { FeatureName } from '@/lib/pricing-config'
-import { canUseFeature, incrementUsage, getUserTier } from '@/lib/usage-service'
+import { TEMPLATES, TemplateId, resolveTemplate } from '@/lib/templates'
 import { logActivity, logApiUsage } from '@/lib/usage-tracking'
+import { getUserTier } from '@/lib/usage-service'
 import React from 'react'
 
-// Admin client for resume fetch (bypasses RLS) and free-tier resume lock
+// Admin client for resume fetch (bypasses RLS)
 const supabaseAdmin = createAdminClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -39,6 +38,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid format' }, { status: 400 })
     }
 
+    // Check if template is locked for free-tier users
+    if (TEMPLATES[template]?.free === false) {
+      const tier = await getUserTier(userId)
+      if (tier === 'free') {
+        return NextResponse.json(
+          { error: 'Upgrade to Core to use this template', limitReached: true, tier: 'free' },
+          { status: 403 }
+        )
+      }
+    }
+
     // Fetch resume - verify it belongs to the authenticated user
     const { data: resume, error: resumeError } = await supabaseAdmin
       .from('resumes')
@@ -51,26 +61,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Resume not found' }, { status: 404 })
     }
 
-    // Check usage limit via usage_tracking (single source of truth)
-    // canUseFeature handles: admin bypass, tier lookup, period limits, daily limits
     const resumeType = resume.resume_type || 'private'
-    const feature: FeatureName = resumeType === 'federal' ? 'federal_resumes' : 'private_resumes'
-    const usageCheck = await canUseFeature(userId, feature)
-
-    if (!usageCheck.allowed) {
-      await logActivity(userId, 'feature_limit_reached', {
-        feature,
-        current_usage: usageCheck.used,
-        limit: usageCheck.limit,
-      })
-      return NextResponse.json({
-        error: usageCheck.reason,
-        limitReached: true,
-        remaining: usageCheck.remaining,
-        used: usageCheck.used,
-        limit: usageCheck.limit,
-      }, { status: 403 })
-    }
 
     // Generate file based on format
     let arrayBuffer: ArrayBuffer
@@ -95,10 +86,6 @@ export async function POST(request: NextRequest) {
       extension = 'docx'
     }
 
-    // Capture tier info before response for the after() callback
-    const tierInfo = await getUserTier(userId)
-    const isPaidTier = tierInfo.tier === 'core' || tierInfo.tier === 'full'
-
     const filename = `${resume.name || 'resume'}.${extension}`
 
     const response = new NextResponse(arrayBuffer, {
@@ -111,24 +98,12 @@ export async function POST(request: NextRequest) {
     // Defer usage tracking to after response is sent
     after(async () => {
       try {
-        // Increment usage in usage_tracking + daily_usage (single source of truth)
-        await incrementUsage(userId, feature)
-
-        // For free tier users, mark the resume as downloaded (locks editing)
-        if (!isPaidTier) {
-          await supabaseAdmin
-            .from('resumes')
-            .update({ downloaded_at: new Date().toISOString() })
-            .eq('id', resumeId)
-        }
-
         await logActivity(userId, 'resume_downloaded', {
           resume_id: resumeId,
           resume_name: resume.name,
           resume_type: resumeType,
           format,
           template,
-          tier: tierInfo.tier,
         })
         await logApiUsage(userId, 'export-resume', 0, 'pdf-generation')
       } catch (err) {

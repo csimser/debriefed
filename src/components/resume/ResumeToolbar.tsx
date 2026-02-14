@@ -16,6 +16,7 @@ interface ResumeToolbarProps {
   translating: boolean
   saving: boolean
   onLimitReached?: (error: string, tier: string) => void
+  isTemplateLocked?: boolean
 }
 
 export function ResumeToolbar({
@@ -30,6 +31,7 @@ export function ResumeToolbar({
   translating,
   saving,
   onLimitReached,
+  isTemplateLocked,
 }: ResumeToolbarProps) {
   return (
     <div className="bg-bg-secondary border-b border-border px-3 md:px-4 py-2 md:py-3">
@@ -99,7 +101,9 @@ export function ResumeToolbar({
               resumeName={resumeName}
               userId={userId}
               template={template}
+              resumeType={resumeType}
               onLimitReached={onLimitReached}
+              isTemplateLocked={isTemplateLocked}
             />
           )}
 

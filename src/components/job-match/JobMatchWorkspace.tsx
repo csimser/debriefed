@@ -8,6 +8,7 @@ import { getUserTier, isPaidTier } from '@/lib/tier-utils'
 import { TEMPLATES, TemplateId } from '@/lib/templates'
 import { ResumePreview } from '@/components/resume/ResumePreview'
 import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
+import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
 
 interface JobMatchWorkspaceProps {
   userId: string
@@ -159,6 +160,7 @@ export function JobMatchWorkspace({
   const [downloading, setDownloading] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('classic_professional')
   const [showLastUseWarning, setShowLastUseWarning] = useState(false)
+  const { triggerPostActionModal } = usePostActionModal()
 
   const selectedResume = resumes.find(r => r.id === selectedResumeId)
   const remaining = usageLimit - currentUsage
@@ -212,6 +214,8 @@ export function JobMatchWorkspace({
           removedSkills: [],
           excludedBullets: new Set(),
         })
+        // Trigger post-action modal after results render
+        setTimeout(() => triggerPostActionModal('job-match-complete'), 800)
       }
     } catch (err) {
       setError('Analysis failed. Please try again.')

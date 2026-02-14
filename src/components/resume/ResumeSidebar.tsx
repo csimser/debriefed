@@ -15,7 +15,6 @@ interface Resume {
   template: string
   resume_type?: 'private' | 'federal'
   updated_at: string
-  downloaded_at?: string | null
 }
 
 interface ResumeSidebarProps {
@@ -37,7 +36,6 @@ export function ResumeSidebar({ resumes, selectedId, onSelect, onCreate, onDelet
   // Use centralized tier limits
   const userTier = getUserTier({ tier: userPlan })
   const resumeLimit = TIER_LIMITS[userTier].resumes
-  const isFreeUser = userTier === 'free'
   const canCreateNew = resumes.length < resumeLimit
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; resume: Resume | null }>({
     isOpen: false,
@@ -163,35 +161,25 @@ export function ResumeSidebar({ resumes, selectedId, onSelect, onCreate, onDelet
 
           {/* Resume icons */}
           <div className="flex-1 flex flex-col gap-1 mt-2 overflow-auto w-full px-2">
-            {resumes.map((resume, index) => {
-              const isLocked = isFreeUser && resume.downloaded_at != null
-              return (
-                <button
-                  key={resume.id}
-                  onClick={() => onSelect(resume.id)}
-                  className={cn(
-                    'w-full h-8 rounded flex items-center justify-center transition-all relative group',
-                    selectedId === resume.id
-                      ? 'bg-gold-dim text-gold'
-                      : 'bg-bg-tertiary hover:bg-bg-hover text-text-muted hover:text-text',
-                    isLocked && 'opacity-70'
-                  )}
-                  title={resume.name}
-                >
-                  <span className="text-xs font-bold">{index + 1}</span>
-                  {isLocked && (
-                    <svg className="w-2.5 h-2.5 text-status-amber absolute top-1 right-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                  )}
-                  {/* Tooltip */}
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-bg-tertiary border border-border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
-                    <span className="text-xs font-medium">{resume.name}</span>
-                  </div>
-                </button>
-              )
-            })}
+            {resumes.map((resume, index) => (
+              <button
+                key={resume.id}
+                onClick={() => onSelect(resume.id)}
+                className={cn(
+                  'w-full h-8 rounded flex items-center justify-center transition-all relative group',
+                  selectedId === resume.id
+                    ? 'bg-gold-dim text-gold'
+                    : 'bg-bg-tertiary hover:bg-bg-hover text-text-muted hover:text-text'
+                )}
+                title={resume.name}
+              >
+                <span className="text-xs font-bold">{index + 1}</span>
+                {/* Tooltip */}
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-bg-tertiary border border-border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
+                  <span className="text-xs font-medium">{resume.name}</span>
+                </div>
+              </button>
+            ))}
           </div>
 
           {/* Resume count */}
@@ -224,56 +212,35 @@ export function ResumeSidebar({ resumes, selectedId, onSelect, onCreate, onDelet
           )}
 
           <div className="flex-1 space-y-2 overflow-auto">
-            {resumes.map((resume) => {
-              const isLocked = isFreeUser && resume.downloaded_at != null
-              return (
-                <div
-                  key={resume.id}
-                  onClick={() => onSelect(resume.id)}
-                  className={cn(
-                    'w-full p-3 rounded-lg text-left transition-all cursor-pointer relative group',
-                    selectedId === resume.id
-                      ? 'bg-gold-dim border border-gold/30'
-                      : 'bg-bg-tertiary hover:bg-bg-hover border border-transparent',
-                    isLocked && 'opacity-70'
-                  )}
+            {resumes.map((resume) => (
+              <div
+                key={resume.id}
+                onClick={() => onSelect(resume.id)}
+                className={cn(
+                  'w-full p-3 rounded-lg text-left transition-all cursor-pointer relative group',
+                  selectedId === resume.id
+                    ? 'bg-gold-dim border border-gold/30'
+                    : 'bg-bg-tertiary hover:bg-bg-hover border border-transparent'
+                )}
+              >
+                {/* Delete button - top right */}
+                <button
+                  onClick={(e) => openDeleteModal(e, resume)}
+                  className="absolute top-2 right-2 p-1.5 text-text-dim hover:text-status-red hover:bg-status-red/10 rounded opacity-0 group-hover:opacity-100 transition-all"
+                  title="Delete resume"
                 >
-                  {/* Lock icon for downloaded free tier resumes */}
-                  {isLocked && (
-                    <div className="absolute top-2 left-2" title="Locked - Upgrade to edit">
-                      <svg className="w-3.5 h-3.5 text-status-amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
-                    </div>
-                  )}
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
 
-                  {/* Delete button - top right */}
-                  <button
-                    onClick={(e) => openDeleteModal(e, resume)}
-                    className="absolute top-2 right-2 p-1.5 text-text-dim hover:text-status-red hover:bg-status-red/10 rounded opacity-0 group-hover:opacity-100 transition-all"
-                    title="Delete resume"
-                  >
-                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                  </button>
-
-                  <div className={cn(
-                    "font-heading text-sm font-semibold truncate pr-6",
-                    isLocked && "pl-5"
-                  )}>{resume.name}</div>
-                  <div className={cn(
-                    "text-xs text-text-muted mt-1",
-                    isLocked && "pl-5"
-                  )}>
-                    {new Date(resume.updated_at).toLocaleDateString()}
-                    {isLocked && <span className="text-status-amber ml-1">(Locked)</span>}
-                  </div>
+                <div className="font-heading text-sm font-semibold truncate pr-6">{resume.name}</div>
+                <div className="text-xs text-text-muted mt-1">
+                  {new Date(resume.updated_at).toLocaleDateString()}
                 </div>
-              )
-            })}
+              </div>
+            ))}
 
             {resumes.length === 0 && (
               <p className="text-text-muted text-sm text-center py-8">No resumes yet</p>

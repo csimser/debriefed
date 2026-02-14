@@ -54,30 +54,12 @@ export function AnalysisPane({
       if (e.key === 'Escape') {
         setShowPreviewModal(false)
       } else if (e.key === 'ArrowLeft') {
-        // Previous template
         const currentIndex = templateList.findIndex(t => t.id === previewTemplate)
-        let prevIndex = currentIndex - 1
-        if (prevIndex < 0) prevIndex = templateList.length - 1
-        // Skip locked templates for free users
-        let attempts = 0
-        while (!templateList[prevIndex].free && !isPro && attempts < templateList.length) {
-          prevIndex--
-          if (prevIndex < 0) prevIndex = templateList.length - 1
-          attempts++
-        }
+        const prevIndex = currentIndex - 1 < 0 ? templateList.length - 1 : currentIndex - 1
         setPreviewTemplate(templateList[prevIndex].id as TemplateId)
       } else if (e.key === 'ArrowRight') {
-        // Next template
         const currentIndex = templateList.findIndex(t => t.id === previewTemplate)
-        let nextIndex = currentIndex + 1
-        if (nextIndex >= templateList.length) nextIndex = 0
-        // Skip locked templates for free users
-        let attempts = 0
-        while (!templateList[nextIndex].free && !isPro && attempts < templateList.length) {
-          nextIndex++
-          if (nextIndex >= templateList.length) nextIndex = 0
-          attempts++
-        }
+        const nextIndex = currentIndex + 1 >= templateList.length ? 0 : currentIndex + 1
         setPreviewTemplate(templateList[nextIndex].id as TemplateId)
       } else if (e.key === 'Enter') {
         setSelectedTemplate(previewTemplate)
@@ -947,7 +929,7 @@ export function AnalysisPane({
                           <span className="text-xs font-medium truncate">{template.name}</span>
                           {isLocked && (
                             <span className="text-[10px] px-1 py-0.5 bg-gold text-bg-primary rounded font-semibold">
-                              PRO
+                              Core
                             </span>
                           )}
                         </div>
@@ -1032,7 +1014,7 @@ export function AnalysisPane({
                     const isLocked = !t.free && !isPro
                     return (
                       <option key={t.id} value={t.id} disabled={isLocked}>
-                        {t.name} {isLocked ? '(PRO)' : ''}
+                        {t.name} {isLocked ? '(Core)' : ''}
                       </option>
                     )
                   })}
@@ -1118,14 +1100,7 @@ export function AnalysisPane({
             <button
               onClick={() => {
                 const currentIndex = templateList.findIndex(t => t.id === previewTemplate)
-                let prevIndex = currentIndex - 1
-                if (prevIndex < 0) prevIndex = templateList.length - 1
-                let attempts = 0
-                while (!templateList[prevIndex].free && !isPro && attempts < templateList.length) {
-                  prevIndex--
-                  if (prevIndex < 0) prevIndex = templateList.length - 1
-                  attempts++
-                }
+                const prevIndex = currentIndex - 1 < 0 ? templateList.length - 1 : currentIndex - 1
                 setPreviewTemplate(templateList[prevIndex].id as TemplateId)
               }}
               className="absolute top-1/2 -translate-y-1/2 left-6 z-20 p-3 bg-bg-primary/90 rounded-full text-text hover:bg-bg-secondary transition-colors border border-border"
@@ -1138,14 +1113,7 @@ export function AnalysisPane({
             <button
               onClick={() => {
                 const currentIndex = templateList.findIndex(t => t.id === previewTemplate)
-                let nextIndex = currentIndex + 1
-                if (nextIndex >= templateList.length) nextIndex = 0
-                let attempts = 0
-                while (!templateList[nextIndex].free && !isPro && attempts < templateList.length) {
-                  nextIndex++
-                  if (nextIndex >= templateList.length) nextIndex = 0
-                  attempts++
-                }
+                const nextIndex = currentIndex + 1 >= templateList.length ? 0 : currentIndex + 1
                 setPreviewTemplate(templateList[nextIndex].id as TemplateId)
               }}
               className="absolute top-1/2 -translate-y-1/2 right-6 z-20 p-3 bg-bg-primary/90 rounded-full text-text hover:bg-bg-secondary transition-colors border border-border"
@@ -1158,18 +1126,14 @@ export function AnalysisPane({
             {/* Template indicator dots */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
               {templateList.map((t) => {
-                const isLocked = !t.free && !isPro
                 const isActive = previewTemplate === t.id
                 return (
                   <button
                     key={t.id}
-                    onClick={() => !isLocked && setPreviewTemplate(t.id as TemplateId)}
-                    disabled={isLocked}
+                    onClick={() => setPreviewTemplate(t.id as TemplateId)}
                     className={`w-2 h-2 rounded-full transition-all ${
                       isActive
                         ? 'bg-gold w-4'
-                        : isLocked
-                        ? 'bg-border cursor-not-allowed'
                         : 'bg-text-muted hover:bg-text'
                     }`}
                     title={t.name}

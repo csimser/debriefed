@@ -22,7 +22,7 @@ export default async function ResumesPage() {
   ] = user?.id
     ? await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
-        supabase.from('resumes').select('*, downloaded_at').eq('user_id', user.id).order('updated_at', { ascending: false }),
+        supabase.from('resumes').select('*').eq('user_id', user.id).order('updated_at', { ascending: false }),
         supabase.from('experience').select('*, experience_bullets(*)').eq('user_id', user.id).order('sort_order'),
         supabase.from('education').select('*').eq('user_id', user.id).order('sort_order'),
         supabase.from('certifications').select('*').eq('user_id', user.id).order('sort_order'),

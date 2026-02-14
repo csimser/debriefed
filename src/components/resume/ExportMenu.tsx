@@ -3,16 +3,20 @@
 import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { useRouter } from 'next/navigation'
+import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
 
 interface ExportMenuProps {
   resumeId: string
   resumeName: string
   userId: string
   template: string
+  resumeType?: 'private' | 'federal'
   onLimitReached?: (error: string, tier: string) => void
+  isTemplateLocked?: boolean
 }
 
-export function ExportMenu({ resumeId, resumeName, userId, template, onLimitReached }: ExportMenuProps) {
+export function ExportMenu({ resumeId, resumeName, userId, template, resumeType = 'private', onLimitReached, isTemplateLocked }: ExportMenuProps) {
+  const { triggerPostActionModal } = usePostActionModal()
   const [isOpen, setIsOpen] = useState(false)
   const [exporting, setExporting] = useState<'pdf' | 'docx' | null>(null)
   const [limitError, setLimitError] = useState<string | null>(null)
@@ -31,6 +35,9 @@ export function ExportMenu({ resumeId, resumeName, userId, template, onLimitReac
   }, [])
 
   const handleExport = async (format: 'pdf' | 'docx') => {
+    // Block export for locked templates (belt-and-suspenders)
+    if (isTemplateLocked) return
+
     // DEBUG logging
     console.log('=== ExportMenu DEBUG ===')
     console.log('Props received:', { resumeId, userId, resumeName, format, template })
@@ -90,6 +97,11 @@ export function ExportMenu({ resumeId, resumeName, userId, template, onLimitReac
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
+
+      // Trigger post-action modal after successful download
+      setTimeout(() => {
+        triggerPostActionModal(resumeType === 'federal' ? 'federal-resume-download' : 'resume-download')
+      }, 500)
     } catch (error) {
       console.error('Export error:', error)
       alert('Failed to export')
@@ -119,13 +131,20 @@ export function ExportMenu({ resumeId, resumeName, userId, template, onLimitReac
         </div>
       )}
 
-      <Button
-        variant="secondary"
-        onClick={() => setIsOpen(!isOpen)}
-        disabled={exporting !== null}
-      >
-        {exporting ? `Exporting ${exporting.toUpperCase()}...` : '↓ Export'}
-      </Button>
+      <div className="flex flex-col items-end gap-1">
+        <Button
+          variant="secondary"
+          onClick={() => setIsOpen(!isOpen)}
+          disabled={exporting !== null || isTemplateLocked}
+        >
+          {exporting ? `Exporting ${exporting.toUpperCase()}...` : '↓ Export'}
+        </Button>
+        {isTemplateLocked && (
+          <span className="text-[10px] text-status-amber whitespace-nowrap">
+            Switch to a free template or upgrade
+          </span>
+        )}
+      </div>
 
       {isOpen && (
         <div className="absolute right-0 top-full mt-2 w-48 bg-bg-card border border-border rounded-lg shadow-lg z-10 overflow-hidden">

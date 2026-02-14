@@ -1,10 +1,4 @@
 export const TEMPLATES = {
-  executive: {
-    id: 'executive',
-    name: 'Executive',
-    description: 'ATS-optimized two-column layout with key achievements callout',
-    free: false,
-  },
   classic_professional: {
     id: 'classic_professional',
     name: 'Classic Professional',
@@ -17,36 +11,50 @@ export const TEMPLATES = {
     description: 'USAJOBS-compliant dense format with black-bar section headers',
     free: true,
   },
+  executive: {
+    id: 'executive',
+    name: 'Executive',
+    description: 'ATS-optimized two-column layout with key achievements callout',
+    free: false,
+  },
   modern: {
     id: 'modern',
     name: 'Modern',
     description: 'Dark header with teal accents and timeline experience layout',
-    free: true,
+    free: false,
   },
   minimal: {
     id: 'minimal',
     name: 'Minimal',
     description: 'Typography-driven design with generous whitespace',
-    free: true,
+    free: false,
   },
   twocol: {
     id: 'twocol',
     name: 'Two Column',
     description: 'Dark sidebar with gold accents and skills layout',
-    free: true,
+    free: false,
   },
 }
 
-export const FREE_TEMPLATES = ['classic_professional', 'federal', 'modern', 'minimal', 'twocol']
-export const PRO_TEMPLATES = ['executive']
+export const FREE_TEMPLATES = ['classic_professional', 'federal']
+export const PRO_TEMPLATES = ['executive', 'modern', 'minimal', 'twocol']
 
 export type TemplateId = keyof typeof TEMPLATES
 
 // Templates available for manual selection in the template picker
 // Federal is excluded because it's auto-applied when resume type is toggled to 'federal'
+// Ordered: free templates first, then paid templates
 export const SELECTABLE_TEMPLATES = Object.fromEntries(
-  Object.entries(TEMPLATES).filter(([id]) => id !== 'federal')
+  Object.entries(TEMPLATES)
+    .filter(([id]) => id !== 'federal')
+    .sort(([, a], [, b]) => (a.free === b.free ? 0 : a.free ? -1 : 1))
 ) as Record<Exclude<TemplateId, 'federal'>, typeof TEMPLATES[keyof typeof TEMPLATES]>
+
+// Check if a template is available on the free tier
+export function isTemplateFreeTier(templateId: TemplateId): boolean {
+  return TEMPLATES[templateId]?.free ?? false
+}
 
 // Map old template IDs to new ones for backward compatibility
 export const TEMPLATE_MIGRATION: Record<string, TemplateId> = {

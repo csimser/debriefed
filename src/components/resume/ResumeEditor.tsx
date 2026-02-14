@@ -11,7 +11,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { createClient } from '@/lib/supabase/client'
-import { TEMPLATES, SELECTABLE_TEMPLATES, TemplateId, resolveTemplate } from '@/lib/templates'
+import { TEMPLATES, SELECTABLE_TEMPLATES, TemplateId, resolveTemplate, isTemplateFreeTier } from '@/lib/templates'
 import { getUserTier, isPaidTier, TIER_LIMITS } from '@/lib/tier-utils'
 
 interface ResumeEditorProps {
@@ -100,30 +100,15 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
 
   const supabase = createClient()
 
-  // Check tier and lockout status
+  // Check tier for limits
   const userTier = getUserTier({ tier: userPlan })
   const isFreeUser = !isPaidTier(userTier)
 
-  // Check if current resume is locked (downloaded by free user)
   const selectedResume = resumes.find(r => r.id === selectedId)
-  const isResumeDownloaded = selectedResume?.downloaded_at != null
-  const isLocked = isFreeUser && isResumeDownloaded
 
   // Resume limit check - use centralized tier limits
   const resumeLimit = TIER_LIMITS[userTier].resumes
   const canCreateNew = resumes.length < resumeLimit
-
-  // Download limit check
-  const privateDownloads = usage?.private_downloads || 0
-  const federalDownloads = usage?.federal_downloads || 0
-
-  // Check if download limits have been reached based on tier
-  const privateLimit = TIER_LIMITS[userTier].resumes
-  const federalLimit = isFreeUser ? 0 : TIER_LIMITS[userTier].resumes
-  const hasReachedPrivateLimit = privateDownloads >= privateLimit
-  const hasReachedFederalLimit = isFreeUser
-    ? true // Free tier: no federal resumes
-    : federalDownloads >= federalLimit
 
   // State for showing limit reached modal
   const [showLimitModal, setShowLimitModal] = useState(false)
@@ -145,6 +130,9 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     resume_type: 'private' as 'private' | 'federal',
     content: initialContent,
   })
+
+  // Check if the currently selected template is locked for this user
+  const isCurrentTemplateLocked = !isTemplateFreeTier(currentResume.template) && isFreeUser
 
   // Sync skills/certs in resume content with current profile data (IDs may have changed after re-import)
   const syncContentWithProfile = (content: any) => {
@@ -239,9 +227,9 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     ))
   }, [currentResume.name, selectedId])
 
-  // Auto-save (disabled when resume is locked)
+  // Auto-save
   useEffect(() => {
-    if (!selectedId || isLocked) return
+    if (!selectedId) return
 
     const timeout = setTimeout(async () => {
       setSaving(true)
@@ -259,7 +247,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     }, 2000)
 
     return () => clearTimeout(timeout)
-  }, [currentResume, selectedId, isLocked])
+  }, [currentResume, selectedId])
 
   const handleCreate = async () => {
     // Check limit before creating
@@ -382,6 +370,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
           translating={translating}
           saving={saving}
           onLimitReached={handleLimitReached}
+          isTemplateLocked={isCurrentTemplateLocked}
         />
 
         {selectedId ? (
@@ -415,30 +404,6 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
               <div className={`w-full md:w-1/2 overflow-auto p-4 md:p-6 md:border-r border-border relative mobile-scroll ${
                 mobileView === 'preview' ? 'hidden md:block' : ''
               }`}>
-                {/* Locked Overlay for Downloaded Free Tier Resumes */}
-                {isLocked && (
-                  <div className="absolute inset-0 z-10 bg-bg-primary/80 backdrop-blur-sm flex items-center justify-center">
-                    <div className="bg-bg-secondary border border-border rounded-xl p-8 max-w-md text-center shadow-2xl">
-                      <div className="w-16 h-16 bg-status-amber/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8 text-status-amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                      </div>
-                      <h3 className="font-heading text-xl font-bold uppercase mb-2">Resume Locked</h3>
-                      <p className="text-text-muted text-sm mb-4">
-                        You've downloaded this resume. Free tier users cannot edit resumes after download.
-                      </p>
-                      <p className="text-text-dim text-xs mb-6">
-                        Upgrade to continue editing all your resumes without restrictions.
-                      </p>
-                      <Button onClick={() => window.location.href = '/pricing'}>
-                        Upgrade to Unlock Editing
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
                 {/* Template Strip — hidden for federal resumes (always uses federal template) */}
                 {currentResume.resume_type !== 'federal' && (
                 <div className="mb-6">
@@ -448,27 +413,26 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                   <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
                     {Object.values(SELECTABLE_TEMPLATES).map((template) => {
                       const isSelected = currentResume.template === template.id
-                      const isTemplateLocked = !template.free && isFreeUser
+                      const isLocked = !template.free && isFreeUser
                       return (
                         <button
                           key={template.id}
                           onClick={() => {
-                            if (!isLocked && !isTemplateLocked) {
-                              setCurrentResume(prev => ({ ...prev, template: template.id as TemplateId }))
-                            }
+                            setCurrentResume(prev => ({ ...prev, template: template.id as TemplateId }))
                           }}
-                          disabled={isLocked || isTemplateLocked}
-                          className={`relative flex-shrink-0 w-28 rounded-lg border p-2.5 text-left transition-all ${
+                          className={`relative flex-shrink-0 w-28 rounded-lg border p-2.5 text-left transition-all cursor-pointer ${
                             isSelected
                               ? 'border-gold bg-gold-dim ring-1 ring-gold/40'
+                              : isLocked
+                              ? 'border-border bg-bg-tertiary hover:border-gold/30'
                               : 'border-border bg-bg-tertiary hover:border-border-bright'
-                          } ${isTemplateLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          }`}
                         >
                           <div className="font-heading text-xs font-bold uppercase truncate">{template.name}</div>
                           <div className="text-[10px] text-text-dim truncate mt-0.5">{template.description}</div>
-                          {isTemplateLocked && (
+                          {isLocked && !isSelected && (
                             <span className="absolute top-1.5 right-1.5 text-[10px] font-bold text-gold bg-gold/10 px-1 rounded">
-                              PRO
+                              Core
                             </span>
                           )}
                           {isSelected && (
@@ -486,18 +450,16 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                   <Input
                     label="Resume Name"
                     value={currentResume.name}
-                    onChange={(e) => !isLocked && setCurrentResume(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) => setCurrentResume(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="My Resume"
-                    disabled={isLocked}
                   />
                 </div>
 
-                {/* Form - blocked by overlay when locked */}
                 <ResumeForm
                   resumeId={selectedId || ''}
                   content={currentResume.content}
                   resumeType={currentResume.resume_type}
-                  onChange={(content) => !isLocked && setCurrentResume(prev => ({ ...prev, content }))}
+                  onChange={(content) => setCurrentResume(prev => ({ ...prev, content }))}
                   userProfile={profileData.userProfile}
                   profileSummary={profileData.userProfile?.professional_summary}
                   allSkills={profileData.skills}
@@ -515,12 +477,32 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                 <div className="md:hidden mb-3 text-center">
                   <p className="text-xs text-text-dim">Pinch to zoom | Scroll to see more</p>
                 </div>
-                <div className="pinch-zoom">
+                <div className="pinch-zoom relative">
                   <ResumePreview
                     template={currentResume.template}
                     resumeType={currentResume.resume_type}
                     content={currentResume.content}
                   />
+                  {isCurrentTemplateLocked && (
+                    <div className="absolute inset-0 backdrop-blur-md bg-black/20 flex flex-col items-center justify-center rounded-lg z-10">
+                      <svg className="w-12 h-12 text-gold mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                      <p className="text-white font-heading text-sm uppercase tracking-wider mb-1">
+                        Upgrade to Core to unlock this template
+                      </p>
+                      <p className="text-white/60 text-xs mb-4">
+                        Preview is blurred — switch to Classic Professional or Federal to download
+                      </p>
+                      <a
+                        href="/pricing"
+                        className="px-5 py-2.5 bg-gold text-bg-primary font-heading text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-gold-bright transition-colors"
+                      >
+                        View Plans
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

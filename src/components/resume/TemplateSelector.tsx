@@ -45,7 +45,7 @@ export function TemplateSelector({ selected, onSelect, userPlan }: TemplateSelec
                 <div className="font-heading text-sm font-bold uppercase">{template.name}</div>
                 <div className="text-xs text-text-muted">{template.description}</div>
               </div>
-              {isLocked && <Badge variant="gold">PRO</Badge>}
+              {isLocked && <Badge variant="gold">Core</Badge>}
             </div>
 
             {isSelected && (
