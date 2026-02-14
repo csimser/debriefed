@@ -38,11 +38,11 @@ function getGreeting(firstName?: string): string {
   const hour = new Date().getHours()
   let timeGreeting
   if (hour < 12) {
-    timeGreeting = 'Good morning'
+    timeGreeting = 'Welcome back'
   } else if (hour < 17) {
-    timeGreeting = 'Good afternoon'
+    timeGreeting = 'Welcome back'
   } else {
-    timeGreeting = 'Good evening'
+    timeGreeting = 'Welcome back'
   }
 
   return firstName
