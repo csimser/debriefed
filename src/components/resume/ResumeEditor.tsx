@@ -138,6 +138,16 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
   const syncContentWithProfile = (content: any) => {
     const synced = { ...content }
 
+    // Populate summary from profile if resume content has none
+    if (!synced.summary && profileData.userProfile?.professional_summary) {
+      synced.summary = profileData.userProfile.professional_summary
+    }
+
+    // Populate skills from profile if resume content has none
+    if ((!synced.skills || synced.skills.length === 0) && profileData.skills?.length > 0) {
+      synced.skills = [...profileData.skills]
+    }
+
     // Replace stale skill objects with current profile versions (matched by name)
     if (content.skills?.length && profileData.skills?.length) {
       const profileSkillsByName = new Map(

@@ -88,10 +88,11 @@ function filterBullets(bullets: any[] | undefined): any[] {
 }
 
 function getContactParts(contact: any): string[] {
+  const location = [contact.city, contact.state].filter(Boolean).join(', ')
   return [
     contact.email,
     contact.phone ? formatPhoneForDisplay(contact.phone) : null,
-    contact.city && contact.state ? `${contact.city}, ${contact.state}` : null,
+    location || null,
     contact.linkedin_url ? contact.linkedin_url.replace(/^https?:\/\/(www\.)?/, '') : null,
   ].filter(Boolean) as string[]
 }
@@ -1199,9 +1200,12 @@ function buildTwoColumn(
     sideChildren.push(new Paragraph({ children: [new TextRun({ text: 'PHONE', bold: true, size: 18, font: SANS, color: '888888' })] }))
     sideChildren.push(new Paragraph({ children: [new TextRun({ text: formatPhoneForDisplay(contact.phone), size: 21, font: SANS, color: 'cccccc' })], spacing: { after: 60 } }))
   }
-  if (contact.city) {
-    sideChildren.push(new Paragraph({ children: [new TextRun({ text: 'LOCATION', bold: true, size: 18, font: SANS, color: '888888' })] }))
-    sideChildren.push(new Paragraph({ children: [new TextRun({ text: `${contact.city}, ${contact.state}`, size: 21, font: SANS, color: 'cccccc' })], spacing: { after: 60 } }))
+  {
+    const location = [contact.city, contact.state].filter(Boolean).join(', ')
+    if (location) {
+      sideChildren.push(new Paragraph({ children: [new TextRun({ text: 'LOCATION', bold: true, size: 18, font: SANS, color: '888888' })] }))
+      sideChildren.push(new Paragraph({ children: [new TextRun({ text: location, size: 21, font: SANS, color: 'cccccc' })], spacing: { after: 60 } }))
+    }
   }
   if (contact.linkedin_url) {
     const shortLi = contact.linkedin_url.replace(/^https?:\/\/(www\.)?/, '')

@@ -66,11 +66,14 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
     ? content.contact.linkedin_url.replace(/^https?:\/\/(www\.)?/, '')
     : null
 
-  // Contact info parts
+  // Build location from non-empty parts only
+  const contactLocation = [content.contact?.city, content.contact?.state].filter(Boolean).join(', ')
+
+  // Contact info parts — only include fields with actual values
   const contactParts = [
     content.contact?.email,
-    content.contact?.phone && formatPhoneForDisplay(content.contact.phone),
-    content.contact?.city && `${content.contact.city}, ${content.contact.state}`,
+    content.contact?.phone ? formatPhoneForDisplay(content.contact.phone) : null,
+    contactLocation || null,
     shortLinkedIn,
   ].filter(Boolean)
 
@@ -915,10 +918,10 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
               <div style={{ fontSize: 10.5, color: '#ccc' }}>{formatPhoneForDisplay(content.contact.phone)}</div>
             </div>
           )}
-          {content.contact?.city && (
+          {contactLocation && (
             <div style={{ marginBottom: 4 }}>
               <div style={{ fontSize: 9, fontWeight: 700, color: '#888', textTransform: 'uppercase' }}>Location</div>
-              <div style={{ fontSize: 10.5, color: '#ccc' }}>{content.contact.city}, {content.contact.state}</div>
+              <div style={{ fontSize: 10.5, color: '#ccc' }}>{contactLocation}</div>
             </div>
           )}
           {shortLinkedIn && (

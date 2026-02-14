@@ -199,10 +199,13 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
     ? contact.linkedin_url.replace(/^https?:\/\/(www\.)?/, '')
     : null
 
+  // Build location from non-empty parts only
+  const contactLocation = [contact.city, contact.state].filter(Boolean).join(', ')
+
   const contactLine = [
     contact.email,
     contact.phone ? formatPhoneForDisplay(contact.phone) : null,
-    contact.city ? `${contact.city}, ${contact.state}` : null,
+    contactLocation || null,
     shortLinkedIn,
   ].filter(Boolean).join(' | ')
 
@@ -1036,10 +1039,10 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                   <Text style={s.sideValue}>{formatPhoneForDisplay(contact.phone)}</Text>
                 </View>
               )}
-              {contact.city && (
+              {contactLocation && (
                 <View style={{ marginBottom: 4 }}>
                   <Text style={s.sideLabel}>Location</Text>
-                  <Text style={s.sideValue}>{contact.city}, {contact.state}</Text>
+                  <Text style={s.sideValue}>{contactLocation}</Text>
                 </View>
               )}
               {shortLinkedIn && (
