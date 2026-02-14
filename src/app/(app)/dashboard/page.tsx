@@ -94,7 +94,7 @@ export default async function DashboardPage() {
   // Calculate profile completeness
   const profileComplete = calculateProfileCompleteness(profile)
 
-  const displayName = profile?.first_name || 'Warrior'
+  const displayName = profile?.first_name || ''
 
   return (
     <div className="space-y-8 animate-fade-in">
