@@ -7,6 +7,11 @@ import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
 import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
+import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
+import type { DictProfessionalSummary, DictRankEquivalent } from '@/lib/dictionary/types'
+import { getRankTier, formatClearanceForHeadline, buildLinkedInValues, fillLinkedInTemplate, ensureProperTitle, titleCaseHeadline, smartSkillSort } from './DictLinkedInTools'
+import type { DictAtsKeyword } from '@/lib/dictionary/types'
 
 interface LinkedInToolProps {
   userProfile: any
@@ -15,12 +20,13 @@ interface LinkedInToolProps {
   certifications?: any[]
   education?: any[]
   isPro: boolean
+  userTier?: 'free' | 'core' | 'full' | 'expired'
   currentUsage?: number
   usageLimit?: number
   onBack: () => void
 }
 
-export function LinkedInTool({ userProfile, experiences, skills, certifications, education, isPro, currentUsage = 0, usageLimit = 999, onBack }: LinkedInToolProps) {
+export function LinkedInTool({ userProfile, experiences, skills, certifications, education, isPro, userTier = 'free', currentUsage = 0, usageLimit = 999, onBack }: LinkedInToolProps) {
   const remaining = usageLimit - currentUsage
   // Mode toggle
   const [mode, setMode] = useState<'generate' | 'analyze'>('generate')
@@ -67,6 +73,9 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   const [tone, setTone] = useState<'professional' | 'conversational' | 'bold'>('professional')
   const [aboutLength, setAboutLength] = useState<'concise' | 'standard' | 'detailed'>('standard')
   const [emphasis, setEmphasis] = useState<string[]>([])
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(() => skills.slice(0, 5))
+  const [leadWith, setLeadWith] = useState<'experience' | 'clearance' | 'certification' | 'role' | 'skill'>('experience')
+  const [skillSearch, setSkillSearch] = useState('')
 
   // Analyze mode state
   const [linkedInPDF, setLinkedInPDF] = useState<any>(null)
@@ -75,6 +84,402 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   const [isUploading, setIsUploading] = useState(false)
   const [showLastUseWarning, setShowLastUseWarning] = useState(false)
   const { triggerPostActionModal } = usePostActionModal()
+
+  // Dictionary state
+  const [dictLoading, setDictLoading] = useState(true)
+  const [summaries, setSummaries] = useState<DictProfessionalSummary[]>([])
+  const [rankEquivalents, setRankEquivalents] = useState<DictRankEquivalent[]>([])
+  const [atsKeywords, setAtsKeywords] = useState<DictAtsKeyword[]>([])
+  const [dictResults, setDictResults] = useState<{
+    headlines: { text: string; tone: string }[]
+    summary: string
+  } | null>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('linkedin_dictResults')
+      if (saved) {
+        try { return JSON.parse(saved) } catch { return null }
+      }
+    }
+    return null
+  })
+  const [editedSummary, setEditedSummary] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('linkedin_dictResults')
+      if (saved) {
+        try { return JSON.parse(saved).summary || '' } catch { return '' }
+      }
+    }
+    return ''
+  })
+
+  // Load dictionary data on mount
+  useEffect(() => {
+    getDictionary().then(dict => {
+      setSummaries(dict.professionalSummaries ?? [])
+      setRankEquivalents(dict.rankEquivalents ?? [])
+      setAtsKeywords(dict.atsKeywords ?? [])
+      setDictLoading(false)
+    }).catch(() => setDictLoading(false))
+  }, [])
+
+  // Persist dict results
+  useEffect(() => {
+    if (dictResults) {
+      sessionStorage.setItem('linkedin_dictResults', JSON.stringify(dictResults))
+    } else {
+      sessionStorage.removeItem('linkedin_dictResults')
+    }
+  }, [dictResults])
+
+  // Auto-regenerate when tone/length/emphasis change (only if already generated)
+  const [hasGenerated, setHasGenerated] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!sessionStorage.getItem('linkedin_dictResults')
+    }
+    return false
+  })
+  const emphasisKey = emphasis.join(',')
+  const selectedSkillsKey = selectedSkills.join(',')
+  useEffect(() => {
+    if (hasGenerated && !dictLoading) {
+      handleDictGenerate()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tone, aboutLength, emphasisKey, leadWith, selectedSkillsKey])
+
+  const getCivilianTitle = () => {
+    if (!userProfile?.paygrade || !userProfile?.branch || rankEquivalents.length === 0)
+      return targetRole || 'Professional'
+    const paygrade = (userProfile.paygrade || '').toUpperCase().trim()
+    const branch = (userProfile.branch || '').toLowerCase()
+    const match = rankEquivalents.find((r: DictRankEquivalent) =>
+      r.paygrade.toUpperCase().trim() === paygrade &&
+      r.branch.toLowerCase().includes(branch)
+    )
+    return match?.civilian_equivalent || targetRole || 'Professional'
+  }
+
+  const handleDictGenerate = () => {
+    if (!targetRole) {
+      setError('Please enter your target role')
+      return
+    }
+    setError('')
+    const rankTier = getRankTier(userProfile?.paygrade)
+    const civTitle = ensureProperTitle(getCivilianTitle(), rankTier)
+    const certs = (certifications || []).map((c: any) => c?.name || c).filter(Boolean)
+    const targetIndustry = (userProfile?.target_industry || '').toLowerCase()
+
+    // Get industry-relevant ATS keywords for smart sorting
+    const relevantAtsKw = atsKeywords
+      .filter(ak => !targetIndustry || ak.industry.toLowerCase().includes(targetIndustry))
+      .flatMap(ak => ak.keywords)
+
+    // Smart-sort skills: emphasis > ATS keywords > hard skills, deduped against certs
+    const orderedSkills = smartSkillSort(selectedSkills.length > 0 ? selectedSkills : skills, emphasis, certs, relevantAtsKw)
+
+    const values = buildLinkedInValues(userProfile, orderedSkills, certs.map((c: string) => ({ name: c })), education || [], civTitle, targetRole)
+    const clearance = values['clearance'] || ''
+    const industry = userProfile?.target_industry || targetRole
+    const topSkill = orderedSkills[0] || 'Operations'
+    const skill2 = orderedSkills[1] || ''
+    const topCert = certs[0] || ''
+    const years = userProfile?.years_of_service || '10+'
+    const degree = values['degree'] || ''
+
+    // Helper: build headline, enforce 220 char limit, title case, deduplicate
+    const build = (parts: string[], toneTag: string): { text: string; tone: string } | null => {
+      const filtered = parts.filter(Boolean)
+      if (filtered.length < 2) return null
+      const raw = filtered.join(' | ')
+      const text = titleCaseHeadline(raw).substring(0, 220)
+      return { text, tone: toneTag }
+    }
+    const buildFree = (text: string, toneTag: string): { text: string; tone: string } | null => {
+      if (!text) return null
+      return { text: titleCaseHeadline(text).substring(0, 220), tone: toneTag }
+    }
+
+    const allHeadlines: { text: string; tone: string }[] = []
+    const seen = new Set<string>()
+    const addUnique = (h: { text: string; tone: string } | null) => {
+      if (!h) return
+      const key = h.text.toLowerCase().replace(/\s+/g, ' ')
+      if (seen.has(key)) return
+      seen.add(key)
+      allHeadlines.push(h)
+    }
+
+    // --- Lead-with headline (user-selected priority) ---
+    if (leadWith === 'experience') {
+      addUnique(build([`${years}+ Year ${industry} Veteran`, civTitle, topCert, topSkill], tone))
+    } else if (leadWith === 'clearance' && clearance) {
+      addUnique(build([`${clearance} Cleared`, civTitle, industry, topSkill], tone))
+    } else if (leadWith === 'certification' && topCert) {
+      addUnique(build([`${topCert} Certified ${civTitle}`, industry, topSkill, clearance], tone))
+    } else if (leadWith === 'role') {
+      addUnique(build([civTitle, industry, `${years}+ Years`, topCert, clearance], tone))
+    } else if (leadWith === 'skill') {
+      addUnique(build([`${topSkill} Expert`, civTitle, industry, topCert], tone))
+    }
+
+    // --- Professional tone variants (4) ---
+    // 1. [Title] | [Industry] | [Top Skill] | [Cert] | [Clearance]
+    addUnique(build([civTitle, industry, topSkill, topCert, clearance], 'professional'))
+    // 2. [Title] | [Cert] Certified | [Skill 1] & [Skill 2] | [Years]+ Years Experience
+    addUnique(build([
+      civTitle,
+      topCert ? `${topCert} Certified` : '',
+      skill2 ? `${topSkill} & ${skill2}` : topSkill,
+      `${years}+ Years Experience`,
+    ], 'professional'))
+    // 3. [Title] | [Degree] | [Cert] | [Clearance]
+    if (degree) addUnique(build([civTitle, degree.replace(/^a /i, ''), topCert, clearance], 'professional'))
+    // 4. [Years]+ Year [Industry] Veteran | [Title] | [Cert] | [Skill 1]
+    addUnique(build([`${years}+ Year ${industry} Veteran`, civTitle, topCert, topSkill], 'professional'))
+
+    // --- Conversational tone variants (3) ---
+    // 5. [Title] helping [industry] organizations with [skill] and [skill] | [Cert]
+    const convSkillPhrase = skill2 ? `${topSkill} and ${skill2}` : topSkill
+    addUnique(buildFree(
+      [
+        `${civTitle} helping ${industry} organizations with ${convSkillPhrase}`,
+        topCert,
+      ].filter(Boolean).join(' | '),
+      'conversational',
+    ))
+    // 6. Passionate about [skill] and [skill] | [Title] | [Years]+ years in [industry]
+    addUnique(buildFree(
+      [
+        `Passionate about ${convSkillPhrase}`,
+        civTitle,
+        `${years}+ years in ${industry}`,
+      ].join(' | '),
+      'conversational',
+    ))
+    // 7. From military service to [industry] — [Title] | [Cert] | [Clearance]
+    addUnique(buildFree(
+      [
+        `From military service to ${industry} — ${civTitle}`,
+        topCert,
+        clearance,
+      ].filter(Boolean).join(' | '),
+      'conversational',
+    ))
+
+    // --- Bold & Direct tone variants (3) ---
+    // 8. [Title] → [Years]+ Years Driving [Skill] Results | [Cert] | [Clearance]
+    addUnique(buildFree(
+      [
+        `${civTitle} → ${years}+ Years Driving ${topSkill} Results`,
+        topCert,
+        clearance,
+      ].filter(Boolean).join(' | '),
+      'bold',
+    ))
+    // 9. [Industry] [Title] | [Cert] Certified | Proven Leader | [Clearance]
+    addUnique(build([
+      `${industry} ${civTitle}`.replace(new RegExp(`${industry}\\s+${industry}`, 'i'), industry),
+      topCert ? `${topCert} Certified` : '',
+      'Proven Leader',
+      clearance ? `${clearance.replace(' Clearance', '')} Cleared` : '',
+    ], 'bold'))
+    // 10. Mission-Driven [Title] | [Years]+ Years [Industry] | [Cert] | [Skill 1]
+    addUnique(build([`Mission-Driven ${civTitle}`, `${years}+ Years ${industry}`, topCert, topSkill], 'bold'))
+
+    // --- Generate summary ---
+    const matching = summaries.filter(dt => {
+      const tierMatch = !rankTier || dt.rank_tier.toLowerCase() === rankTier
+      const industryMatch = !targetIndustry ||
+        dt.target_industry.toLowerCase().includes(targetIndustry) ||
+        targetIndustry.includes(dt.target_industry.toLowerCase())
+      return tierMatch || industryMatch
+    }).sort((a, b) => {
+      const scoreA = (a.rank_tier.toLowerCase() === rankTier ? 1 : 0) +
+        (targetIndustry && a.target_industry.toLowerCase().includes(targetIndustry) ? 1 : 0)
+      const scoreB = (b.rank_tier.toLowerCase() === rankTier ? 1 : 0) +
+        (targetIndustry && b.target_industry.toLowerCase().includes(targetIndustry) ? 1 : 0)
+      return scoreB - scoreA
+    })
+
+    // Fill the best-matching template (or build a fallback)
+    let filledTemplate = ''
+    if (matching.length > 0) {
+      console.log('[LinkedIn] Selected template:', matching[0].id, matching[0].rank_tier, matching[0].target_industry)
+      filledTemplate = fillLinkedInTemplate(matching[0].template_text, values)
+    } else {
+      filledTemplate = `${civTitle} with ${years}+ years of experience in ${values['key_skills'] || 'strategic planning and operations'}. Proven track record of delivering measurable results in ${industry} environments. Skilled in ${orderedSkills.slice(0, 3).join(', ')}, with a focus on translating complex operational challenges into business outcomes.${clearance ? ` Holds active ${clearance}.` : ''}${topCert ? ` ${topCert} certified.` : ''}`
+    }
+    console.log('[LinkedIn] Settings:', { tone, aboutLength, emphasis })
+
+    // --- Build emphasis-aware lead-in elements ---
+    const emphasisLower = emphasis.map(e => e.toLowerCase())
+    const hasEmphasis = (tag: string) => emphasisLower.some(e => e.includes(tag) || tag.includes(e))
+
+    let emphasisLead = ''
+    if (hasEmphasis('cybersecurity') || hasEmphasis('security') || hasEmphasis('technical')) {
+      emphasisLead = topCert
+        ? `${topCert}-certified ${civTitle.toLowerCase()}`
+        : `${topSkill}-focused ${civTitle.toLowerCase()}`
+    } else if (hasEmphasis('leadership') || hasEmphasis('team')) {
+      emphasisLead = `${civTitle.toLowerCase()} who has led cross-functional teams`
+    } else if (hasEmphasis('certification') || hasEmphasis('cert')) {
+      emphasisLead = topCert
+        ? `${topCert}-certified ${civTitle.toLowerCase()}`
+        : civTitle.toLowerCase()
+    } else if (hasEmphasis('project') || hasEmphasis('program')) {
+      emphasisLead = `${civTitle.toLowerCase()} specializing in ${topSkill}`
+    } else {
+      emphasisLead = civTitle.toLowerCase()
+    }
+
+    // Get the body sentences from the filled template (skip the first sentence — we rewrite it)
+    const allSentences = filledTemplate.match(/[^.!?]+[.!?]+/g) || [filledTemplate]
+    const bodySentences = allSentences.slice(1)
+
+    // --- Construct summary per tone ---
+    let summary = ''
+
+    if (tone === 'professional') {
+      // Third person. Keep template voice but rewrite opening with emphasis.
+      const opening = emphasis.length > 0
+        ? `Seasoned ${emphasisLead} with ${years}+ years of experience in ${industry}.`
+        : allSentences[0]?.trim() || `${civTitle} with ${years}+ years of experience in ${industry}.`
+      summary = [opening, ...bodySentences.map(s => s.trim())].join(' ')
+    } else if (tone === 'conversational') {
+      // First person. Completely rewrite opening.
+      let opening = ''
+      if (emphasis.length > 0) {
+        opening = `With over ${years} years in ${industry}, I'm a ${emphasisLead} who thrives on turning complex challenges into real results.`
+      } else {
+        opening = `I'm a ${emphasisLead} with ${years}+ years of experience in ${industry}, and I'm passionate about driving results.`
+      }
+      // Convert remaining body sentences to first person
+      const body = bodySentences.map(s => s.trim()
+        .replace(/\bThis professional\b/gi, 'I')
+        .replace(/\bThe professional\b/gi, 'I')
+        .replace(/\bthis professional\b/g, 'I')
+        .replace(/\bHe\/She\b/gi, 'I')
+        .replace(/\bhe\/she\b/g, 'I')
+        .replace(/\bhis\/her\b/g, 'my')
+        .replace(/\bHis\/Her\b/gi, 'My')
+        // Handle common third-person openers
+        .replace(/^A \w+ (leader|professional|manager|specialist|expert)\b/i, (m) => `I'm ${m.toLowerCase().replace(/^a /, 'a ')}`)
+        .replace(/\bDemonstrated\b/g, 'I\'ve demonstrated')
+        .replace(/\bProven ability\b/gi, 'I have a proven ability')
+        .replace(/\bKnown for\b/gi, 'I\'m known for')
+        .replace(/\bSpecializes in\b/gi, 'I specialize in')
+        .replace(/\bExperienced in\b/gi, 'I\'m experienced in')
+        .replace(/\bExpertise in\b/gi, 'My expertise is in')
+      ).join(' ')
+      summary = [opening, body].filter(Boolean).join(' ')
+    } else {
+      // Bold & Direct. Action-forward, punchy.
+      let opening = ''
+      if (emphasis.length > 0) {
+        opening = `Driving ${industry} outcomes as a ${emphasisLead} across ${years}+ years of high-impact operations.`
+      } else {
+        opening = `Driving enterprise ${industry} operations and leading cross-functional teams across ${years}+ years of ${civTitle.toLowerCase()} experience.`
+      }
+      // Bold-ify body sentences
+      const body = bodySentences.map(s => s.trim()
+        .replace(/\bResponsible for\b/gi, 'Drove')
+        .replace(/\bTasked with\b/gi, 'Spearheaded')
+        .replace(/\bAssisted in\b/gi, 'Delivered')
+        .replace(/\bManaged\b/g, 'Commanded')
+        .replace(/\bOversight of\b/gi, 'Directed')
+        .replace(/\bDemonstrated\b/g, 'Delivered')
+      ).join(' ')
+      summary = [opening, body].filter(Boolean).join(' ')
+    }
+
+    // --- Apply length ---
+    if (aboutLength === 'concise') {
+      // 2-3 sentences, ~400-500 chars. Who you are + value prop + clearance/cert.
+      const conciseCore = summary.match(/[^.!?]+[.!?]+/g) || [summary]
+      let concise = conciseCore.slice(0, 2).join(' ').trim()
+      // Append clearance/cert if not already mentioned and there's room
+      if (clearance && !concise.toLowerCase().includes('clearance') && concise.length < 400) {
+        concise += ` Holds active ${clearance}.`
+      }
+      if (topCert && !concise.toLowerCase().includes(topCert.toLowerCase()) && concise.length < 450) {
+        concise += ` ${topCert} certified.`
+      }
+      if (concise.length > 500) {
+        const sents = concise.match(/[^.!?]+[.!?]+/g) || [concise]
+        concise = sents.slice(0, 2).join(' ').trim()
+      }
+      summary = concise
+    } else if (aboutLength === 'detailed') {
+      // Full template + achievements + competencies, ~1800-2200 chars
+      // Build achievements from actual experience data — only real bullets
+      const topBullets = (experiences || [])
+        .flatMap((exp: any) => {
+          const bullets = exp.bullets || exp.achievements || []
+          return Array.isArray(bullets) ? bullets : []
+        })
+        .filter((b: any) => typeof b === 'string' && b.trim().length > 10)
+        .slice(0, 3)
+
+      // Only show Key Achievements if we have actual content
+      if (topBullets.length > 0) {
+        summary += `\n\nKey Achievements:\n${topBullets.map((b: string) => `• ${b.trim()}`).join('\n')}`
+      }
+
+      // Core Competencies — filter empty, trim, no trailing separator
+      const competencies = orderedSkills
+        .filter(s => s && s.trim())
+        .slice(0, 8)
+        .map(s => s.trim())
+      if (competencies.length > 0) {
+        summary += `\n\nCore Competencies:\n${competencies.join(' • ')}`
+      }
+    }
+    // Standard: keep summary as-is (full template, ~1000-1200 chars)
+
+    // --- Final cleanup pass ---
+    summary = summary
+      // Remove leftover placeholders / brackets
+      .replace(/\{\{\w+\}\}/g, '')
+      .replace(/\[[^\]]*\]/g, '')
+      // Replace numeric ranges like "15-50-person", "15-50 teams", "10-30-person" with clean text
+      .replace(/\b\d{1,3}-\d{1,3}[- ]person\b/g, 'cross-functional')
+      .replace(/\b\d{1,3}-\d{1,3}\s+teams?\b/gi, 'cross-functional teams')
+      .replace(/\b\d{1,3}-\d{1,3}\s+personnel\b/gi, 'team members')
+      // Remove empty bullet points (lines that are just "•" or "• " with no text)
+      .replace(/^•\s*$/gm, '')
+      // Remove trailing pipes/separators
+      .replace(/\|\s*$/gm, '')
+      .replace(/\|\s*\./g, '.')
+      // Cleanup double spaces, orphaned punctuation
+      .replace(/\s{2,}/g, ' ')
+      .replace(/,\s*,/g, ',')
+      .replace(/,\s*\./g, '.')
+      .replace(/\.\s*\./g, '.')
+
+    // Remove section headers if their content is empty
+    summary = summary.replace(/\n\nKey Achievements:\s*\n?\s*$/g, '')
+    summary = summary.replace(/\n\nCore Competencies:\n?\s*$/g, '')
+    // Remove blank lines left behind
+    summary = summary.replace(/\n{3,}/g, '\n\n').trim()
+
+    // Ensure summary doesn't end mid-sentence (skip if it ends with a competencies/achievements list)
+    const endsWithList = /Core Competencies:\n.+$/s.test(summary) || /^• .+$/m.test(summary.split('\n').pop() || '')
+    if (summary && !endsWithList && !/[.!?]$/.test(summary)) {
+      const lastPeriod = Math.max(summary.lastIndexOf('.'), summary.lastIndexOf('!'), summary.lastIndexOf('?'))
+      if (lastPeriod > summary.length * 0.7) {
+        summary = summary.substring(0, lastPeriod + 1)
+      } else {
+        summary += '.'
+      }
+    }
+
+    setDictResults({ headlines: allHeadlines, summary })
+    setEditedSummary(summary)
+    setHasGenerated(true)
+    // Clear any previous AI results
+    setResults(null)
+  }
 
   const handleGenerate = async () => {
     if (!targetRole) {
@@ -129,72 +534,50 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     }
   }
 
-  const handleCopy = (text: string, section: string) => {
-    navigator.clipboard.writeText(text)
+  const handleCopy = async (text: string, section: string) => {
+    const { copyToClipboard } = await import('@/lib/clipboard')
+    await copyToClipboard(text)
     setCopied(section)
     setTimeout(() => setCopied(null), 2000)
   }
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-3">
-        <div className="flex items-center gap-4">
-          <button onClick={onBack} className="text-text-muted hover:text-text">
-            ← Back
-          </button>
-          <h2 className="font-heading text-2xl font-bold uppercase tracking-wider">LinkedIn Optimizer</h2>
+      {/* Breadcrumb Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-2 text-xs text-text-dim">
+          <button onClick={onBack} className="hover:text-text transition-colors">Cover Letter &amp; LinkedIn</button>
+          <span className="text-gold">&rsaquo;</span>
+          <span className="text-text-muted">LinkedIn Optimizer</span>
         </div>
-        <Badge variant={remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
-          {remaining} Remaining
-        </Badge>
+        {isPro && (
+          <Badge variant={remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
+            {remaining} AI {remaining === 1 ? 'Use' : 'Uses'} Left
+          </Badge>
+        )}
       </div>
 
-      {/* Mode Toggle with descriptions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      {/* Mode Tabs */}
+      <div className="flex gap-1 mb-6 bg-bg-secondary rounded-lg p-1 w-fit">
         <button
           onClick={() => setMode('generate')}
-          className={`p-4 rounded-lg text-left transition-all border-2 ${
+          className={`px-4 py-2 text-sm rounded-md transition-all ${
             mode === 'generate'
-              ? 'border-gold bg-gold/10'
-              : 'border-border bg-bg-secondary hover:border-gold/50'
+              ? 'bg-gold text-bg-primary font-medium'
+              : 'text-text-muted hover:text-text'
           }`}
         >
-          <div className="flex items-center gap-2 mb-2">
-            <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span className="font-semibold text-text">Generate New Content</span>
-          </div>
-          <p className="text-sm text-text-muted">
-            Create an optimized headline and about section using your Debriefed profile data
-          </p>
+          Generate
         </button>
-
         <button
           onClick={() => setMode('analyze')}
-          className={`p-4 rounded-lg text-left transition-all border-2 relative ${
+          className={`px-4 py-2 text-sm rounded-md transition-all ${
             mode === 'analyze'
-              ? 'border-gold bg-gold/10'
-              : 'border-border bg-bg-secondary hover:border-gold/50'
+              ? 'bg-gold text-bg-primary font-medium'
+              : 'text-text-muted hover:text-text'
           }`}
         >
-          {!isPro && (
-            <div className="absolute top-2 right-2 px-2 py-0.5 bg-gold text-bg-primary text-xs font-bold rounded">
-              CORE
-            </div>
-          )}
-          <div className="flex items-center gap-2 mb-2">
-            <svg className="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-            <span className={`font-semibold ${isPro ? 'text-text' : 'text-text-muted'}`}>
-              Full Profile Audit & Recommendations
-            </span>
-          </div>
-          <p className={`text-sm ${isPro ? 'text-text-muted' : 'text-text-dim'}`}>
-            Upload your current LinkedIn PDF for a full audit with specific fixes for headline, summary, skills & keywords
-          </p>
+          Analyze Profile
         </button>
       </div>
 
@@ -202,12 +585,12 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
         // === EXISTING GENERATE UI ===
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Input */}
-          <Card className="p-6">
-            <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="text-gold">◎</span> Your Target
+          <div className="space-y-4">
+            <h3 className="font-heading text-xs font-bold uppercase tracking-wider text-text-dim pb-2 border-b border-border flex items-center gap-2">
+              <span className="text-gold">◎</span> YOUR TARGET
             </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <Input
                 label="Target Role / Industry"
                 value={targetRole}
@@ -215,9 +598,9 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                 placeholder="e.g., Operations Manager, Project Management, Cybersecurity"
               />
 
-              <div className="p-4 bg-bg-tertiary rounded-lg">
-                <h4 className="font-heading text-xs font-bold uppercase tracking-wider mb-2">Using Your Profile Data</h4>
-                <ul className="text-sm text-text-muted space-y-1">
+              <div className="border-l-2 border-gold pl-3 bg-gold/5 rounded-r-lg p-3">
+                <h4 className="font-heading text-xs font-bold uppercase tracking-wider mb-1.5">Using Your Profile Data</h4>
+                <ul className="text-xs text-text-muted space-y-0.5">
                   <li>• {userProfile?.rank || 'Senior military leader'} with {userProfile?.years_of_service || '20'} years experience</li>
                   <li>• {experiences?.length || 0} work experience{experiences?.length !== 1 ? 's' : ''}</li>
                   {education && education.length > 0 && (
@@ -236,12 +619,12 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
               </div>
 
               {/* Customization Options */}
-              <div className="p-4 bg-bg-tertiary rounded-lg">
-                <h4 className="font-heading text-xs font-bold uppercase tracking-wider mb-3">Customize Output</h4>
+              <div className="space-y-3">
+                <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text-dim pb-2 border-b border-border">Customize Output</h4>
 
                 {/* Tone */}
-                <div className="mb-4">
-                  <label className="text-xs text-text-dim mb-2 block">Tone</label>
+                <div>
+                  <label className="text-xs text-text-dim mb-1.5 block">Tone</label>
                   <div className="flex gap-2">
                     {[
                       { id: 'professional', label: 'Professional' },
@@ -264,9 +647,36 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                   </div>
                 </div>
 
+                {/* Lead With */}
+                <div>
+                  <label className="text-xs text-text-dim mb-1.5 block">Lead Headline With</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { id: 'experience', label: 'Years of Experience' },
+                      { id: 'clearance', label: 'Clearance Level' },
+                      { id: 'certification', label: 'Top Certification' },
+                      { id: 'role', label: 'Target Role' },
+                      { id: 'skill', label: 'Top Skill' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setLeadWith(opt.id as any)}
+                        className={`px-2 py-1 text-xs rounded transition-all ${
+                          leadWith === opt.id
+                            ? 'bg-gold text-bg-primary font-medium'
+                            : 'bg-bg-secondary text-text-muted hover:text-text'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* About Length */}
-                <div className="mb-4">
-                  <label className="text-xs text-text-dim mb-2 block">About Length</label>
+                <div>
+                  <label className="text-xs text-text-dim mb-1.5 block">About Length</label>
                   <div className="flex gap-2">
                     {[
                       { id: 'concise', label: 'Concise', desc: '~150 words' },
@@ -291,7 +701,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
                 {/* Emphasis Areas */}
                 <div>
-                  <label className="text-xs text-text-dim mb-2 block">Emphasize (select up to 3)</label>
+                  <label className="text-xs text-text-dim mb-1.5 block">Emphasize (select up to 3)</label>
                   <div className="flex flex-wrap gap-1.5">
                     {[
                       'Leadership',
@@ -302,6 +712,11 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                       'Process Improvement',
                       'Safety/Compliance',
                       'Cybersecurity',
+                      'Clearance',
+                      'Federal Experience',
+                      'Operations',
+                      'Training & Development',
+                      'Budget Management',
                     ].map((area) => {
                       const isSelected = emphasis.includes(area)
                       return (
@@ -327,6 +742,58 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                     })}
                   </div>
                 </div>
+
+                {/* Skill Selection */}
+                <div>
+                  <label className="text-xs text-text-dim mb-1.5 block">Skills to Highlight ({selectedSkills.length}/{skills.length})</label>
+                  <input
+                    type="text"
+                    name="skill-search"
+                    placeholder="Search skills..."
+                    value={skillSearch}
+                    onChange={(e) => setSkillSearch(e.target.value)}
+                    className="w-full px-2 py-1.5 text-xs rounded bg-bg-secondary border border-border text-text placeholder:text-text-dim focus:outline-none focus:border-gold mb-2"
+                  />
+                  <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto">
+                    {skills
+                      .filter(s => !skillSearch || s.toLowerCase().includes(skillSearch.toLowerCase()))
+                      .map((skill) => {
+                        const isSelected = selectedSkills.includes(skill)
+                        return (
+                          <button
+                            key={skill}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedSkills(selectedSkills.filter(s => s !== skill))
+                              } else {
+                                setSelectedSkills([...selectedSkills, skill])
+                              }
+                            }}
+                            className={`px-2 py-1 text-xs rounded transition-all ${
+                              isSelected
+                                ? 'bg-gold text-bg-primary'
+                                : 'bg-bg-secondary text-text-dim hover:text-text-muted'
+                            }`}
+                          >
+                            {skill}
+                          </button>
+                        )
+                      })}
+                    {skills.filter(s => !skillSearch || s.toLowerCase().includes(skillSearch.toLowerCase())).length === 0 && (
+                      <p className="text-xs text-text-dim">No matching skills</p>
+                    )}
+                  </div>
+                  {selectedSkills.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSkills([])}
+                      className="text-xs text-text-dim hover:text-text mt-1"
+                    >
+                      Clear all
+                    </button>
+                  )}
+                </div>
               </div>
 
               {error && (
@@ -337,13 +804,13 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
               <Button
                 className="w-full"
-                onClick={handleGenerate}
-                disabled={generating || remaining <= 0}
+                onClick={handleDictGenerate}
+                disabled={dictLoading}
               >
-                {generating ? 'Optimizing...' : remaining <= 0 ? 'Limit Reached' : '✦ Generate LinkedIn Content'}
+                {dictLoading ? 'Loading Dictionary...' : '✦ Generate LinkedIn Content'}
               </Button>
             </div>
-          </Card>
+          </div>
 
           {/* Output */}
           <div className="space-y-6">
@@ -353,30 +820,106 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                 <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
                   <span className="text-gold">◆</span> Headline
                 </h3>
-                {results?.headline && (
+                {(results?.headline || (dictResults?.headlines && dictResults.headlines.length > 0)) && (
+                  <button
+                    onClick={() => {
+                      const headlineText = results?.headline || dictResults?.headlines?.find(h => h.tone === tone)?.text || dictResults?.headlines?.[0]?.text || ''
+                      handleCopy(headlineText, 'headline-main')
+                    }}
+                    className="text-xs text-text-muted hover:text-text"
+                  >
+                    {copied === 'headline-main' ? 'Copied!' : 'Copy'}
+                  </button>
+                )}
+              </div>
+
+              {results?.headline ? (
+                <div>
+                  <div className="bg-bg-secondary rounded-lg p-4 mb-2">
+                    <p className="text-xs text-gold font-semibold mb-1">AI Enhanced</p>
+                    <p className="text-lg font-medium">{results.headline}</p>
+                  </div>
                   <button
                     onClick={() => handleCopy(results.headline, 'headline')}
                     className="text-xs text-text-muted hover:text-text"
                   >
                     {copied === 'headline' ? 'Copied!' : 'Copy'}
                   </button>
-                )}
-              </div>
-
-              {generating ? (
-                <div className="h-16 flex items-center justify-center">
-                  <div className="animate-pulse text-text-muted">Generating...</div>
                 </div>
-              ) : results?.headline ? (
-                <div className="bg-bg-secondary rounded-lg p-4">
-                  <p className="text-lg font-medium">{results.headline}</p>
+              ) : generating ? (
+                <div className="h-16 flex items-center justify-center">
+                  <div className="animate-pulse text-text-muted">Enhancing with AI...</div>
+                </div>
+              ) : dictResults?.headlines ? (
+                <div className="space-y-2">
+                  {dictResults.headlines.map((h, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                        h.tone === tone
+                          ? 'bg-gold/10 border-gold/30'
+                          : 'bg-bg-secondary border-border'
+                      }`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs text-text-dim uppercase tracking-wider">
+                          {h.tone === 'professional' ? 'Professional' : h.tone === 'conversational' ? 'Conversational' : 'Bold & Direct'}
+                        </span>
+                        <p className={`text-sm ${h.tone === tone ? 'font-medium text-text' : 'text-text-muted'}`}>{h.text}</p>
+                      </div>
+                      <button
+                        onClick={() => handleCopy(h.text, `headline-${idx}`)}
+                        className="ml-2 px-2 py-1 text-xs bg-gold/20 text-gold rounded hover:bg-gold/30 transition-colors flex-shrink-0"
+                      >
+                        {copied === `headline-${idx}` ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                  ))}
                 </div>
               ) : (
-                <div className="h-16 flex items-center justify-center text-text-muted text-sm">
-                  Your optimized headline will appear here
+                /* Skeleton shimmer state */
+                <div className="space-y-2">
+                  <div className="p-3 rounded-lg border border-border bg-bg-secondary">
+                    <div className="animate-pulse space-y-2">
+                      <div className="h-2 bg-text-dim/10 rounded w-[20%]"></div>
+                      <div className="h-3 bg-text-dim/10 rounded w-[85%]"></div>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg border border-border bg-bg-secondary">
+                    <div className="animate-pulse space-y-2">
+                      <div className="h-2 bg-text-dim/10 rounded w-[25%]"></div>
+                      <div className="h-3 bg-text-dim/10 rounded w-[75%]"></div>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg border border-border bg-bg-secondary">
+                    <div className="animate-pulse space-y-2">
+                      <div className="h-2 bg-text-dim/10 rounded w-[18%]"></div>
+                      <div className="h-3 bg-text-dim/10 rounded w-[90%]"></div>
+                    </div>
+                  </div>
                 </div>
               )}
+
               <p className="text-xs text-text-dim mt-2">Max 220 characters for LinkedIn</p>
+
+              {/* Enhance with AI / Upgrade nudge */}
+              {dictResults?.headlines && !results?.headline && !generating && (
+                isPro ? (
+                  <button
+                    onClick={handleGenerate}
+                    disabled={generating || remaining <= 0}
+                    className="mt-3 w-full py-2 px-3 text-sm bg-bg-secondary border border-gold/30 rounded-lg text-gold hover:bg-gold/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {remaining <= 0 ? 'AI Limit Reached' : '✦ Enhance with AI'}
+                  </button>
+                ) : (
+                  <div className="mt-3 p-3 bg-gold/5 border border-gold/20 rounded-lg text-center">
+                    <p className="text-xs text-text-muted">
+                      <UpgradeLink className="text-gold hover:text-gold-bright">Upgrade to Core</UpgradeLink> for AI-enhanced headlines
+                    </p>
+                  </div>
+                )
+              )}
             </Card>
 
             {/* Summary */}
@@ -385,30 +928,79 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                 <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
                   <span className="text-gold">◫</span> About / Summary
                 </h3>
-                {results?.summary && (
-                  <button
-                    onClick={() => handleCopy(results.summary, 'summary')}
-                    className="text-xs text-text-muted hover:text-text"
-                  >
-                    {copied === 'summary' ? 'Copied!' : 'Copy'}
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {dictResults?.summary && !results?.summary && (
+                    <button
+                      onClick={handleDictGenerate}
+                      className="text-xs text-text-muted hover:text-text"
+                    >
+                      Regenerate
+                    </button>
+                  )}
+                  {(results?.summary || editedSummary) && (
+                    <button
+                      onClick={() => handleCopy(results?.summary || editedSummary, 'summary')}
+                      className="text-xs text-text-muted hover:text-text"
+                    >
+                      {copied === 'summary' ? 'Copied!' : 'Copy'}
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {generating ? (
+              {results?.summary ? (
+                <div>
+                  <div className="bg-bg-secondary rounded-lg p-4 max-h-80 overflow-auto">
+                    <p className="text-xs text-gold font-semibold mb-2">AI Enhanced</p>
+                    <p className="whitespace-pre-line text-sm leading-relaxed">{results.summary}</p>
+                  </div>
+                </div>
+              ) : generating ? (
                 <div className="h-48 flex items-center justify-center">
-                  <div className="animate-pulse text-text-muted">Generating...</div>
+                  <div className="animate-pulse text-text-muted">Enhancing with AI...</div>
                 </div>
-              ) : results?.summary ? (
-                <div className="bg-bg-secondary rounded-lg p-4 max-h-80 overflow-auto">
-                  <p className="whitespace-pre-line text-sm leading-relaxed">{results.summary}</p>
-                </div>
+              ) : dictResults?.summary ? (
+                <textarea
+                  name="linkedin-summary"
+                  value={editedSummary}
+                  onChange={(e) => setEditedSummary(e.target.value)}
+                  className="w-full min-h-[200px] px-3 py-3 bg-bg-secondary border border-border rounded-lg text-sm leading-relaxed focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-y"
+                />
               ) : (
-                <div className="h-48 flex items-center justify-center text-text-muted text-sm">
-                  Your optimized summary will appear here
+                /* Skeleton shimmer state */
+                <div className="animate-pulse space-y-3 min-h-[200px] p-4 bg-bg-secondary rounded-lg border border-border">
+                  <div className="h-2 bg-text-dim/10 rounded w-full"></div>
+                  <div className="h-2 bg-text-dim/10 rounded w-[95%]"></div>
+                  <div className="h-2 bg-text-dim/10 rounded w-[88%]"></div>
+                  <div className="h-2 bg-text-dim/10 rounded w-full"></div>
+                  <div className="h-2 bg-text-dim/10 rounded w-[92%]"></div>
+                  <div className="h-2 bg-text-dim/10 rounded w-[78%]"></div>
+                  <div className="h-2 bg-text-dim/10 rounded w-full"></div>
+                  <div className="h-2 bg-text-dim/10 rounded w-[85%]"></div>
+                  <div className="h-2 bg-text-dim/10 rounded w-[70%]"></div>
                 </div>
               )}
+
               <p className="text-xs text-text-dim mt-2">Optimized for LinkedIn's 2,600 character limit</p>
+
+              {/* Inline upgrade prompt instead of card */}
+              {dictResults?.summary && !results?.summary && !generating && (
+                isPro ? (
+                  <button
+                    onClick={handleGenerate}
+                    disabled={generating || remaining <= 0}
+                    className="mt-3 w-full py-2 px-3 text-sm bg-bg-secondary border border-gold/30 rounded-lg text-gold hover:bg-gold/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {remaining <= 0 ? 'AI Limit Reached' : '✦ Enhance with AI'}
+                  </button>
+                ) : (
+                  <p className="mt-3 text-xs text-text-dim">
+                    <span className="text-gold">◆</span> Want deeper insights?{' '}
+                    <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">Upgrade to Full</UpgradeLink>
+                    {' '}for a complete profile audit with specific fixes.
+                  </p>
+                )
+              )}
             </Card>
           </div>
         </div>
@@ -425,14 +1017,14 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
           isUploading={isUploading}
           setIsUploading={setIsUploading}
           targetRole={targetRole}
-          isPro={isPro}
+          isPro={userTier === 'full'}
         />
       )}
 
       {showLastUseWarning && (
         <LastUseWarningModal
           featureName="LinkedIn Generation"
-          tier={isPro ? 'core' : 'free'}
+          tier={isPro ? 'full' : 'free'}
           limitType="tier"
           onContinue={() => {
             setShowLastUseWarning(false)
@@ -471,6 +1063,7 @@ function AnalyzeMode({
   targetRole: string
   isPro: boolean
 }) {
+  const { openUpgradeModal } = useUpgradeModal()
   const [showInstructions, setShowInstructions] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [copiedSection, setCopiedSection] = useState<string | null>(null)
@@ -537,8 +1130,9 @@ function AnalyzeMode({
     }
   }
 
-  const copyToClipboard = (text: string, section: string) => {
-    navigator.clipboard.writeText(text)
+  const copyAnalysisText = async (text: string, section: string) => {
+    const { copyToClipboard } = await import('@/lib/clipboard')
+    await copyToClipboard(text)
     setCopiedSection(section)
     setTimeout(() => setCopiedSection(null), 2000)
   }
@@ -558,14 +1152,13 @@ function AnalyzeMode({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
         </div>
-        <h3 className="text-lg font-bold text-text mb-2">Upgrade to Core to unlock AI-powered recommendations</h3>
+        <h3 className="text-lg font-bold text-text mb-2">Upgrade to Full to unlock AI-powered recommendations</h3>
         <p className="text-sm text-text-muted mb-4">
           Get specific rewrites for your headline, about section, skills recommendations, and priority actions.
         </p>
-        <Button onClick={() => window.location.href = '/pricing'}>
-          Get Core - $35
+        <Button onClick={openUpgradeModal}>
+          Get Full Access
         </Button>
-        <p className="text-xs text-text-dim mt-2">One-time payment • 30 days access</p>
       </div>
     </Card>
   )
@@ -677,7 +1270,7 @@ function AnalyzeMode({
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => copyToClipboard(analysis.sections.headline.suggested, 'headline')}
+                onClick={() => copyAnalysisText(analysis.sections.headline.suggested, 'headline')}
               >
                 {copiedSection === 'headline' ? 'Copied!' : 'Copy'}
               </Button>
@@ -708,7 +1301,7 @@ function AnalyzeMode({
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => copyToClipboard(analysis.sections.about.suggested, 'about')}
+                onClick={() => copyAnalysisText(analysis.sections.about.suggested, 'about')}
               >
                 {copiedSection === 'about' ? 'Copied!' : 'Copy'}
               </Button>
@@ -855,7 +1448,7 @@ function AnalyzeMode({
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-xs text-gold font-medium">Suggested Rewrite</span>
                                 <button
-                                  onClick={() => copyToClipboard(bullet.rewritten, `bullet-${posIdx}-${bulletIdx}`)}
+                                  onClick={() => copyAnalysisText(bullet.rewritten, `bullet-${posIdx}-${bulletIdx}`)}
                                   className="text-xs text-text-muted hover:text-text"
                                 >
                                   {copiedSection === `bullet-${posIdx}-${bulletIdx}` ? 'Copied!' : 'Copy'}
@@ -894,7 +1487,7 @@ function AnalyzeMode({
                   const allRewrites = analysis.sections.experience.positions
                     ?.flatMap((p: any) => p.bullets?.map((b: any) => b.rewritten).filter(Boolean) || [])
                     .join('\n\n')
-                  copyToClipboard(allRewrites, 'all-rewrites')
+                  copyAnalysisText(allRewrites, 'all-rewrites')
                 }}
                 className="w-full mt-4 py-3 bg-bg-tertiary text-text-muted rounded-lg hover:bg-bg-secondary transition-colors flex items-center justify-center gap-2"
               >
@@ -1155,20 +1748,30 @@ function AnalyzeMode({
           </div>
         </Card>
 
-        <Button
-          className="w-full"
-          onClick={handleAnalyze}
-          disabled={isAnalyzing}
-        >
-          {isAnalyzing ? (
-            <>
-              <span className="animate-spin mr-2">⟳</span>
-              Analyzing Your Profile...
-            </>
-          ) : (
-            '✦ Analyze My Profile'
-          )}
-        </Button>
+        {isPro ? (
+          <Button
+            className="w-full"
+            onClick={handleAnalyze}
+            disabled={isAnalyzing}
+          >
+            {isAnalyzing ? (
+              <>
+                <span className="animate-spin mr-2">⟳</span>
+                Analyzing Your Profile...
+              </>
+            ) : (
+              '✦ Analyze My Profile'
+            )}
+          </Button>
+        ) : (
+          <div className="w-full p-4 bg-gold/10 border border-gold/30 rounded-lg text-center">
+            <p className="text-sm font-medium text-text mb-1">Upgrade to Full for AI-powered LinkedIn analysis</p>
+            <p className="text-xs text-text-muted mb-3">Get detailed scores, headline rewrites, skills audit, and keyword recommendations</p>
+            <UpgradeLink className="inline-block px-4 py-2 bg-gold text-bg-primary rounded font-heading font-bold uppercase text-sm hover:bg-gold-bright transition-colors">
+              View Plans
+            </UpgradeLink>
+          </div>
+        )}
       </div>
     )
   }

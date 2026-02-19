@@ -43,7 +43,7 @@ export default async function ProfilePage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-heading text-2xl font-bold uppercase tracking-wider">My Profile</h1>
-          <p className="text-text-muted text-sm mt-1">Your information will be used to pre-fill resumes</p>
+          <p className="text-text-muted text-sm mt-1">This is your Base Resume — all resumes and career tools pull from this data</p>
         </div>
       </div>
       <ProfileForm
@@ -59,6 +59,7 @@ export default async function ProfilePage() {
         resumeImportLimit={resumeImportCheck.limit}
         bulletTranslationUsage={bulletTranslationCheck}
         userBranch={profile?.branch || ''}
+        userPlan={profile?.tier || 'free'}
       />
 
       {/* Eval Upload History — shows past uploads with re-import capability */}

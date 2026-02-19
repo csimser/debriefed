@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { OnboardingData } from './NewOnboardingWizard'
 import { ResumeImportModal } from '@/components/profile/ResumeImportModal'
 
@@ -17,6 +17,8 @@ interface StepWelcomeProps {
 
 export function StepWelcome({ data, updateData, onNext, onSkip, saving, userId, supabase, loadRelatedData }: StepWelcomeProps) {
   const [showResumeModal, setShowResumeModal] = useState(false)
+  const onNextRef = useRef(onNext)
+  onNextRef.current = onNext
   const [importing, setImporting] = useState(false)
   const [importSuccess, setImportSuccess] = useState(false)
   const [importError, setImportError] = useState('')
@@ -210,7 +212,7 @@ export function StepWelcome({ data, updateData, onNext, onSkip, saving, userId, 
       // 9. Show success banner, then advance to Contact step
       setImportSuccess(true)
       setTimeout(() => {
-        onNext()
+        onNextRef.current()
       }, 1500)
     } catch (error) {
       console.error('Resume import error:', error)
@@ -252,6 +254,13 @@ export function StepWelcome({ data, updateData, onNext, onSkip, saving, userId, 
           </p>
         </div>
       )}
+
+      <div className="mb-6 p-4 bg-gold/10 border border-gold/30 rounded-lg max-w-lg mx-auto text-left">
+        <p className="text-sm text-text-muted">
+          <span className="font-semibold text-gold">Your profile is your Base Resume.</span>{' '}
+          Fill it out once — Debriefed uses it to build tailored resumes, cover letters, and job match analyses.
+        </p>
+      </div>
 
       <div className="bg-bg-card border border-border rounded-lg p-6 mb-8 max-w-lg mx-auto">
         <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">

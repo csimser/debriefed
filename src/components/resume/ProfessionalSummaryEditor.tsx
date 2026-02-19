@@ -3,7 +3,12 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { SUMMARY_TEMPLATES, TEMPLATE_CATEGORIES, getTemplatesByCategory, SummaryTemplate } from '@/lib/summaryTemplates'
-import { populateTemplate, ProfileData } from '@/lib/populateTemplate'
+import { populateTemplate, cleanTemplateOutput, personalizeStaticSummary, ProfileData } from '@/lib/populateTemplate'
+import { polishSummary } from '@/lib/dictionary/outputPolisher'
+import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
+import type { DictProfessionalSummary, DictRankEquivalent } from '@/lib/dictionary/types'
+import { getUserTier, isPaidTier } from '@/lib/tier-utils'
+import { UpgradeLink } from '@/components/modals/UpgradeModal'
 
 interface ProfessionalSummaryEditorProps {
   resumeId: string
@@ -11,6 +16,9 @@ interface ProfessionalSummaryEditorProps {
   profileSummary?: string
   profile?: ProfileData
   onUpdate: (summary: string) => void
+  userPlan?: string
+  targetIndustry?: string
+  targetRole?: string
 }
 
 const MAX_CHARS = 1500
@@ -22,36 +30,149 @@ export function ProfessionalSummaryEditor({
   summary,
   profileSummary,
   profile,
-  onUpdate
+  onUpdate,
+  userPlan,
+  targetIndustry,
+  targetRole
 }: ProfessionalSummaryEditorProps) {
+  const isFree = !isPaidTier(getUserTier({ tier: userPlan }))
   const [isEditing, setIsEditing] = useState(false)
   const [editedSummary, setEditedSummary] = useState(summary || profileSummary || '')
   const [isEnhancing, setIsEnhancing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [summarySource, setSummarySource] = useState<'dictionary' | 'ai' | null>(null)
+  const [dictTemplates, setDictTemplates] = useState<DictProfessionalSummary[]>([])
+  const [rankEquivalents, setRankEquivalents] = useState<DictRankEquivalent[]>([])
+  const [templateFallbacks, setTemplateFallbacks] = useState<string[]>([])
+  const [editingFallback, setEditingFallback] = useState<string | null>(null)
+  const [editingFallbackValue, setEditingFallbackValue] = useState('')
   const supabase = createClient()
+
+  // Load dictionary templates and rank equivalents
+  useEffect(() => {
+    getDictionary().then(dict => {
+      setDictTemplates(dict.professionalSummaries ?? [])
+      setRankEquivalents(dict.rankEquivalents ?? [])
+    }).catch(() => {})
+  }, [])
 
   // Update local state when summary prop changes
   useEffect(() => {
     setEditedSummary(summary || profileSummary || '')
   }, [summary, profileSummary])
 
-  const filteredTemplates = getTemplatesByCategory(selectedCategory)
+  // Get civilian equivalent title from dict_rank_equivalents
+  const getCivilianTitle = (): string | null => {
+    if (!profile?.paygrade || !profile?.branch || rankEquivalents.length === 0) return null
+    const paygrade = (profile.paygrade || '').toUpperCase().trim()
+    const branch = (profile.branch || '').toLowerCase()
+    const match = rankEquivalents.find(r =>
+      r.paygrade.toUpperCase().trim() === paygrade &&
+      r.branch.toLowerCase().includes(branch)
+    )
+    return match?.civilian_equivalent ?? null
+  }
+
+  // Get typical team size from rank equivalents
+  const getTeamSizeFromRankEquivs = (): string | null => {
+    if (!profile?.paygrade || !profile?.branch || rankEquivalents.length === 0) return null
+    const paygrade = (profile.paygrade || '').toUpperCase().trim()
+    const branch = (profile.branch || '').toLowerCase()
+    const match = rankEquivalents.find(r =>
+      r.paygrade.toUpperCase().trim() === paygrade &&
+      r.branch.toLowerCase().includes(branch)
+    )
+    return match?.typical_team_size ?? null
+  }
+
+  // Derive rank_tier from paygrade for dictionary template matching
+  // Values must match DB seed data: junior_enlisted, senior_enlisted, junior_officer, senior_officer, warrant_officer
+  const getRankTier = (): string | null => {
+    if (!profile?.paygrade) return null
+    const pg = profile.paygrade.toUpperCase().trim()
+    if (/^E-?[1-4]$/.test(pg)) return 'junior_enlisted'
+    if (/^E-?[5-9]$/.test(pg)) return 'senior_enlisted'
+    if (/^(W-?[1-5]|CW[1-5])$/.test(pg)) return 'warrant_officer'
+    if (/^O-?[1-3]$/.test(pg)) return 'junior_officer'
+    if (/^O-?[4-9]|O-?10$/.test(pg)) return 'senior_officer'
+    return null
+  }
+
+  // Build merged template list: dictionary templates + hardcoded templates
+  const buildMergedTemplates = (): (SummaryTemplate & { isDictionary?: boolean })[] => {
+    const hardcoded = getTemplatesByCategory(selectedCategory)
+    const rankTier = getRankTier()
+    const industryFilter = (targetIndustry || profile?.targetIndustry || '').toLowerCase()
+
+    // Filter dictionary templates by rank_tier and/or target_industry
+    const matchingDict = dictTemplates.filter(dt => {
+      const tierMatch = !rankTier || dt.rank_tier.toLowerCase() === rankTier
+      const industryMatch = !industryFilter ||
+        dt.target_industry.toLowerCase().includes(industryFilter) ||
+        industryFilter.includes(dt.target_industry.toLowerCase())
+      // Show if either matches; prioritize both-match templates
+      return tierMatch || industryMatch
+    }).sort((a, b) => {
+      // Score: 2 = both match, 1 = one matches
+      const scoreA = (a.rank_tier.toLowerCase() === rankTier ? 1 : 0) +
+        (industryFilter && a.target_industry.toLowerCase().includes(industryFilter) ? 1 : 0)
+      const scoreB = (b.rank_tier.toLowerCase() === rankTier ? 1 : 0) +
+        (industryFilter && b.target_industry.toLowerCase().includes(industryFilter) ? 1 : 0)
+      return scoreB - scoreA
+    })
+
+    // Convert dictionary templates to SummaryTemplate format
+    const dictAsSummary: (SummaryTemplate & { isDictionary: boolean })[] = matchingDict.map(dt => ({
+      id: `dict-${dt.id}`,
+      name: dt.template_name || `${formatRankTier(dt.rank_tier)} — ${dt.target_industry}`,
+      category: 'general' as const,
+      description: dt.target_role
+        ? `For ${formatRankTier(dt.rank_tier)} targeting ${dt.target_role} in ${dt.target_industry}`
+        : `Dictionary template for ${formatRankTier(dt.rank_tier)} targeting ${dt.target_industry}`,
+      template: dt.template_text,
+      isDictionary: true,
+    }))
+
+    // Dictionary templates first (they're free), then hardcoded
+    return [...dictAsSummary, ...hardcoded.map(t => ({ ...t, isDictionary: false }))]
+  }
+
+  const filteredTemplates = buildMergedTemplates()
   const charCount = editedSummary.length
   const isOverLimit = charCount > MAX_CHARS
   const isUnderRecommended = charCount > 0 && charCount < RECOMMENDED_MIN
   const isOverRecommended = charCount > RECOMMENDED_MAX
 
-  const handleSelectTemplate = (template: SummaryTemplate) => {
+  const handleSelectTemplate = (template: SummaryTemplate & { isDictionary?: boolean }) => {
+    let text = template.template
+    let fallbacks: string[] = []
+
     if (profile) {
-      const populated = populateTemplate(template.template, profile)
-      setEditedSummary(populated)
-    } else {
-      // Fallback: use template as-is with placeholders
-      setEditedSummary(template.template)
+      const civilianTitle = getCivilianTitle()
+      const teamSize = getTeamSizeFromRankEquivs()
+
+      if (template.isDictionary) {
+        // Dict templates: first try placeholder fill, then personalize static text
+        const result = populateDictTemplate(text, profile, civilianTitle, teamSize)
+        text = result.text
+        fallbacks = result.fallbacks
+        // Personalize static dict templates by injecting user data via pattern matching
+        text = personalizeStaticSummary(text, profile, civilianTitle, teamSize)
+      }
+
+      const enhancedProfile = civilianTitle
+        ? { ...profile, mosTitle: civilianTitle }
+        : profile
+      text = populateTemplate(text, enhancedProfile)
     }
-    setShowTemplates(false)
+    text = polishSummary(cleanTemplateOutput(text), { tone: 'professional', length: 'standard' })
+    setEditedSummary(text)
+    onUpdate(text)
+    setTemplateFallbacks(fallbacks)
+    setEditingFallback(null)
+    setSummarySource(template.isDictionary ? 'dictionary' : null)
   }
 
   const handleSave = async () => {
@@ -106,6 +227,7 @@ export function ProfessionalSummaryEditor({
         const { enhanced } = await response.json()
         if (enhanced) {
           setEditedSummary(enhanced)
+          setSummarySource('ai')
         }
       }
     } catch (error) {
@@ -155,6 +277,16 @@ export function ProfessionalSummaryEditor({
           {isOverridden && (
             <span className="text-xs px-2 py-0.5 bg-gold/20 text-gold rounded">
               Custom for this resume
+            </span>
+          )}
+          {summarySource === 'dictionary' && (
+            <span className="text-xs px-2 py-0.5 bg-status-green/20 text-status-green rounded">
+              Dictionary template
+            </span>
+          )}
+          {summarySource === 'ai' && (
+            <span className="text-xs px-2 py-0.5 bg-status-amber/20 text-status-amber rounded">
+              AI enhanced
             </span>
           )}
         </div>
@@ -210,25 +342,32 @@ export function ProfessionalSummaryEditor({
                 {showTemplates ? 'Hide Templates' : 'Choose Template'}
               </button>
 
-              {/* Enhance Button */}
-              <button
-                type="button"
-                onClick={handleEnhance}
-                disabled={isEnhancing || !editedSummary.trim()}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gold/20 hover:bg-gold/30 border border-gold/50 disabled:bg-bg-tertiary disabled:border-border disabled:cursor-not-allowed text-gold disabled:text-text-dim text-xs font-semibold rounded transition-colors"
-              >
-                {isEnhancing ? (
-                  <>
-                    <span className="animate-spin">&#8635;</span>
-                    Enhancing...
-                  </>
-                ) : (
-                  <>
-                    <span>&#10024;</span>
-                    Enhance
-                  </>
-                )}
-              </button>
+              {/* Enhance Button (paid only) */}
+              {isFree ? (
+                <span className="text-xs text-text-dim">
+                  <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">Upgrade to Core</UpgradeLink>
+                  {' '}for AI enhancement
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleEnhance}
+                  disabled={isEnhancing || !editedSummary.trim()}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-gold/20 hover:bg-gold/30 border border-gold/50 disabled:bg-bg-tertiary disabled:border-border disabled:cursor-not-allowed text-gold disabled:text-text-dim text-xs font-semibold rounded transition-colors"
+                >
+                  {isEnhancing ? (
+                    <>
+                      <span className="animate-spin">&#8635;</span>
+                      Enhancing...
+                    </>
+                  ) : (
+                    <>
+                      <span>&#10024;</span>
+                      Enhance
+                    </>
+                  )}
+                </button>
+              )}
 
               {/* Reset to Profile button */}
               {profileSummary && editedSummary !== profileSummary && (
@@ -292,8 +431,8 @@ export function ProfessionalSummaryEditor({
                       <span className="font-semibold text-sm text-text group-hover:text-gold">
                         {template.name}
                       </span>
-                      <span className="text-xs px-2 py-0.5 bg-bg-secondary text-text-dim rounded">
-                        {template.category}
+                      <span className="text-xs px-2 py-0.5 bg-status-green/20 text-status-green rounded">
+                        Free
                       </span>
                     </div>
                     <p className="text-xs text-text-dim">{template.description}</p>
@@ -309,13 +448,38 @@ export function ProfessionalSummaryEditor({
         </div>
       ) : (
         <div>
-          <p className="text-sm text-text-secondary leading-relaxed">
-            {summary || profileSummary || (
+          <div className="text-sm text-text-secondary leading-relaxed">
+            {!(summary || profileSummary) ? (
               <span className="text-text-dim italic">
                 No professional summary yet. Click Edit to add one.
               </span>
+            ) : templateFallbacks.length > 0 ? (
+              <SummaryWithFallbacks
+                text={summary || profileSummary || ''}
+                fallbacks={templateFallbacks}
+                editingFallback={editingFallback}
+                editingValue={editingFallbackValue}
+                onStartEdit={(fb) => { setEditingFallback(fb); setEditingFallbackValue(fb) }}
+                onChangeEdit={setEditingFallbackValue}
+                onConfirmEdit={(oldVal) => {
+                  const newText = (summary || profileSummary || '').replace(oldVal, editingFallbackValue)
+                  onUpdate(newText)
+                  setEditedSummary(newText)
+                  setTemplateFallbacks(prev => prev.filter(f => f !== oldVal))
+                  setEditingFallback(null)
+                }}
+                onCancelEdit={() => setEditingFallback(null)}
+              />
+            ) : (
+              <span>{summary || profileSummary}</span>
             )}
-          </p>
+          </div>
+
+          {templateFallbacks.length > 0 && (
+            <p className="text-xs text-gold mt-2">
+              Highlighted text is generic — click to customize with your specifics.
+            </p>
+          )}
 
           {/* Show "Clear override" option when viewing a custom summary */}
           {isOverridden && (
@@ -331,4 +495,271 @@ export function ProfessionalSummaryEditor({
       )}
     </div>
   )
+}
+
+/** Renders summary text with highlighted fallback sections that are inline-editable */
+function SummaryWithFallbacks({
+  text,
+  fallbacks,
+  editingFallback,
+  editingValue,
+  onStartEdit,
+  onChangeEdit,
+  onConfirmEdit,
+  onCancelEdit,
+}: {
+  text: string
+  fallbacks: string[]
+  editingFallback: string | null
+  editingValue: string
+  onStartEdit: (fb: string) => void
+  onChangeEdit: (value: string) => void
+  onConfirmEdit: (oldVal: string) => void
+  onCancelEdit: () => void
+}) {
+  // Split text into segments: regular text and fallback matches
+  // Build a regex that matches any of the fallback strings
+  const activeFallbacks = fallbacks.filter(fb => text.includes(fb))
+  if (activeFallbacks.length === 0) {
+    return <span>{text}</span>
+  }
+
+  const escaped = activeFallbacks.map(fb => fb.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const pattern = new RegExp(`(${escaped.join('|')})`, 'g')
+  const parts = text.split(pattern)
+
+  return (
+    <span>
+      {parts.map((part, i) => {
+        if (activeFallbacks.includes(part)) {
+          if (editingFallback === part) {
+            return (
+              <span key={i} className="inline-flex items-center gap-1">
+                <input
+                  type="text"
+                  value={editingValue}
+                  onChange={(e) => onChangeEdit(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') onConfirmEdit(part)
+                    if (e.key === 'Escape') onCancelEdit()
+                  }}
+                  autoFocus
+                  className="inline-block px-1 py-0.5 bg-bg-secondary border border-gold rounded text-sm text-text min-w-[80px] max-w-[200px] focus:ring-1 focus:ring-gold/25"
+                  style={{ width: `${Math.max(80, editingValue.length * 8)}px` }}
+                />
+                <button
+                  onClick={() => onConfirmEdit(part)}
+                  className="text-xs text-gold hover:text-gold-bright"
+                  title="Confirm"
+                >
+                  ✓
+                </button>
+                <button
+                  onClick={onCancelEdit}
+                  className="text-xs text-text-dim hover:text-text-muted"
+                  title="Cancel"
+                >
+                  ✕
+                </button>
+              </span>
+            )
+          }
+          return (
+            <span
+              key={i}
+              onClick={() => onStartEdit(part)}
+              className="bg-gold/20 px-1 rounded cursor-pointer hover:bg-gold/30 transition-colors"
+              title="Click to customize"
+            >
+              {part}
+            </span>
+          )
+        }
+        return <span key={i}>{part}</span>
+      })}
+    </span>
+  )
+}
+
+/** Format rank_tier for display */
+function formatRankTier(tier: string): string {
+  const map: Record<string, string> = {
+    'junior_enlisted': 'Junior Enlisted',
+    'senior_enlisted': 'Senior Enlisted',
+    'warrant_officer': 'Warrant Officer',
+    'junior_officer': 'Junior Officer',
+    'senior_officer': 'Senior Officer',
+  }
+  return map[tier.toLowerCase()] ?? tier.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+/** Smart fallback values for placeholders when user data is missing */
+const PLACEHOLDER_FALLBACKS: Record<string, string> = {
+  // Team/org size
+  'team_size': 'cross-functional teams',
+  'your team size': 'cross-functional teams',
+  'num_personnel': 'multiple teams',
+  // Budget/value
+  'budget': 'multi-million-dollar budgets',
+  'dollar_amount': 'significant budgets',
+  'budget_amount': 'departmental budgets',
+  // Specialized area — filled dynamically, empty string means remove clause
+  'analysis_area': '',
+  'field': '',
+  'field_of_study': '',
+  // Metrics we can't know
+  'num_products': 'numerous',
+  'num_systems': 'multiple',
+  'num_projects': 'multiple',
+  'percentage': 'measurable',
+  'adoption_scope': 'organization-wide',
+  // Skills/certs — filled dynamically
+  'key_achievement': 'delivering measurable results',
+  'key_strength': 'operational excellence',
+  'company_name': 'the organization',
+  // Federal-specific
+  'grade_level': 'target grade',
+  'series': 'target series',
+}
+
+interface DictTemplateResult {
+  text: string
+  fallbacks: string[]
+}
+
+/**
+ * Populate dictionary template placeholders from profile data.
+ *
+ * Three-pass approach:
+ * 1. Fill from user data (real values)
+ * 2. Smart fallbacks for remaining placeholders (generic but professional text)
+ * 3. Remove any remaining raw {{placeholder}} or [placeholder] patterns cleanly
+ *
+ * Returns the filled text AND a list of fallback strings used (for UI highlighting).
+ */
+function populateDictTemplate(
+  template: string,
+  profile: ProfileData,
+  civilianTitle: string | null,
+  teamSizeFromRank?: string | null,
+): DictTemplateResult {
+  let result = template
+  const fallbacksUsed: string[] = []
+
+  // Helper: use real value or fallback, tracking which fallbacks were used
+  const fill = (value: string | undefined | null, fallback: string): string => {
+    if (value) return value
+    if (fallback) fallbacksUsed.push(fallback)
+    return fallback
+  }
+
+  // === PASS 1: Fill from user data ===
+
+  const userSkills = profile.skills ?? []
+  const certs = profile.certifications ?? []
+  const edu = profile.education ?? []
+  const topDegree = edu[0]?.degree || ''
+  const topField = edu[0]?.field || ''
+  // Derived specialized area: education field > target_industry > target_role area > generic
+  const specializedArea = topField || profile.targetIndustry || profile.targetRole || ''
+
+  // Core fields
+  result = result.replace(/\{\{civilian_title\}\}/g, fill(civilianTitle || profile.targetRole, 'operations leadership'))
+  result = result.replace(/\{\{years\}\}/g, fill(profile.yearsOfService?.toString(), '10+'))
+  result = result.replace(/\{\{team_size\}\}/g, fill(teamSizeFromRank || profile.teamSize?.toString(), 'cross-functional teams'))
+  result = result.replace(/\{\{target_role\}\}/g, fill(profile.targetRole, 'leadership'))
+  result = result.replace(/\{\{target_industry\}\}/g, fill(profile.targetIndustry, 'the private sector'))
+
+  // Clearance
+  if (profile.clearance && profile.clearance !== 'none' && profile.clearance !== '') {
+    const clearanceDisplay = profile.clearance.replace(/_/g, '/').replace(/-/g, '/').replace(/\bts\b/gi, 'TS').replace(/\bsci\b/gi, 'SCI').replace(/\btop\b/gi, 'Top').replace(/\bsecret\b/gi, 'Secret')
+    result = result.replace(/\{\{clearance\}\}/g, clearanceDisplay)
+  } else {
+    result = result.replace(/\{\{clearance\}\}\s*security\s*clearance\.?\s*/gi, '')
+    result = result.replace(/\{\{clearance\}\}/g, '')
+  }
+
+  // Certifications
+  result = result.replace(/\{\{certification\}\}/g, fill(certs[0], 'industry certification'))
+  result = result.replace(/\{\{cert_1\}\}/g, fill(certs[0], 'industry certification'))
+  result = result.replace(/\{\{cert_2\}\}/g, certs[1] || '')
+
+  // Skills — from user's actual skills, NEVER target_role
+  result = result.replace(/\{\{skill_1\}\}/g, fill(userSkills[0], 'strategic planning'))
+  result = result.replace(/\{\{skill_2\}\}/g, fill(userSkills[1], 'process improvement'))
+  result = result.replace(/\{\{skill_3\}\}/g, fill(userSkills[2], 'team leadership'))
+
+  // Education
+  result = result.replace(/\{\{degree\}\}/g, fill(topDegree, 'advanced degree'))
+  result = result.replace(/\{\{field\}\}/g, fill(topField, specializedArea || 'operations and program management'))
+  result = result.replace(/\{\{field_of_study\}\}/g, fill(topField, specializedArea || 'operations and program management'))
+  result = result.replace(/\{\{analysis_area\}\}/g, fill(specializedArea, 'operations and program management'))
+
+  // Metrics — smart generic text
+  result = result.replace(/\{\{num_products\}\}/g, fill(null, 'numerous'))
+  result = result.replace(/\{\{num_systems\}\}/g, fill(null, 'multiple'))
+  result = result.replace(/\{\{budget\}\}/g, fill(null, 'multi-million-dollar budgets'))
+  result = result.replace(/\{\{dollar_amount\}\}/g, fill(null, 'significant budgets'))
+  result = result.replace(/\{\{key_achievement\}\}/g, fill(null, 'delivering measurable results'))
+  result = result.replace(/\{\{company_name\}\}/g, fill(null, 'the organization'))
+  result = result.replace(/\{\{key_strength\}\}/g, fill(profile.specialty, 'operational excellence'))
+
+  // === PASS 2: Bracket-style placeholders — fill with real data or smart fallback ===
+  result = result.replace(/\[team size\]/gi, fill(teamSizeFromRank, 'cross-functional teams'))
+  result = result.replace(/\[budget amount\]/gi, fill(null, 'multi-million-dollar budgets'))
+  result = result.replace(/\[degree\]/gi, fill(topDegree, 'advanced degree'))
+  let skillIdx = 0
+  result = result.replace(/\[key skill\]/gi, () => {
+    return fill(userSkills[skillIdx++], skillIdx <= 1 ? 'strategic planning' : 'process improvement')
+  })
+  result = result.replace(/\[certification\]/gi, fill(certs[0], 'industry certification'))
+  result = result.replace(/\[your team size\]/gi, fill(teamSizeFromRank, 'cross-functional teams'))
+  result = result.replace(/\[your key skill\]/gi, () => {
+    return fill(userSkills[skillIdx++], 'cross-functional leadership')
+  })
+  result = result.replace(/\[your certification\]/gi, fill(certs[0], 'industry certification'))
+  result = result.replace(/\[your degree\]/gi, fill(topDegree, 'advanced degree'))
+  result = result.replace(/\[your field of study\]/gi, fill(topField, specializedArea || 'operations and program management'))
+  result = result.replace(/\[your area of expertise\]/gi, fill(specializedArea, 'operations and program management'))
+
+  // === PASS 3: Catch-all — replace remaining {{placeholder}} with smart fallbacks ===
+  result = result.replace(/\{\{(\w+)\}\}/g, (_, field) => {
+    const key = field.toLowerCase()
+    const fb = PLACEHOLDER_FALLBACKS[key]
+    if (fb !== undefined) {
+      if (fb === '') return '' // Empty fallback = remove
+      fallbacksUsed.push(fb)
+      return fb
+    }
+    // Unknown placeholder — use professional generic
+    const generic = `${field.replace(/_/g, ' ')}`
+    fallbacksUsed.push(generic)
+    return generic
+  })
+
+  // Catch remaining [bracket placeholders]
+  result = result.replace(/\[([^\]]+)\]/g, (match, inner) => {
+    const key = inner.toLowerCase()
+    const fb = PLACEHOLDER_FALLBACKS[key]
+    if (fb !== undefined) {
+      if (fb === '') return ''
+      fallbacksUsed.push(fb)
+      return fb
+    }
+    // Unknown bracket placeholder — remove brackets, use as-is
+    fallbacksUsed.push(inner)
+    return inner
+  })
+
+  // === PASS 4: Formatting cleanup ===
+  result = result.replace(/\s*and\s*\[\]\s*/g, ' ')
+  result = result.replace(/\s+,/g, ',')
+  result = result.replace(/\s+\./g, '.')
+  result = result.replace(/,\s*,/g, ',')
+  result = result.replace(/\s{2,}/g, ' ')
+  // Remove orphaned empty clauses (", ," or ", and ,")
+  result = result.replace(/,\s*and\s*,/g, ',')
+  result = result.replace(/,\s*and\s*\./g, '.')
+
+  return { text: result.trim(), fallbacks: [...new Set(fallbacksUsed)] }
 }

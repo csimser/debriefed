@@ -75,7 +75,8 @@ export default function AdminBetaCodesPage() {
 
   // Copy code to clipboard
   const copyCode = async (code: string) => {
-    await navigator.clipboard.writeText(code)
+    const { copyToClipboard } = await import('@/lib/clipboard')
+    await copyToClipboard(code)
     setCopiedCode(code)
     setTimeout(() => setCopiedCode(null), 2000)
   }
@@ -199,7 +200,8 @@ export default function AdminBetaCodesPage() {
   // Copy all bulk codes
   const copyAllBulkCodes = async () => {
     if (!bulkResult) return
-    await navigator.clipboard.writeText(bulkResult.join('\n'))
+    const { copyToClipboard } = await import('@/lib/clipboard')
+    await copyToClipboard(bulkResult.join('\n'))
     setCopiedCode('all')
     setTimeout(() => setCopiedCode(null), 2000)
   }

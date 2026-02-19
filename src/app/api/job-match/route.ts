@@ -5,6 +5,8 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logActivity } from '@/lib/usage-tracking'
 import { withAISecurity, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+import { callWithEscalation, getModelString } from '@/lib/ai-model'
+import { captureFullTextOutput, captureTermPairs, type CaptureContext, type TermPair } from '@/lib/ai-translation-capture'
 import crypto from 'crypto'
 
 const anthropic = new Anthropic({
@@ -398,12 +400,15 @@ JOB-SPECIFIC TAILORING:
   * For management roles: emphasize leadership, budgets, team development
   * For technical roles: emphasize technical skills, systems, problem-solving`
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: prompt }],
-    })
+    const { response, model_used } = await callWithEscalation(
+      anthropic,
+      {
+        max_tokens: 4000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: prompt }],
+      },
+      { expectsJson: true }
+    )
 
     const text = (response.content[0] as { text: string }).text.trim()
 
@@ -429,7 +434,7 @@ JOB-SPECIFIC TAILORING:
     const inputTokens = response.usage?.input_tokens || 0
     const outputTokens = response.usage?.output_tokens || 0
     const tokensUsed = inputTokens + outputTokens
-    await logAPIUsage(ctx.userId, 'job-match', tokensUsed, 'claude-sonnet-4-20250514')
+    await logAPIUsage(ctx.userId, 'job-match', tokensUsed, getModelString(model_used))
 
     // Log activity
     await logActivity(ctx.userId, 'job_analysis_run', {
@@ -444,7 +449,27 @@ JOB-SPECIFIC TAILORING:
       expires: Date.now() + CACHE_TTL,
     })
 
-    return NextResponse.json({ analysis })
+    // Non-blocking: capture skill mappings for dictionary pipeline
+    const captureCtx: CaptureContext = {
+      userId: ctx.userId,
+      branch: profile?.branch || undefined,
+      targetIndustry: targetIndustry || undefined,
+      targetRole: targetRole || undefined,
+      modelUsed: model_used,
+    }
+    // Capture bullet suggestions as term-level translations
+    const bulletPairs: TermPair[] = (analysis.bulletSuggestions || [])
+      .filter((s: any) => s.original && s.suggested && s.original !== s.suggested)
+      .map((s: any) => ({ military: s.original, civilian: s.suggested }))
+    if (bulletPairs.length > 0) {
+      captureTermPairs('job_match', bulletPairs, `Job match for ${jobPosting.title || 'unknown'}`, captureCtx)
+    }
+    // Capture overall assessment as full text
+    if (analysis.assessment) {
+      captureFullTextOutput('job_match', `Analysis for ${jobPosting.title || 'role'} at ${jobPosting.company || 'company'}`, analysis.assessment, captureCtx)
+    }
+
+    return NextResponse.json({ analysis, model_used })
   }
 )
 

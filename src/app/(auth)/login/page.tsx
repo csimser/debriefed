@@ -12,84 +12,83 @@ import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
 function LoginForm() {
   const searchParams = useSearchParams()
   const confirmed = searchParams.get('confirmed') === 'true'
-  const passwordUpdated = searchParams.get('message') === 'password_updated'
 
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [showResendConfirmation, setShowResendConfirmation] = useState(false)
-  const [resendLoading, setResendLoading] = useState(false)
-  const [resendMessage, setResendMessage] = useState('')
   const router = useRouter()
   const supabase = createClient()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const trackLogin = () => {
+    fetch('/api/auth/track-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    }).catch(() => {})
+  }
+
+  // OTP: send code
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!email) {
+      setError('Please enter your email address')
+      return
+    }
     setLoading(true)
     setError('')
-    setShowResendConfirmation(false)
-    setResendMessage('')
 
-    // Authenticate the user
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    // Send OTP — always show the same generic message regardless of outcome
+    // to prevent email enumeration attacks
+    await supabase.auth.signInWithOtp({
       email,
-      password
+      options: { shouldCreateUser: false },
     })
 
-    if (authError) {
-      setError(authError.message)
-      if (authError.message.toLowerCase().includes('email not confirmed') ||
-          authError.message.toLowerCase().includes('email confirmation')) {
-        setShowResendConfirmation(true)
-      }
+    // Always transition to the verify screen with a generic message,
+    // whether the email exists or not
+    setOtpSent(true)
+    setLoading(false)
+  }
+
+  // OTP: verify code
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!otpCode || otpCode.length !== 6) {
+      setError('Please enter the 6-digit code')
+      return
+    }
+    setLoading(true)
+    setError('')
+
+    const { data, error: verifyError } = await supabase.auth.verifyOtp({
+      email,
+      token: otpCode,
+      type: 'email',
+    })
+
+    if (verifyError) {
+      setError(verifyError.message)
       setLoading(false)
       return
     }
 
-    if (!authData.user) {
-      setError('Login failed. Please try again.')
+    if (!data.user) {
+      setError('Verification failed. Please try again.')
       setLoading(false)
       return
     }
 
-    // Track last login (fire and forget - don't block on this)
-    fetch('/api/auth/track-login', { method: 'POST' }).catch(() => {})
-
-    // Success - proceed to dashboard
+    trackLogin()
     router.push('/dashboard')
     router.refresh()
   }
 
-  const handleResendConfirmation = async () => {
-    if (!email) {
-      setResendMessage('Please enter your email address above first.')
-      return
-    }
-
-    setResendLoading(true)
-    setResendMessage('')
-
-    try {
-      const response = await fetch('/api/auth/resend-confirmation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setResendMessage('Confirmation email sent! Check your inbox (and spam/junk folder) for an email from noreply@getdebriefed.co.')
-        setShowResendConfirmation(false)
-      } else {
-        setResendMessage(data.error || 'Failed to resend confirmation email.')
-      }
-    } catch {
-      setResendMessage('An error occurred. Please try again.')
-    } finally {
-      setResendLoading(false)
-    }
+  const resetOtp = () => {
+    setOtpSent(false)
+    setOtpCode('')
+    setError('')
   }
 
   return (
@@ -108,78 +107,88 @@ function LoginForm() {
         </div>
       )}
 
-      {/* Password updated success message */}
-      {passwordUpdated && (
-        <div className="bg-status-green/10 border border-status-green/20 rounded-md p-3 mb-4">
-          <p className="text-sm text-status-green flex items-center gap-2">
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            Password updated successfully! Please sign in.
+      {/* OTP Send Form */}
+      {!otpSent && (
+        <form onSubmit={handleSendOtp} className="space-y-4">
+          <Input
+            id="otp-email"
+            label="Email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            required
+          />
+
+          <p className="text-xs text-text-muted">
+            We&apos;ll send a 6-digit code to your email. No password needed.
           </p>
-        </div>
+
+          {error && (
+            <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
+              <p className="text-sm text-status-red">{error}</p>
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Sending Code...' : 'Send Sign-In Code'}
+          </Button>
+        </form>
       )}
 
-      <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
-        <Input
-          id="login-email"
-          label="Email"
-          type="email"
-          name="email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="your@email.com"
-          required
-        />
-        <Input
-          id="login-password"
-          label="Password"
-          type="password"
-          name="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
-          required
-        />
-
-        <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm text-text-muted">
-            <input type="checkbox" className="rounded border-border" />
-            Remember me
-          </label>
-          <Link href="/forgot-password" className="text-sm text-gold hover:text-gold-bright">
-            Forgot password?
-          </Link>
-        </div>
-
-        {error && (
-          <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
-            <p className="text-sm text-status-red">{error}</p>
-            {showResendConfirmation && (
-              <button
-                type="button"
-                onClick={handleResendConfirmation}
-                disabled={resendLoading}
-                className="mt-2 text-sm text-gold hover:text-gold-bright underline disabled:opacity-50"
-              >
-                {resendLoading ? 'Sending...' : 'Resend confirmation email'}
-              </button>
-            )}
+      {/* OTP Verify Form */}
+      {otpSent && (
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <div className="bg-gold-dim border border-gold/30 rounded-md p-3 mb-2">
+            <p className="text-sm text-gold">
+              If an account exists for that email address, we&apos;ve sent a 6-digit code. Check your inbox and spam folder.
+            </p>
           </div>
-        )}
 
-        {resendMessage && (
-          <div className={`rounded-md p-3 ${resendMessage.includes('sent') ? 'bg-status-green/10 border border-status-green/20' : 'bg-status-yellow/10 border border-status-yellow/20'}`}>
-            <p className={`text-sm ${resendMessage.includes('sent') ? 'text-status-green' : 'text-status-yellow'}`}>{resendMessage}</p>
+          <Input
+            id="otp-code"
+            label="6-Digit Code"
+            type="text"
+            name="otp-code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            value={otpCode}
+            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            placeholder="000000"
+            maxLength={6}
+            required
+          />
+
+          {error && (
+            <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
+              <p className="text-sm text-status-red">{error}</p>
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={loading || otpCode.length !== 6}>
+            {loading ? 'Verifying...' : 'Verify & Sign In'}
+          </Button>
+
+          <div className="flex items-center justify-between text-sm">
+            <button
+              type="button"
+              onClick={resetOtp}
+              className="text-text-muted hover:text-gold transition-colors"
+            >
+              ← Change email
+            </button>
+            <button
+              type="button"
+              onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); handleSendOtp(new Event('submit') as any) }}
+              className="text-gold hover:text-gold-bright transition-colors"
+            >
+              Resend code
+            </button>
           </div>
-        )}
-
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign In'}
-        </Button>
-      </form>
+        </form>
+      )}
 
       <div className="mt-6 pt-6 border-t border-border">
         <p className="text-sm text-text-muted text-center">
@@ -197,7 +206,6 @@ function LoginFormLoading() {
       <div className="animate-pulse">
         <div className="h-6 bg-bg-tertiary rounded w-24 mx-auto mb-6"></div>
         <div className="space-y-4">
-          <div className="h-12 bg-bg-tertiary rounded"></div>
           <div className="h-12 bg-bg-tertiary rounded"></div>
           <div className="h-4 bg-bg-tertiary rounded w-32"></div>
           <div className="h-12 bg-bg-tertiary rounded"></div>

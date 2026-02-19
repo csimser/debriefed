@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { withAISecurity, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
+import { callWithEscalation, getModelString } from '@/lib/ai-model'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -175,13 +176,19 @@ Output the version with more numbers:`,
     }
 
     let response
+    let model_used: 'haiku' | 'sonnet' = 'haiku'
     try {
-      response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: REFINE_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: prompt }],
-      })
+      const result = await callWithEscalation(
+        anthropic,
+        {
+          max_tokens: 1000,
+          system: REFINE_SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: prompt }],
+        },
+        { expectsJson: false }
+      )
+      response = result.response
+      model_used = result.model_used
     } catch (apiError: any) {
       console.error('Anthropic API error:', apiError.message)
       if (apiError.status === 429) {
@@ -205,13 +212,14 @@ Output the version with more numbers:`,
 
     // Track token usage (feature count handled by withAISecurity wrapper)
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 1000
-    await logAPIUsage(ctx.userId, 'refine-cover-letter', tokensUsed, 'claude-sonnet-4-20250514')
+    await logAPIUsage(ctx.userId, 'refine-cover-letter', tokensUsed, getModelString(model_used))
 
     console.log('Cover letter refined successfully')
 
     return NextResponse.json({
       refined,
-      validationIssues: validation.issues.length > 0 ? validation.issues : undefined
+      validationIssues: validation.issues.length > 0 ? validation.issues : undefined,
+      model_used,
     })
   }
 )

@@ -90,19 +90,6 @@ function CallbackHandler() {
     // Check if we have a session now
     const hasSession = await checkSession()
 
-    // Handle recovery flow
-    if (type === 'recovery') {
-      if (hasSession) {
-        router.replace('/reset-password')
-        return
-      } else {
-        console.error('Recovery flow: No session found after retries')
-        setStatus('error')
-        setErrorMessage('Your password reset link has expired. Please request a new one.')
-        return
-      }
-    }
-
     // For non-recovery flows, we need a session
     if (!hasSession) {
       console.error('No session found')
@@ -149,15 +136,8 @@ function CallbackHandler() {
           </h1>
           <p className="text-text-muted mb-6">{errorMessage}</p>
           <div className="space-y-3">
-            {errorMessage.includes('expired') && (
-              <a href="/forgot-password" className="block">
-                <button className="w-full bg-gold text-bg-primary font-semibold py-3 px-4 rounded-md hover:bg-gold-bright transition-colors">
-                  Request New Reset Link
-                </button>
-              </a>
-            )}
             <a href="/login" className="block">
-              <button className="w-full bg-bg-tertiary border border-border text-text font-semibold py-3 px-4 rounded-md hover:bg-bg-secondary transition-colors">
+              <button className="w-full bg-gold text-bg-primary font-semibold py-3 px-4 rounded-md hover:bg-gold-bright transition-colors">
                 Back to Sign In
               </button>
             </a>

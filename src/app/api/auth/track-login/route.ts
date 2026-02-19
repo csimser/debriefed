@@ -24,14 +24,14 @@ export async function POST() {
       )
     }
 
-    // Update last_login_at
+    // Update profile
     const { error } = await supabaseAdmin
       .from('profiles')
       .update({ last_login_at: new Date().toISOString() })
       .eq('user_id', user.id)
 
     if (error) {
-      console.error('Failed to update last_login_at:', error)
+      console.error('Failed to update login tracking:', error)
       // Don't fail the login if tracking fails
       return NextResponse.json({ success: true, tracked: false })
     }

@@ -78,65 +78,75 @@ export function canAccessPremiumTemplates(tier: Tier): boolean {
  * Core and Full tiers have access
  */
 export function canAccessLinkedInAnalyzer(tier: Tier): boolean {
-  return hasAccess(tier, 'core')
+  return hasAccess(tier, 'full')
 }
 
 // Usage limits per tier (matches pricing-config.ts)
+// Note: 'resumes' is kept as an alias for 'private_resumes' for backward compat
+// with ResumeEditor and ResumeSidebar components
 export const TIER_LIMITS = {
   expired: {
+    private_resumes: 999,
+    federal_resumes: 999,
+    resumes: 999,           // alias for private_resumes (backward compat)
     cover_letters: 0,
-    resumes: 0,
     resume_imports: 0,
-    job_analyses: 0,
+    job_match_analysis: 0,
     ai_summaries: 0,
-    linkedin_headlines: 0,
-    linkedin_summaries: 0,
-    linkedin_analyses: 0,
+    linkedin_headline: 0,
+    linkedin_summary: 0,
+    linkedin_profile_analysis: 0,
     linkedin_recommendations: 0,
     eval_uploads: 0,
     bullet_translations: 0,
     downloads: 999,
   },
   free: {
-    cover_letters: 1,
-    resumes: 1,
-    resume_imports: 1,
-    job_analyses: 1,
-    ai_summaries: 1,
-    linkedin_headlines: 1,
-    linkedin_summaries: 1,
-    linkedin_analyses: 1,
+    private_resumes: 5,
+    federal_resumes: 5,
+    resumes: 5,             // alias for private_resumes (backward compat)
+    cover_letters: 999,
+    resume_imports: 3,
+    job_match_analysis: 999,
+    ai_summaries: 0,
+    linkedin_headline: 0,
+    linkedin_summary: 0,
+    linkedin_profile_analysis: 0,
     linkedin_recommendations: 0,
-    eval_uploads: 2,
-    bullet_translations: 10,
+    eval_uploads: 1,
+    bullet_translations: 999,
     downloads: 999,
   },
   core: {
-    cover_letters: 10,
-    resumes: 5,
-    resume_imports: 5,
-    job_analyses: 15,
-    ai_summaries: 10,
-    linkedin_headlines: 15,
-    linkedin_summaries: 15,
-    linkedin_analyses: 10,
-    linkedin_recommendations: 999999,
-    eval_uploads: 10,
-    bullet_translations: 50,
+    private_resumes: 10,
+    federal_resumes: 5,
+    resumes: 10,            // alias for private_resumes (backward compat)
+    cover_letters: 5,
+    resume_imports: 999,
+    job_match_analysis: 999,
+    ai_summaries: 999,
+    linkedin_headline: 999,
+    linkedin_summary: 999,
+    linkedin_profile_analysis: 0,
+    linkedin_recommendations: 0,
+    eval_uploads: 5,
+    bullet_translations: 999,
     downloads: 999,
   },
   full: {
-    cover_letters: 30,
-    resumes: 30,
-    resume_imports: 999999,
-    job_analyses: 45,
-    ai_summaries: 999999,
-    linkedin_headlines: 999999,
-    linkedin_summaries: 999999,
-    linkedin_analyses: 999999,
-    linkedin_recommendations: 999999,
-    eval_uploads: 30,
-    bullet_translations: 150,
+    private_resumes: 999,
+    federal_resumes: 999,
+    resumes: 999,           // alias for private_resumes (backward compat)
+    cover_letters: 999,
+    resume_imports: 999,
+    job_match_analysis: 999,
+    ai_summaries: 999,
+    linkedin_headline: 999,
+    linkedin_summary: 999,
+    linkedin_profile_analysis: 999,
+    linkedin_recommendations: 999,
+    eval_uploads: 20,
+    bullet_translations: 999,
     downloads: 999,
   },
 } as const
@@ -146,7 +156,7 @@ export const TIER_LIMITS = {
  * Core and Full tiers have access
  */
 export function canAccessLinkedInRecommendations(tier: Tier): boolean {
-  return hasAccess(tier, 'core')
+  return hasAccess(tier, 'full')
 }
 
 export type LimitFeature = keyof typeof TIER_LIMITS.free

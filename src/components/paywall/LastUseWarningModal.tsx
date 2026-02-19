@@ -1,8 +1,8 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { useUpgradeModal } from '@/components/modals/UpgradeModal'
 
 interface LastUseWarningModalProps {
   featureName: string
@@ -22,13 +22,13 @@ export function LastUseWarningModal({
   onViewPricing,
   customMessage,
 }: LastUseWarningModalProps) {
-  const router = useRouter()
+  const { openUpgradeModal } = useUpgradeModal()
 
   const handleViewPricing = () => {
     if (onViewPricing) {
       onViewPricing()
     } else {
-      router.push('/pricing')
+      openUpgradeModal()
     }
   }
 

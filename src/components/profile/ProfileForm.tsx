@@ -29,6 +29,7 @@ interface ProfileFormProps {
   resumeImportLimit?: number
   bulletTranslationUsage?: { used: number; limit: number; remaining: number; allowed: boolean }
   userBranch?: string
+  userPlan?: string
 }
 
 // Use consistent military constants (with empty option for select)
@@ -53,7 +54,7 @@ const CLEARANCES = [
   { value: 'ts_sci', label: 'TS/SCI' },
 ]
 
-export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImportLimit, bulletTranslationUsage, userBranch }: ProfileFormProps) {
+export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImportLimit, bulletTranslationUsage, userBranch, userPlan }: ProfileFormProps) {
   const supabase = createClient()
 
   // Initialize state from initialData
@@ -179,12 +180,9 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
     setProfile(prev => ({ ...prev, [field]: value }))
   }
 
-  // Handle imported resume data
+  // Handle imported resume data — with deduplication
   const handleResumeImport = async (data: any) => {
-    console.log('=== RESUME IMPORT DEBUG ===')
-    console.log('1. Incoming data:', JSON.stringify(data, null, 2))
-
-    // Update profile fields (only if they're currently empty)
+    // ─── Profile fields (only if currently empty) ────────────────
     const updates: any = {}
     if (data.contact) {
       if (!profile.phone && data.contact.phone) updates.phone = data.contact.phone
@@ -198,99 +196,84 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
     if (data.military_info) {
       if (!profile.branch && data.military_info.branch) updates.branch = data.military_info.branch
       if (!profile.rank && data.military_info.rank) updates.rank = data.military_info.rank
-      if (!profile.years_of_service && data.military_info.years_of_service) {
-        updates.years_of_service = String(data.military_info.years_of_service)
-      }
-    }
-    if (!profile.clearance && data.clearance) {
-      const clearanceMap: Record<string, string> = {
-        'None': 'none',
-        'Confidential': 'confidential',
-        'Secret': 'secret',
-        'Top Secret': 'top_secret',
-        'TS/SCI': 'ts_sci',
-      }
-      updates.clearance = clearanceMap[data.clearance] || data.clearance.toLowerCase()
     }
 
-    console.log('2. Profile updates to apply:', updates)
+    console.log('[ImportSave] Contact from parsed data:', data.contact)
+    console.log('[ImportSave] Profile updates to save:', updates)
 
-    // Save profile updates DIRECTLY to database (don't rely on autosave)
     if (Object.keys(updates).length > 0) {
-      console.log('3. Saving profile updates to database...')
+      console.log('[ImportSave] Saving contact to profiles:', {
+        phone: updates.phone,
+        city: updates.city,
+        state: updates.state,
+        linkedin_url: updates.linkedin_url,
+      })
 
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
+        .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('user_id', userId)
 
       if (profileError) {
-        console.error('4. PROFILE SAVE FAILED:', profileError)
+        console.error('[ImportSave] Failed to save contact to profiles:', profileError)
       } else {
-        console.log('4. Profile saved successfully')
-        // Update local state after successful save
+        console.log('[ImportSave] Contact saved successfully')
         setProfile(prev => ({ ...prev, ...updates }))
       }
-    } else {
-      console.log('3. No profile updates to save')
     }
 
-    // Import experiences
-    if (data.experiences && data.experiences.length > 0) {
-      console.log('5. Importing', data.experiences.length, 'experiences...')
+    // ─── Experiences (dedup by organization + approximate date) ───
+    if (data.experiences?.length > 0) {
+      const existingOrgs = new Set(
+        experiences.map((e: any) => `${(e.organization || e.company_name || '').toLowerCase()}|${e.start_date || ''}`)
+      )
 
-      const expToInsert = data.experiences.map((exp: any, idx: number) => ({
-        user_id: userId,
-        employment_type: exp.employment_type || 'civilian',
-        job_title: exp.job_title,
-        civilian_title: exp.civilian_title || exp.job_title,
-        organization: exp.organization,
-        company_name: exp.employment_type === 'civilian' ? exp.organization : null,
-        city: exp.city,
-        state: exp.state,
-        location: exp.city && exp.state ? `${exp.city}, ${exp.state}` : null,
-        start_date: exp.start_date,
-        end_date: exp.is_current ? null : exp.end_date,
-        is_current: exp.is_current || false,
-        hours_per_week: 40,
-        sort_order: idx,
-      }))
+      const newExps = data.experiences.filter((exp: any) => {
+        const key = `${(exp.organization || '').toLowerCase()}|${exp.start_date || ''}`
+        return !existingOrgs.has(key)
+      })
 
+      const startOrder = experiences.length
       let expSuccessCount = 0
-      for (const exp of expToInsert) {
-        const bullets = data.experiences.find((e: any) => e.job_title === exp.job_title)?.bullets || []
+      for (let i = 0; i < newExps.length; i++) {
+        const exp = newExps[i]
+        const isMilitary = exp.employment_type === 'military'
 
         const { data: insertedExp, error: expError } = await supabase
           .from('experience')
-          .insert(exp)
+          .insert({
+            user_id: userId,
+            employment_type: exp.employment_type || 'civilian',
+            job_title: exp.job_title,
+            civilian_title: exp.civilian_title || exp.job_title,
+            organization: isMilitary ? exp.organization : null,
+            company_name: !isMilitary ? exp.organization : null,
+            city: exp.city || null,
+            state: exp.state || null,
+            location: exp.city && exp.state ? `${exp.city}, ${exp.state}` : null,
+            start_date: exp.start_date || null,
+            end_date: exp.is_current ? null : exp.end_date || null,
+            is_current: exp.is_current || false,
+            hours_per_week: 40,
+            sort_order: startOrder + i,
+          })
           .select()
           .single()
 
-        if (expError) {
-          console.error('Experience insert failed:', expError, 'for:', exp.job_title)
-        } else if (insertedExp) {
-          expSuccessCount++
-          console.log('  - Inserted experience:', exp.job_title, 'with', bullets.length, 'bullets')
+        if (expError) continue
 
-          if (bullets.length > 0) {
-            const bulletsToInsert = bullets.map((text: string, bIdx: number) => ({
-              experience_id: insertedExp.id,
-              original_text: text,
-              translated_text: text,
-              sort_order: bIdx,
-              status: 'accepted',
-            }))
-            const { error: bulletError } = await supabase.from('experience_bullets').insert(bulletsToInsert)
-            if (bulletError) {
-              console.error('Bullets insert failed:', bulletError)
-            }
-          }
+        if (insertedExp && exp.bullets?.length > 0) {
+          expSuccessCount++
+          const bulletsToInsert = exp.bullets.map((text: string, bIdx: number) => ({
+            experience_id: insertedExp.id,
+            original_text: text,
+            translated_text: text,
+            sort_order: bIdx,
+            status: 'accepted',
+          }))
+          await supabase.from('experience_bullets').insert(bulletsToInsert)
         }
       }
-      console.log('6. Experiences saved:', expSuccessCount, '/', expToInsert.length)
 
       // Refresh experiences
       const { data: updatedExp } = await supabase
@@ -302,106 +285,99 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
       if (updatedExp) {
         setExperiences(updatedExp.map(exp => ({ ...exp, bullets: exp.experience_bullets })))
       }
-    } else {
-      console.log('5. No experiences to import')
     }
 
-    // Import education
-    if (data.education && data.education.length > 0) {
-      console.log('7. Importing', data.education.length, 'education entries...')
+    // ─── Education (dedup by degree_type + school_name) ──────────
+    if (data.education?.length > 0) {
+      const existingEdu = new Set(
+        education.map((e: any) => `${(e.degree_type || '').toLowerCase()}|${(e.school_name || '').toLowerCase()}`)
+      )
 
-      const eduToInsert = data.education.map((edu: any, idx: number) => ({
-        user_id: userId,
-        school_name: edu.school_name || edu.institution || null,
-        degree_type: edu.degree_type || edu.degree || null,
-        field_of_study: edu.field_of_study || null,
-        graduation_year: edu.graduation_year || null,
-        gpa: edu.gpa || null,
-        sort_order: idx,
-      }))
+      const newEdu = data.education
+        .filter((edu: any) => {
+          const key = `${(edu.degree_type || '').toLowerCase()}|${(edu.school_name || '').toLowerCase()}`
+          return !existingEdu.has(key)
+        })
+        .map((edu: any, idx: number) => ({
+          user_id: userId,
+          school_name: edu.school_name || null,
+          degree_type: edu.degree_type || null,
+          field_of_study: edu.field_of_study || null,
+          graduation_year: edu.graduation_year || null,
+          sort_order: education.length + idx,
+        }))
 
-      const { error: eduError } = await supabase.from('education').insert(eduToInsert)
-      if (eduError) {
-        console.error('Education insert failed:', eduError)
-      } else {
-        console.log('8. Education saved successfully')
+      if (newEdu.length > 0) {
+        await supabase.from('education').insert(newEdu)
+        const { data: updatedEdu } = await supabase
+          .from('education')
+          .select('*')
+          .eq('user_id', userId)
+          .order('sort_order')
+        if (updatedEdu) setEducation(updatedEdu)
       }
-
-      const { data: updatedEdu } = await supabase
-        .from('education')
-        .select('*')
-        .eq('user_id', userId)
-        .order('sort_order')
-      if (updatedEdu) setEducation(updatedEdu)
-    } else {
-      console.log('7. No education to import')
     }
 
-    // Import certifications
-    if (data.certifications && data.certifications.length > 0) {
-      console.log('9. Importing', data.certifications.length, 'certifications...')
+    // ─── Certifications (dedup by case-insensitive name) ─────────
+    if (data.certifications?.length > 0) {
+      const existingCerts = new Set(
+        certifications.map((c: any) => c.name?.toLowerCase())
+      )
 
-      const certsToInsert = data.certifications.map((cert: any, idx: number) => ({
-        user_id: userId,
-        name: cert.name,
-        issuing_organization: cert.issuing_organization || cert.issuing_org || null,
-        issue_date: cert.issue_date || cert.date_earned || null,
-        expiration_date: cert.expiration_date || null,
-        sort_order: idx,
-      }))
+      const newCerts = data.certifications
+        .filter((cert: any) => !existingCerts.has(cert.name?.toLowerCase()))
+        .map((cert: any, idx: number) => ({
+          user_id: userId,
+          name: cert.name,
+          issuing_organization: cert.issuing_organization || null,
+          sort_order: certifications.length + idx,
+        }))
 
-      const { error: certError } = await supabase.from('certifications').insert(certsToInsert)
-      if (certError) {
-        console.error('Certifications insert failed:', certError)
-      } else {
-        console.log('10. Certifications saved successfully')
+      if (newCerts.length > 0) {
+        await supabase.from('certifications').insert(newCerts)
+        const { data: updatedCerts } = await supabase
+          .from('certifications')
+          .select('*')
+          .eq('user_id', userId)
+          .order('sort_order')
+        if (updatedCerts) setCertifications(updatedCerts)
       }
-
-      const { data: updatedCerts } = await supabase
-        .from('certifications')
-        .select('*')
-        .eq('user_id', userId)
-        .order('sort_order')
-      if (updatedCerts) setCertifications(updatedCerts)
-    } else {
-      console.log('9. No certifications to import')
     }
 
-    // Import skills
-    if (data.skills && data.skills.length > 0) {
-      console.log('11. Importing', data.skills.length, 'skills...')
+    // ─── Skills (dedup by case-insensitive name) ─────────────────
+    if (data.skills?.length > 0) {
+      const existingSkillNames = new Set(
+        skills.map((s: any) => (typeof s === 'string' ? s : s.name)?.toLowerCase())
+      )
 
-      const skillsToInsert = data.skills.map((skill: any, idx: number) => ({
-        user_id: userId,
-        name: typeof skill === 'string' ? skill : skill.name,
-        category: typeof skill === 'string' ? 'general' : (skill.category || 'general'),
-        sort_order: idx,
-      }))
+      const newSkills = data.skills
+        .filter((skill: any) => {
+          const name = typeof skill === 'string' ? skill : skill.name
+          return !existingSkillNames.has(name?.toLowerCase())
+        })
+        .map((skill: any, idx: number) => ({
+          user_id: userId,
+          name: typeof skill === 'string' ? skill : skill.name,
+          category: typeof skill === 'string' ? 'general' : (skill.category || 'general'),
+          sort_order: skills.length + idx,
+        }))
 
-      const { error: skillError } = await supabase.from('skills').insert(skillsToInsert)
-      if (skillError) {
-        console.error('Skills insert failed:', skillError)
-      } else {
-        console.log('12. Skills saved successfully')
+      if (newSkills.length > 0) {
+        await supabase.from('skills').insert(newSkills)
+        const { data: updatedSkills } = await supabase
+          .from('skills')
+          .select('*')
+          .eq('user_id', userId)
+          .order('sort_order')
+        if (updatedSkills) setSkills(updatedSkills)
       }
-
-      const { data: updatedSkills } = await supabase
-        .from('skills')
-        .select('*')
-        .eq('user_id', userId)
-        .order('sort_order')
-      if (updatedSkills) setSkills(updatedSkills)
-    } else {
-      console.log('11. No skills to import')
     }
-
-    console.log('=== RESUME IMPORT COMPLETE ===')
   }
 
   // Build profile data for summary template population
   const profileDataForTemplates = useMemo(() => {
-    return buildProfileDataFromForm(profile, certifications)
-  }, [profile, certifications])
+    return buildProfileDataFromForm(profile, certifications, skills, education)
+  }, [profile, certifications, skills, education])
 
   const inputClass = "w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
   const labelClass = "block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2"
@@ -450,6 +426,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             </label>
             <input
               type="text"
+              name="first-name"
               value={profile.first_name}
               disabled
               className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -463,6 +440,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             </label>
             <input
               type="text"
+              name="last-name"
               value={profile.last_name}
               disabled
               className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -476,6 +454,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             </label>
             <input
               type="email"
+              name="email"
               value={profile.email}
               disabled
               className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -494,6 +473,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <label className={labelClass}>City</label>
             <input
               type="text"
+              name="city"
               value={profile.city}
               onChange={(e) => updateField('city', e.target.value)}
               className={inputClass}
@@ -519,6 +499,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <label className={labelClass}>ZIP Code</label>
             <input
               type="text"
+              name="zip-code"
               value={profile.zip}
               onChange={(e) => updateField('zip', e.target.value)}
               className={inputClass}
@@ -529,6 +510,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <label className={labelClass}>LinkedIn URL</label>
             <input
               type="url"
+              name="linkedin-url"
               value={profile.linkedin_url}
               onChange={(e) => updateField('linkedin_url', e.target.value)}
               className={inputClass}
@@ -572,6 +554,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <label className={labelClass}>Rank</label>
             <input
               type="text"
+              name="rank"
               value={profile.rank}
               onChange={(e) => updateField('rank', e.target.value)}
               className={`${inputClass} bg-bg-tertiary`}
@@ -584,6 +567,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <label className={labelClass}>MOS / Rating / AFSC</label>
             <input
               type="text"
+              name="rating-mos"
               value={profile.rating_mos}
               onChange={(e) => updateField('rating_mos', e.target.value)}
               className={inputClass}
@@ -594,6 +578,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <label className={labelClass}>Years of Service</label>
             <input
               type="number"
+              name="years-of-service"
               value={profile.years_of_service}
               onChange={(e) => updateField('years_of_service', e.target.value)}
               className={inputClass}
@@ -618,6 +603,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <label className={labelClass}>EAS / EAOS</label>
             <input
               type="date"
+              name="eas-date"
               value={profile.eas_date}
               onChange={(e) => updateField('eas_date', e.target.value)}
               className={inputClass}
@@ -637,6 +623,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
               <label className={labelClass}>Available From</label>
               <input
                 type="date"
+                name="skillbridge-start"
                 value={profile.skillbridge_start}
                 onChange={(e) => updateField('skillbridge_start', e.target.value)}
                 className={inputClass}
@@ -646,6 +633,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
               <label className={labelClass}>Available Until</label>
               <input
                 type="date"
+                name="skillbridge-end"
                 value={profile.skillbridge_end}
                 onChange={(e) => updateField('skillbridge_end', e.target.value)}
                 className={inputClass}
@@ -666,6 +654,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <label className={labelClass}>Target Industry</label>
             <input
               type="text"
+              name="target-industry"
               value={profile.target_industry}
               onChange={(e) => updateField('target_industry', e.target.value)}
               className={inputClass}
@@ -676,6 +665,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <label className={labelClass}>Target Role</label>
             <input
               type="text"
+              name="target-role"
               value={profile.target_role}
               onChange={(e) => updateField('target_role', e.target.value)}
               className={inputClass}
@@ -694,6 +684,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
           value={profile.professional_summary}
           onChange={(value) => updateField('professional_summary', value)}
           profile={profileDataForTemplates}
+          userPlan={userPlan}
         />
       </div>
 
@@ -706,6 +697,8 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
         onBulletsSaved={() => setPendingBullets([])}
         bulletTranslationUsage={bulletTranslationUsage}
         userBranch={userBranch}
+        userPaygrade={profile.paygrade}
+        userPlan={userPlan}
       />
 
       {/* Education Section */}
@@ -739,6 +732,11 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
         onImport={handleResumeImport}
         currentUsage={resumeImportUsage}
         usageLimit={resumeImportLimit}
+        existingExperiences={experiences}
+        existingSkills={skills}
+        existingCertifications={certifications}
+        existingEducation={education}
+        userBranch={profile.branch}
       />
     </div>
   )

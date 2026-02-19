@@ -24,6 +24,7 @@ import {
 import { formatDateRange, formatClearance } from '@/lib/utils/formatResume'
 import { getProficiencyLabel } from '@/lib/constants/federalEligibility'
 import { TemplateId } from '@/lib/templates'
+import { trimForFederalLimit } from '@/lib/resume/federalTrimmer'
 
 interface ResumeContent {
   contact?: {
@@ -610,21 +611,41 @@ function buildFederal(
   languages: any[], affiliations: any[], publications: any[],
   resumeType: 'private' | 'federal',
 ): Document {
+  // Apply federal 2-page trimmer
+  const fed = trimForFederalLimit({
+    ...content,
+    experiences,
+    education,
+    certifications,
+    training,
+    languages,
+    affiliations,
+    publications,
+  })
+  experiences = fed.experiences || []
+  education = fed.education || []
+  certifications = fed.certifications || []
+  training = fed.training || []
+  languages = fed.languages || []
+  affiliations = fed.affiliations || []
+  publications = fed.publications || []
+  const fedSummary = fed.summary ?? content.summary
+
   const SANS = 'Open Sans'
   const SERIF = 'Merriweather'
   const fullName = `${contact.first_name || ''} ${contact.last_name || ''}`.trim().toUpperCase()
   const children: (Paragraph | Table)[] = []
 
   const heading = (text: string) => new Paragraph({
-    children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24, font: SERIF, color: 'ffffff' })],
+    children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 22, font: SERIF, color: 'ffffff' })],
     shading: { type: ShadingType.SOLID, color: '000000' },
-    spacing: { before: 250, after: 150 },
+    spacing: { before: 200, after: 120 },
   })
 
   // Header
   children.push(new Paragraph({
-    children: [new TextRun({ text: fullName, bold: true, size: 48, font: SERIF, color: '000000' })],
-    spacing: { after: 100 },
+    children: [new TextRun({ text: fullName, bold: true, size: 44, font: SERIF, color: '000000' })],
+    spacing: { after: 80 },
   }))
 
   // Info grid as table
@@ -657,8 +678,8 @@ function buildFederal(
       new TableCell({
         children: [new Paragraph({
           children: [
-            new TextRun({ text: left[0] + ' ', bold: true, size: 22, font: SANS, color: '000000' }),
-            new TextRun({ text: left[1], size: 22, font: SANS, color: '333333' }),
+            new TextRun({ text: left[0] + ' ', bold: true, size: 20, font: SANS, color: '000000' }),
+            new TextRun({ text: left[1], size: 20, font: SANS, color: '333333' }),
           ],
         })],
         borders: noBorder(),
@@ -669,8 +690,8 @@ function buildFederal(
       cells.push(new TableCell({
         children: [new Paragraph({
           children: [
-            new TextRun({ text: right[0] + ' ', bold: true, size: 22, font: SANS, color: '000000' }),
-            new TextRun({ text: right[1], size: 22, font: SANS, color: '333333' }),
+            new TextRun({ text: right[0] + ' ', bold: true, size: 20, font: SANS, color: '000000' }),
+            new TextRun({ text: right[1], size: 20, font: SANS, color: '333333' }),
           ],
         })],
         borders: noBorder(),
@@ -694,11 +715,11 @@ function buildFederal(
   }))
 
   // Summary
-  if (content.summary) {
+  if (fedSummary) {
     children.push(heading('Professional Summary'))
     children.push(new Paragraph({
-      children: [new TextRun({ text: content.summary, size: 22, font: SANS, color: '333333' })],
-      spacing: { after: 200, line: 276 },
+      children: [new TextRun({ text: fedSummary, size: 20, font: SANS, color: '333333' })],
+      spacing: { after: 160, line: 252 },
     }))
   }
 
@@ -707,63 +728,63 @@ function buildFederal(
     children.push(heading('Professional Experience'))
     experiences.forEach((exp: any) => {
       children.push(new Paragraph({
-        children: [new TextRun({ text: exp.civilian_title || exp.job_title, bold: true, size: 26, font: SANS, color: '000000' })],
-        spacing: { before: 150 },
+        children: [new TextRun({ text: exp.civilian_title || exp.job_title, bold: true, size: 24, font: SANS, color: '000000' })],
+        spacing: { before: 120 },
       }))
       children.push(new Paragraph({
-        children: [new TextRun({ text: exp.organization, bold: true, size: 23, font: SANS, color: '333333' })],
+        children: [new TextRun({ text: exp.organization, bold: true, size: 21, font: SANS, color: '333333' })],
       }))
       {
         const locDisplay = exp.city ? `${exp.city}${exp.state ? `, ${exp.state}` : ''}` : exp.location
         if (locDisplay) {
           children.push(new Paragraph({
             children: [
-              new TextRun({ text: 'Location: ', bold: true, size: 21, font: SANS, color: '333333' }),
-              new TextRun({ text: locDisplay, size: 21, font: SANS, color: '555555' }),
+              new TextRun({ text: 'Location: ', bold: true, size: 19, font: SANS, color: '333333' }),
+              new TextRun({ text: locDisplay, size: 19, font: SANS, color: '555555' }),
             ],
           }))
         }
       }
       children.push(new Paragraph({
         children: [
-          new TextRun({ text: 'Dates: ', bold: true, size: 21, font: SANS, color: '333333' }),
-          new TextRun({ text: formatDateRange(exp.start_date, exp.end_date, exp.is_current, 'federal'), size: 21, font: SANS, color: '555555' }),
+          new TextRun({ text: 'Dates: ', bold: true, size: 19, font: SANS, color: '333333' }),
+          new TextRun({ text: formatDateRange(exp.start_date, exp.end_date, exp.is_current, 'federal'), size: 19, font: SANS, color: '555555' }),
         ],
       }))
       if (exp.grade_level) {
         children.push(new Paragraph({
           children: [
-            new TextRun({ text: 'Grade: ', bold: true, size: 21, font: SANS, color: '333333' }),
-            new TextRun({ text: exp.grade_level, size: 21, font: SANS, color: '555555' }),
+            new TextRun({ text: 'Grade: ', bold: true, size: 19, font: SANS, color: '333333' }),
+            new TextRun({ text: exp.grade_level, size: 19, font: SANS, color: '555555' }),
           ],
         }))
       }
       children.push(new Paragraph({
         children: [
-          new TextRun({ text: 'Hours per week: ', bold: true, size: 21, font: SANS, color: '333333' }),
-          new TextRun({ text: String(exp.hours_per_week || 40), size: 21, font: SANS, color: '555555' }),
+          new TextRun({ text: 'Hours per week: ', bold: true, size: 19, font: SANS, color: '333333' }),
+          new TextRun({ text: String(exp.hours_per_week || 40), size: 19, font: SANS, color: '555555' }),
         ],
       }))
       if (exp.salary) {
         children.push(new Paragraph({
           children: [
-            new TextRun({ text: 'Salary: ', bold: true, size: 21, font: SANS, color: '333333' }),
-            new TextRun({ text: exp.salary.startsWith('$') ? exp.salary : `$${exp.salary}`, size: 21, font: SANS, color: '555555' }),
+            new TextRun({ text: 'Salary: ', bold: true, size: 19, font: SANS, color: '333333' }),
+            new TextRun({ text: exp.salary.startsWith('$') ? exp.salary : `$${exp.salary}`, size: 19, font: SANS, color: '555555' }),
           ],
         }))
       }
 
       children.push(new Paragraph({
-        children: [new TextRun({ text: 'DUTIES AND ACCOMPLISHMENTS:', bold: true, size: 22, font: SANS, color: '000000' })],
-        spacing: { before: 100, after: 50 },
+        children: [new TextRun({ text: 'DUTIES AND ACCOMPLISHMENTS:', bold: true, size: 20, font: SANS, color: '000000' })],
+        spacing: { before: 80, after: 40 },
       }))
       filterBullets(exp.bullets).forEach((b: any) => {
         children.push(new Paragraph({
           children: [
-            new TextRun({ text: '\u2022 ', size: 22, font: SANS, color: '000000' }),
-            new TextRun({ text: getBulletText(b), size: 22, font: SANS, color: '333333' }),
+            new TextRun({ text: '\u2022 ', size: 20, font: SANS, color: '000000' }),
+            new TextRun({ text: getBulletText(b), size: 20, font: SANS, color: '333333' }),
           ],
-          spacing: { after: 40 },
+          spacing: { after: 30 },
           indent: { left: 360 },
         }))
       })
@@ -775,17 +796,17 @@ function buildFederal(
     children.push(heading('Education'))
     education.forEach((edu: any) => {
       children.push(new Paragraph({
-        children: [new TextRun({ text: getDegree(edu), bold: true, size: 24, font: SANS, color: '000000' })],
+        children: [new TextRun({ text: getDegree(edu), bold: true, size: 22, font: SANS, color: '000000' })],
       }))
       children.push(new Paragraph({
-        children: [new TextRun({ text: getSchool(edu), size: 22, font: SANS, color: '333333' })],
+        children: [new TextRun({ text: getSchool(edu), size: 20, font: SANS, color: '333333' })],
       }))
       const gradExtra = [getGradDate(edu)]
       if (edu.gpa) gradExtra.push(`GPA: ${edu.gpa}`)
       if (edu.credit_hours) gradExtra.push(`${edu.credit_hours} credit hours`)
       children.push(new Paragraph({
-        children: [new TextRun({ text: gradExtra.join(' | '), size: 21, font: SANS, color: '555555' })],
-        spacing: { after: 80 },
+        children: [new TextRun({ text: gradExtra.join(' | '), size: 19, font: SANS, color: '555555' })],
+        spacing: { after: 60 },
       }))
     })
   }
@@ -796,11 +817,11 @@ function buildFederal(
     certifications.forEach((c: any) => {
       children.push(new Paragraph({
         children: [
-          new TextRun({ text: '\u2022 ', size: 22, font: SANS, color: '000000' }),
-          new TextRun({ text: c.name, bold: true, size: 22, font: SANS, color: '333333' }),
-          ...(c.issuing_org ? [new TextRun({ text: ` \u2014 ${c.issuing_org}`, size: 22, font: SANS, color: '333333' })] : []),
+          new TextRun({ text: '\u2022 ', size: 20, font: SANS, color: '000000' }),
+          new TextRun({ text: c.name, bold: true, size: 20, font: SANS, color: '333333' }),
+          ...(c.issuing_org ? [new TextRun({ text: ` \u2014 ${c.issuing_org}`, size: 20, font: SANS, color: '333333' })] : []),
         ],
-        spacing: { after: 40 },
+        spacing: { after: 30 },
         indent: { left: 360 },
       }))
     })
@@ -810,8 +831,8 @@ function buildFederal(
   if (skills.length > 0) {
     children.push(heading('Skills'))
     children.push(new Paragraph({
-      children: [new TextRun({ text: skills.map((s: any) => s.name).join(', '), size: 22, font: SANS, color: '333333' })],
-      spacing: { after: 200 },
+      children: [new TextRun({ text: skills.map((s: any) => s.name).join(', '), size: 20, font: SANS, color: '333333' })],
+      spacing: { after: 160 },
     }))
   }
 
@@ -824,16 +845,16 @@ function buildFederal(
       const statusSuffix = st && st !== '' ? ` (${st.charAt(0).toUpperCase() + st.slice(1)})` : ''
       children.push(new Paragraph({
         children: [
-          new TextRun({ text: 'Security Clearance: ', bold: true, size: 22, font: SANS, color: '000000' }),
-          new TextRun({ text: formatClearance(addlClearance) + statusSuffix, size: 22, font: SANS, color: '333333' }),
+          new TextRun({ text: 'Security Clearance: ', bold: true, size: 20, font: SANS, color: '000000' }),
+          new TextRun({ text: formatClearance(addlClearance) + statusSuffix, size: 20, font: SANS, color: '333333' }),
         ],
       }))
     }
     if (content.military?.branch) {
       children.push(new Paragraph({
         children: [
-          new TextRun({ text: 'Military Service: ', bold: true, size: 22, font: SANS, color: '000000' }),
-          new TextRun({ text: content.military.branch, size: 22, font: SANS, color: '333333' }),
+          new TextRun({ text: 'Military Service: ', bold: true, size: 20, font: SANS, color: '000000' }),
+          new TextRun({ text: content.military.branch, size: 20, font: SANS, color: '333333' }),
         ],
       }))
     }
@@ -843,7 +864,7 @@ function buildFederal(
 
   return new Document({
     sections: [{
-      properties: { page: { margin: { top: 500, right: 720, bottom: 600, left: 720 } } },
+      properties: { page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } },
       children,
     }],
   })

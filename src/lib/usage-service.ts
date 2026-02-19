@@ -187,7 +187,17 @@ export async function checkLimit(
 
   const { tier, subscriptionId } = await getUserTier(userId);
   const tierConfig = PRICING_TIERS[tier];
-  const limit = tierConfig.limits[feature];
+  let limit = tierConfig.limits[feature];
+
+  // For eval_uploads, add bonus credits from eval pack purchases
+  if (feature === 'eval_uploads') {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('eval_uploads_bonus')
+      .eq('user_id', userId)
+      .single();
+    limit += (profile?.eval_uploads_bonus || 0);
+  }
 
   // Check if feature is available in this tier
   if (limit === 0) {

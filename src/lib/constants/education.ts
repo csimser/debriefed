@@ -50,6 +50,57 @@ export function getDegreeLabel(degreeType: string): string {
 }
 
 /**
+ * Match a parsed degree string to the closest DEGREE_TYPES value.
+ * Returns the matching value string (e.g., 'bachelor') or '' if no match.
+ */
+export function matchDegreeType(parsed: string | null | undefined): string {
+  if (!parsed) return ''
+  const s = parsed.trim().toLowerCase()
+  if (!s) return ''
+
+  // Direct value match (already normalized)
+  if (DEGREE_TYPES.some(d => d.value === s)) return s
+
+  // MBA
+  if (/\bmba\b/.test(s)) return 'mba'
+
+  // Doctorate / PhD
+  if (/\b(ph\.?d\.?|doctorate|doctoral)\b/.test(s)) return 'doctorate'
+
+  // Professional degrees
+  if (/\b(j\.?d\.?|m\.?d\.?|juris|doctor of medicine)\b/.test(s)) return 'professional'
+
+  // Master's
+  if (/\b(master|m\.?s\.?|m\.?a\.?|m\.?ed\.?|m\.?p\.?a\.?)\b/.test(s) && !/\bmba\b/.test(s)) return 'master'
+
+  // Bachelor's
+  if (/\b(bachelor|b\.?s\.?|b\.?a\.?|b\.?b\.?a\.?)\b/.test(s)) return 'bachelor'
+
+  // Associate
+  if (/\b(associate|a\.?a\.?s?\.?|a\.?s\.?)\b/.test(s)) return 'associate'
+
+  // Certificate
+  if (/\b(certificate|cert\.?|certification)\b/.test(s)) return 'certificate'
+
+  // GED
+  if (/\bged\b/.test(s)) return 'ged'
+
+  // High school
+  if (/\b(high school|diploma)\b/.test(s)) return 'high-school'
+
+  // Some college
+  if (/\bsome college\b/.test(s)) return 'some-college'
+
+  // Bootcamp / trade
+  if (/\b(bootcamp|trade school|vocational)\b/.test(s)) return 'bootcamp'
+
+  // Military training
+  if (/\b(military|nco|pme|war college)\b/.test(s)) return 'military'
+
+  return ''
+}
+
+/**
  * Format graduation date for display: "May 2023" or just "2023"
  */
 export function formatGraduationDate(month: string | null | undefined, year: string | null | undefined): string {

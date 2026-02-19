@@ -28,28 +28,13 @@ const navItems = [
     )
   },
   {
-    href: '/career-tools?tool=cover-letter',
-    label: 'Cover Letter',
-    matchPath: '/career-tools',
-    matchTool: 'cover-letter',
+    href: '/career-tools',
+    label: 'Tools',
     icon: (
       <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2"/>
-        <path d="M2 6l10 7 10-7"/>
-        <rect x="2" y="6" width="20" height="14" rx="2"/>
-      </svg>
-    )
-  },
-  {
-    href: '/career-tools?tool=linkedin',
-    label: 'LinkedIn',
-    matchPath: '/career-tools',
-    matchTool: 'linkedin',
-    icon: (
-      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-        <rect x="2" y="9" width="4" height="12"/>
-        <circle cx="4" cy="4" r="2"/>
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
       </svg>
     )
   },
@@ -68,14 +53,9 @@ export function BottomNav() {
           const [itemPath, itemQuery] = item.href.split('?')
           const itemTool = itemQuery?.split('=')[1]
 
-          let isActive = false
-          if (item.matchPath && item.matchTool) {
-            isActive = pathname === item.matchPath && currentTool === item.matchTool
-          } else if (itemTool) {
-            isActive = pathname === itemPath && currentTool === itemTool
-          } else {
-            isActive = pathname === item.href
-          }
+          const isActive = itemTool
+            ? pathname === itemPath && currentTool === itemTool
+            : pathname === itemPath
 
           return (
             <Link

@@ -7,6 +7,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { TEMPLATES, TemplateId, resolveTemplate } from '@/lib/templates'
 import { logActivity, logApiUsage } from '@/lib/usage-tracking'
 import { getUserTier } from '@/lib/usage-service'
+import { trimForFederalLimit } from '@/lib/resume/federalTrimmer'
 import React from 'react'
 
 // Admin client for resume fetch (bypasses RLS)
@@ -63,6 +64,11 @@ export async function POST(request: NextRequest) {
 
     const resumeType = resume.resume_type || 'private'
 
+    // Apply federal 2-page trimmer
+    const exportContent = resumeType === 'federal'
+      ? trimForFederalLimit(resume.content)
+      : resume.content
+
     // Generate file based on format
     let arrayBuffer: ArrayBuffer
     let contentType: string
@@ -70,8 +76,8 @@ export async function POST(request: NextRequest) {
 
     if (format === 'pdf') {
       const doc = React.createElement(ResumeDocument, {
-        content: resume.content,
-        resumeType: resume.resume_type || 'private',
+        content: exportContent,
+        resumeType,
         template,
       })
       const pdfInstance = pdf(doc as any)
@@ -80,7 +86,7 @@ export async function POST(request: NextRequest) {
       contentType = 'application/pdf'
       extension = 'pdf'
     } else {
-      const buffer = await generateDocx(resume.content, resume.resume_type || 'private', template)
+      const buffer = await generateDocx(exportContent, resumeType, template)
       arrayBuffer = new Uint8Array(buffer).buffer
       contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       extension = 'docx'

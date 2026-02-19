@@ -4,15 +4,22 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { getSidebarCommunityData, type SidebarCommunityData } from '@/lib/dictionary/communityQueries'
+
+const BADGE_TIERS = [
+  { min: 50, label: 'Dictionary Legend', icon: '💎', nextLabel: null, nextMin: Infinity },
+  { min: 30, label: 'Command Master Chief', icon: '🏆', nextLabel: 'Dictionary Legend', nextMin: 50 },
+  { min: 15, label: 'Platoon Sergeant', icon: '⭐', nextLabel: 'Command Master Chief', nextMin: 30 },
+  { min: 5, label: 'Squad Leader', icon: '🎖️', nextLabel: 'Platoon Sergeant', nextMin: 15 },
+  { min: 0, label: 'New Recruit', icon: '🏅', nextLabel: 'Squad Leader', nextMin: 5 },
+]
 
 // Main nav items (shown in desktop sidebar and bottom nav on mobile)
 const mainNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: '◉' },
   { href: '/profile', label: 'My Profile', icon: '◎' },
   { href: '/resumes', label: 'My Resumes', icon: '◫' },
-  { href: '/job-match', label: 'Job Match', icon: '◈' },
-  { href: '/career-tools?tool=cover-letter', label: 'Cover Letter', icon: '✉' },
-  { href: '/career-tools?tool=linkedin', label: 'LinkedIn', icon: '◇' },
+  { href: '/career-tools', label: 'Cover Letter & LinkedIn', icon: '◆' },
 ]
 
 // Secondary nav items (shown in hamburger menu on mobile)
@@ -45,6 +52,7 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [communityData, setCommunityData] = useState<SidebarCommunityData | null>(null)
 
   // Initialize state from localStorage and handle responsive behavior
   useEffect(() => {
@@ -73,6 +81,11 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
     handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Fetch community data for sidebar engagement section (once on mount, cached)
+  useEffect(() => {
+    getSidebarCommunityData().then(setCommunityData).catch(() => {})
   }, [])
 
   // Toggle collapsed state and save to localStorage
@@ -283,7 +296,7 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
               const itemTool = itemQuery?.split('=')[1]
               const isActive = itemTool
                 ? pathname === itemPath && currentTool === itemTool
-                : pathname === item.href && !currentTool
+                : pathname === itemPath
 
               return (
                 <NavItem
@@ -314,6 +327,105 @@ export function Sidebar({ user, tier = 'free', planExpiresAt = null, isAdmin = f
             )}
           </div>
         </nav>
+
+        {/* ── HELP THE MISSION — expanded sidebar, desktop only ── */}
+        {!isCollapsed && communityData && (
+          <div className="hidden md:block px-4 pb-3">
+            {/* Gold divider */}
+            <div className="h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent mb-3" />
+
+            <div className="p-3 bg-gold/[0.04] border border-gold/15 rounded-lg space-y-3">
+              {/* Header */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-gold text-xs">🔥</span>
+                <span className="font-heading uppercase tracking-widest text-[11px] font-bold text-gold">Help the Mission</span>
+              </div>
+
+              {/* Random missing term prompt */}
+              {communityData.randomMissingTerm ? (
+                <div className="text-xs text-text-muted">
+                  Know what <span className="font-bold text-text">&ldquo;{communityData.randomMissingTerm.toUpperCase()}&rdquo;</span> means?
+                </div>
+              ) : (
+                <div className="text-xs text-text-muted">Help us grow the dictionary</div>
+              )}
+
+              {/* CTA link */}
+              <Link
+                href="/career-tools?tool=community"
+                onClick={handleLinkClick}
+                className="inline-flex items-center gap-1 text-xs font-heading font-bold uppercase tracking-wider text-gold hover:text-gold-bright transition-colors"
+              >
+                Help Translate
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+
+              {/* Missing terms count */}
+              {communityData.missingTermCount > 0 && (
+                <div className="text-[10px] text-text-dim">
+                  {communityData.missingTermCount} terms need translations
+                </div>
+              )}
+
+              {/* Badge + progress bar */}
+              {(() => {
+                const tier = BADGE_TIERS.find(t => communityData.userSubmissions >= t.min) || BADGE_TIERS[BADGE_TIERS.length - 1]
+                const isMaxTier = !tier.nextLabel
+                const progress = isMaxTier
+                  ? 1
+                  : tier.nextMin > tier.min
+                    ? (communityData.userSubmissions - tier.min) / (tier.nextMin - tier.min)
+                    : 0
+
+                return (
+                  <div className="pt-2 border-t border-gold/10 space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm leading-none">{tier.icon}</span>
+                      <span className="text-[11px] font-heading font-bold uppercase tracking-wider text-text">{tier.label}</span>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="h-1.5 bg-bg-tertiary rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-gold to-gold-bright rounded-full transition-all duration-500"
+                        style={{ width: `${Math.min(Math.max(progress * 100, isMaxTier ? 100 : 4), 100)}%` }}
+                      />
+                    </div>
+                    {!isMaxTier && (
+                      <div className="text-[10px] text-text-dim">
+                        {communityData.userSubmissions} of {tier.nextMin} for {tier.nextLabel}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
+            </div>
+          </div>
+        )}
+
+        {/* ── Collapsed community icon with badge — desktop only ── */}
+        {isCollapsed && communityData && (
+          <div className="hidden md:block px-4 pb-3">
+            {/* Gold divider */}
+            <div className="h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent mb-3" />
+            <Link
+              href="/career-tools?tool=community"
+              onClick={handleLinkClick}
+              className="relative group flex items-center justify-center w-12 h-12 mx-auto bg-gold/[0.06] border border-gold/15 rounded-lg hover:bg-gold/15 transition-all"
+            >
+              <span className="text-base leading-none">🔥</span>
+              {communityData.missingTermCount > 0 && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gold text-bg-primary text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {communityData.missingTermCount > 9 ? '9+' : communityData.missingTermCount}
+                </div>
+              )}
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-2 bg-bg-tertiary border border-border rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
+                <span className="font-heading uppercase tracking-wider text-xs font-bold text-gold">Help the Mission</span>
+              </div>
+            </Link>
+          </div>
+        )}
 
         {/* Upgrade Button - Free tier only */}
         {tier?.toLowerCase() === 'free' && (

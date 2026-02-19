@@ -4,7 +4,9 @@ import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { OnboardingData } from './NewOnboardingWizard'
 import { TEMPLATE_CATEGORIES, getTemplatesByCategory, SummaryTemplate } from '@/lib/summaryTemplates'
-import { populateTemplate, ProfileData } from '@/lib/populateTemplate'
+import { populateTemplate, cleanTemplateOutput, ProfileData } from '@/lib/populateTemplate'
+import { getUserTier, isPaidTier } from '@/lib/tier-utils'
+import { UpgradeLink } from '@/components/modals/UpgradeModal'
 
 const JOB_SEARCH_TIMELINES = [
   { value: 'actively_looking', label: 'Actively looking now' },
@@ -37,9 +39,11 @@ interface StepSummaryProps {
   onComplete: () => void
   onSkip: () => void
   saving: boolean
+  userPlan?: string
 }
 
-export function StepSummary({ data, updateData, onBack, onComplete, onSkip, saving }: StepSummaryProps) {
+export function StepSummary({ data, updateData, onBack, onComplete, onSkip, saving, userPlan }: StepSummaryProps) {
+  const isFree = !isPaidTier(getUserTier({ tier: userPlan }))
   const [generating, setGenerating] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -61,7 +65,7 @@ export function StepSummary({ data, updateData, onBack, onComplete, onSkip, savi
   }), [data.branch, data.rank, data.paygrade, data.rating_mos, data.years_of_service, data.clearance, data.target_role, data.target_industry, data.certifications])
 
   const handleSelectTemplate = (template: SummaryTemplate) => {
-    const populated = populateTemplate(template.template, profileData)
+    const populated = cleanTemplateOutput(populateTemplate(template.template, profileData))
     updateData({ professional_summary: populated })
     setSelectedTemplateId(template.id)
   }
@@ -170,6 +174,7 @@ export function StepSummary({ data, updateData, onBack, onComplete, onSkip, savi
           <label className={labelClass}>Target Role</label>
           <input
             type="text"
+            name="target-role"
             value={data.target_role}
             onChange={(e) => updateData({ target_role: e.target.value })}
             placeholder="e.g., Project Manager, Operations Manager"
@@ -225,27 +230,35 @@ export function StepSummary({ data, updateData, onBack, onComplete, onSkip, savi
               <span>&#128203;</span>
               {showTemplates ? 'Hide Templates' : 'Choose Template'}
             </button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleGenerateSummary}
-              disabled={generating || !data.target_industry || !data.target_role}
-            >
-              {generating ? (
-                <>
-                  <span className="animate-spin mr-2">&#8635;</span>
-                  Generating...
-                </>
-              ) : (
-                <>
-                  &#10024; {data.professional_summary ? 'Regenerate' : 'Generate'} with AI
-                </>
-              )}
-            </Button>
+            {isFree ? (
+              <span className="text-xs text-text-dim">
+                <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">Upgrade to Core</UpgradeLink>
+                {' '}for AI generation
+              </span>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleGenerateSummary}
+                disabled={generating || !data.target_industry || !data.target_role}
+              >
+                {generating ? (
+                  <>
+                    <span className="animate-spin mr-2">&#8635;</span>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    &#10024; {data.professional_summary ? 'Regenerate' : 'Generate'} with AI
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
 
         <textarea
+          name="professional-summary"
           value={data.professional_summary}
           onChange={(e) => updateData({ professional_summary: e.target.value })}
           placeholder="Your professional summary will appear here. Choose a template, click 'Generate with AI', or write your own."

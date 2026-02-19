@@ -42,11 +42,80 @@ export async function POST(request: NextRequest) {
       const session = event.data.object as Stripe.Checkout.Session;
 
       const userId = session.metadata?.userId;
+      const purchaseType = session.metadata?.type;
+
+      if (!userId) {
+        console.error('Missing userId in session metadata');
+        return NextResponse.json(
+          { error: 'Missing metadata' },
+          { status: 400 }
+        );
+      }
+
+      // Handle eval pack purchase
+      if (purchaseType === 'eval_pack') {
+        const credits = parseInt(session.metadata?.credits || '10', 10);
+        const paymentIntentId = session.payment_intent as string;
+
+        // Idempotency check via activity_log
+        if (paymentIntentId) {
+          const { data: existing } = await supabase
+            .from('activity_log')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('action', 'eval_pack_purchased')
+            .filter('details->>stripe_payment_id', 'eq', paymentIntentId)
+            .maybeSingle();
+
+          if (existing) {
+            console.log(`Eval pack payment ${paymentIntentId} already processed, skipping`);
+            return NextResponse.json({ received: true });
+          }
+        }
+
+        // Increment eval_uploads_bonus on profiles
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('eval_uploads_bonus')
+          .eq('user_id', userId)
+          .single();
+
+        const currentBonus = profile?.eval_uploads_bonus || 0;
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ eval_uploads_bonus: currentBonus + credits })
+          .eq('user_id', userId);
+
+        if (updateError) {
+          console.error('Error adding eval pack credits:', updateError);
+          return NextResponse.json({ error: 'Failed to add credits' }, { status: 500 });
+        }
+
+        // Log the purchase
+        try {
+          await supabase.from('activity_log').insert({
+            user_id: userId,
+            action: 'eval_pack_purchased',
+            details: {
+              credits,
+              stripe_session_id: session.id,
+              stripe_payment_id: session.payment_intent,
+              amount: session.amount_total,
+            },
+          });
+        } catch (logError) {
+          console.error('Failed to log eval pack purchase (non-critical):', logError);
+        }
+
+        console.log(`Eval pack: +${credits} credits for user ${userId}`);
+        return NextResponse.json({ received: true });
+      }
+
       const tier = session.metadata?.tier as 'core' | 'full';
       const duration = parseInt(session.metadata?.duration || '30', 10);
 
-      if (!userId || !tier) {
-        console.error('Missing userId or tier in session metadata');
+      if (!tier) {
+        console.error('Missing tier in session metadata');
         return NextResponse.json(
           { error: 'Missing metadata' },
           { status: 400 }

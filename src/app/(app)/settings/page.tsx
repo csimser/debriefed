@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
+import { UpgradeLink } from '@/components/modals/UpgradeModal'
 import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+
 
 interface UserProfile {
   email: string
@@ -15,6 +15,8 @@ interface UserProfile {
   plan: string
   created_at: string
   plan_expires_at: string | null
+  employer_sharing_opt_in: boolean | null
+  marketing_opt_in: boolean | null
 }
 
 export default function SettingsPage() {
@@ -24,12 +26,11 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Password change
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [passwordLoading, setPasswordLoading] = useState(false)
-  const [passwordError, setPasswordError] = useState('')
-  const [passwordSuccess, setPasswordSuccess] = useState(false)
+  // Opt-in preferences
+  const [employerOptIn, setEmployerOptIn] = useState<boolean>(false)
+  const [marketingOptIn, setMarketingOptIn] = useState<boolean>(false)
+  const [optInLoading, setOptInLoading] = useState(false)
+  const [optInSuccess, setOptInSuccess] = useState(false)
 
   // Account deletion
   const [deleteConfirmation, setDeleteConfirmation] = useState('')
@@ -48,12 +49,14 @@ export default function SettingsPage() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('email, first_name, last_name, plan, created_at, plan_expires_at')
+        .select('email, first_name, last_name, plan, created_at, plan_expires_at, employer_sharing_opt_in, marketing_opt_in')
         .eq('user_id', user.id)
         .single()
 
       if (profileData) {
         setProfile(profileData)
+        setEmployerOptIn(profileData.employer_sharing_opt_in === true)
+        setMarketingOptIn(profileData.marketing_opt_in === true)
       }
       setLoading(false)
     }
@@ -61,36 +64,24 @@ export default function SettingsPage() {
     loadProfile()
   }, [router, supabase])
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setPasswordError('')
-    setPasswordSuccess(false)
+  const handleOptInSave = async () => {
+    setOptInLoading(true)
+    setOptInSuccess(false)
 
-    if (newPassword.length < 8) {
-      setPasswordError('Password must be at least 8 characters')
-      return
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        employer_sharing_opt_in: employerOptIn,
+        marketing_opt_in: marketingOptIn,
+        opt_in_prompted_at: new Date().toISOString(),
+      })
+      .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+
+    if (!error) {
+      setOptInSuccess(true)
+      setTimeout(() => setOptInSuccess(false), 3000)
     }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordError('Passwords do not match')
-      return
-    }
-
-    setPasswordLoading(true)
-
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword
-    })
-
-    if (error) {
-      setPasswordError(error.message)
-    } else {
-      setPasswordSuccess(true)
-      setNewPassword('')
-      setConfirmPassword('')
-    }
-
-    setPasswordLoading(false)
+    setOptInLoading(false)
   }
 
   const handleDeleteAccount = async () => {
@@ -209,12 +200,11 @@ export default function SettingsPage() {
             <p className="text-sm text-text-muted">
               Current plan: <span className="text-text font-medium">Free</span>
             </p>
-            <Link
-              href="/pricing"
+            <UpgradeLink
               className="px-4 py-2 bg-gold text-bg-primary font-heading text-xs font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
             >
               Upgrade →
-            </Link>
+            </UpgradeLink>
           </div>
         )}
 
@@ -225,44 +215,57 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      {/* Change Password */}
+      {/* Email & Privacy */}
       <Card className="p-6">
-        <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">Change Password</h2>
+        <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">Email & Privacy</h2>
 
-        <form onSubmit={handlePasswordChange} className="space-y-4">
-          <Input
-            label="New Password"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Minimum 8 characters"
-            required
-          />
-          <Input
-            label="Confirm Password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Repeat new password"
-            required
-          />
-
-          {passwordError && (
-            <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
-              <p className="text-sm text-status-red">{passwordError}</p>
+        <div className="space-y-4">
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={employerOptIn}
+              onChange={(e) => { setEmployerOptIn(e.target.checked); setOptInSuccess(false) }}
+              className="mt-0.5 rounded border-border"
+            />
+            <div>
+              <span className="text-sm text-text group-hover:text-gold transition-colors font-medium">
+                It&apos;s OK to share my profile with SkillBridge organizations and employers
+              </span>
+              <p className="text-xs text-text-muted mt-0.5">
+                Your name, email address, skills, certifications, clearance level, and target role may be shared with vetted employers and SkillBridge host companies actively hiring veterans. You can opt out anytime in Settings.
+              </p>
             </div>
-          )}
+          </label>
 
-          {passwordSuccess && (
-            <div className="bg-status-green/10 border border-status-green/20 rounded-md p-3">
-              <p className="text-sm text-status-green">Password updated successfully!</p>
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={marketingOptIn}
+              onChange={(e) => { setMarketingOptIn(e.target.checked); setOptInSuccess(false) }}
+              className="mt-0.5 rounded border-border"
+            />
+            <div>
+              <span className="text-sm text-text group-hover:text-gold transition-colors font-medium">
+                It&apos;s OK to send me updates about Debriefed and career resources
+              </span>
+              <p className="text-xs text-text-muted mt-0.5">
+                We&apos;ll occasionally email you about new features, career tips, and transition resources. No spam, ever. Unsubscribe anytime.
+              </p>
             </div>
-          )}
+          </label>
+        </div>
 
-          <Button type="submit" disabled={passwordLoading}>
-            {passwordLoading ? 'Updating...' : 'Update Password'}
+        {optInSuccess && (
+          <div className="mt-4 bg-status-green/10 border border-status-green/20 rounded-md p-3">
+            <p className="text-sm text-status-green">Preferences saved!</p>
+          </div>
+        )}
+
+        <div className="mt-4">
+          <Button onClick={handleOptInSave} disabled={optInLoading}>
+            {optInLoading ? 'Saving...' : 'Save Preferences'}
           </Button>
-        </form>
+        </div>
       </Card>
 
       {/* Delete Account */}

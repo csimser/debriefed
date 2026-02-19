@@ -4,6 +4,8 @@ import { getOccupationContext } from '@/lib/onet-api'
 import { withAISecurity, secureSystemPrompt, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
 import { translateTerm } from '@/lib/debriefed-token-saver/termLookup'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+import { callWithEscalation, getModelString } from '@/lib/ai-model'
+import { captureTermPairs, type TermPair, type CaptureContext } from '@/lib/ai-translation-capture'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -115,24 +117,67 @@ Rules:
 4. Keep to 1-2 lines maximum
 5. Focus on transferable skills
 
-Return ONLY the translated bullet point, nothing else.`
+Return JSON with this exact structure:
+{
+  "translated_bullet": "the full translated bullet",
+  "translations": [
+    { "military": "specific military term you changed", "civilian": "civilian equivalent you used" }
+  ]
+}
+Only include terms you actually changed. Do not include terms that are already civilian. Return ONLY the JSON.`
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 300,
-      system: secureSystemPrompt(BASE_SYSTEM_PROMPT),
-      messages: [{ role: 'user', content: prompt }],
-    })
+    const { response, model_used } = await callWithEscalation(
+      anthropic,
+      {
+        max_tokens: 500,
+        system: secureSystemPrompt(BASE_SYSTEM_PROMPT),
+        messages: [{ role: 'user', content: prompt }],
+      },
+      { expectsJson: true }
+    )
 
-    const translated = (response.content[0] as { text: string }).text.trim()
+    const rawText = (response.content[0] as { text: string }).text.trim()
+
+    // Parse structured response
+    let translated = rawText
+    let termPairs: TermPair[] = []
+
+    try {
+      let jsonText = rawText
+      if (jsonText.startsWith('```json')) jsonText = jsonText.slice(7)
+      if (jsonText.startsWith('```')) jsonText = jsonText.slice(3)
+      if (jsonText.endsWith('```')) jsonText = jsonText.slice(0, -3)
+      jsonText = jsonText.trim()
+
+      const parsed = JSON.parse(jsonText)
+      if (parsed.translated_bullet) {
+        translated = parsed.translated_bullet
+      }
+      if (Array.isArray(parsed.translations)) {
+        termPairs = parsed.translations
+      }
+    } catch {
+      // If JSON parse fails, use raw text as translated bullet (backward compatible)
+      translated = rawText.replace(/^["']|["']$/g, '').trim()
+    }
 
     // Track token usage
     const tokensUsed = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0)
-    await logAPIUsage(ctx.userId, 'translate', tokensUsed, 'claude-sonnet-4-20250514')
+    await logAPIUsage(ctx.userId, 'translate', tokensUsed, getModelString(model_used))
+
+    // Non-blocking: capture term pairs for dictionary pipeline
+    const captureCtx: CaptureContext = {
+      userId: ctx.userId,
+      branch: context?.branch,
+      targetIndustry: context?.jobType,
+      modelUsed: model_used,
+    }
+    captureTermPairs('bullet_translation', termPairs, bullet, captureCtx)
 
     return NextResponse.json({
       original: bullet,
       translated,
+      model_used,
     })
   }
 )

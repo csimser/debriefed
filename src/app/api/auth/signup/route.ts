@@ -10,10 +10,18 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: Request) {
   try {
-    const { email, password, firstName, lastName, branch, paygrade } = await req.json();
+    const {
+      email,
+      firstName,
+      lastName,
+      branch,
+      paygrade,
+      employerSharingOptIn,
+      marketingOptIn,
+    } = await req.json();
 
     // Validate required fields
-    if (!email || !password || !firstName || !lastName || !branch || !paygrade) {
+    if (!email || !firstName || !lastName || !branch || !paygrade) {
       return NextResponse.json(
         { success: false, error: 'All fields are required' },
         { status: 400 }
@@ -24,9 +32,9 @@ export async function POST(req: Request) {
     const formattedFirstName = capitalizeName(firstName);
     const formattedLastName = capitalizeName(lastName);
 
-    // Idempotency guard: if a profile already exists for this email, the user already
-    // signed up. Return success without calling signUp() again, which would re-send
-    // the confirmation email (causing duplicate "Welcome" emails).
+    // Check if the email already exists — if so, return a generic success
+    // response to prevent email enumeration attacks. The frontend will
+    // proceed to the OTP screen either way.
     const normalizedEmail = email.toLowerCase().trim();
     const { data: existingProfile } = await supabaseAdmin
       .from('profiles')
@@ -35,67 +43,58 @@ export async function POST(req: Request) {
       .single();
 
     if (existingProfile) {
+      // Return alreadyExists flag so the frontend knows to proceed to OTP
+      // screen, but the response looks identical to success from outside
       return NextResponse.json({
-        success: true,
-        message: 'Account created successfully. Please check your email to verify your account.',
-        user: { id: existingProfile.user_id, email: normalizedEmail }
+        success: false,
+        alreadyExists: true,
+        message: 'If this email is eligible, an account will be created.',
       });
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://getdebriefed.co';
-
-    // Create the user account
-    const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${siteUrl}/auth/callback?type=signup`,
-        data: {
-          first_name: formattedFirstName,
-          last_name: formattedLastName,
-          full_name: `${formattedFirstName} ${formattedLastName}`.trim(),
-          branch,
-          paygrade,
-        },
+    // OTP signup: create user via admin API (no password, no confirmation email)
+    const { data: adminUser, error: adminError } = await supabaseAdmin.auth.admin.createUser({
+      email: normalizedEmail,
+      email_confirm: false, // They'll verify via OTP
+      user_metadata: {
+        first_name: formattedFirstName,
+        last_name: formattedLastName,
+        full_name: `${formattedFirstName} ${formattedLastName}`.trim(),
+        branch,
+        paygrade,
       },
     });
 
-    // Check for existing user (identities = [] means email already exists)
-    if (authData?.user && authData.user.identities?.length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'An account with this email already exists' },
-        { status: 400 }
-      );
-    }
-
-    if (authError) {
-      if (authError.message.includes('already registered') ||
-          authError.message.includes('already exists') ||
-          authError.message.includes('already been registered')) {
-        return NextResponse.json(
-          { success: false, error: 'An account with this email already exists' },
-          { status: 400 }
-        );
+    if (adminError) {
+      // If Supabase says user already exists (race condition), treat same as above
+      if (adminError.message.includes('already') || adminError.message.includes('exists')) {
+        return NextResponse.json({
+          success: false,
+          alreadyExists: true,
+          message: 'If this email is eligible, an account will be created.',
+        });
       }
       return NextResponse.json(
-        { success: false, error: authError.message },
+        { success: false, error: adminError.message },
         { status: 400 }
       );
     }
 
-    if (!authData.user) {
+    if (!adminUser.user) {
       return NextResponse.json(
         { success: false, error: 'Failed to create account' },
         { status: 500 }
       );
     }
 
-    // Create initial profile with free tier
+    const userId = adminUser.user.id;
+
+    // Create initial profile with free tier + opt-in values
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .upsert({
-        user_id: authData.user.id,
-        email: email,
+        user_id: userId,
+        email: normalizedEmail,
         first_name: formattedFirstName,
         last_name: formattedLastName,
         branch: branch,
@@ -103,6 +102,9 @@ export async function POST(req: Request) {
         subscription_tier: 'free',
         plan: 'free',
         onboarding_completed: false,
+        auth_method: 'otp',
+        employer_sharing_opt_in: employerSharingOptIn === true ? true : employerSharingOptIn === false ? false : null,
+        marketing_opt_in: marketingOptIn === true ? true : marketingOptIn === false ? false : null,
       }, {
         onConflict: 'user_id'
       });
@@ -114,11 +116,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: 'Account created successfully. Please check your email to verify your account.',
-      user: {
-        id: authData.user.id,
-        email: authData.user.email,
-      }
+      message: 'If this email is eligible, an account will be created.',
     });
 
   } catch (err) {

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PRICING_TIERS, FEATURE_DISPLAY_NAMES, FeatureName, TierId } from '@/lib/pricing-config';
+import { useUpgradeModal } from '@/components/modals/UpgradeModal';
 
 interface UsageLimitModalProps {
   feature: FeatureName;
@@ -27,7 +27,7 @@ export function UsageLimitModal({
   monthlyResetDate,
   onClose,
 }: UsageLimitModalProps) {
-  const router = useRouter();
+  const { openUpgradeModal } = useUpgradeModal();
   const [loading, setLoading] = useState<'core' | 'full' | null>(null);
 
   const featureName = FEATURE_DISPLAY_NAMES[feature];
@@ -232,7 +232,7 @@ export function UsageLimitModal({
           <Button variant="ghost" onClick={onClose}>
             Close
           </Button>
-          <Button variant="secondary" onClick={() => router.push('/pricing')}>
+          <Button variant="secondary" onClick={() => { onClose(); openUpgradeModal(); }}>
             View All Plans
           </Button>
         </div>

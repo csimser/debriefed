@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { logApiUsage } from '@/lib/usage-tracking'
 import { canUseFeature, incrementUsage } from '@/lib/usage-service'
+import { callWithEscalation, getModelString } from '@/lib/ai-model'
 import crypto from 'crypto'
 
 const anthropic = new Anthropic({
@@ -364,11 +365,14 @@ MILITARY TITLE TRANSLATIONS:
 
 Return ONLY valid JSON.`
 
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: isPro ? 6000 : 1500,
-      messages: [{ role: 'user', content: isPro ? proPrompt : freePrompt }],
-    })
+    const { response, model_used } = await callWithEscalation(
+      anthropic,
+      {
+        max_tokens: isPro ? 6000 : 1500,
+        messages: [{ role: 'user', content: isPro ? proPrompt : freePrompt }],
+      },
+      { expectsJson: true }
+    )
 
     const analysisText = (response.content[0] as { text: string }).text
 
@@ -486,11 +490,11 @@ Return ONLY valid JSON.`
     }
 
     // Return response to client first, then track usage
-    const jsonResponse = NextResponse.json({ analysis })
+    const jsonResponse = NextResponse.json({ analysis, model_used })
 
     after(async () => {
       try {
-        await logApiUsage(user.id, 'analyze-linkedin', tokensUsed, 'claude-sonnet-4-20250514')
+        await logApiUsage(user.id, 'analyze-linkedin', tokensUsed, getModelString(model_used))
         if (hasValidAnalysis) {
           await incrementUsage(user.id, 'linkedin_profile_analysis')
         }

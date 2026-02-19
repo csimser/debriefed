@@ -2,10 +2,11 @@ import { NextRequest, NextResponse, after } from 'next/server'
 import { pdf } from '@react-pdf/renderer'
 import { ResumeDocument } from '@/lib/pdf/ResumeDocument'
 import { generateDocx } from '@/lib/docx/generateDocx'
-import { TemplateId, resolveTemplate } from '@/lib/templates'
+import { TemplateId, resolveTemplate, isTemplateFreeTier } from '@/lib/templates'
 import { createClient } from '@/lib/supabase/server'
 import { logApiUsage, logActivity } from '@/lib/usage-tracking'
 import { canUseFeature, incrementUsage, getUserTier } from '@/lib/usage-service'
+import { trimForFederalLimit } from '@/lib/resume/federalTrimmer'
 import React from 'react'
 
 export async function POST(request: NextRequest) {
@@ -37,11 +38,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid format. Use pdf or docx.' }, { status: 400 })
     }
 
-    // Tailored resumes require Core tier or above (free tier gate)
+    // Check tier for template gating (free users get classic_professional + federal only)
     const tierInfo = await getUserTier(user.id)
-    if (tierInfo.tier === 'free') {
+    if (tierInfo.tier === 'free' && !isTemplateFreeTier(template)) {
       return NextResponse.json({
-        error: 'Tailored resumes require Core tier.',
+        error: 'This template requires Core tier. Free users can export with Classic Professional or Federal templates.',
         limitReached: true,
         tier: 'free'
       }, { status: 403 })
@@ -81,6 +82,11 @@ export async function POST(request: NextRequest) {
       })),
     }
 
+    // Apply federal 2-page trimmer
+    const exportContent = resumeType === 'federal'
+      ? trimForFederalLimit(filteredContent)
+      : filteredContent
+
     // Generate file based on format
     let arrayBuffer: ArrayBuffer
     let contentType: string
@@ -88,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     if (format === 'pdf') {
       const doc = React.createElement(ResumeDocument, {
-        content: filteredContent,
+        content: exportContent,
         resumeType: resumeType,
         template,
       })
@@ -98,7 +104,7 @@ export async function POST(request: NextRequest) {
       contentType = 'application/pdf'
       extension = 'pdf'
     } else {
-      const buffer = await generateDocx(filteredContent, resumeType, template)
+      const buffer = await generateDocx(exportContent, resumeType, template)
       arrayBuffer = new Uint8Array(buffer).buffer
       contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       extension = 'docx'

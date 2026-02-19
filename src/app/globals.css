@@ -124,27 +124,6 @@ input::placeholder, textarea::placeholder {
   animation: postActionIn 0.25s ease-out forwards;
 }
 
-/* Mobile Navigation */
-@media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    left: -100%;
-    top: 0;
-    z-index: 50;
-    transition: left 0.3s ease;
-  }
-
-  .sidebar.open {
-    left: 0;
-  }
-
-  .sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 40;
-  }
-}
 
 /* Responsive Typography */
 @media (max-width: 640px) {
@@ -290,12 +269,6 @@ input::placeholder, textarea::placeholder {
   }
 }
 
-/* Bottom navigation spacing */
-@media (max-width: 768px) {
-  .has-bottom-nav {
-    padding-bottom: 80px;
-  }
-}
 
 /* Prevent horizontal overflow */
 html, body {

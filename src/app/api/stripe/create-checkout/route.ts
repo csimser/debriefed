@@ -29,14 +29,57 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { tier } = body as { tier: 'core' | 'full' };
+    const { tier } = body as { tier: 'core' | 'full' | 'eval_pack' };
 
     // Validate tier
-    if (!tier || !['core', 'full'].includes(tier)) {
+    if (!tier || !['core', 'full', 'eval_pack'].includes(tier)) {
       return NextResponse.json(
-        { error: 'Invalid tier. Must be "core" or "full"' },
+        { error: 'Invalid tier. Must be "core", "full", or "eval_pack"' },
         { status: 400 }
       );
+    }
+
+    // Handle eval pack purchase separately
+    if (tier === 'eval_pack') {
+      const { EVAL_PACK } = await import('@/lib/pricing-config');
+      const evalPriceId = STRIPE_PRICE_IDS.eval_pack;
+
+      if (!evalPriceId) {
+        return NextResponse.json(
+          { error: 'Eval pack is not yet available for purchase' },
+          { status: 400 }
+        );
+      }
+
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('user_id', user.id)
+        .single();
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [{ price: evalPriceId, quantity: 1 }],
+        mode: 'payment',
+        customer_email: profile?.email || user.email,
+        success_url: `${appUrl}/dashboard?payment=success&type=eval_pack`,
+        cancel_url: `${appUrl}/pricing?payment=cancelled`,
+        metadata: {
+          userId: user.id,
+          type: 'eval_pack',
+          credits: EVAL_PACK.credits.toString(),
+        },
+        payment_intent_data: {
+          metadata: {
+            userId: user.id,
+            type: 'eval_pack',
+          },
+        },
+      });
+
+      return NextResponse.json({ sessionId: session.id, url: session.url });
     }
 
     const tierConfig = PRICING_TIERS[tier];

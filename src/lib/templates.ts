@@ -15,7 +15,7 @@ export const TEMPLATES = {
     id: 'executive',
     name: 'Executive',
     description: 'ATS-optimized two-column layout with key achievements callout',
-    free: false,
+    free: true,
   },
   modern: {
     id: 'modern',
@@ -37,8 +37,8 @@ export const TEMPLATES = {
   },
 }
 
-export const FREE_TEMPLATES = ['classic_professional', 'federal']
-export const PRO_TEMPLATES = ['executive', 'modern', 'minimal', 'twocol']
+export const FREE_TEMPLATES = ['classic_professional', 'federal', 'executive']
+export const PRO_TEMPLATES = ['modern', 'minimal', 'twocol']
 
 export type TemplateId = keyof typeof TEMPLATES
 

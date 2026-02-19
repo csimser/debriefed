@@ -6,6 +6,7 @@ import { TailoredResume, AnalysisResult, BulletSuggestion } from './JobMatchWork
 import { TEMPLATES, SELECTABLE_TEMPLATES, TemplateId, resolveTemplate } from '@/lib/templates'
 import { ResumePreview } from '@/components/resume/ResumePreview'
 import { getUserTier, isPaidTier } from '@/lib/tier-utils'
+import { useUpgradeModal } from '@/components/modals/UpgradeModal'
 
 interface AnalysisPaneProps {
   analysis: AnalysisResult | null
@@ -35,6 +36,7 @@ export function AnalysisPane({
   jobData,
 }: AnalysisPaneProps) {
   const isPro = isPaidTier(getUserTier({ tier: userPlan }))
+  const { openUpgradeModal } = useUpgradeModal()
   const [activeTab, setActiveTab] = useState<'overview' | 'details' | 'changes'>('overview')
   const [downloading, setDownloading] = useState(false)
   const [applySuccess, setApplySuccess] = useState(false)
@@ -528,7 +530,7 @@ export function AnalysisPane({
                       </p>
                     </div>
                   </div>
-                  <Button size="sm" className="mt-3 w-full" onClick={() => window.location.href = '/pricing'}>
+                  <Button size="sm" className="mt-3 w-full" onClick={openUpgradeModal}>
                     View Upgrade Options
                   </Button>
                 </div>

@@ -36,7 +36,19 @@
       "Bash(git -C /home/fiveftslim/projects/debriefedfinal/debriefed log --oneline --all -- \"src/middleware.ts\")",
       "Bash(git -C /home/fiveftslim/projects/debriefedfinal/debriefed show:*)",
       "Bash(xargs:*)",
-      "WebFetch(domain:fonts.googleapis.com)"
+      "WebFetch(domain:fonts.googleapis.com)",
+      "Bash(python3:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(npm ls:*)",
+      "Bash(wc:*)",
+      "Bash(git stash:*)",
+      "Bash(git stash pop:*)",
+      "Bash(node:*)",
+      "Bash(done)",
+      "Bash(bash supabase/seed-data/validate-branch-values.sh supabase/seed-data/*.sql)",
+      "Bash(chmod:*)",
+      "Bash(bash /home/fiveftslim/projects/debriefedfinal/debriefed/supabase/seed-data/validate-branch-values.sh /home/fiveftslim/projects/debriefedfinal/debriefed/supabase/seed-data/*.sql)",
+      "Bash(pgrep:*)"
     ]
   }
 }

@@ -6,11 +6,13 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage } from '@/lib/usage-tracking'
 import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
-import { translateMilitaryToCivilian, cleanEvalText } from '@/lib/constants/military-dictionary'
+import { callWithEscalation, getModelString } from '@/lib/ai-model'
+import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary'
 import { hasCriticalPII } from '@/lib/pii-scanner'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import militaryTermsDictionary from '@/lib/debriefed-token-saver/military-terms-dictionary.json'
 import actionVerbsLibrary from '@/lib/debriefed-token-saver/action-verbs-library.json'
+import { extractTermDiffs, captureTermPairs, type CaptureContext } from '@/lib/ai-translation-capture'
 
 /**
  * Build compact jargon reference from the token-saver dictionary.
@@ -126,7 +128,7 @@ You understand the format of:
 
 Your job is to extract every meaningful accomplishment and translate it into a strong, quantified civilian resume bullet.`
 
-const EXTRACTION_PROMPT = `Extract accomplishment bullets from this military evaluation. Follow these rules precisely:
+const EXTRACTION_PROMPT = `Extract accomplishment bullets from this military evaluation document. Follow these rules precisely:
 
 ## 1. EXTRACT EVERY ACCOMPLISHMENT
 - Find ALL quantifiable accomplishments, results, awards, and leadership examples
@@ -166,6 +168,29 @@ Example output: "Directed maintenance readiness program across 42 departments, r
 
 ## TARGET ROLE GUIDANCE (if provided):
 {TARGET_ROLE_GUIDANCE}`
+
+// Detect media type from base64 header
+function getMediaTypeFromBase64(base64: string): { mediaType: string; isImage: boolean } {
+  if (base64.startsWith('JVBERi0')) return { mediaType: 'application/pdf', isImage: false }
+  if (base64.startsWith('iVBORw0KGgo')) return { mediaType: 'image/png', isImage: true }
+  if (base64.startsWith('/9j/')) return { mediaType: 'image/jpeg', isImage: true }
+  if (base64.startsWith('R0lGOD')) return { mediaType: 'image/gif', isImage: true }
+  if (base64.startsWith('UklGR')) return { mediaType: 'image/webp', isImage: true }
+  // Default to PDF
+  return { mediaType: 'application/pdf', isImage: false }
+}
+
+function getEvalTypeName(type: string): string {
+  const names: Record<string, string> = {
+    fitrep: 'Navy FITREP (Fitness Report)',
+    chiefeval: 'Navy Chief Evaluation',
+    ncoer: 'Army NCOER (Non-Commissioned Officer Evaluation Report)',
+    oer: 'Officer Evaluation Report',
+    epr: 'Air Force EPR (Enlisted Performance Report)',
+    award: 'Military Award Citation',
+  }
+  return names[type] || 'Military Evaluation'
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -219,30 +244,50 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Decode base64 file and extract text (handles both PDF and images)
-    let pdfText = await extractTextFromFile(fileData)
-
-    if (!pdfText || pdfText.trim().length < 50) {
-      return NextResponse.json({ error: 'Could not extract text from file. Please ensure it is readable.' }, { status: 400 })
+    // Clean base64 data — strip data URL prefix if present
+    let cleanBase64 = fileData
+    if (cleanBase64.includes(',')) {
+      cleanBase64 = cleanBase64.split(',')[1]
     }
+    cleanBase64 = cleanBase64.replace(/\s/g, '')
 
-    // Pre-clean the extracted text
-    const rawTextLength = pdfText.length
-    pdfText = cleanEvalText(pdfText)
-    console.log('Text before cleaning:', rawTextLength, 'after:', pdfText.length)
+    // Detect file type
+    const { mediaType, isImage } = getMediaTypeFromBase64(cleanBase64)
 
-    // Use Claude to extract bullets with target role guidance
+    console.log('=== EVAL EXTRACTION (single-pass) ===')
+    console.log('File base64 size:', cleanBase64.length, 'chars')
+    console.log('Detected media type:', mediaType, 'isImage:', isImage)
+    console.log('Eval type:', evalType)
+
+    // Build the document/image content block for vision
+    const fileContent = isImage
+      ? {
+          type: 'image' as const,
+          source: {
+            type: 'base64' as const,
+            media_type: mediaType as 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp',
+            data: cleanBase64,
+          },
+        }
+      : {
+          type: 'document' as const,
+          source: {
+            type: 'base64' as const,
+            media_type: 'application/pdf' as const,
+            data: cleanBase64,
+          },
+        }
+
+    // Build the full extraction + translation prompt
     const roleGuidance = getTargetRoleGuidance(targetRole, targetIndustry)
     const promptWithGuidance = EXTRACTION_PROMPT.replace('{TARGET_ROLE_GUIDANCE}', roleGuidance)
-    const prompt = `${promptWithGuidance}
+
+    const textPrompt = `${promptWithGuidance}
 
 DOCUMENT TYPE: ${getEvalTypeName(evalType)}
 ${crosswalkContext}${targetRole ? `\nTARGET ROLE: ${targetRole}${targetIndustry ? ` in ${targetIndustry}` : ''}` : ''}
 
-DOCUMENT TEXT:
-${pdfText.substring(0, 8000)} ${pdfText.length > 8000 ? '...[truncated]' : ''}
-
-Extract 5-15 of the strongest accomplishment bullets. For each bullet, return:
+Extract 5-15 of the strongest accomplishment bullets from the attached document. For each bullet, return:
 - "original": the relevant text from the eval (cleaned of OCR junk, asterisks, form labels)
 - "translated": the civilian resume bullet version (fully translated, action verb first)
 - "metrics": array of extracted numbers/percentages/dollar amounts
@@ -267,19 +312,29 @@ Return a JSON object:
   "jobTitle": "extracted job title or null"
 }
 
-Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 bullets even if text quality is poor. Only return an error if the text is completely unreadable.`
+Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 bullets even if document quality is poor. Only return an error JSON if the document is completely unreadable: {"error": "description"}`
 
-    console.log('=== EVAL EXTRACTION DEBUG ===')
-    console.log('Extracted text length:', pdfText.length)
-    console.log('Extracted text preview:', pdfText.substring(0, 500))
-    console.log('Eval type:', evalType)
-
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 3000,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: prompt }],
-    })
+    // Single-pass: send document directly with full extraction + translation prompt
+    const { response, model_used } = await callWithEscalation(
+      anthropic,
+      {
+        max_tokens: 4000,
+        system: SYSTEM_PROMPT,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              fileContent,
+              {
+                type: 'text',
+                text: textPrompt,
+              },
+            ],
+          },
+        ],
+      },
+      { expectsJson: true }
+    )
 
     const text = (response.content[0] as { text: string }).text.trim()
 
@@ -289,7 +344,6 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
     let bullets: any[] = []
     let evalPeriod: { startDate: string | null; endDate: string | null } = { startDate: null, endDate: null }
     let jobTitle: string | null = null
-    let parseError = null
 
     try {
       // Handle potential markdown code blocks
@@ -335,7 +389,6 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
       }
     } catch (err) {
       console.error('JSON parse error:', err)
-      parseError = err
       // Return empty array instead of failing
     }
 
@@ -382,13 +435,26 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
       count: processedBullets.length,
       evalPeriod,
       jobTitle,
+      model_used,
     })
 
     after(async () => {
       try {
-        await logApiUsage(user.id, 'parse-eval', tokensUsed, 'claude-sonnet-4-20250514')
+        await logApiUsage(user.id, 'parse-eval', tokensUsed, getModelString(model_used))
         if (hasUsableBullets) {
           await incrementUsage(user.id, 'eval_uploads')
+        }
+        // Capture AI translation term pairs for dictionary pipeline
+        const captureCtx: CaptureContext = {
+          userId: user.id,
+          branch: profile?.branch || undefined,
+          targetIndustry: targetIndustry || undefined,
+          targetRole: targetRole || undefined,
+          modelUsed: model_used,
+        }
+        for (const bullet of processedBullets) {
+          const pairs = extractTermDiffs(bullet.original || '', bullet.translated || '')
+          captureTermPairs('eval_extraction', pairs, bullet.original, captureCtx)
         }
       } catch (err) {
         console.error('Post-response usage tracking failed:', err)
@@ -400,91 +466,4 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
     console.error('Eval parse error:', error)
     return NextResponse.json({ error: 'Failed to parse evaluation' }, { status: 500 })
   }
-}
-
-// Detect media type from base64 header
-function getMediaTypeFromBase64(base64: string): { mediaType: string; isImage: boolean } {
-  if (base64.startsWith('JVBERi0')) return { mediaType: 'application/pdf', isImage: false }
-  if (base64.startsWith('iVBORw0KGgo')) return { mediaType: 'image/png', isImage: true }
-  if (base64.startsWith('/9j/')) return { mediaType: 'image/jpeg', isImage: true }
-  if (base64.startsWith('R0lGOD')) return { mediaType: 'image/gif', isImage: true }
-  if (base64.startsWith('UklGR')) return { mediaType: 'image/webp', isImage: true }
-  // Default to PDF
-  return { mediaType: 'application/pdf', isImage: false }
-}
-
-// Extract text from PDF or image using Claude's document/vision API
-async function extractTextFromFile(base64Data: string): Promise<string> {
-  // Strip data URL prefix if present (e.g., "data:application/pdf;base64,")
-  let cleanBase64 = base64Data
-  if (cleanBase64.includes(',')) {
-    cleanBase64 = cleanBase64.split(',')[1]
-  }
-  // Remove any whitespace that might have been introduced
-  cleanBase64 = cleanBase64.replace(/\s/g, '')
-
-  // Detect file type from base64 header
-  const { mediaType, isImage } = getMediaTypeFromBase64(cleanBase64)
-
-  console.log('File base64 size:', cleanBase64.length, 'chars')
-  console.log('Base64 starts with:', cleanBase64.substring(0, 20))
-  console.log('Detected media type:', mediaType, 'isImage:', isImage)
-
-  // Build content based on file type
-  const fileContent = isImage
-    ? {
-        type: 'image' as const,
-        source: {
-          type: 'base64' as const,
-          media_type: mediaType as 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp',
-          data: cleanBase64,
-        },
-      }
-    : {
-        type: 'document' as const,
-        source: {
-          type: 'base64' as const,
-          media_type: 'application/pdf' as const,
-          data: cleanBase64,
-        },
-      }
-
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 4096,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          fileContent,
-          {
-            type: 'text',
-            text: 'Extract ALL text from this military evaluation document. Return ONLY the raw text content exactly as it appears. Preserve all bullet points, rankings, dates, and performance comments. Do not summarize or modify - just extract the exact text.',
-          },
-        ],
-      },
-    ],
-  })
-
-  const text = response.content[0].type === 'text' ? response.content[0].text : ''
-
-  console.log('Extracted text length:', text.length)
-
-  if (!text || text.trim().length === 0) {
-    throw new Error('No text extracted - file may be scanned/image-based or corrupted')
-  }
-
-  return text
-}
-
-function getEvalTypeName(type: string): string {
-  const names: Record<string, string> = {
-    fitrep: 'Navy FITREP (Fitness Report)',
-    chiefeval: 'Navy Chief Evaluation',
-    ncoer: 'Army NCOER (Non-Commissioned Officer Evaluation Report)',
-    oer: 'Officer Evaluation Report',
-    epr: 'Air Force EPR (Enlisted Performance Report)',
-    award: 'Military Award Citation',
-  }
-  return names[type] || 'Military Evaluation'
 }

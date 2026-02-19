@@ -10,9 +10,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export default stripe;
 
 // Stripe price IDs for each tier
-export const STRIPE_PRICE_IDS = {
+export const STRIPE_PRICE_IDS: Record<string, string> = {
   core: process.env.STRIPE_CORE_PRICE_ID!,
   full: process.env.STRIPE_FULL_PRICE_ID!,
+  eval_pack: process.env.STRIPE_EVAL_PACK_PRICE_ID || '',
 };
 
 // Fail loudly if price IDs are missing in production

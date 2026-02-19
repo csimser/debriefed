@@ -1,0 +1,176 @@
+-- dict_acronyms (part b)
+-- 158 INSERT statements
+-- Run in Supabase SQL Editor
+
+
+-- BRANCH VALUES: Use lowercase abbreviations ONLY
+-- army, navy, usaf, usmc, uscg, ussf, general
+-- NEVER use full names like 'Coast Guard' or 'Air Force'
+-- Domain context values (logistics, intelligence, cyber, etc.) are also valid
+-- Run validate-branch-values.sh before pasting into Supabase
+
+BEGIN;
+
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SF', 'security forces', 'security forces', 'usaf', 'Security') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SFS', 'security forces squadron', 'security forces squadron', 'usaf', 'Security') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CES', 'civil engineering squadron', 'civil engineering squadron', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CS', 'communications squadron', 'communications squadron', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('FSS', 'force support squadron', 'force support squadron', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('LRS', 'logistics readiness squadron', 'logistics readiness squadron', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('AMXS', 'aircraft maintenance squadron', 'aircraft maintenance squadron', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('MXS', 'maintenance squadron', 'maintenance squadron', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('OSS', 'operations support squadron', 'operations support squadron', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CMSGT', 'chief master sergeant', 'chief master sergeant', 'usaf', 'Rank') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SMSGT', 'senior master sergeant', 'senior master sergeant', 'usaf', 'Rank') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('MSGT', 'master sergeant', 'master sergeant', 'usaf', 'Rank') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('TSGT', 'technical sergeant', 'technical sergeant', 'usaf', 'Rank') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SSGT', 'staff sergeant', 'staff sergeant', 'usaf', 'Rank') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SRA', 'senior airman', 'senior airman', 'usaf', 'Rank') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('A1C', 'airman first class', 'airman first class', 'usaf', 'Rank') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('AMN', 'airman', 'airman', 'usaf', 'Rank') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('AB', 'airman basic', 'airman basic', 'usaf', 'Rank') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('UDM', 'unit deployment manager', 'unit deployment manager', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('UTM', 'unit training manager', 'unit training manager', 'usaf', 'Training') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('UGT', 'upgrade training', 'upgrade training', 'usaf', 'Training') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ALS', 'Airman Leadership School', 'Airman Leadership School', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('NCOA', 'NCO Academy', 'NCO Academy', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SNCOA', 'Senior NCO Academy', 'Senior NCO Academy', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('OTS', 'Officer Training School', 'Officer Training School', 'usaf', 'Training') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SOS', 'Squadron Officer School', 'Squadron Officer School', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ACSC', 'Air Command and Staff College', 'Air Command and Staff College', 'usaf', 'Organization') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('AWC', 'Air War College', 'Air War College', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('WAPS', 'weighted airman promotion system', 'weighted airman promotion system', 'usaf', 'System') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('TIG', 'time in grade', 'time in grade', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('TIS', 'time in service', 'time in service', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('DAFSC', 'duty specialty code', 'duty specialty code', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('PAFSC', 'primary specialty code', 'primary specialty code', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CAFSC', 'control specialty code', 'control specialty code', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('AFIMS', 'information management system', 'information management system', 'usaf', 'System') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('IMDS', 'maintenance data system', 'maintenance data system', 'usaf', 'System') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('GO81', 'maintenance management system', 'maintenance management system', 'usaf', 'System') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CAMS', 'maintenance system', 'maintenance system', 'usaf', 'System') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('AEF', 'Air Expeditionary Force', 'Air Expeditionary Force', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('AEW', 'Air Expeditionary Wing', 'Air Expeditionary Wing', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('UTC', 'unit type code', 'unit type code', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('DRMO', 'surplus property disposal', 'surplus property disposal', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ADLS', 'advanced distributed learning', 'advanced distributed learning', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('MICT', 'management internal control toolset', 'management internal control toolset', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SAV', 'staff assistance visit', 'staff assistance visit', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('UCI', 'unit compliance inspection', 'unit compliance inspection', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CCIP', 'commander''s inspection program', 'commander''s inspection program', 'usaf', 'Organization') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ASEV', 'aircrew standardization evaluation', 'aircrew standardization evaluation', 'usaf', 'Acronym') ON CONFLICT DO NOTHING;
+-- ----- Branch: Coast Guard -----
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('USCG', 'United States Coast Guard', 'United States Coast Guard', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CGHQ', 'Coast Guard Headquarters', 'Coast Guard Headquarters', 'uscg', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ATC', 'training center', 'training center', 'uscg', 'Training') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('TRACEN', 'training center', 'training center', 'uscg', 'Training') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('FORCECOM', 'Force Readiness Command', 'Force Readiness Command', 'uscg', 'Organization') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('DCMS', 'Deputy Commandant for Mission Support', 'Deputy Commandant for Mission Support', 'uscg', 'Organization') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('DCO', 'Deputy Commandant for Operations', 'Deputy Commandant for Operations', 'uscg', 'Organization') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('MSST', 'maritime security team', 'maritime security team', 'uscg', 'Security') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('MSRT', 'maritime security response team', 'maritime security response team', 'uscg', 'Security') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('PSU', 'port security unit', 'port security unit', 'uscg', 'Security') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('PATFORSWA', 'patrol forces Southwest Asia', 'patrol forces Southwest Asia', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('TACLET', 'tactical law enforcement team', 'tactical law enforcement team', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CGC', 'Coast Guard Cutter', 'Coast Guard Cutter', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('WHEC', 'high endurance cutter', 'high endurance cutter', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('WMEC', 'medium endurance cutter', 'medium endurance cutter', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('WPB', 'patrol boat', 'patrol boat', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('WLB', 'buoy tender', 'buoy tender', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ATON', 'aids to navigation', 'aids to navigation', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SAR', 'search and rescue', 'search and rescue', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SAROPS', 'search and rescue planning system', 'search and rescue planning system', 'uscg', 'System') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('MLE', 'maritime law enforcement', 'maritime law enforcement', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('MISLE', 'marine information system', 'marine information system', 'uscg', 'System') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ALMIS', 'asset logistics management', 'asset logistics management', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ESD', 'electronic systems division', 'electronic systems division', 'uscg', 'System') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('OAR', 'officer assignment record', 'officer assignment record', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('EER', 'enlisted evaluation report', 'enlisted evaluation report', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('OAAS', 'officer and enlisted performance', 'officer and enlisted performance', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('EPME', 'enlisted professional development', 'enlisted professional development', 'uscg', 'Acronym') ON CONFLICT DO NOTHING;
+-- ----- Branch: Space Force -----
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('USSF', 'United States Space Force', 'United States Space Force', 'ussf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SPOC', 'Space Operations Command', 'Space Operations Command', 'ussf', 'Organization') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('STARCOM', 'Space Training and Readiness Command', 'Space Training and Readiness Command', 'ussf', 'Organization') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SSC', 'Space Systems Command', 'Space Systems Command', 'ussf', 'Organization') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CMSAF', 'Chief Master Sergeant of the Space Force', 'Chief Master Sergeant of the Space Force', 'ussf', 'Rank') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CSO', 'Chief of Space Operations', 'Chief of Space Operations', 'ussf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('DEL', 'delta (unit)', 'delta (unit)', 'ussf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('GARR', 'garrison', 'garrison', 'ussf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SLD', 'Space Launch Delta', 'Space Launch Delta', 'ussf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('SOPS', 'Space Operations Squadron', 'Space Operations Squadron', 'ussf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('CSpOC', 'Combined Space Operations Center', 'Combined Space Operations Center', 'ussf', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('JSpOC', 'Joint Space Operations Center', 'Joint Space Operations Center', 'ussf', 'Acronym') ON CONFLICT DO NOTHING;
+-- ----- Branch: all -----
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('Sailors', 'personnel', 'personnel', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('sailors', 'personnel', 'personnel', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('Soldier', 'team member', 'team member', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('Soldiers', 'personnel', 'personnel', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('soldiers', 'personnel', 'personnel', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('Airman', 'team member', 'team member', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('Airmen', 'personnel', 'personnel', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('airmen', 'personnel', 'personnel', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('Marine', 'team member', 'team member', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('usmc', 'personnel', 'personnel', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('marines', 'personnel', 'personnel', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('Guardian', 'team member', 'team member', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('Guardians', 'personnel', 'personnel', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('guardians', 'personnel', 'personnel', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('Coastguardsman', 'team member', 'team member', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('enlisted', 'staff', 'staff', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('commissary', 'grocery store', 'grocery store', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('BX', 'retail store', 'retail store', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('PX', 'retail store', 'retail store', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('NEX', 'retail store', 'retail store', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('MCX', 'retail store', 'retail store', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('AAFES', 'military retail', 'military retail', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('billeting', 'lodging', 'lodging', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('BOQ', 'officer lodging', 'officer lodging', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('BEQ', 'enlisted lodging', 'enlisted lodging', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('barracks', 'residential quarters', 'residential quarters', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('chow hall', 'dining facility', 'dining facility', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('DFAC', 'dining facility', 'dining facility', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('galley', 'dining facility', 'dining facility', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('mess deck', 'dining facility', 'dining facility', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('berthing', 'crew quarters', 'crew quarters', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('rack', 'bed', 'bed', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('head', 'restroom', 'restroom', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('scuttlebutt', 'water fountain', 'water fountain', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('quarterdeck', 'reception area', 'reception area', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('passageway', 'hallway', 'hallway', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ladder well', 'stairwell', 'stairwell', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('hatch', 'door', 'door', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('bulkhead', 'wall', 'wall', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('overhead', 'ceiling', 'ceiling', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('fantail', 'rear platform', 'rear platform', 'general', 'Facility') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('bridge', 'control center', 'control center', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('combat', 'operations', 'operations', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('equipage', 'equipment', 'equipment', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('materiel', 'supplies and equipment', 'supplies and equipment', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ordnance', 'weapons/ammunition', 'weapons/ammunition', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('ammo', 'ammunition', 'ammunition', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('chit', 'request form', 'request form', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('muster', 'accountability check', 'accountability check', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('liberty', 'time off', 'time off', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('deployment', 'overseas assignment', 'overseas assignment', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('underway', 'at sea operations', 'at sea operations', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('watch', 'shift duty', 'shift duty', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('duty section', 'on-call team', 'on-call team', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('port and starboard', 'rotating shift schedule', 'rotating shift schedule', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('field day', 'deep cleaning', 'deep cleaning', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('GI party', 'deep cleaning', 'deep cleaning', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('PT', 'physical training', 'physical training', 'general', 'Training') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('reveille', 'morning wake-up', 'morning wake-up', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('taps', 'lights out', 'lights out', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('colors', 'flag ceremony', 'flag ceremony', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('formation', 'group assembly', 'group assembly', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('drill', 'training exercise', 'training exercise', 'general', 'Training') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('evolution', 'planned operation', 'planned operation', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('sortie', 'mission flight', 'mission flight', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('op tempo', 'operational pace', 'operational pace', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('readiness', 'operational preparedness', 'operational preparedness', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('spot checks', 'quality inspections', 'quality inspections', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('maintenance lags', 'maintenance delays', 'maintenance delays', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+INSERT INTO dict_acronyms (acronym, full_term, civilian_explanation, branch, category) VALUES ('material readiness', 'equipment readiness', 'equipment readiness', 'general', 'Acronym') ON CONFLICT DO NOTHING;
+
+COMMIT;

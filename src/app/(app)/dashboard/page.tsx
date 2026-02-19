@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
 import { checkLimit, getSubscriptionInfo } from '@/lib/usage-service'
 import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
 import { IncompleteProfileBanner } from '@/components/layout/IncompleteProfileBanner'
+import { OptInPrompt } from '@/components/layout/OptInPrompt'
+import { CommunityMissionWidget } from '@/components/dashboard/CommunityMissionWidget'
 import Link from 'next/link'
 
 // Profile fields for completeness calculation
@@ -70,7 +70,7 @@ export default async function DashboardPage() {
   ] = user?.id
     ? await Promise.all([
         supabase.from('resumes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('profiles').select('first_name, last_name, branch, rank, rating_mos, years_of_service, target_role, eas_date, tier, onboarding_skipped').eq('user_id', user.id).single(),
+        supabase.from('profiles').select('first_name, last_name, branch, rank, rating_mos, years_of_service, target_role, eas_date, tier, onboarding_skipped, employer_sharing_opt_in, marketing_opt_in, opt_in_dismiss_count').eq('user_id', user.id).single(),
         getSubscriptionInfo(user.id),
         checkLimit(user.id, 'job_match_analysis'),
         checkLimit(user.id, 'cover_letters'),
@@ -87,10 +87,6 @@ export default async function DashboardPage() {
   const tier = subscriptionInfo.tier
   const isPaid = tier === 'core' || tier === 'full'
 
-  const daysUntilEAS = profile?.eas_date
-    ? Math.ceil((new Date(profile.eas_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : null
-
   // Calculate profile completeness
   const profileComplete = calculateProfileCompleteness(profile)
 
@@ -106,12 +102,6 @@ export default async function DashboardPage() {
           </h1>
           <p className="text-text-muted mt-1">Mission Status: Active</p>
         </div>
-        {daysUntilEAS && daysUntilEAS > 0 && (
-          <Card variant="glow" className="px-6 py-4 text-center">
-            <div className="font-mono text-3xl font-bold text-gold">{daysUntilEAS}</div>
-            <div className="font-heading text-xs uppercase tracking-wider text-text-muted">Days to EAS</div>
-          </Card>
-        )}
       </div>
 
       {/* Government Computer Notice */}
@@ -121,6 +111,11 @@ export default async function DashboardPage() {
       <IncompleteProfileBanner
         show={!!(profile?.onboarding_skipped && (!profile?.first_name || !profile?.last_name || !profile?.branch || !profile?.rank))}
       />
+
+      {/* Opt-In Prompt (existing users who haven't been asked) */}
+      {user?.id && profile?.employer_sharing_opt_in === null && profile?.marketing_opt_in === null && (
+        <OptInPrompt userId={user.id} dismissCount={profile?.opt_in_dismiss_count || 0} />
+      )}
 
       {/* Feedback Banner */}
       <div className="bg-gold-dim border border-gold/30 rounded-lg p-4 mb-6">
@@ -139,27 +134,61 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        <StatCard
-          icon="◫"
-          color="blue"
-          value={resumeCount?.toString() || '0'}
-          label="Resumes Created"
-        />
-        <StatCard
-          icon="◈"
-          color="green"
-          value={(jobMatchUsage.used || 0).toString()}
-          label="Jobs Analyzed"
-        />
-        <StatCard
-          icon="◎"
-          color="gold"
-          value={`${profileComplete}%`}
-          label="Profile Complete"
-        />
+      {/* Community Callout */}
+      <div className="p-5 border-2 border-gold/30 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent rounded-xl">
+        <h2 className="font-heading text-base md:text-lg font-bold uppercase tracking-wider text-gold mb-2">
+          Why is Debriefed free?
+        </h2>
+        <p className="text-sm text-text-muted mb-1">
+          Because veterans like you contribute translations to our dictionary. That dictionary replaces expensive AI — keeping resume building, job matching, cover letters, and LinkedIn optimization free for everyone.
+        </p>
+        <p className="text-sm font-semibold text-text mb-4">
+          The more you contribute, the better it gets for every veteran.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/career-tools?tool=community"
+            className="px-4 py-2 bg-gold text-bg-primary rounded-lg font-heading font-bold uppercase text-xs tracking-wider hover:bg-gold-bright transition-colors"
+          >
+            Contribute a Translation →
+          </Link>
+        </div>
       </div>
+
+      {/* Mission Checklist */}
+      <Card className="p-6">
+        <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">Your Mission Checklist</h2>
+        <div className="space-y-3">
+          <ChecklistItem
+            done={profileComplete >= 100}
+            label="Complete your profile"
+            href="/profile"
+          />
+          <ChecklistItem
+            done={(resumeCount || 0) > 0}
+            label="Create a resume"
+            href="/resumes"
+          />
+          <ChecklistItem
+            done={(jobMatchUsage.used || 0) > 0}
+            label="Run a job match"
+            href="/job-match"
+          />
+          <ChecklistItem
+            done={(coverLetterUsage.used || 0) > 0}
+            label="Generate a cover letter"
+            href="/career-tools"
+          />
+          <ChecklistItem
+            done={(linkedinUsage.used || 0) > 0}
+            label="Optimize your LinkedIn"
+            href="/career-tools"
+          />
+        </div>
+      </Card>
+
+      {/* Community Mission Widget */}
+      <CommunityMissionWidget />
 
       {/* Upgrade Banner - shows for free users at 50%+ usage */}
       {!isPaid && (jobMatchUsage.used || 0) + (coverLetterUsage.used || 0) + (privateDownloadUsage.used || 0) > 0 && (
@@ -171,173 +200,30 @@ export default async function DashboardPage() {
         />
       )}
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Usage Limits */}
-        <Card className="p-6 lg:col-span-2">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-heading text-lg font-bold uppercase tracking-wider">Usage Limits</h2>
-            <TierBadge tier={tier} />
-          </div>
-          <div className="space-y-4">
-            <UsageMeter
-              label="Private Resume Downloads"
-              current={privateDownloadUsage.used || 0}
-              limit={privateDownloadUsage.limit || 1}
-            />
-            <UsageMeter
-              label="Federal Resume Downloads"
-              current={federalDownloadUsage.used || 0}
-              limit={federalDownloadUsage.limit || 1}
-            />
-            <UsageMeter
-              label="Job Match Analyses"
-              current={jobMatchUsage.used || 0}
-              limit={jobMatchUsage.limit || 1}
-            />
-            <UsageMeter
-              label="Cover Letters"
-              current={coverLetterUsage.used || 0}
-              limit={coverLetterUsage.limit || 1}
-            />
-            <UsageMeter
-              label="LinkedIn Analyses"
-              current={linkedinUsage.used || 0}
-              limit={linkedinUsage.limit || 1}
-            />
-          </div>
-          {!isPaid && (
-            <div className="mt-6 pt-6 border-t border-border">
-              <Link href="/pricing">
-                <Button variant="secondary" size="sm">Upgrade for More →</Button>
-              </Link>
-            </div>
-          )}
-        </Card>
-
-        {/* Quick Actions */}
-        <Card className="p-6">
-          <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-6">Quick Actions</h2>
-          <div className="space-y-3">
-            <Link href="/resumes" className="block">
-              <Button variant="ghost" className="w-full justify-start">
-                <span className="text-gold">◫</span> Build Resume
-              </Button>
-            </Link>
-            <Link href="/job-match" className="block">
-              <Button variant="ghost" className="w-full justify-start">
-                <span className="text-gold">◈</span> Match to Job
-              </Button>
-            </Link>
-            <Link href="/career-tools" className="block">
-              <Button variant="ghost" className="w-full justify-start">
-                <span className="text-gold">◇</span> Career Tools
-              </Button>
-            </Link>
-            <Link href="/profile" className="block">
-              <Button variant="ghost" className="w-full justify-start">
-                <span className="text-gold">◎</span> Complete Profile
-              </Button>
-            </Link>
-            <Link href="/help" className="block">
-              <Button variant="ghost" className="w-full justify-start">
-                <span className="text-gold">?</span> Help Center
-              </Button>
-            </Link>
-          </div>
-        </Card>
-
-      </div>
     </div>
   )
 }
 
-function StatCard({ icon, color, value, label }: { icon: string; color: string; value: string; label: string }) {
-  const colorMap: Record<string, string> = {
-    blue: 'bg-status-blue-dim text-status-blue',
-    green: 'bg-status-green-dim text-status-green',
-    gold: 'bg-gold-dim text-gold',
-  }
+function ChecklistItem({ done, label, href }: { done: boolean; label: string; href: string }) {
   return (
-    <Card className="p-6">
-      <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${colorMap[color]}`}>
-          <span className="text-xl">{icon}</span>
-        </div>
-        <div>
-          <div className="font-mono text-2xl font-bold">{value}</div>
-          <div className="font-heading text-xs uppercase tracking-wider text-text-muted">{label}</div>
-        </div>
+    <div className="flex items-center gap-3">
+      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+        done ? 'bg-gold/20 text-gold' : 'bg-bg-tertiary text-text-muted'
+      }`}>
+        {done ? (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        ) : (
+          <span className="w-2 h-2 rounded-full bg-text-muted/40" />
+        )}
       </div>
-    </Card>
-  )
-}
-
-function TierBadge({ tier }: { tier: string }) {
-  const getTierStyle = () => {
-    switch (tier) {
-      case 'pro':
-      case 'full':
-        return 'bg-gold text-bg-primary'
-      case 'core':
-      case 'basic':
-        return 'bg-gold/20 text-gold border border-gold/30'
-      default:
-        return 'bg-bg-tertiary text-text-muted border border-border'
-    }
-  }
-
-  const getTierLabel = () => {
-    switch (tier) {
-      case 'pro':
-      case 'full':
-        return 'FULL'
-      case 'core':
-      case 'basic':
-        return 'CORE'
-      default:
-        return 'FREE'
-    }
-  }
-
-  return (
-    <span className={`px-3 py-1 rounded text-xs font-semibold uppercase tracking-wider ${getTierStyle()}`}>
-      {getTierLabel()} TIER
-    </span>
-  )
-}
-
-function UsageMeter({ label, current, limit }: { label: string; current: number; limit: number }) {
-  const isUnlimited = limit === -1 || limit >= 999999
-  const pct = isUnlimited ? 0 : Math.min((current / limit) * 100, 100)
-  const isNearLimit = !isUnlimited && current >= limit * 0.8
-  const isAtLimit = !isUnlimited && current >= limit
-
-  const formatLimit = (l: number) => (l === -1 || l >= 999999) ? '∞' : l.toString()
-
-  const getBarColor = () => {
-    if (isAtLimit) return 'bg-status-red'
-    if (isNearLimit) return 'bg-status-amber'
-    return 'bg-status-green'
-  }
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-sm text-text-muted">{label}</span>
-        <span className={`font-mono text-xs ${isAtLimit ? 'text-status-red' : 'text-text-muted'}`}>
-          {current}/{formatLimit(limit)}
-        </span>
-      </div>
-      {!isUnlimited && (
-        <div className="h-2 bg-bg-tertiary rounded-full overflow-hidden">
-          <div className={`h-full ${getBarColor()} transition-all`} style={{ width: `${pct}%` }} />
-        </div>
-      )}
-      {isUnlimited && (
-        <div className="h-2 bg-bg-tertiary rounded-full overflow-hidden">
-          <div className="h-full bg-gold/30 w-full" />
-        </div>
+      {done ? (
+        <span className="text-sm text-text">{label}</span>
+      ) : (
+        <Link href={href} className="text-sm text-gold hover:text-gold-bright font-medium transition-colors">
+          {label} →
+        </Link>
       )}
     </div>
   )

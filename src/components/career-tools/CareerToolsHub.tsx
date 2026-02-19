@@ -3,13 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { CoverLetterTool } from './CoverLetterTool'
+import { DictCoverLetterBuilder } from './DictCoverLetterBuilder'
 import { LinkedInTool } from './LinkedInTool'
-import { EvalHistorySection } from '@/components/eval/EvalHistorySection'
-import { EvalUploadModal } from '@/components/profile/EvalUploadModal'
+
 import { getUserTier, isPaidTier } from '@/lib/tier-utils'
-import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
+import { CommunitySubmissions } from '@/components/dictionary/CommunitySubmissions'
+import { getDictionaryStats, type DictionaryStats } from '@/lib/dictionary/communityQueries'
 
 interface CareerToolsHubProps {
   userId: string
@@ -28,11 +28,6 @@ interface CareerToolsHubProps {
   evalUploads?: any[]
 }
 
-const TOOLS = [
-  { id: 'cover-letter', name: 'Cover Letter Generator', icon: '◈', description: 'Custom cover letters tailored to job postings', requiresPaid: false },
-  { id: 'linkedin', name: 'LinkedIn Optimizer', icon: '◎', description: 'Optimize your LinkedIn summary and headline', requiresPaid: false },
-  { id: 'eval-upload', name: 'Eval Translator', icon: '◫', description: 'Upload military evals & translate bullets to civilian STAR format', requiresPaid: false },
-]
 
 export function CareerToolsHub({
   userId,
@@ -56,8 +51,8 @@ export function CareerToolsHub({
 
   // Use URL param as the source of truth
   const [activeTool, setActiveToolState] = useState<string | null>(toolFromUrl)
-  const [showEvalUpload, setShowEvalUpload] = useState(false)
-  const [showEvalLastUseWarning, setShowEvalLastUseWarning] = useState(false)
+  const [coverLetterMode, setCoverLetterMode] = useState<'dict' | 'ai'>('dict')
+  const [bannerStats, setBannerStats] = useState<DictionaryStats | null>(null)
   const userTier = getUserTier({ tier: userPlan })
   const hasPaidAccess = isPaidTier(userTier)
 
@@ -65,6 +60,11 @@ export function CareerToolsHub({
   useEffect(() => {
     setActiveToolState(toolFromUrl)
   }, [toolFromUrl])
+
+  // Fetch dictionary stats for hero banner
+  useEffect(() => {
+    getDictionaryStats().then(setBannerStats).catch(() => {})
+  }, [])
 
   // Update URL when changing tool
   const setActiveTool = (toolId: string | null) => {
@@ -80,48 +80,187 @@ export function CareerToolsHub({
     <div className="pb-4">
       {/* Header */}
       <div className="mb-6 md:mb-8">
-        <h1 className="font-heading text-2xl md:text-3xl font-bold uppercase tracking-wider">Career Tools</h1>
-        <p className="text-text-muted mt-1 text-sm md:text-base">Smart tools to accelerate your job search</p>
+        <h1 className="font-heading text-2xl md:text-3xl font-bold uppercase tracking-wider">Cover Letter &amp; LinkedIn</h1>
+        <p className="text-text-muted mt-1 text-sm md:text-base">Free tools to complete your military-to-civilian transition.</p>
       </div>
 
-      {/* Tool Selector - larger touch targets on mobile */}
+      {/* Dictionary Hero Banner */}
       {!activeTool && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {TOOLS.map((tool) => {
-            const isLocked = tool.requiresPaid && !hasPaidAccess
-            return (
-              <button
-                key={tool.id}
-                onClick={() => setActiveTool(tool.id)}
-                className="text-left w-full"
-              >
-                <Card className={`p-5 md:p-6 h-full hover:border-gold/30 active:border-gold/30 transition-all group relative min-h-[120px] ${isLocked ? 'opacity-80' : ''}`}>
-                  {isLocked && (
-                    <div className="absolute top-3 right-3 px-2 py-0.5 bg-gold text-bg-primary text-xs font-bold rounded">
-                      CORE
-                    </div>
-                  )}
-                  <div className="flex items-start gap-4 md:block">
-                    <div className="w-12 h-12 md:w-14 md:h-14 bg-gold-dim rounded-lg flex items-center justify-center md:mb-4 group-hover:bg-gold/20 group-active:bg-gold/20 transition-all flex-shrink-0">
-                      <span className="text-gold text-xl md:text-2xl">{tool.icon}</span>
-                    </div>
-                    <div>
-                      <h3 className="font-heading text-base md:text-lg font-bold uppercase mb-1 md:mb-2">{tool.name}</h3>
-                      <p className="text-sm text-text-muted">{tool.description}</p>
-                      {isLocked && (
-                        <p className="text-xs text-gold mt-2">Requires Core or Full access</p>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              </button>
-            )
-          })}
+        <div className="mb-8 p-6 md:p-8 bg-gradient-to-br from-gold/10 via-gold/5 to-transparent border-2 border-gold/30 rounded-xl">
+          <h2 className="font-heading text-xl md:text-2xl font-bold uppercase tracking-wider text-gold mb-4">
+            Built by Veterans. Free for Veterans.
+          </h2>
+          <div className="space-y-2 text-sm md:text-base text-text-muted mb-5">
+            <p>Why is Debriefed free? Because our translation dictionary replaces expensive AI.</p>
+            <p>
+              Veterans like you contribute military-to-civilian translations. That dictionary powers every tool on this platform — resume building, job matching, cover letters, LinkedIn optimization — at zero cost.
+            </p>
+            <p className="font-semibold text-text">
+              The more you contribute, the better it gets for every veteran walking off base.
+            </p>
+          </div>
+
+          {/* Stats line */}
+          <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs md:text-sm text-text-muted mb-6">
+            <span>
+              <span className="mr-1">📖</span>
+              <span className="font-bold text-text">10,000+</span> translations
+            </span>
+            <span>
+              <span className="mr-1">👥</span>
+              <span className="font-bold text-text">
+                {bannerStats && bannerStats.contributorCount > 0 ? bannerStats.contributorCount : 1}
+              </span> veteran{bannerStats && bannerStats.contributorCount > 1 ? 's' : ''} contributing
+            </span>
+            <span>
+              <span className="mr-1">🆓</span>
+              <span className="font-bold text-text">100%</span> free core features
+            </span>
+          </div>
+
+          {/* CTA buttons */}
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() => setActiveTool('community')}
+              className="px-5 py-2.5 bg-gold text-bg-primary rounded-lg font-heading font-bold uppercase text-sm tracking-wider hover:bg-gold-bright transition-colors"
+            >
+              Contribute a Translation
+            </button>
+            <button
+              onClick={() => document.getElementById('career-tools-grid')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-5 py-2.5 border border-gold/40 text-gold rounded-lg font-heading font-bold uppercase text-sm tracking-wider hover:bg-gold/10 transition-colors"
+            >
+              See How It Works
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Active Tool */}
-      {activeTool === 'cover-letter' && (
+      {/* Feature Sections */}
+      {!activeTool && (
+        <div id="career-tools-grid" className="space-y-6">
+          {/* ── Section 1: Cover Letter Builder ── */}
+          <Card className="p-6 md:p-8">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-3">
+                <span className="text-gold text-xl">✉</span>
+                <h3 className="font-heading text-base md:text-lg font-bold uppercase tracking-wider">Cover Letter Builder</h3>
+                <span className="px-2 py-0.5 bg-status-green/20 text-status-green text-[10px] font-bold rounded-full uppercase tracking-wider">Free</span>
+              </div>
+              <button
+                onClick={() => setActiveTool('cover-letter')}
+                className="px-5 py-2.5 bg-gold text-bg-primary rounded-lg font-heading font-bold uppercase text-sm tracking-wider hover:bg-gold-bright transition-colors hidden sm:block"
+              >
+                Build Now →
+              </button>
+            </div>
+            <p className="text-sm text-text-muted mb-5">Dictionary-powered cover letters tailored to any job posting</p>
+
+            <ul className="space-y-2 mb-5">
+              <li className="flex items-start gap-2 text-sm text-text-muted">
+                <span className="text-gold mt-0.5">•</span>
+                Matches your military experience to the job&apos;s requirements
+              </li>
+              <li className="flex items-start gap-2 text-sm text-text-muted">
+                <span className="text-gold mt-0.5">•</span>
+                Auto-fills your rank, certifications, and clearance
+              </li>
+              <li className="flex items-start gap-2 text-sm text-text-muted">
+                <span className="text-gold mt-0.5">•</span>
+                Ready in under 2 minutes — no writing from scratch
+              </li>
+            </ul>
+
+            {/* Sample output */}
+            <div className="bg-bg-primary rounded-lg p-4 border-l-3 border-gold" style={{ borderLeft: '3px solid var(--color-primary)' }}>
+              <p className="text-sm text-text-muted italic leading-relaxed">
+                &ldquo;With 20 years leading Navy damage control operations and a proven track record in risk management and cross-functional team leadership, I bring the strategic oversight and operational discipline your organization needs...&rdquo;
+              </p>
+            </div>
+
+            {/* Mobile CTA */}
+            <button
+              onClick={() => setActiveTool('cover-letter')}
+              className="mt-5 w-full px-5 py-3 bg-gold text-bg-primary rounded-lg font-heading font-bold uppercase text-sm tracking-wider hover:bg-gold-bright transition-colors sm:hidden"
+            >
+              Build Now →
+            </button>
+          </Card>
+
+          {/* Divider */}
+          <div className="border-t border-border" />
+
+          {/* ── Section 2: LinkedIn Optimizer ── */}
+          <Card className="p-6 md:p-8">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center gap-3">
+                <span className="text-gold text-xl">◎</span>
+                <h3 className="font-heading text-base md:text-lg font-bold uppercase tracking-wider">LinkedIn Optimizer</h3>
+                <span className="px-2 py-0.5 bg-status-green/20 text-status-green text-[10px] font-bold rounded-full uppercase tracking-wider">Free</span>
+              </div>
+              <button
+                onClick={() => setActiveTool('linkedin')}
+                className="px-5 py-2.5 bg-gold text-bg-primary rounded-lg font-heading font-bold uppercase text-sm tracking-wider hover:bg-gold-bright transition-colors hidden sm:block"
+              >
+                Optimize Now →
+              </button>
+            </div>
+            <p className="text-sm text-text-muted mb-5">Turn your service record into a profile recruiters actually find</p>
+
+            <ul className="space-y-2 mb-5">
+              <li className="flex items-start gap-2 text-sm text-text-muted">
+                <span className="text-gold mt-0.5">•</span>
+                Rewrites your headline with civilian keywords recruiters search
+              </li>
+              <li className="flex items-start gap-2 text-sm text-text-muted">
+                <span className="text-gold mt-0.5">•</span>
+                Translates your military experience into LinkedIn language
+              </li>
+              <li className="flex items-start gap-2 text-sm text-text-muted">
+                <span className="text-gold mt-0.5">•</span>
+                Scores your current profile and shows exactly what to fix
+              </li>
+            </ul>
+
+            {/* Sample output — before/after */}
+            <div className="bg-bg-primary rounded-lg p-4 space-y-2" style={{ borderLeft: '3px solid var(--color-primary)' }}>
+              <div className="flex items-start gap-2 text-sm">
+                <span className="text-text-dim font-semibold shrink-0">Before:</span>
+                <span className="text-text-dim">&ldquo;DC1(SW) | United States Navy&rdquo;</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm">
+                <span className="text-gold font-semibold shrink-0">After:</span>
+                <span className="text-text">&ldquo;Senior Operations Manager | Risk &amp; Safety | 20 Yrs&rdquo;</span>
+              </div>
+            </div>
+
+            {/* Mobile CTA */}
+            <button
+              onClick={() => setActiveTool('linkedin')}
+              className="mt-5 w-full px-5 py-3 bg-gold text-bg-primary rounded-lg font-heading font-bold uppercase text-sm tracking-wider hover:bg-gold-bright transition-colors sm:hidden"
+            >
+              Optimize Now →
+            </button>
+          </Card>
+        </div>
+      )}
+
+      {/* Active Tool — Cover Letter */}
+      {activeTool === 'cover-letter' && coverLetterMode === 'dict' && (
+        <DictCoverLetterBuilder
+          userProfile={userProfile}
+          experiences={experiences}
+          skills={skills}
+          certifications={certifications}
+          education={education}
+          onBack={() => { setActiveTool(null); setCoverLetterMode('dict') }}
+          onSwitchToAI={() => setCoverLetterMode('ai')}
+          aiRemaining={coverLetterLimit - coverLetterUsage}
+          userPlan={userPlan}
+        />
+      )}
+
+      {activeTool === 'cover-letter' && coverLetterMode === 'ai' && (
         <CoverLetterTool
           userId={userId}
           userPlan={userPlan}
@@ -130,7 +269,7 @@ export function CareerToolsHub({
           skills={skills}
           currentUsage={coverLetterUsage}
           usageLimit={coverLetterLimit}
-          onBack={() => setActiveTool(null)}
+          onBack={() => setCoverLetterMode('dict')}
         />
       )}
 
@@ -141,14 +280,16 @@ export function CareerToolsHub({
           skills={skills}
           certifications={certifications}
           education={education}
-          isPro={isPaidTier(getUserTier({ tier: userPlan }))}
+          isPro={hasPaidAccess}
+          userTier={userTier}
           currentUsage={linkedinUsage}
           usageLimit={linkedinLimit}
           onBack={() => setActiveTool(null)}
         />
       )}
 
-      {activeTool === 'eval-upload' && (
+      {/* Active Tool — Community Dictionary */}
+      {activeTool === 'community' && (
         <div className="space-y-6">
           <button
             onClick={() => setActiveTool(null)}
@@ -161,90 +302,11 @@ export function CareerToolsHub({
           </button>
 
           <div>
-            <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-1">Eval Translator</h2>
-            <p className="text-text-muted text-sm">Upload military evaluations and translate bullets to civilian STAR format</p>
+            <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-1">Community Dictionary</h2>
+            <p className="text-text-muted text-sm">Submit military terms, view your submissions, and see what others need translated</p>
           </div>
 
-          {experiences.length === 0 ? (
-            <Card className="p-6 text-center">
-              <div className="text-text-dim text-3xl mb-3">&#9672;</div>
-              <p className="font-heading text-sm font-semibold mb-2">Create an Experience First</p>
-              <p className="text-text-muted text-sm mb-4">
-                Add a job experience on your Profile page first, then come back to import eval bullets into it.
-              </p>
-              <a
-                href="/profile"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-bg-primary rounded font-heading font-bold uppercase text-sm hover:bg-gold-bright transition-colors"
-              >
-                Go to Profile
-              </a>
-            </Card>
-          ) : (
-            <>
-              <div className="flex items-center justify-between">
-                <Badge variant={evalLimit - evalUsage <= 0 ? 'red' : evalLimit - evalUsage <= 1 ? 'amber' : 'default'}>
-                  {Math.max(0, evalLimit - evalUsage)} Remaining
-                </Badge>
-                <button
-                  onClick={() => {
-                    const evalRemaining = evalLimit - evalUsage
-                    if (evalRemaining === 1) {
-                      setShowEvalLastUseWarning(true)
-                    } else {
-                      setShowEvalUpload(true)
-                    }
-                  }}
-                  disabled={evalLimit - evalUsage <= 0}
-                  className="px-4 py-2 bg-gold text-bg-primary rounded font-heading font-bold uppercase text-sm hover:bg-gold-bright disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  Upload Evaluation
-                </button>
-              </div>
-
-              {evalUploads.length > 0 && (
-                <EvalHistorySection
-                  uploads={evalUploads}
-                  experiences={experiences}
-                  userId={userId}
-                />
-              )}
-            </>
-          )}
-
-          {showEvalUpload && (
-            <EvalUploadModal
-              isOpen={showEvalUpload}
-              onClose={() => setShowEvalUpload(false)}
-              onExtracted={() => {
-                setShowEvalUpload(false)
-                router.refresh()
-              }}
-              onBulletsSaved={() => router.refresh()}
-              userId={userId}
-              experiences={experiences.map(exp => ({
-                id: exp.id,
-                job_title: exp.job_title || exp.civilian_title || 'Untitled',
-                organization: exp.organization || exp.company_name || '',
-                start_date: exp.start_date || '',
-                end_date: exp.end_date || '',
-              }))}
-            />
-          )}
-
-          {showEvalLastUseWarning && (
-            <LastUseWarningModal
-              featureName="Eval Upload"
-              tier={userPlan === 'full' ? 'full' : userPlan === 'core' ? 'core' : 'free'}
-              limitType="tier"
-              onContinue={() => {
-                setShowEvalLastUseWarning(false)
-                setShowEvalUpload(true)
-              }}
-              onViewPricing={() => {
-                setShowEvalLastUseWarning(false)
-              }}
-            />
-          )}
+          <CommunitySubmissions userBranch={userProfile?.branch} />
         </div>
       )}
     </div>

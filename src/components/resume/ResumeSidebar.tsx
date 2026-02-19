@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils'
 import { DeleteResumeModal } from './DeleteResumeModal'
 import { TIER_LIMITS, getUserTier } from '@/lib/tier-utils'
+import { UpgradeLink } from '@/components/modals/UpgradeModal'
 
 const SIDEBAR_STORAGE_KEY = 'resume-sidebar-collapsed'
 
@@ -205,9 +205,9 @@ export function ResumeSidebar({ resumes, selectedId, onSelect, onCreate, onDelet
               <p className="text-xs text-text-muted mb-2">
                 You've reached your {userPlan} plan limit of {resumeLimit} resume{resumeLimit > 1 ? 's' : ''}.
               </p>
-              <Link href="/pricing" className="text-xs text-gold hover:underline">
+              <UpgradeLink className="text-xs text-gold hover:underline">
                 Upgrade for more →
-              </Link>
+              </UpgradeLink>
             </div>
           )}
 

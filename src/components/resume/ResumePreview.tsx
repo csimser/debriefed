@@ -33,6 +33,8 @@ interface ResumePreviewProps {
   template: TemplateId
   resumeType: 'private' | 'federal'
   content: any
+  /** Skill names to highlight (e.g. newly injected ATS keywords). Case-insensitive. */
+  highlightedTerms?: string[]
 }
 
 // Filter out placeholder/empty bullets from rendering
@@ -46,12 +48,39 @@ function isPlaceholderBullet(text: string): boolean {
   )
 }
 
-export function ResumePreview({ template: rawTemplate, resumeType, content }: ResumePreviewProps) {
+export function ResumePreview({ template: rawTemplate, resumeType, content, highlightedTerms }: ResumePreviewProps) {
   const template = resolveTemplate(rawTemplate)
+
+  // Set of lowercased terms to highlight (empty if prop not passed)
+  const highlightSet = new Set((highlightedTerms ?? []).map(t => t.toLowerCase()))
+  const isHighlighted = (name: string) => highlightSet.size > 0 && highlightSet.has((name ?? '').toLowerCase())
+  const highlightStyle = { backgroundColor: 'rgba(184, 148, 62, 0.18)', borderRadius: 2, padding: '0 3px' }
 
   // Helper: get bullet text
   const getBulletText = (bullet: any) =>
     bullet.status === 'accepted' ? bullet.translated_text : (bullet.translated_text || bullet.original_text)
+
+  // Helper: check if a bullet is tailored (only in preview mode)
+  const isBulletTailored = (bullet: any) => bullet.tailored === true && highlightSet.size > 0
+
+  // Helper: get extra li styles for tailored bullets (gold left border + subtle bg)
+  const tailoredLiStyle = (bullet: any): React.CSSProperties =>
+    isBulletTailored(bullet)
+      ? { borderLeft: '3px solid #b8943e', paddingLeft: 6, backgroundColor: 'rgba(184, 148, 62, 0.06)', borderRadius: 2 }
+      : {}
+
+  // Helper: render bullet text with tailored indicator when applicable
+  const renderBulletText = (bullet: any, fontSize: number, color: string) => {
+    const text = getBulletText(bullet)
+    return (
+      <span style={{ fontSize, color }}>
+        {text}
+        {isBulletTailored(bullet) && (
+          <span style={{ color: '#b8943e', fontSize: fontSize - 1, marginLeft: 4 }} title="Tailored for this job">✦</span>
+        )}
+      </span>
+    )
+  }
 
   // Filter bullets: remove excluded + placeholder/empty text
   const filterBullets = (bullets: any[] | undefined) =>
@@ -136,9 +165,9 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
                       <ul style={{ listStyle: 'none', padding: 0, margin: '3px 0 0' }}>
                         {filterBullets(exp.bullets)
                           .map((bullet: any, bIdx: number) => (
-                            <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 2 }}>
+                            <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 2, ...tailoredLiStyle(bullet) }}>
                               <span style={{ color: '#333', marginRight: 6, fontSize: 10.5, flexShrink: 0 }}>&bull;</span>
-                              <span style={{ fontSize: 10.5, color: '#333' }}>{getBulletText(bullet)}</span>
+                              {renderBulletText(bullet, 10.5, '#333')}
                             </li>
                           ))}
                       </ul>
@@ -160,7 +189,7 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
                 <div>
                   {content.skills.map((skill: any, idx: number) => (
                     <div key={idx} style={{ fontSize: 10, color: '#444', marginBottom: 2 }}>
-                      &bull; {skill.name}
+                      &bull; {isHighlighted(skill.name) ? <span style={highlightStyle}>{skill.name}</span> : skill.name}
                     </div>
                   ))}
                 </div>
@@ -258,7 +287,7 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
                 {content.skills.map((skill: any, idx: number) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3 }}>
                     <span style={{ color: '#1a1a1a', marginRight: 6, fontSize: 11 }}>&bull;</span>
-                    <span style={{ fontSize: 11, color: '#333' }}>{skill.name}</span>
+                    <span style={{ fontSize: 11, color: '#333', ...(isHighlighted(skill.name) ? highlightStyle : {}) }}>{skill.name}</span>
                   </div>
                 ))}
               </div>
@@ -288,9 +317,9 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
                   <ul style={{ listStyle: 'none', padding: 0, margin: '4px 0 0' }}>
                     {filterBullets(exp.bullets)
                       .map((bullet: any, bIdx: number) => (
-                        <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3 }}>
+                        <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3, ...tailoredLiStyle(bullet) }}>
                           <span style={{ color: '#1a1a1a', marginRight: 6, fontSize: 11 }}>&bull;</span>
-                          <span style={{ fontSize: 11, color: '#333' }}>{getBulletText(bullet)}</span>
+                          {renderBulletText(bullet, 11, '#333')}
                         </li>
                       ))}
                   </ul>
@@ -432,9 +461,9 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
                     <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                       {filterBullets(exp.bullets)
                         .map((bullet: any, bIdx: number) => (
-                          <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3 }}>
+                          <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3, ...tailoredLiStyle(bullet) }}>
                             <span style={{ color: '#000', marginRight: 6, fontSize: 11 }}>&bull;</span>
-                            <span style={{ fontSize: 11, color: '#333' }}>{getBulletText(bullet)}</span>
+                            {renderBulletText(bullet, 11, '#333')}
                           </li>
                         ))}
                     </ul>
@@ -490,7 +519,12 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
                 Skills
               </h2>
               <div style={{ fontSize: 11, color: '#333' }}>
-                {content.skills.map((s: any) => s.name).join(', ')}
+                {content.skills.map((s: any, i: number) => (
+                  <span key={i}>
+                    {isHighlighted(s.name) ? <span style={highlightStyle}>{s.name}</span> : s.name}
+                    {i < content.skills.length - 1 && ', '}
+                  </span>
+                ))}
               </div>
             </div>
           )}
@@ -651,7 +685,7 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
               </h2>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {content.skills.map((skill: any, idx: number) => (
-                  <span key={idx} style={{ fontSize: 10, fontWeight: 600, color: '#0f2b3c', backgroundColor: '#f0f7fa', border: '1px solid #d4e8f0', borderRadius: 20, padding: '5px 14px' }}>
+                  <span key={idx} style={{ fontSize: 10, fontWeight: 600, color: '#0f2b3c', backgroundColor: isHighlighted(skill.name) ? 'rgba(184, 148, 62, 0.18)' : '#f0f7fa', border: `1px solid ${isHighlighted(skill.name) ? 'rgba(184, 148, 62, 0.4)' : '#d4e8f0'}`, borderRadius: 20, padding: '5px 14px' }}>
                     {skill.name}
                   </span>
                 ))}
@@ -682,9 +716,9 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
                   <ul style={{ listStyle: 'none', padding: 0, margin: '4px 0 0' }}>
                     {filterBullets(exp.bullets)
                       .map((bullet: any, bIdx: number) => (
-                        <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3 }}>
+                        <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3, ...tailoredLiStyle(bullet) }}>
                           <span style={{ color: '#3b9ec2', marginRight: 6, fontSize: 11 }}>&bull;</span>
-                          <span style={{ fontSize: 11, color: '#444' }}>{getBulletText(bullet)}</span>
+                          {renderBulletText(bullet, 11, '#444')}
                         </li>
                       ))}
                   </ul>
@@ -792,7 +826,8 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
               <div style={{ fontSize: 10.5, color: '#666', lineHeight: 2 }}>
                 {content.skills.map((s: any, i: number) => (
                   <span key={i}>
-                    {s.name}{i < content.skills.length - 1 && <span style={{ color: '#ccc' }}> / </span>}
+                    {isHighlighted(s.name) ? <span style={highlightStyle}>{s.name}</span> : s.name}
+                    {i < content.skills.length - 1 && <span style={{ color: '#ccc' }}> / </span>}
                   </span>
                 ))}
               </div>
@@ -820,9 +855,9 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
                   <ul style={{ listStyle: 'none', padding: 0, margin: '4px 0 0' }}>
                     {filterBullets(exp.bullets)
                       .map((bullet: any, bIdx: number) => (
-                        <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3 }}>
+                        <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3, ...tailoredLiStyle(bullet) }}>
                           <span style={{ color: '#bbb', marginRight: 6, fontSize: 10.5 }}>&middot;</span>
-                          <span style={{ fontSize: 10.5, color: '#555' }}>{getBulletText(bullet)}</span>
+                          {renderBulletText(bullet, 10.5, '#555')}
                         </li>
                       ))}
                   </ul>
@@ -975,7 +1010,7 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
             </h2>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
               {content.skills.map((skill: any, idx: number) => (
-                <span key={idx} style={{ fontSize: 9.5, fontWeight: 500, color: '#ddd', backgroundColor: '#3a3a3a', borderRadius: 2, padding: '3px 8px' }}>
+                <span key={idx} style={{ fontSize: 9.5, fontWeight: 500, color: isHighlighted(skill.name) ? '#f5e6c4' : '#ddd', backgroundColor: isHighlighted(skill.name) ? '#5a4a2a' : '#3a3a3a', borderRadius: 2, padding: '3px 8px' }}>
                   {skill.name}
                 </span>
               ))}
@@ -1028,9 +1063,9 @@ export function ResumePreview({ template: rawTemplate, resumeType, content }: Re
                 <ul style={{ listStyle: 'none', padding: 0, margin: '4px 0 0' }}>
                   {filterBullets(exp.bullets)
                     .map((bullet: any, bIdx: number) => (
-                      <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3 }}>
+                      <li key={bullet.id || bIdx} style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 3, ...tailoredLiStyle(bullet) }}>
                         <span style={{ color: '#d4a855', marginRight: 6, fontSize: 10.5 }}>&bull;</span>
-                        <span style={{ fontSize: 10.5, color: '#444' }}>{getBulletText(bullet)}</span>
+                        {renderBulletText(bullet, 10.5, '#444')}
                       </li>
                     ))}
                 </ul>

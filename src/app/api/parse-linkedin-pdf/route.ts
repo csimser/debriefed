@@ -5,6 +5,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage } from '@/lib/usage-tracking'
 import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
 import { canUseFeature, incrementUsage } from '@/lib/usage-service'
+import { callWithEscalation, getModelString } from '@/lib/ai-model'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -87,23 +88,24 @@ export async function POST(request: NextRequest) {
     console.log('Parsing PDF with Claude, file size:', buffer.length)
 
     // Use Claude to extract profile data from the PDF
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 3000,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'document',
-            source: {
-              type: 'base64',
-              media_type: 'application/pdf',
-              data: base64,
+    const { response, model_used } = await callWithEscalation(
+      anthropic,
+      {
+        max_tokens: 3000,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'document',
+              source: {
+                type: 'base64',
+                media_type: 'application/pdf',
+                data: base64,
+              },
             },
-          },
-          {
-            type: 'text',
-            text: `Extract ALL information from this LinkedIn profile PDF into JSON format. Be thorough and capture everything.
+            {
+              type: 'text',
+              text: `Extract ALL information from this LinkedIn profile PDF into JSON format. Be thorough and capture everything.
 
 Return this exact JSON structure (fill in all fields you can find):
 {
@@ -140,10 +142,12 @@ Important:
 - For experience bullets, include key responsibilities and achievements mentioned
 
 Return ONLY valid JSON, no other text.`
-          }
-        ]
-      }],
-    })
+            }
+          ]
+        }],
+      },
+      { expectsJson: true }
+    )
 
     const jsonText = (response.content[0] as { text: string }).text
 
@@ -188,11 +192,11 @@ Return ONLY valid JSON, no other text.`
     const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 3000
 
     // Return response to client first, then track usage
-    const jsonResponse = NextResponse.json({ profileData: linkedInProfile })
+    const jsonResponse = NextResponse.json({ profileData: linkedInProfile, model_used })
 
     after(async () => {
       try {
-        await logApiUsage(user.id, 'parse-linkedin-pdf', tokensUsed, 'claude-sonnet-4-20250514')
+        await logApiUsage(user.id, 'parse-linkedin-pdf', tokensUsed, getModelString(model_used))
         if (linkedInProfile.name || linkedInProfile.experience?.length > 0) {
           await incrementUsage(user.id, 'linkedin_profile_analysis')
         }

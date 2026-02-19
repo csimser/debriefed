@@ -93,7 +93,8 @@ export default function AdminPromoCodesPage() {
 
   // Copy code to clipboard
   const copyCode = async (code: string) => {
-    await navigator.clipboard.writeText(code)
+    const { copyToClipboard } = await import('@/lib/clipboard')
+    await copyToClipboard(code)
     setCopiedCode(code)
     setTimeout(() => setCopiedCode(null), 2000)
   }

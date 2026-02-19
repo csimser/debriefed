@@ -1,10 +1,10 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { Sidebar } from '@/components/layout/Sidebar'
-import { BottomNav } from '@/components/layout/BottomNav'
+import { TopNav } from '@/components/layout/TopNav'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { AnnouncementBanner } from '@/components/layout/AnnouncementBanner'
 import { PostActionModalProvider } from '@/components/paywall/PostActionModalProvider'
+import { UpgradeModalProvider } from '@/components/modals/UpgradeModal'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/login')
   }
 
-  // Fetch only the profile fields needed for layout, sidebar, and plan expiry check
+  // Fetch only the profile fields needed for layout and nav
   let { data: profile } = await supabase
     .from('profiles')
     .select('first_name, last_name, rank, tier, subscription_tier, plan, plan_expires_at, is_admin, onboarding_completed')
@@ -55,8 +55,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/onboarding')
   }
 
-  // Build user object for sidebar
-  const sidebarUser = {
+  // Build user object for nav
+  const navUser = {
     email: user.email,
     first_name: profile?.first_name,
     last_name: profile?.last_name,
@@ -64,35 +64,26 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex min-h-screen bg-bg-primary overflow-x-hidden">
-      {/* Sidebar - handles desktop, tablet, and mobile states internally */}
-      <Sidebar
-        user={sidebarUser}
-        tier={profile?.tier || 'free'}
-        planExpiresAt={profile?.plan_expires_at || null}
-        isAdmin={profile?.is_admin || false}
-      />
+    <UpgradeModalProvider>
+      <div className="min-h-screen bg-bg-primary overflow-x-hidden">
+        <TopNav
+          user={navUser}
+          tier={profile?.tier || 'free'}
+          isAdmin={profile?.is_admin || false}
+        />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Announcement Banner */}
         <AnnouncementBanner />
 
-        {/* Status Bar - visible on tablet and desktop */}
         <div className="hidden md:block">
           <StatusBar />
         </div>
 
-        {/* Main Content - add top padding on mobile for fixed header, bottom padding for bottom nav */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto pt-16 md:pt-4 pb-20 md:pb-4">
+        <main className="px-4 md:px-6 lg:px-8 pt-[72px] pb-4">
           <PostActionModalProvider userId={user.id}>
             {children}
           </PostActionModalProvider>
         </main>
       </div>
-
-      {/* Bottom Navigation - mobile only */}
-      <BottomNav />
-
-    </div>
+    </UpgradeModalProvider>
   )
 }

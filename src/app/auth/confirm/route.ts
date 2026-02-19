@@ -21,11 +21,6 @@ export async function GET(request: Request) {
     })
 
     if (!error) {
-      // Successfully verified - redirect based on type
-      if (type === 'recovery') {
-        return NextResponse.redirect(`${origin}/reset-password`)
-      }
-
       // Redirect to login with success message
       return NextResponse.redirect(`${origin}/login?confirmed=true`)
     }

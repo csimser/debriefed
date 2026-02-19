@@ -144,11 +144,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=auth_failed`)
   }
 
-  // For recovery flow, redirect to reset-password
-  if (type === 'recovery') {
-    return NextResponse.redirect(`${origin}/reset-password`)
-  }
-
   // For email verification (signup), redirect to login
   if (type === 'signup' || type === 'email') {
     await supabase.auth.signOut()

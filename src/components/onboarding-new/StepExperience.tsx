@@ -333,8 +333,19 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
                     {exp.start_date?.substring(0, 7)} - {exp.is_current ? 'Present' : exp.end_date?.substring(0, 7) || 'N/A'}
                   </div>
                   {exp.bullets?.length > 0 && (
-                    <div className="text-xs text-status-green mt-1">
-                      {exp.bullets.length} bullet{exp.bullets.length !== 1 ? 's' : ''} added
+                    <div className="mt-2 space-y-1">
+                      <div className="text-xs text-status-green">
+                        {exp.bullets.length} bullet{exp.bullets.length !== 1 ? 's' : ''} added
+                      </div>
+                      {exp.bullets.slice(0, 3).map((bullet: any, bIdx: number) => (
+                        <div key={bIdx} className="flex items-start gap-1.5 text-xs text-text-muted">
+                          <span className="text-gold mt-0.5 flex-shrink-0">&#8226;</span>
+                          <span className="line-clamp-1">{bullet.translated_text || bullet.original_text}</span>
+                        </div>
+                      ))}
+                      {exp.bullets.length > 3 && (
+                        <div className="text-xs text-text-dim ml-4">+{exp.bullets.length - 3} more</div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -416,6 +427,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               </label>
               <input
                 type="text"
+                name="job-title"
                 value={formData.job_title}
                 onChange={(e) => setFormData(prev => ({ ...prev, job_title: e.target.value }))}
                 placeholder={formData.employment_type === 'military' ? 'e.g., Damage Controlman Chief' : 'e.g., Project Manager'}
@@ -428,6 +440,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               </label>
               <input
                 type="text"
+                name="company"
                 value={formData.organization}
                 onChange={(e) => setFormData(prev => ({ ...prev, organization: e.target.value }))}
                 placeholder={formData.employment_type === 'military' ? 'e.g., USS Sterett (DDG-104)' : 'e.g., Acme Corp'}
@@ -451,6 +464,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <label className={labelClass}>Civilian Job Title (for resume)</label>
               <input
                 type="text"
+                name="civilian-title"
                 value={formData.civilian_title}
                 onChange={(e) => setFormData(prev => ({ ...prev, civilian_title: e.target.value }))}
                 placeholder="Select above or type your own"
@@ -466,6 +480,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <label className={labelClass}>City</label>
               <input
                 type="text"
+                name="city"
                 value={formData.city}
                 onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
                 placeholder="e.g., San Diego"
@@ -493,6 +508,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <label className={labelClass}>Start Date *</label>
               <input
                 type="month"
+                name="start-date"
                 value={formData.start_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
                 className={inputClass}
@@ -502,6 +518,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <label className={labelClass}>End Date</label>
               <input
                 type="month"
+                name="end-date"
                 value={formData.end_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
                 disabled={formData.is_current}
@@ -510,6 +527,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <label className="flex items-center gap-2 mt-2 cursor-pointer">
                 <input
                   type="checkbox"
+                  name="is-current"
                   checked={formData.is_current}
                   onChange={(e) => setFormData(prev => ({
                     ...prev,
@@ -554,6 +572,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
             <input
               ref={fileInputRef}
               type="file"
+              name="eval-file"
               accept=".pdf,.png,.jpg,.jpeg"
               onChange={handleEvalUpload}
               className="hidden"

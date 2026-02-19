@@ -32,8 +32,19 @@ function parseCoverLetter(content: string, applicantName: string) {
   for (const line of lines) {
     const trimmed = line.trim()
 
-    if (trimmed.startsWith('Dear ')) {
-      greeting = trimmed
+    if (!greeting && trimmed.startsWith('Dear ')) {
+      // Extract just the greeting (up to first comma) — if body text is on the same line, split it
+      const commaIdx = trimmed.indexOf(',')
+      if (commaIdx !== -1 && commaIdx < trimmed.length - 1) {
+        // There's text after "Dear Name," on the same line
+        greeting = trimmed.substring(0, commaIdx + 1)
+        const remainder = trimmed.substring(commaIdx + 1).trim()
+        if (remainder) {
+          currentParagraph = remainder
+        }
+      } else {
+        greeting = trimmed
+      }
       inBody = true
     } else if (
       trimmed.startsWith('Sincerely,') ||
@@ -124,7 +135,6 @@ export async function POST(request: NextRequest) {
 
     if (format === 'pdf') {
       const pdfDoc = await PDFDocument.create()
-      const page = pdfDoc.addPage([612, 792]) // Letter size
 
       // Use Times Roman for elegant professional look
       const fontRegular = await pdfDoc.embedFont(StandardFonts.TimesRoman)
@@ -137,23 +147,34 @@ export async function POST(request: NextRequest) {
       const marginLeft = 72 // 1 inch
       const marginRight = 72
       const marginTop = 72
-      const contentWidth = 612 - marginLeft - marginRight
+      const marginBottom = 72
+      const pageWidth = 612  // Letter size
+      const pageHeight = 792
+      const contentWidth = pageWidth - marginLeft - marginRight
 
-      let yPosition = 792 - marginTop
       const textColor = rgb(0.1, 0.1, 0.1)
 
-      // Helper to draw wrapped text
+      // Multi-page support: track current page and yPosition
+      let currentPage = pdfDoc.addPage([pageWidth, pageHeight])
+      let yPosition = pageHeight - marginTop
+
+      const ensureSpace = (needed: number) => {
+        if (yPosition - needed < marginBottom) {
+          currentPage = pdfDoc.addPage([pageWidth, pageHeight])
+          yPosition = pageHeight - marginTop
+        }
+      }
+
+      // Helper to draw wrapped text with page break support
       const drawWrappedText = (
         text: string,
-        y: number,
         font: typeof fontRegular,
         size: number,
-        options: { indent?: number; lineSpacing?: number } = {}
-      ): number => {
-        const { indent = 0, lineSpacing = lineHeight } = options
+        options: { indent?: number; lineSpacing?: number; color?: typeof textColor } = {}
+      ) => {
+        const { indent = 0, lineSpacing = lineHeight, color = textColor } = options
         const words = text.split(' ')
         let line = ''
-        let currentY = y
         const effectiveWidth = contentWidth - indent
 
         for (const word of words) {
@@ -161,14 +182,15 @@ export async function POST(request: NextRequest) {
           const testWidth = font.widthOfTextAtSize(testLine, size)
 
           if (testWidth > effectiveWidth && line) {
-            page.drawText(line, {
+            ensureSpace(lineSpacing)
+            currentPage.drawText(line, {
               x: marginLeft + indent,
-              y: currentY,
+              y: yPosition,
               size,
               font,
-              color: textColor,
+              color,
             })
-            currentY -= lineSpacing
+            yPosition -= lineSpacing
             line = word
           } else {
             line = testLine
@@ -176,109 +198,69 @@ export async function POST(request: NextRequest) {
         }
 
         if (line) {
-          page.drawText(line, {
+          ensureSpace(lineSpacing)
+          currentPage.drawText(line, {
             x: marginLeft + indent,
-            y: currentY,
+            y: yPosition,
             size,
             font,
-            color: textColor,
+            color,
           })
-          currentY -= lineSpacing
+          yPosition -= lineSpacing
         }
-
-        return currentY
       }
 
-      // === SENDER CONTACT BLOCK (Top, right-aligned style or centered) ===
-      // Name in bold
-      const nameWidth = fontBold.widthOfTextAtSize(applicantName || signatureName, 12)
-      page.drawText(applicantName || signatureName, {
-        x: marginLeft,
-        y: yPosition,
-        size: 12,
-        font: fontBold,
-        color: textColor,
-      })
-      yPosition -= lineHeight + 2
+      const drawLine = (text: string, font: typeof fontRegular, size: number, color = textColor) => {
+        ensureSpace(lineHeight)
+        currentPage.drawText(text, { x: marginLeft, y: yPosition, size, font, color })
+        yPosition -= lineHeight
+      }
 
-      // Contact info line
+      // === SENDER CONTACT BLOCK ===
+      drawLine(applicantName || signatureName, fontBold, 12)
+      yPosition -= 2
+
       if (contactParts.length > 0) {
-        const contactLine = contactParts.join('  |  ')
-        page.drawText(contactLine, {
-          x: marginLeft,
-          y: yPosition,
-          size: 9,
-          font: fontRegular,
-          color: rgb(0.3, 0.3, 0.3),
-        })
-        yPosition -= lineHeight
+        drawLine(contactParts.join('  |  '), fontRegular, 9, rgb(0.3, 0.3, 0.3))
       }
 
-      // LinkedIn if available
       if (applicantLinkedIn) {
-        page.drawText(applicantLinkedIn, {
-          x: marginLeft,
-          y: yPosition,
-          size: 9,
-          font: fontRegular,
-          color: rgb(0.3, 0.3, 0.3),
-        })
-        yPosition -= lineHeight
+        drawLine(applicantLinkedIn, fontRegular, 9, rgb(0.3, 0.3, 0.3))
       }
 
       // Subtle separator line
       yPosition -= 6
-      page.drawLine({
+      currentPage.drawLine({
         start: { x: marginLeft, y: yPosition },
-        end: { x: 612 - marginRight, y: yPosition },
+        end: { x: pageWidth - marginRight, y: yPosition },
         thickness: 0.5,
         color: rgb(0.7, 0.7, 0.7),
       })
       yPosition -= sectionSpacing
 
       // === DATE ===
-      page.drawText(today, {
-        x: marginLeft,
-        y: yPosition,
-        size: fontSize,
-        font: fontRegular,
-        color: textColor,
-      })
-      yPosition -= sectionSpacing
+      drawLine(today, fontRegular, fontSize)
+      yPosition -= (sectionSpacing - lineHeight)
 
       // === RECIPIENT BLOCK ===
       if (hiringManagerName) {
-        page.drawText(hiringManagerName, {
-          x: marginLeft,
-          y: yPosition,
-          size: fontSize,
-          font: fontRegular,
-          color: textColor,
-        })
-        yPosition -= lineHeight
+        drawLine(hiringManagerName, fontRegular, fontSize)
       }
 
       if (companyName) {
-        page.drawText(companyName, {
-          x: marginLeft,
-          y: yPosition,
-          size: fontSize,
-          font: fontRegular,
-          color: textColor,
-        })
-        yPosition -= lineHeight
+        drawLine(companyName, fontRegular, fontSize)
       }
 
       if (companyAddress) {
-        yPosition = drawWrappedText(companyAddress, yPosition, fontRegular, fontSize)
+        drawWrappedText(companyAddress, fontRegular, fontSize)
       }
 
       yPosition -= paragraphSpacing
 
       // === RE: LINE ===
       if (jobTitle) {
-        const reLine = `RE: ${jobTitle} Position`
-        page.drawText(reLine, {
+        ensureSpace(lineHeight)
+        currentPage.drawText(`RE: ${jobTitle} Position`, {
           x: marginLeft,
           y: yPosition,
           size: fontSize,
@@ -289,18 +271,12 @@ export async function POST(request: NextRequest) {
       }
 
       // === GREETING ===
-      page.drawText(greeting, {
-        x: marginLeft,
-        y: yPosition,
-        size: fontSize,
-        font: fontRegular,
-        color: textColor,
-      })
-      yPosition -= sectionSpacing
+      drawWrappedText(greeting, fontRegular, fontSize)
+      yPosition -= (sectionSpacing - lineHeight)
 
       // === BODY PARAGRAPHS ===
       for (let i = 0; i < bodyParagraphs.length; i++) {
-        yPosition = drawWrappedText(bodyParagraphs[i], yPosition, fontRegular, fontSize, {
+        drawWrappedText(bodyParagraphs[i], fontRegular, fontSize, {
           lineSpacing: lineHeight * 1.15,
         })
 
@@ -311,7 +287,8 @@ export async function POST(request: NextRequest) {
 
       // === CLOSING ===
       yPosition -= sectionSpacing
-      page.drawText(closing, {
+      ensureSpace(lineHeight)
+      currentPage.drawText(closing, {
         x: marginLeft,
         y: yPosition,
         size: fontSize,
@@ -320,8 +297,9 @@ export async function POST(request: NextRequest) {
       })
 
       // === SIGNATURE SPACE AND NAME ===
-      yPosition -= sectionSpacing * 2 // Space for handwritten signature
-      page.drawText(signatureName, {
+      yPosition -= sectionSpacing * 2
+      ensureSpace(lineHeight)
+      currentPage.drawText(signatureName, {
         x: marginLeft,
         y: yPosition,
         size: fontSize,

@@ -6,6 +6,8 @@ import { logApiUsage, logActivity } from '@/lib/usage-tracking'
 import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
 import { canUseFeature, incrementUsage } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+import { callWithEscalation, getModelString, type ModelUsed } from '@/lib/ai-model'
+import { captureFullTextOutput, type CaptureContext } from '@/lib/ai-translation-capture'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -196,6 +198,7 @@ ${exp.bullets?.map((b: any) => b.translated_text || b.original_text).join('; ') 
     let summary = ''
     let totalInputTokens = 0
     let totalOutputTokens = 0
+    let model_used: ModelUsed = 'haiku'
 
     // Generate headline if needed
     if (!regenerateOnly || regenerateOnly === 'headline') {
@@ -230,11 +233,16 @@ BAD EXAMPLES (don't do this):
 
 Generate ONLY the headline, nothing else.`
 
-      const headlineResponse = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        messages: [{ role: 'user', content: headlinePrompt }],
-      })
+      const headlineResult = await callWithEscalation(
+        anthropic,
+        {
+          max_tokens: 300,
+          messages: [{ role: 'user', content: headlinePrompt }],
+        },
+        { expectsJson: false }
+      )
+      const headlineResponse = headlineResult.response
+      if (headlineResult.model_used === 'sonnet') model_used = 'sonnet'
 
       // Track actual token usage from headline call
       totalInputTokens += headlineResponse.usage?.input_tokens || 0
@@ -306,11 +314,16 @@ CRITICAL RULES:
 
 Generate the About section with proper paragraph breaks.`
 
-      const aboutResponse = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        messages: [{ role: 'user', content: aboutPrompt }],
-      })
+      const aboutResult = await callWithEscalation(
+        anthropic,
+        {
+          max_tokens: 1500,
+          messages: [{ role: 'user', content: aboutPrompt }],
+        },
+        { expectsJson: false }
+      )
+      const aboutResponse = aboutResult.response
+      if (aboutResult.model_used === 'sonnet') model_used = 'sonnet'
 
       // Track actual token usage from about call
       totalInputTokens += aboutResponse.usage?.input_tokens || 0
@@ -357,11 +370,11 @@ Generate the About section with proper paragraph breaks.`
     const summaryValid = summary && summary.trim().length > 10
 
     // Return response to client first, then track usage
-    const response = NextResponse.json({ headline, summary })
+    const response = NextResponse.json({ headline, summary, model_used })
 
     after(async () => {
       try {
-        await logApiUsage(user.id, 'generate-linkedin', tokensUsed, 'claude-sonnet-4-20250514')
+        await logApiUsage(user.id, 'generate-linkedin', tokensUsed, getModelString(model_used))
 
         // Only increment features that were actually generated and produced valid output
         if (headlineValid && (!regenerateOnly || regenerateOnly === 'headline')) {
@@ -379,6 +392,19 @@ Generate the About section with proper paragraph breaks.`
           summary_length: summary.length,
           tokens_used: tokensUsed,
         })
+        // Capture for dictionary pipeline
+        const captureCtx: CaptureContext = {
+          userId: user.id,
+          branch: branch || undefined,
+          targetRole: targetRole || undefined,
+          modelUsed: model_used,
+        }
+        if (headlineValid) {
+          captureFullTextOutput('linkedin_headline', `Headline for ${targetRole || 'general'}`, headline, captureCtx)
+        }
+        if (summaryValid) {
+          captureFullTextOutput('linkedin_summary', `About section for ${targetRole || 'general'}`, summary, captureCtx)
+        }
       } catch (err) {
         console.error('Post-response usage tracking failed:', err)
       }

@@ -48,14 +48,14 @@ export default async function ResumesPage() {
   const resumeCount = resumes?.length || 0
 
   return (
-    <div className="h-[calc(100vh-120px)] -m-8">
-      {tier === 'free' && resumeCount >= 1 && (
-        <div className="p-4 pb-0 m-8 mb-0">
+    <div className="h-[calc(100vh-90px)] -mx-4 md:-mx-6 lg:-mx-8 -mb-4">
+      {tier === 'free' && resumeCount >= 5 && (
+        <div className="p-4 pb-0">
           <UpgradeBanner
             feature="Resumes"
             currentUsage={resumeCount}
-            freeLimit={1}
-            coreLimit={5}
+            freeLimit={5}
+            coreLimit={10}
             tier={tier}
             variant="inline"
           />

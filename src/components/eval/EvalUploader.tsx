@@ -99,8 +99,8 @@ export function EvalUploader({ userId, currentUsage, usageLimit, onUploadComplet
         <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
           <span className="text-gold">◈</span> Upload Evaluations
         </h3>
-        <Badge variant={remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
-          {remaining} Upload{remaining !== 1 ? 's' : ''} Remaining
+        <Badge variant={remaining >= 999 ? 'default' : remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
+          {remaining >= 999 ? 'Unlimited' : `${remaining} Upload${remaining !== 1 ? 's' : ''} Remaining`}
         </Badge>
       </div>
 

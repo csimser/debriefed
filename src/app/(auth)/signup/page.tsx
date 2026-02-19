@@ -3,6 +3,7 @@
 import { useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
@@ -14,17 +15,22 @@ function SignupForm() {
 
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
     firstName: '',
     lastName: '',
     branch: '',
     paygrade: '',
   })
+  const [optIns, setOptIns] = useState({
+    employerSharing: false,
+    marketing: false,
+  })
+  const [otpCode, setOtpCode] = useState('')
+  const [otpSent, setOtpSent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
   const submittingRef = useRef(false)
   const router = useRouter()
+  const supabase = createClient()
 
   const validPaygrades = getValidPaygradesForBranch(formData.branch)
 
@@ -38,65 +44,67 @@ function SignupForm() {
     }))
   }
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const validateCommonFields = (): boolean => {
+    if (!formData.email || !formData.firstName || !formData.lastName || !formData.branch || !formData.paygrade) {
+      setError('Please fill in all required fields')
+      return false
+    }
+    return true
+  }
+
+  // OTP signup: step 1 — create account + send code
+  const handleOtpSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Ref-based guard prevents double-submission even before React state updates
     if (submittingRef.current) return
     submittingRef.current = true
     setLoading(true)
     setError('')
 
-    const form = e.target as HTMLFormElement
-    const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]')
-    const passwordInput = form.querySelector<HTMLInputElement>('input[name="new-password"]')
-    const firstNameInput = form.querySelector<HTMLInputElement>('input[name="given-name"]')
-    const lastNameInput = form.querySelector<HTMLInputElement>('input[name="family-name"]')
-    const branchSelect = form.querySelector<HTMLSelectElement>('select[name="branch"]')
-    const paygradeSelect = form.querySelector<HTMLSelectElement>('select[name="paygrade"]')
-
-    const email = emailInput?.value || formData.email
-    const password = passwordInput?.value || formData.password
-    const firstName = firstNameInput?.value || formData.firstName
-    const lastName = lastNameInput?.value || formData.lastName
-    const branch = branchSelect?.value || formData.branch
-    const paygrade = paygradeSelect?.value || formData.paygrade
-
-    if (!email || !password || !firstName || !lastName || !branch || !paygrade) {
-      setError('Please fill in all required fields')
+    if (!validateCommonFields()) {
       submittingRef.current = false
       setLoading(false)
       return
     }
 
     try {
+      // Create the user account (no password) via our API
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          password,
-          firstName,
-          lastName,
-          branch,
-          paygrade,
+          email: formData.email,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          branch: formData.branch,
+          paygrade: formData.paygrade,
+          employerSharingOptIn: optIns.employerSharing,
+          marketingOptIn: optIns.marketing,
         }),
       })
 
       const data = await response.json()
 
-      if (!data.success) {
-        if (data.error.includes('already exists')) {
-          setError('An account with this email already exists. Please sign in instead.')
-        } else {
-          setError(data.error)
-        }
+      // If account creation failed for a reason OTHER than "already exists",
+      // show a generic error. If it already exists, we still proceed to OTP
+      // screen to prevent email enumeration.
+      if (!data.success && !data.alreadyExists) {
+        setError(data.error || 'Registration failed. Please try again.')
         submittingRef.current = false
         setLoading(false)
         return
       }
 
-      // Show success message instead of redirecting
-      setSuccess(true)
+      // Send the OTP code — always show the same generic message regardless
+      // of outcome to prevent email enumeration attacks
+      await supabase.auth.signInWithOtp({
+        email: formData.email,
+        options: { shouldCreateUser: false },
+      })
+
+      // Always transition to the verify screen with a generic message
+      setOtpSent(true)
+      submittingRef.current = false
+      setLoading(false)
     } catch {
       setError('Registration failed. Please try again.')
       submittingRef.current = false
@@ -104,41 +112,91 @@ function SignupForm() {
     }
   }
 
-  if (success) {
+  // OTP signup: step 2 — verify code
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!otpCode || otpCode.length !== 6) {
+      setError('Please enter the 6-digit code')
+      return
+    }
+    setLoading(true)
+    setError('')
+
+    const { data, error: verifyError } = await supabase.auth.verifyOtp({
+      email: formData.email,
+      token: otpCode,
+      type: 'email',
+    })
+
+    if (verifyError) {
+      setError(verifyError.message)
+      setLoading(false)
+      return
+    }
+
+    if (!data.user) {
+      setError('Verification failed. Please try again.')
+      setLoading(false)
+      return
+    }
+
+    // Track login
+    fetch('/api/auth/track-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    }).catch(() => {})
+
+    // Redirect to onboarding
+    router.push('/onboarding')
+    router.refresh()
+  }
+
+  // OTP verification screen
+  if (otpSent) {
     return (
       <Card className="p-8">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-status-green/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-status-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-4">Account Created!</h2>
-          <div className="bg-gold-dim border border-gold/30 rounded-md p-4 mb-6 text-left">
-            <p className="text-sm text-gold mb-3">
-              <span className="font-medium">Welcome to Debriefed!</span>
-            </p>
-            <p className="text-sm text-text-muted">
-              Your account has been created. Check your inbox and verify your email to get started.
-            </p>
-          </div>
-          <div className="bg-bg-tertiary rounded-md p-4 mb-6">
-            <p className="text-sm text-text-muted">
-              <span className="font-medium text-text">Next step:</span> Check your inbox for a verification email, then sign in to start building your resume.
-            </p>
-            <p className="text-xs text-text-dim mt-2">
-              Don&apos;t see it? Check your spam or junk folder. Emails come from{' '}
-              <span className="text-text-muted font-mono">noreply@getdebriefed.co</span>
-            </p>
-          </div>
-          <div className="space-y-3">
-            <Link href="/login" className="block">
-              <Button variant="secondary" className="w-full">
-                Go to Sign In
-              </Button>
-            </Link>
-          </div>
+        <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-center mb-6">Verify Your Email</h2>
+
+        <div className="bg-gold-dim border border-gold/30 rounded-md p-3 mb-6">
+          <p className="text-sm text-gold">
+            If an account exists for that email address, we&apos;ve sent a 6-digit code. Check your inbox and spam folder.
+          </p>
         </div>
+
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <Input
+            id="signup-otp-code"
+            label="6-Digit Code"
+            type="text"
+            name="otp-code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            value={otpCode}
+            onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            placeholder="000000"
+            maxLength={6}
+            required
+          />
+
+          {error && (
+            <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
+              <p className="text-sm text-status-red">{error}</p>
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={loading || otpCode.length !== 6}>
+            {loading ? 'Verifying...' : 'Verify & Continue'}
+          </Button>
+
+          <button
+            type="button"
+            onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); submittingRef.current = false }}
+            className="w-full text-sm text-text-muted hover:text-gold transition-colors"
+          >
+            ← Back to signup
+          </button>
+        </form>
       </Card>
     )
   }
@@ -161,7 +219,7 @@ function SignupForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSignup} className="space-y-4" autoComplete="on">
+      <form onSubmit={handleOtpSignup} className="space-y-4" autoComplete="on">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             id="signup-firstname"
@@ -197,17 +255,10 @@ function SignupForm() {
           placeholder="your@email.com"
           required
         />
-        <Input
-          id="signup-password"
-          label="Password"
-          type="password"
-          name="new-password"
-          autoComplete="new-password"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          placeholder="••••••••"
-          required
-        />
+
+        <p className="text-xs text-text-muted">
+          No password needed — we&apos;ll send a 6-digit code to verify your email.
+        </p>
 
         <div className="space-y-2">
           <label className="block font-heading text-xs font-semibold uppercase tracking-wider text-text-muted">Branch</label>
@@ -252,14 +303,47 @@ function SignupForm() {
           </div>
         )}
 
+        {/* Opt-in Checkboxes */}
+        <div className="space-y-4 pt-2 border-t border-border">
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              name="employer-sharing"
+              checked={optIns.employerSharing}
+              onChange={(e) => setOptIns(prev => ({ ...prev, employerSharing: e.target.checked }))}
+              className="mt-0.5 rounded border-border"
+            />
+            <div>
+              <span className="text-sm text-text group-hover:text-gold transition-colors font-medium">
+                It&apos;s OK to share my profile with SkillBridge organizations and employers
+              </span>
+              <p className="text-xs text-text-muted mt-0.5">
+                Your name, email address, skills, certifications, clearance level, and target role may be shared with vetted employers and SkillBridge host companies actively hiring veterans. You can opt out anytime in Settings.
+              </p>
+            </div>
+          </label>
+          <label className="flex items-start gap-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              name="marketing"
+              checked={optIns.marketing}
+              onChange={(e) => setOptIns(prev => ({ ...prev, marketing: e.target.checked }))}
+              className="mt-0.5 rounded border-border"
+            />
+            <div>
+              <span className="text-sm text-text group-hover:text-gold transition-colors font-medium">
+                It&apos;s OK to send me updates about Debriefed and career resources
+              </span>
+              <p className="text-xs text-text-muted mt-0.5">
+                We&apos;ll occasionally email you about new features, career tips, and transition resources. No spam, ever. Unsubscribe anytime.
+              </p>
+            </div>
+          </label>
+        </div>
+
         {error && (
           <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
             <p className="text-sm text-status-red">{error}</p>
-            {error.includes('already exists') && (
-              <Link href="/login" className="text-sm text-gold hover:text-gold-bright underline mt-2 block">
-                Go to login →
-              </Link>
-            )}
           </div>
         )}
 
@@ -289,7 +373,6 @@ function SignupFormLoading() {
             <div className="h-12 bg-bg-tertiary rounded"></div>
             <div className="h-12 bg-bg-tertiary rounded"></div>
           </div>
-          <div className="h-12 bg-bg-tertiary rounded"></div>
           <div className="h-12 bg-bg-tertiary rounded"></div>
           <div className="h-12 bg-bg-tertiary rounded"></div>
           <div className="h-12 bg-bg-tertiary rounded"></div>

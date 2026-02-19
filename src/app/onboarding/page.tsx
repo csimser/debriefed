@@ -28,6 +28,7 @@ export default async function OnboardingPage() {
         userId={user.id}
         currentStep={profile?.onboarding_step || 0}
         existingProfile={profile}
+        userPlan={profile?.tier || 'free'}
       />
     </div>
   )

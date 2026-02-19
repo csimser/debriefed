@@ -7,6 +7,8 @@ import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary
 import { hasCriticalPII, redactMinorPII } from '@/lib/pii-scanner'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
+import { callWithEscalation, getModelString } from '@/lib/ai-model'
+import { extractTermDiffs, captureTermPairs, type CaptureContext } from '@/lib/ai-translation-capture'
 
 const anthropic = new Anthropic()
 
@@ -219,24 +221,25 @@ Use this context to make translations more relevant to their career path.\n`
     const mediaType = imageFile.type as 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp'
 
     // Use Claude Vision to extract and translate text
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: mediaType,
-                data: base64,
+    const { response, model_used } = await callWithEscalation(
+      anthropic,
+      {
+        max_tokens: 4000,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: mediaType,
+                  data: base64,
+                },
               },
-            },
-            {
-              type: 'text',
-              text: `${EXTRACTION_PROMPT}
+              {
+                type: 'text',
+                text: `${EXTRACTION_PROMPT}
 
 This is a ${evalType || 'military evaluation'} document.
 ${crosswalkContext}${targetRole || targetIndustry ? `
@@ -268,11 +271,13 @@ Return a JSON object with this exact structure:
 If the image is too garbled to extract anything useful, return: {"error": "Unable to extract clean bullets from this document. Please try a clearer scan."}
 
 Return ONLY the JSON object, no other text or markdown formatting.`,
-            },
-          ],
-        },
-      ],
-    })
+              },
+            ],
+          },
+        ],
+      },
+      { expectsJson: true }
+    )
 
     // Parse the response
     const textContent = response.content.find(c => c.type === 'text')
@@ -392,13 +397,26 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
       ...result,
       evalType,
       extractedAt: new Date().toISOString(),
+      model_used,
     })
 
     after(async () => {
       try {
-        await logApiUsage(user.id, 'eval-extract', tokensUsed, 'claude-sonnet-4-20250514')
+        await logApiUsage(user.id, 'eval-extract', tokensUsed, getModelString(model_used))
         if (hasUsableBullets) {
           await incrementUsage(user.id, 'eval_uploads')
+        }
+        // Capture AI translation term pairs for dictionary pipeline
+        const captureCtx: CaptureContext = {
+          userId: user.id,
+          branch: profile?.branch || undefined,
+          targetIndustry: targetIndustry || undefined,
+          targetRole: targetRole || undefined,
+          modelUsed: model_used,
+        }
+        for (const bullet of result.bullets) {
+          const pairs = extractTermDiffs(bullet.original || '', bullet.translated || '')
+          captureTermPairs('eval_extraction', pairs, bullet.original, captureCtx)
         }
       } catch (err) {
         console.error('Post-response usage tracking failed:', err)

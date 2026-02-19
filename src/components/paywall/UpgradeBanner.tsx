@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { useUpgradeModal } from '@/components/modals/UpgradeModal'
 
 interface UpgradeBannerProps {
   feature: string
@@ -19,6 +19,8 @@ export function UpgradeBanner({
   variant = 'banner',
   tier = 'free',
 }: UpgradeBannerProps) {
+  const { openUpgradeModal } = useUpgradeModal()
+
   // Don't show for paid users
   if (tier === 'core' || tier === 'full') return null
 
@@ -28,13 +30,13 @@ export function UpgradeBanner({
 
   if (variant === 'subtle') {
     return (
-      <Link
-        href="/pricing"
+      <button
+        onClick={openUpgradeModal}
         className="flex items-center gap-2 px-3 py-2 text-xs text-gold hover:text-gold-bright transition-colors group"
       >
         <span className="text-gold group-hover:scale-110 transition-transform">★</span>
         <span className="font-heading uppercase tracking-wider">Upgrade</span>
-      </Link>
+      </button>
     )
   }
 
@@ -53,12 +55,12 @@ export function UpgradeBanner({
             </span>
           </p>
         </div>
-        <Link
-          href="/pricing"
+        <button
+          onClick={openUpgradeModal}
           className="flex-shrink-0 px-4 py-1.5 bg-gold text-bg-primary font-heading text-xs font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
         >
           Upgrade
-        </Link>
+        </button>
       </div>
     )
   }
@@ -85,12 +87,12 @@ export function UpgradeBanner({
               : `Upgrade to unlock more ${feature.toLowerCase()} and premium features.`}
           </p>
         </div>
-        <Link
-          href="/pricing"
+        <button
+          onClick={openUpgradeModal}
           className="flex-shrink-0 px-6 py-2.5 bg-gold text-bg-primary font-heading text-xs font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
         >
           View Plans →
-        </Link>
+        </button>
       </div>
     </div>
   )

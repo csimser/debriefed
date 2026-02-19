@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
-import { useRouter } from 'next/navigation'
 import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
+import { useUpgradeModal } from '@/components/modals/UpgradeModal'
 
 interface ExportMenuProps {
   resumeId: string
@@ -13,15 +13,16 @@ interface ExportMenuProps {
   resumeType?: 'private' | 'federal'
   onLimitReached?: (error: string, tier: string) => void
   isTemplateLocked?: boolean
+  isUntitled?: boolean
 }
 
-export function ExportMenu({ resumeId, resumeName, userId, template, resumeType = 'private', onLimitReached, isTemplateLocked }: ExportMenuProps) {
+export function ExportMenu({ resumeId, resumeName, userId, template, resumeType = 'private', onLimitReached, isTemplateLocked, isUntitled }: ExportMenuProps) {
   const { triggerPostActionModal } = usePostActionModal()
+  const { openUpgradeModal } = useUpgradeModal()
   const [isOpen, setIsOpen] = useState(false)
   const [exporting, setExporting] = useState<'pdf' | 'docx' | null>(null)
   const [limitError, setLimitError] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
 
   // Close on click outside
   useEffect(() => {
@@ -37,6 +38,8 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
   const handleExport = async (format: 'pdf' | 'docx') => {
     // Block export for locked templates (belt-and-suspenders)
     if (isTemplateLocked) return
+    // Block export for untitled resumes
+    if (isUntitled) return
 
     // DEBUG logging
     console.log('=== ExportMenu DEBUG ===')
@@ -118,7 +121,7 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
           <p className="text-sm text-status-amber mb-2">{limitError}</p>
           <Button
             size="sm"
-            onClick={() => router.push('/pricing')}
+            onClick={openUpgradeModal}
           >
             Upgrade Now
           </Button>
@@ -135,13 +138,18 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
         <Button
           variant="secondary"
           onClick={() => setIsOpen(!isOpen)}
-          disabled={exporting !== null || isTemplateLocked}
+          disabled={exporting !== null || isTemplateLocked || isUntitled}
         >
           {exporting ? `Exporting ${exporting.toUpperCase()}...` : '↓ Export'}
         </Button>
         {isTemplateLocked && (
           <span className="text-[10px] text-status-amber whitespace-nowrap">
             Switch to a free template or upgrade
+          </span>
+        )}
+        {isUntitled && !isTemplateLocked && (
+          <span className="text-[10px] text-gold whitespace-nowrap">
+            Name your resume to export
           </span>
         )}
       </div>

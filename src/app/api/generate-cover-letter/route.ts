@@ -4,6 +4,8 @@ import { withAISecurity, secureSystemPrompt, logAPIUsage } from '@/lib/ai-endpoi
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { suggestVerbs } from '@/lib/debriefed-token-saver/verbSuggester'
+import { callWithEscalation, getModelString } from '@/lib/ai-model'
+import { captureFullTextOutput, type CaptureContext } from '@/lib/ai-translation-capture'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -513,14 +515,20 @@ Write the complete cover letter now:`
     console.log('Calling Anthropic API...')
 
     let response
+    let model_used: 'haiku' | 'sonnet' = 'haiku'
     try {
-      response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        system: secureSystemPrompt(BASE_SYSTEM_PROMPT),
-        messages: [{ role: 'user', content: prompt }],
-      })
-      console.log('Anthropic API response received')
+      const result = await callWithEscalation(
+        anthropic,
+        {
+          max_tokens: 800,
+          system: secureSystemPrompt(BASE_SYSTEM_PROMPT),
+          messages: [{ role: 'user', content: prompt }],
+        },
+        { expectsJson: false }
+      )
+      response = result.response
+      model_used = result.model_used
+      console.log('Anthropic API response received, model:', model_used)
     } catch (apiError: any) {
       console.error('Anthropic API error:', {
         message: apiError.message,
@@ -560,14 +568,30 @@ Write the complete cover letter now:`
 
     // Track token usage (feature count is handled by withAISecurity wrapper)
     const tokensUsed = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0)
-    await logAPIUsage(ctx.userId, 'generate-cover-letter', tokensUsed, 'claude-sonnet-4-20250514')
+    await logAPIUsage(ctx.userId, 'generate-cover-letter', tokensUsed, getModelString(model_used))
 
     console.log('Cover letter generated successfully, length:', coverLetter.length, 'words:', coverLetter.split(/\s+/).length)
+
+    // Non-blocking: capture for dictionary pipeline
+    const captureCtx: CaptureContext = {
+      userId: ctx.userId,
+      branch: branch || undefined,
+      targetIndustry: targetIndustry || undefined,
+      targetRole: jobData.title || undefined,
+      modelUsed: model_used,
+    }
+    captureFullTextOutput(
+      'cover_letter',
+      `Cover letter for ${jobData.title} at ${jobData.company}`,
+      coverLetter,
+      captureCtx
+    )
 
     return NextResponse.json({
       coverLetter,
       wordCount: coverLetter.split(/\s+/).length,
-      validationIssues: validation.issues.length > 0 ? validation.issues : undefined
+      validationIssues: validation.issues.length > 0 ? validation.issues : undefined,
+      model_used,
     })
   }
 )

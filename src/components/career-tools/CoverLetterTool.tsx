@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/Badge'
 import { formatPhoneForDisplay } from '@/lib/formatPhone'
 import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
 import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
+import { useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { getUserTier, isPaidTier } from '@/lib/tier-utils'
 
 interface CoverLetterToolProps {
   userId: string
@@ -37,6 +39,7 @@ export function CoverLetterTool({
   usageLimit,
   onBack,
 }: CoverLetterToolProps) {
+  const { openUpgradeModal } = useUpgradeModal()
   const [jobData, setJobData] = useState({
     company: '',
     title: '',
@@ -263,7 +266,8 @@ export function CoverLetterTool({
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(coverLetter)
+      const { copyToClipboard } = await import('@/lib/clipboard')
+      await copyToClipboard(coverLetter)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
@@ -410,6 +414,27 @@ export function CoverLetterTool({
     }
   }, [coverLetter, applicantName])
 
+  // Defense-in-depth: free users should use the Dictionary Builder, not AI
+  if (!isPaidTier(getUserTier({ tier: userPlan }))) {
+    return (
+      <div className="pb-4">
+        <Card className="p-6 text-center max-w-md mx-auto mt-8">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-gold/10 flex items-center justify-center">
+            <span className="text-gold text-2xl">&#10024;</span>
+          </div>
+          <h3 className="font-heading text-lg font-bold uppercase mb-2">AI Cover Letters</h3>
+          <p className="text-text-muted text-sm mb-4">
+            AI cover letter generation requires Core or Full. Use the free Dictionary Builder for instant, template-based cover letters.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button variant="ghost" onClick={onBack}>Back</Button>
+            <Button onClick={openUpgradeModal}>View Plans</Button>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="pb-4">
       {/* Header - responsive */}
@@ -423,8 +448,8 @@ export function CoverLetterTool({
           </button>
           <h2 className="font-heading text-xl md:text-2xl font-bold uppercase tracking-wider">Cover Letter</h2>
         </div>
-        <Badge variant={remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
-          {remaining} Remaining
+        <Badge variant={remaining >= 999 ? 'default' : remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
+          {remaining >= 999 ? 'Unlimited' : `${remaining} Remaining`}
         </Badge>
       </div>
 

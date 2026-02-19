@@ -295,6 +295,7 @@ export function StepSkills({ data, updateData, onNext, onBack, onSkip, saving, u
         <div className="flex gap-2 mb-4">
           <input
             type="text"
+            name="custom-skill"
             value={newSkill}
             onChange={(e) => setNewSkill(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddSkill(newSkill)}
@@ -397,6 +398,7 @@ export function StepSkills({ data, updateData, onNext, onBack, onSkip, saving, u
         <div className="flex gap-2 mb-4">
           <input
             type="text"
+            name="custom-certification"
             value={newCert}
             onChange={(e) => setNewCert(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddCert(newCert)}

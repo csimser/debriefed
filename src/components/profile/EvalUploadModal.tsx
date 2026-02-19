@@ -2,6 +2,8 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getUserTier, isPaidTier } from '@/lib/tier-utils'
+import { UpgradeLink } from '@/components/modals/UpgradeModal'
 
 interface ExtractedBullet {
   original: string
@@ -23,6 +25,9 @@ interface EvalUploadModalProps {
   userId: string
   experiences?: Array<{ id: string; job_title: string; organization: string; start_date: string; end_date: string }>
   defaultExperienceId?: string // Pre-select this experience when opening
+  userPlan?: string
+  evalRemaining?: number // Remaining eval uploads (from checkLimit)
+  evalLimit?: number // Total eval upload limit (tier + bonus)
 }
 
 interface CropArea {
@@ -32,7 +37,7 @@ interface CropArea {
   height: number
 }
 
-export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, userId, experiences = [], defaultExperienceId }: EvalUploadModalProps) {
+export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, userId, experiences = [], defaultExperienceId, userPlan, evalRemaining, evalLimit }: EvalUploadModalProps) {
   const [step, setStep] = useState<'upload' | 'crop' | 'processing' | 'review'>('upload')
   const [savingToExperience, setSavingToExperience] = useState(false)
   const supabase = createClient()
@@ -52,6 +57,35 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
   const [editingBulletId, setEditingBulletId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState('')
   const [retryingBulletId, setRetryingBulletId] = useState<string | null>(null)
+  const [fetchedRemaining, setFetchedRemaining] = useState<number | undefined>(evalRemaining)
+  const [fetchedLimit, setFetchedLimit] = useState<number | undefined>(evalLimit)
+
+  // Self-fetch eval limits if not provided as props
+  useEffect(() => {
+    if (evalRemaining !== undefined) {
+      setFetchedRemaining(evalRemaining)
+      setFetchedLimit(evalLimit)
+      return
+    }
+    if (!isOpen || !userId) return
+    let cancelled = false
+    async function fetchLimits() {
+      try {
+        const res = await fetch('/api/user/eval-limit')
+        if (res.ok) {
+          const data = await res.json()
+          if (!cancelled) {
+            setFetchedRemaining(data.remaining)
+            setFetchedLimit(data.limit)
+          }
+        }
+      } catch {
+        // If fetch fails, allow upload (don't block on error)
+      }
+    }
+    fetchLimits()
+    return () => { cancelled = true }
+  }, [isOpen, userId, evalRemaining, evalLimit])
 
   const imgRef = useRef<HTMLImageElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -557,8 +591,51 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
           )}
 
           {/* Step: Upload */}
-          {step === 'upload' && (
+          {step === 'upload' && fetchedRemaining !== undefined && fetchedRemaining <= 0 && (
+            <div className="space-y-4 text-center py-4">
+              <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 flex items-center justify-center">
+                <span className="text-gold text-2xl">&#9670;</span>
+              </div>
+              <p className="text-sm text-text-muted">
+                You&apos;ve used all {fetchedLimit || 0} eval upload{(fetchedLimit || 0) !== 1 ? 's' : ''}.
+              </p>
+              <p className="text-sm text-text-muted">
+                Paste eval text into experience bullets for free dictionary translation anytime.
+              </p>
+              <div className="flex flex-col gap-2 items-center">
+                <UpgradeLink
+                  className="px-5 py-2.5 bg-gold text-bg-primary font-heading text-xs font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
+                >
+                  Buy Eval Pack — $5 / 10 uploads
+                </UpgradeLink>
+                {!isPaidTier(getUserTier({ tier: userPlan })) && (
+                  <UpgradeLink
+                    className="text-xs text-text-dim hover:text-gold transition-colors"
+                  >
+                    or upgrade to Core for 5 uploads
+                  </UpgradeLink>
+                )}
+              </div>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border text-text-muted font-semibold rounded text-sm transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          )}
+          {step === 'upload' && (fetchedRemaining === undefined || fetchedRemaining > 0) && (
             <div className="space-y-6">
+              {fetchedRemaining !== undefined && fetchedLimit !== undefined && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-text-muted">
+                    {fetchedRemaining} of {fetchedLimit} upload{fetchedLimit !== 1 ? 's' : ''} remaining
+                  </span>
+                  {fetchedRemaining === 1 && (
+                    <span className="text-status-amber font-medium">Last upload</span>
+                  )}
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
                   Evaluation Type

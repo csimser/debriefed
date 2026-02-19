@@ -51,9 +51,10 @@ interface NewOnboardingWizardProps {
   userId: string
   currentStep: number
   existingProfile: any
+  userPlan?: string
 }
 
-export function NewOnboardingWizard({ userId, currentStep, existingProfile }: NewOnboardingWizardProps) {
+export function NewOnboardingWizard({ userId, currentStep, existingProfile, userPlan }: NewOnboardingWizardProps) {
   const router = useRouter()
   const supabase = createClient()
 
@@ -290,6 +291,7 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile }: Ne
     userId,
     supabase,
     loadRelatedData,
+    userPlan,
   }
 
   return (

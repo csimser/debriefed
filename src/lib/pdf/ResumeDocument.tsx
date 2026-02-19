@@ -15,6 +15,7 @@ import {
 import { formatDateRange, formatClearance } from '@/lib/utils/formatResume'
 import { getProficiencyLabel } from '@/lib/constants/federalEligibility'
 import { TemplateId, resolveTemplate } from '@/lib/templates'
+import { trimForFederalLimit } from '@/lib/resume/federalTrimmer'
 
 // =========================================
 // GOOGLE FONT REGISTRATION
@@ -465,25 +466,45 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
   // FEDERAL TEMPLATE
   // =========================================
   if (template === 'federal') {
+    // Apply federal 2-page trimmer
+    const fedContent = trimForFederalLimit({
+      ...content,
+      experiences,
+      education,
+      certifications,
+      training,
+      languages,
+      affiliations,
+      publications,
+    })
+    const fedExperiences = fedContent.experiences || []
+    const fedEducation = fedContent.education || []
+    const fedCertifications = fedContent.certifications || []
+    const fedTraining = fedContent.training || []
+    const fedLanguages = fedContent.languages || []
+    const fedAffiliations = fedContent.affiliations || []
+    const fedPublications = fedContent.publications || []
+    const fedSummary = fedContent.summary ?? content.summary
+
     const s = StyleSheet.create({
       page: { padding: 0, fontSize: 10, fontFamily: 'Open Sans', color: '#333333' },
-      header: { paddingTop: 32, paddingHorizontal: 52, paddingBottom: 24, borderBottomWidth: 3, borderBottomColor: '#000000' },
-      name: { fontSize: 24, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 0.5, color: '#000000', fontFamily: 'Merriweather' },
-      infoGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 10 },
-      infoItem: { width: '50%', flexDirection: 'row', marginBottom: 3 },
-      infoLabel: { fontWeight: 'bold', color: '#000000', fontSize: 11, marginRight: 4 },
-      infoValue: { fontSize: 11, color: '#333333' },
-      body: { paddingTop: 24, paddingHorizontal: 52, paddingBottom: 40 },
-      sectionTitle: { fontSize: 12, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 0.8, color: '#ffffff', backgroundColor: '#000000', paddingHorizontal: 12, paddingVertical: 6, fontFamily: 'Merriweather', marginBottom: 10 },
-      section: { marginBottom: 20 },
-      expTitle: { fontSize: 13, fontWeight: 'bold', color: '#000000' },
-      expOrg: { fontSize: 11.5, fontWeight: 'bold', color: '#333333' },
-      expMeta: { fontSize: 10.5, color: '#555555' },
+      header: { paddingTop: 28, paddingHorizontal: 40, paddingBottom: 20, borderBottomWidth: 3, borderBottomColor: '#000000' },
+      name: { fontSize: 22, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 0.5, color: '#000000', fontFamily: 'Merriweather' },
+      infoGrid: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8 },
+      infoItem: { width: '50%', flexDirection: 'row', marginBottom: 2 },
+      infoLabel: { fontWeight: 'bold', color: '#000000', fontSize: 10, marginRight: 4 },
+      infoValue: { fontSize: 10, color: '#333333' },
+      body: { paddingTop: 18, paddingHorizontal: 40, paddingBottom: 36 },
+      sectionTitle: { fontSize: 11, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 0.8, color: '#ffffff', backgroundColor: '#000000', paddingHorizontal: 10, paddingVertical: 4, fontFamily: 'Merriweather', marginBottom: 8 },
+      section: { marginBottom: 14 },
+      expTitle: { fontSize: 12, fontWeight: 'bold', color: '#000000' },
+      expOrg: { fontSize: 10.5, fontWeight: 'bold', color: '#333333' },
+      expMeta: { fontSize: 9.5, color: '#555555' },
       expMetaLabel: { fontWeight: 'bold', color: '#333333' },
-      dutiesHeader: { fontSize: 11, fontWeight: 'bold', color: '#000000', textTransform: 'uppercase', marginTop: 8, marginBottom: 4 },
-      bullet: { flexDirection: 'row', marginBottom: 2 },
-      bulletChar: { width: 10, fontSize: 11, color: '#000000' },
-      bulletText: { flex: 1, fontSize: 11, lineHeight: 1.4, color: '#333333' },
+      dutiesHeader: { fontSize: 10, fontWeight: 'bold', color: '#000000', textTransform: 'uppercase', marginTop: 6, marginBottom: 3 },
+      bullet: { flexDirection: 'row', marginBottom: 1 },
+      bulletChar: { width: 10, fontSize: 10, color: '#000000' },
+      bulletText: { flex: 1, fontSize: 10, lineHeight: 1.25, color: '#333333' },
     })
 
     return (
@@ -526,19 +547,19 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
           </View>
 
           <View style={s.body}>
-            {content.summary && (
+            {fedSummary && (
               <View style={s.section} wrap={false}>
                 <Text style={s.sectionTitle}>Professional Summary</Text>
-                <Text style={{ fontSize: 11, lineHeight: 1.7, color: '#333333' }}>{content.summary}</Text>
+                <Text style={{ fontSize: 10, lineHeight: 1.3, color: '#333333' }}>{fedSummary}</Text>
               </View>
             )}
 
-            {experiences.length > 0 && (
+            {fedExperiences.length > 0 && (
               <View style={s.section}>
-                {experiences.map((exp: any, idx: number) => {
+                {fedExperiences.map((exp: any, idx: number) => {
                   const bullets = filterBullets(exp.bullets)
                   return (
-                    <View key={idx} style={{ marginBottom: 14 }}>
+                    <View key={idx} style={{ marginBottom: 10 }}>
                       <View wrap={false}>
                         {idx === 0 && <Text style={s.sectionTitle}>Professional Experience</Text>}
                         <Text style={s.expTitle}>{exp.civilian_title || exp.job_title}</Text>
@@ -570,14 +591,14 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
               </View>
             )}
 
-            {education.length > 0 && (
+            {fedEducation.length > 0 && (
               <View style={s.section}>
-                {education.map((edu: any, idx: number) => (
+                {fedEducation.map((edu: any, idx: number) => (
                   <View key={idx} style={{ marginBottom: 6 }} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Education</Text>}
-                    <Text style={{ fontSize: 12, fontWeight: 'bold', color: '#000000' }}>{getDegree(edu)}</Text>
-                    <Text style={{ fontSize: 11, color: '#333333' }}>{getSchool(edu)}</Text>
-                    <Text style={{ fontSize: 10.5, color: '#555555' }}>
+                    <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#000000' }}>{getDegree(edu)}</Text>
+                    <Text style={{ fontSize: 10, color: '#333333' }}>{getSchool(edu)}</Text>
+                    <Text style={{ fontSize: 9.5, color: '#555555' }}>
                       {getGradDate(edu)}{edu.gpa ? ` | GPA: ${edu.gpa}` : ''}{edu.credit_hours ? ` | ${edu.credit_hours} credit hours` : ''}
                     </Text>
                   </View>
@@ -585,9 +606,9 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
               </View>
             )}
 
-            {certifications.length > 0 && (
+            {fedCertifications.length > 0 && (
               <View style={s.section}>
-                {certifications.map((c: any, idx: number) => (
+                {fedCertifications.map((c: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Certifications &amp; Licenses</Text>}
                     <View style={s.bullet}>
@@ -602,7 +623,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
             {skills.length > 0 && (
               <View style={s.section} wrap={false}>
                 <Text style={s.sectionTitle}>Skills</Text>
-                <Text style={{ fontSize: 11, color: '#333333' }}>{skills.map((sk: any) => sk.name).join(', ')}</Text>
+                <Text style={{ fontSize: 10, color: '#333333' }}>{skills.map((sk: any) => sk.name).join(', ')}</Text>
               </View>
             )}
 
@@ -624,10 +645,10 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
               </View>
             )}
 
-            {/* Federal-only sections */}
-            {training.length > 0 && (
+            {/* Federal-only sections (trimmed) */}
+            {fedTraining.length > 0 && (
               <View style={s.section}>
-                {training.map((t: any, idx: number) => (
+                {fedTraining.map((t: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Job-Related Training</Text>}
                     <View style={s.bullet}>
@@ -639,9 +660,9 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
               </View>
             )}
 
-            {languages.length > 0 && (
+            {fedLanguages.length > 0 && (
               <View style={s.section}>
-                {languages.map((lang: any, idx: number) => (
+                {fedLanguages.map((lang: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Language Skills</Text>}
                     <View style={s.bullet}>
@@ -653,9 +674,9 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
               </View>
             )}
 
-            {affiliations.length > 0 && (
+            {fedAffiliations.length > 0 && (
               <View style={s.section}>
-                {affiliations.map((aff: any, idx: number) => (
+                {fedAffiliations.map((aff: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Professional Affiliations</Text>}
                     <View style={s.bullet}>
@@ -667,9 +688,9 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
               </View>
             )}
 
-            {publications.length > 0 && (
+            {fedPublications.length > 0 && (
               <View style={s.section}>
-                {publications.map((pub: any, idx: number) => (
+                {fedPublications.map((pub: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Publications</Text>}
                     <View style={s.bullet}>

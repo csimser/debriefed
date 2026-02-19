@@ -46,6 +46,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
             </label>
             <input
               type="text"
+              name="first-name"
               value={data.first_name}
               disabled
               className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -57,6 +58,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
             </label>
             <input
               type="text"
+              name="last-name"
               value={data.last_name}
               disabled
               className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -71,6 +73,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
           </label>
           <input
             type="email"
+            name="email"
             value={data.email}
             disabled
             className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -93,6 +96,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
             <label className={labelClass}>City</label>
             <input
               type="text"
+              name="city"
               value={data.city}
               onChange={(e) => updateData({ city: e.target.value })}
               placeholder="San Diego"
@@ -123,6 +127,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
           </label>
           <input
             type="url"
+            name="linkedin-url"
             value={data.linkedin_url}
             onChange={(e) => updateData({ linkedin_url: e.target.value })}
             placeholder="https://linkedin.com/in/yourprofile"

@@ -130,6 +130,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
           </label>
           <input
             type="text"
+            name="rank"
             value={data.rank}
             onChange={(e) => updateData({ rank: e.target.value })}
             placeholder="Select branch and paygrade above"
@@ -149,6 +150,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
           </label>
           <input
             type="text"
+            name="rating-mos"
             value={data.rating_mos}
             onChange={(e) => updateData({ rating_mos: e.target.value })}
             placeholder="e.g., DC, IT, 11B, 3D0X2, OS"
@@ -188,6 +190,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
           <label className={labelClass}>Years of Service</label>
           <input
             type="number"
+            name="years-of-service"
             value={data.years_of_service}
             onChange={(e) => updateData({ years_of_service: e.target.value })}
             placeholder="e.g., 8"
@@ -223,6 +226,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
           </label>
           <input
             type="date"
+            name="separation-date"
             value={data.eas_date}
             onChange={(e) => updateData({ eas_date: e.target.value })}
             className={inputClass}

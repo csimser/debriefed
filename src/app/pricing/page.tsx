@@ -1,39 +1,16 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 function PricingContent() {
   const searchParams = useSearchParams();
   const paymentStatus = searchParams.get('payment');
-  const [loading, setLoading] = useState<'core' | 'full' | null>(null);
+  const [loading, setLoading] = useState<'core' | 'full' | 'eval_pack' | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    // Check if user is authenticated
-    fetch('/api/user/subscription')
-      .then((res) => {
-        setIsAuthenticated(res.ok);
-      })
-      .catch(() => {
-        setIsAuthenticated(false);
-      });
-  }, []);
-
-  const handleCheckout = async (tier: 'core' | 'full') => {
-    // Wait for auth check to complete - null means still loading
-    if (isAuthenticated === null) {
-      return;
-    }
-
-    // If not authenticated, redirect to signup
-    if (isAuthenticated === false) {
-      window.location.href = `/signup?plan=${tier}`;
-      return;
-    }
-
+  const handleCheckout = async (tier: 'core' | 'full' | 'eval_pack') => {
     setLoading(tier);
     setError(null);
 
@@ -43,6 +20,12 @@ function PricingContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tier }),
       });
+
+      if (response.status === 401) {
+        // Not logged in — send to signup with the selected plan
+        window.location.href = `/signup?plan=${tier}`;
+        return;
+      }
 
       const data = await response.json();
 
@@ -93,103 +76,119 @@ function PricingContent() {
           {/* Free Tier */}
           <div className="bg-bg-primary border border-border p-8 flex flex-col hover:border-border-bright transition-all">
             <div className="font-heading text-2xl font-bold uppercase mb-2">Free</div>
-            <div className="text-sm text-text-muted mb-6 min-h-[40px]">Try before you commit</div>
+            <div className="text-sm text-text-muted mb-6 min-h-[40px]">Dictionary-powered resume tools</div>
             <div className="mb-6">
               <span className="font-heading text-3xl font-bold text-status-green">$0</span>
               <span className="text-sm text-text-muted ml-1">forever</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Private Resume" limit="1" />
-              <PricingFeature label="Cover Letter" limit="1" />
-              <PricingFeature label="Job Match Analysis" limit="1" />
-              <PricingFeature label="Bullet Translations" limit="10" />
-              <PricingFeature label="Eval Uploads" limit="2" />
-              <PricingFeature label="Resume Import (PDF)" limit="1" />
-              <PricingFeature label="AI Summary Generation" limit="1" />
-              <PricingFeature label="LinkedIn Headline" limit="1" />
-              <PricingFeature label="LinkedIn Summary" limit="1" />
-              <PricingFeature label="LinkedIn Profile Analysis" limit="1" />
-              <PricingFeature label="LinkedIn Recommendations" unavailable />
+              <PricingFeature label="Resumes" limit="5" />
+              <PricingFeature label="Federal Resumes" limit="5" />
+              <PricingFeature label="Dictionary Translations" limit="Unlimited" />
+              <PricingFeature label="Job Match (Dictionary)" limit="Unlimited" />
+              <PricingFeature label="Cover Letter Builder" limit="Unlimited" />
+              <PricingFeature label="Resume Imports" limit="3" />
+              <PricingFeature label="Downloads" limit="Unlimited" />
               <PricingFeature label="Smart Apply" />
-              <PricingFeature label="Templates" limit="2" isLast />
+              <PricingFeature label="Templates" limit="5" />
+              <PricingFeature label="Eval Upload" limit="1" tooltip="First one's free — try AI eval parsing" />
+              <PricingFeature label="AI Features" unavailable isLast />
             </ul>
             <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
               Get Started Free
             </Link>
           </div>
 
-          {/* Core Tier - Featured */}
+          {/* Core Tier - Most Popular */}
           <div className="bg-bg-primary border border-gold p-8 flex flex-col relative shadow-[0_0_40px_rgba(212,168,75,0.15)]">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-bg-primary font-mono text-[10px] font-bold px-3 py-1 tracking-wider">
-              BEST VALUE
+              MOST POPULAR
             </div>
             <div className="font-heading text-2xl font-bold uppercase mb-2">Core</div>
-            <div className="text-sm text-text-muted mb-6 min-h-[40px]">Everything you need to land the job</div>
+            <div className="text-sm text-text-muted mb-6 min-h-[40px]">AI-powered tools to land the job</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$35</span>
+              <span className="font-heading text-3xl font-bold text-gold">$15</span>
               <span className="text-sm text-text-muted ml-1">/ 30 days</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Private Resumes" limit="5" />
+              <PricingFeature label="Resumes" limit="10" />
               <PricingFeature label="Federal Resumes" limit="5" />
-              <PricingFeature label="Cover Letters" limit="10" />
-              <PricingFeature label="Job Match Analyses" limit="15" />
-              <PricingFeature label="Bullet Translations" limit="50" />
-              <PricingFeature label="Eval Uploads" limit="10" />
-              <PricingFeature label="Resume Imports" limit="5" />
-              <PricingFeature label="AI Summary Generations" limit="10" />
-              <PricingFeature label="LinkedIn Headlines & Summaries" limit="15" />
-              <PricingFeature label="LinkedIn Profile Analyses" limit="10" />
-              <PricingFeature label="LinkedIn Recommendations" />
-              <PricingFeature label="Daily rate limits apply" tooltip="Daily limits prevent abuse while keeping your period limits generous" />
+              <PricingFeature label="AI Cover Letters" limit="5" />
+              <PricingFeature label="AI Summary Generation" limit="Unlimited" />
+              <PricingFeature label="AI Job Match Analysis" limit="Unlimited" />
+              <PricingFeature label="AI LinkedIn Headlines & Summaries" limit="Unlimited" />
+              <PricingFeature label="Eval Uploads" limit="5" />
+              <PricingFeature label="Resume Imports" limit="Unlimited" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
             <button
               onClick={() => handleCheckout('core')}
-              disabled={loading !== null || isAuthenticated === null}
+              disabled={loading !== null}
               className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading === 'core' ? 'Processing...' : isAuthenticated === null ? 'Loading...' : 'Get Core'}
+              {loading === 'core' ? 'Processing...' : 'Get Core'}
             </button>
           </div>
 
-          {/* Full Tier */}
-          <div className="bg-bg-primary border border-border p-8 flex flex-col hover:border-border-bright transition-all">
+          {/* Full Tier - Best Value */}
+          <div className="bg-bg-primary border border-border p-8 flex flex-col relative hover:border-border-bright transition-all">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-bg-tertiary text-gold font-mono text-[10px] font-bold px-3 py-1 tracking-wider border border-gold">
+              BEST VALUE
+            </div>
             <div className="font-heading text-2xl font-bold uppercase mb-2">Full</div>
-            <div className="text-sm text-text-muted mb-6 min-h-[40px]">For serious job searches & SkillBridge</div>
+            <div className="text-sm text-text-muted mb-6 min-h-[40px]">Unlimited AI for serious job searches</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$75</span>
+              <span className="font-heading text-3xl font-bold text-gold">$30</span>
               <span className="text-sm text-text-muted ml-1">/ 90 days</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Private Resumes" limit="30" />
-              <PricingFeature label="Federal Resumes" limit="30" />
-              <PricingFeature label="Cover Letters" limit="30" />
-              <PricingFeature label="Job Match Analyses" limit="45" />
-              <PricingFeature label="Bullet Translations" limit="150" />
-              <PricingFeature label="Eval Uploads" limit="30" />
-              <PricingFeature label="Resume Imports" limit="Unlimited" />
+              <PricingFeature label="Resumes" limit="Unlimited" />
+              <PricingFeature label="Federal Resumes" limit="Unlimited" />
+              <PricingFeature label="AI Cover Letters" limit="Unlimited" />
               <PricingFeature label="AI Summaries" limit="Unlimited" />
+              <PricingFeature label="AI Job Match Analysis" limit="Unlimited" />
               <PricingFeature label="LinkedIn Tools" limit="Unlimited" />
-              <PricingFeature label="LinkedIn Recommendations" />
-              <PricingFeature label="Daily rate limits apply" tooltip="Daily limits prevent abuse while keeping your period limits generous" />
+              <PricingFeature label="LinkedIn Profile Analysis" limit="Unlimited" tooltip="Full tier exclusive" />
+              <PricingFeature label="LinkedIn Recommendations" tooltip="Full tier exclusive" />
+              <PricingFeature label="Eval Uploads" limit="20" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
             <button
               onClick={() => handleCheckout('full')}
-              disabled={loading !== null || isAuthenticated === null}
+              disabled={loading !== null}
               className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading === 'full' ? 'Processing...' : isAuthenticated === null ? 'Loading...' : 'Get Full'}
+              {loading === 'full' ? 'Processing...' : 'Get Full'}
             </button>
           </div>
         </div>
 
+        {/* Eval Credit Pack */}
+        <div className="max-w-md mx-auto mt-10 bg-bg-primary border-2 border-gold/40 p-6 text-center hover:border-gold transition-all">
+          <div className="inline-block font-mono text-[10px] uppercase tracking-wider text-gold bg-gold-dim px-3 py-1 mb-3">
+            ADD-ON
+          </div>
+          <div className="font-heading text-lg font-bold uppercase mb-1">Eval Credit Pack</div>
+          <div className="text-sm text-text-muted mb-3">AI-powered eval parsing — works with any tier</div>
+          <div className="mb-4">
+            <span className="font-heading text-2xl font-bold text-gold">$5</span>
+            <span className="text-sm text-text-muted ml-1">/ 10 uploads</span>
+          </div>
+          <p className="text-xs text-text-dim mb-4">Upload your eval as a photo or PDF. AI extracts and translates every bullet. Buy multiple packs anytime.</p>
+          <button
+            onClick={() => handleCheckout('eval_pack')}
+            disabled={loading !== null}
+            className="px-6 py-2.5 font-heading text-sm font-bold uppercase tracking-wider bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading === 'eval_pack' ? 'Processing...' : 'Buy Eval Pack'}
+          </button>
+        </div>
+
         {/* Footer Note */}
         <p className="text-center text-sm text-text-muted mt-8 max-w-2xl mx-auto">
-          Core and Full tiers include daily rate limits to ensure fair usage. Need enterprise access? Contact us.
+          All paid tiers include daily rate limits to ensure fair usage. Dictionary features are always unlimited.
         </p>
       </section>
     </>

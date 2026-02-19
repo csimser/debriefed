@@ -224,18 +224,89 @@ export default async function HomePage({
         </div>
       </section>
 
+      {/* Why Free Section */}
+      <section className="bg-bg-primary border-t border-border px-4 md:px-20 py-16 md:py-24 relative overflow-hidden">
+        {/* Subtle gold accent glow */}
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] pointer-events-none"
+          style={{
+            background: 'radial-gradient(ellipse, rgba(212, 168, 75, 0.06) 0%, transparent 70%)',
+          }}
+        />
+
+        <div className="max-w-5xl mx-auto relative z-10">
+          {/* Header */}
+          <div className="text-center mb-12 md:mb-16">
+            <div className="inline-block font-mono text-[11px] uppercase tracking-wider text-gold bg-gold-dim px-4 py-2 mb-6">
+              The Mission
+            </div>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4">
+              Why Is Debriefed <span className="text-gold">Free?</span>
+            </h2>
+            <p className="text-lg md:text-xl text-text-muted max-w-2xl mx-auto leading-relaxed">
+              Because we believe no veteran should pay to translate their service.
+            </p>
+          </div>
+
+          {/* Three Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-14">
+            {/* Card 1: The Dictionary */}
+            <div className="p-6 md:p-8 bg-bg-secondary/50 border border-border rounded-lg hover:border-gold/30 transition-all">
+              <div className="text-4xl mb-4">📖</div>
+              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">The Dictionary</h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Our military-to-civilian translation dictionary powers every tool on Debriefed — resume building, job matching, cover letters, LinkedIn optimization. No expensive AI. No subscription wall. Just instant, accurate translations built by people who actually served.
+              </p>
+            </div>
+
+            {/* Card 2: The Community */}
+            <div className="p-6 md:p-8 bg-bg-secondary/50 border border-border rounded-lg hover:border-gold/30 transition-all">
+              <div className="text-4xl mb-4">🤝</div>
+              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">The Community</h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Every veteran who uses Debriefed makes it better. Submit a translation, flag a bad one, or upvote a term — your contributions help the next veteran walking off base. 10,000+ translations and growing.
+              </p>
+            </div>
+
+            {/* Card 3: Spread the Word */}
+            <div className="p-6 md:p-8 bg-bg-secondary/50 border border-border rounded-lg hover:border-gold/30 transition-all">
+              <div className="text-4xl mb-4">📢</div>
+              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">Spread the Word</h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Know someone PCSing out? Retiring? ETSing? Share Debriefed. The more veterans who use and contribute, the better the dictionary gets for everyone. No referral codes, no gimmicks — just help a shipmate out.
+              </p>
+            </div>
+          </div>
+
+          {/* Bold Callout + CTA */}
+          <div className="text-center">
+            <div className="max-w-3xl mx-auto mb-8 px-6 py-6 border-l-4 border-gold bg-gold/[0.04] rounded-r-lg">
+              <p className="text-base md:text-lg text-text leading-relaxed font-medium">
+                Debriefed will always have a free tier. That&apos;s not a marketing gimmick — it&apos;s a commitment. The dictionary is what makes it possible, and your contributions are what keep it growing.
+              </p>
+            </div>
+            <Link
+              href="/signup"
+              className="inline-block px-8 py-4 font-heading text-base font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all"
+            >
+              Join the Mission — Sign Up Free
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
-      <section id="pricing" className="bg-bg-primary border-t border-border px-4 md:px-20 py-12 md:py-24">
+      <section id="pricing" className="bg-bg-secondary border-t border-border px-4 md:px-20 py-12 md:py-24">
         {/* Pricing Header */}
         <div className="text-center mb-10 md:mb-16">
           <div className="inline-block font-mono text-[11px] uppercase tracking-wider text-gold bg-gold-dim px-4 py-2 mb-6">
             Simple Pricing
           </div>
           <h2 className="font-heading text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4">
-            Your First Resume is Free
+            Start Building for Free
           </h2>
           <p className="text-base md:text-lg text-text-muted max-w-xl mx-auto">
-            Start free, upgrade when you need more. No subscriptions - just straightforward one-time access during your transition.
+            Free dictionary-powered tools forever. Upgrade for AI features when you need them.
           </p>
         </div>
 
@@ -244,56 +315,50 @@ export default async function HomePage({
           {/* Free Tier */}
           <div className="bg-bg-primary border border-border p-8 flex flex-col hover:border-border-bright transition-all">
             <div className="font-heading text-2xl font-bold uppercase mb-2">Free</div>
-            <div className="text-sm text-text-muted mb-6 min-h-[40px]">Try before you commit</div>
+            <div className="text-sm text-text-muted mb-6 min-h-[40px]">Dictionary-powered resume tools</div>
             <div className="mb-6">
               <span className="font-heading text-3xl font-bold text-status-green">$0</span>
               <span className="text-sm text-text-muted ml-1">forever</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Private Resume" limit="1" />
-              <PricingFeature label="Cover Letter" limit="1" />
-              <PricingFeature label="Job Match Analysis" limit="1" />
-              <PricingFeature label="Bullet Translations" limit="10" />
-              <PricingFeature label="Eval Uploads" limit="2" />
-              <PricingFeature label="Resume Import (PDF)" limit="1" />
-              <PricingFeature label="AI Summary Generation" limit="1" />
-              <PricingFeature label="LinkedIn Headline" limit="1" />
-              <PricingFeature label="LinkedIn Summary" limit="1" />
-              <PricingFeature label="LinkedIn Profile Analysis" limit="1" />
-              <PricingFeature label="LinkedIn Recommendations" unavailable />
+              <PricingFeature label="Resumes" limit="5" />
+              <PricingFeature label="Federal Resumes" limit="5" />
+              <PricingFeature label="Dictionary Translations" limit="Unlimited" />
+              <PricingFeature label="Job Match (Dictionary)" limit="Unlimited" />
+              <PricingFeature label="Cover Letter Builder" limit="Unlimited" />
+              <PricingFeature label="Resume Imports" limit="3" />
+              <PricingFeature label="Downloads" limit="Unlimited" />
               <PricingFeature label="Smart Apply" />
-              <PricingFeature label="Templates" limit="2" isLast />
+              <PricingFeature label="Templates" limit="5" />
+              <PricingFeature label="Eval Upload" limit="1" />
+              <PricingFeature label="AI Features" unavailable isLast />
             </ul>
-            
+
             <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
               Get Started Free
             </Link>
           </div>
 
-          {/* Core Tier - Featured */}
+          {/* Core Tier - Most Popular */}
           <div className="bg-bg-primary border border-gold p-8 flex flex-col relative shadow-[0_0_40px_rgba(212,168,75,0.15)]">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-bg-primary font-mono text-[10px] font-bold px-3 py-1 tracking-wider">
-              BEST VALUE
+              MOST POPULAR
             </div>
             <div className="font-heading text-2xl font-bold uppercase mb-2">Core</div>
-            <div className="text-sm text-text-muted mb-6 min-h-[40px]">Everything you need to land the job</div>
+            <div className="text-sm text-text-muted mb-6 min-h-[40px]">AI-powered tools to land the job</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$35</span>
+              <span className="font-heading text-3xl font-bold text-gold">$15</span>
               <span className="text-sm text-text-muted ml-1">/ 30 days</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Private Resumes" limit="5" />
+              <PricingFeature label="Resumes" limit="10" />
               <PricingFeature label="Federal Resumes" limit="5" />
-              <PricingFeature label="Cover Letters" limit="10" />
-              <PricingFeature label="Job Match Analyses" limit="15" />
-              <PricingFeature label="Bullet Translations" limit="50" />
-              <PricingFeature label="Eval Uploads" limit="10" />
-              <PricingFeature label="Resume Imports" limit="5" />
-              <PricingFeature label="AI Summary Generations" limit="10" />
-              <PricingFeature label="LinkedIn Headlines & Summaries" limit="15" />
-              <PricingFeature label="LinkedIn Profile Analyses" limit="10" />
-              <PricingFeature label="LinkedIn Recommendations" />
-              <PricingFeature label="Daily rate limits apply" tooltip="Daily limits prevent abuse while keeping your period limits generous" />
+              <PricingFeature label="AI Cover Letters" limit="5" />
+              <PricingFeature label="AI Summary Generation" limit="Unlimited" />
+              <PricingFeature label="AI Job Match Analysis" limit="Unlimited" />
+              <PricingFeature label="AI LinkedIn Headlines & Summaries" limit="Unlimited" />
+              <PricingFeature label="Eval Uploads" limit="5" />
+              <PricingFeature label="Resume Imports" limit="Unlimited" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
@@ -303,26 +368,27 @@ export default async function HomePage({
             </Link>
           </div>
 
-          {/* Full Tier */}
-          <div className="bg-bg-primary border border-border p-8 flex flex-col hover:border-border-bright transition-all">
+          {/* Full Tier - Best Value */}
+          <div className="bg-bg-primary border border-border p-8 flex flex-col relative hover:border-border-bright transition-all">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-bg-tertiary text-gold font-mono text-[10px] font-bold px-3 py-1 tracking-wider border border-gold">
+              BEST VALUE
+            </div>
             <div className="font-heading text-2xl font-bold uppercase mb-2">Full</div>
-            <div className="text-sm text-text-muted mb-6 min-h-[40px]">For serious job searches & SkillBridge</div>
+            <div className="text-sm text-text-muted mb-6 min-h-[40px]">Unlimited AI for serious job searches</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$75</span>
+              <span className="font-heading text-3xl font-bold text-gold">$30</span>
               <span className="text-sm text-text-muted ml-1">/ 90 days</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Private Resumes" limit="30" />
-              <PricingFeature label="Federal Resumes" limit="30" />
-              <PricingFeature label="Cover Letters" limit="30" />
-              <PricingFeature label="Job Match Analyses" limit="45" />
-              <PricingFeature label="Bullet Translations" limit="150" />
-              <PricingFeature label="Eval Uploads" limit="30" />
-              <PricingFeature label="Resume Imports" limit="Unlimited" />
+              <PricingFeature label="Resumes" limit="Unlimited" />
+              <PricingFeature label="Federal Resumes" limit="Unlimited" />
+              <PricingFeature label="AI Cover Letters" limit="Unlimited" />
               <PricingFeature label="AI Summaries" limit="Unlimited" />
+              <PricingFeature label="AI Job Match Analysis" limit="Unlimited" />
               <PricingFeature label="LinkedIn Tools" limit="Unlimited" />
+              <PricingFeature label="LinkedIn Profile Analysis" limit="Unlimited" />
               <PricingFeature label="LinkedIn Recommendations" />
-              <PricingFeature label="Daily rate limits apply" tooltip="Daily limits prevent abuse while keeping your period limits generous" />
+              <PricingFeature label="Eval Uploads" limit="20" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
@@ -333,9 +399,16 @@ export default async function HomePage({
           </div>
         </div>
 
+        {/* Eval Pack Callout */}
+        <div className="text-center mt-8">
+          <p className="text-sm text-text-muted">
+            Need more eval uploads? <Link href="/pricing" className="text-gold hover:text-gold-bright hover:underline">Eval Credit Pack</Link> — $5 for 10 uploads, works with any tier.
+          </p>
+        </div>
+
         {/* Footer Note */}
-        <p className="text-center text-sm text-text-muted mt-8 max-w-2xl mx-auto">
-          Core and Full tiers include daily rate limits to ensure fair usage. Need enterprise access? Contact us.
+        <p className="text-center text-sm text-text-muted mt-4 max-w-2xl mx-auto">
+          Dictionary features are always unlimited. Paid tiers include daily rate limits for fair usage.
         </p>
       </section>
 
