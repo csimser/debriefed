@@ -310,6 +310,7 @@ export default function SettingsPage() {
                 onChange={(e) => setDeleteConfirmation(e.target.value)}
                 className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text font-mono"
                 placeholder="DELETE"
+                autoComplete="off"
               />
             </div>
 

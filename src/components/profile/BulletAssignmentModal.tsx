@@ -175,6 +175,7 @@ export function BulletAssignmentModal({
                   onChange={(e) => setNewExp(prev => ({ ...prev, job_title: e.target.value }))}
                   placeholder="e.g., Damage Controlman Chief, 11B"
                   className="w-full px-3 py-2 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="off"
                 />
               </div>
 
@@ -198,6 +199,7 @@ export function BulletAssignmentModal({
                   onChange={(e) => setNewExp(prev => ({ ...prev, civilian_title: e.target.value }))}
                   placeholder="Select above or type your own"
                   className="w-full px-3 py-2 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-text-dim mt-1">This is what will appear on your resume</p>
               </div>
@@ -213,6 +215,7 @@ export function BulletAssignmentModal({
                   onChange={(e) => setNewExp(prev => ({ ...prev, organization: e.target.value }))}
                   placeholder="e.g., USS Sterett (DDG-104)"
                   className="w-full px-3 py-2 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="organization"
                 />
               </div>
 
@@ -227,6 +230,7 @@ export function BulletAssignmentModal({
                     value={newExp.start_date}
                     onChange={(e) => setNewExp(prev => ({ ...prev, start_date: e.target.value }))}
                     className="w-full px-3 py-2 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                    autoComplete="off"
                   />
                 </div>
                 <div>
@@ -238,6 +242,7 @@ export function BulletAssignmentModal({
                     value={newExp.end_date}
                     onChange={(e) => setNewExp(prev => ({ ...prev, end_date: e.target.value }))}
                     className="w-full px-3 py-2 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                    autoComplete="off"
                   />
                   <p className="text-xs text-text-dim mt-1">Leave blank if current</p>
                 </div>

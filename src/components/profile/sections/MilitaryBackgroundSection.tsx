@@ -66,6 +66,7 @@ export function MilitaryBackgroundSection({ data, onChange }: MilitaryBackground
             value={data?.branch || ''}
             onChange={e => onChange({ branch: e.target.value })}
             className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text"
+            autoComplete="off"
           >
             <option value="">Select Branch</option>
             {BRANCHES.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
@@ -126,6 +127,7 @@ export function MilitaryBackgroundSection({ data, onChange }: MilitaryBackground
             value={data?.security_clearance || ''}
             onChange={e => onChange({ security_clearance: e.target.value })}
             className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text"
+            autoComplete="off"
           >
             <option value="">Select Clearance</option>
             {CLEARANCES.map(c => <option key={c} value={c}>{c}</option>)}

@@ -103,11 +103,13 @@ export function HelpTranslatePrompt({
         placeholder="What does this mean in civilian terms?"
         className="w-full bg-bg-secondary border border-border rounded px-3 py-1.5 text-xs text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
         autoFocus
+        autoComplete="off"
       />
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
         className="w-full bg-bg-secondary border border-border rounded px-3 py-1.5 text-xs text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+        autoComplete="off"
       >
         {CATEGORIES.map((c) => (
           <option key={c.value} value={c.value}>

@@ -308,6 +308,7 @@ export function ProfessionalSummaryEditor({
               onChange={(e) => setEditedSummary(e.target.value)}
               rows={6}
               placeholder="Write a compelling professional summary that highlights your experience, key skills, and what you bring to employers..."
+              autoComplete="off"
               className={`w-full bg-bg-secondary border rounded-lg p-3 text-text-primary text-sm resize-none focus:ring-1 transition-all ${
                 isOverLimit
                   ? 'border-status-red focus:border-status-red focus:ring-status-red/25'
@@ -544,6 +545,7 @@ function SummaryWithFallbacks({
                     if (e.key === 'Escape') onCancelEdit()
                   }}
                   autoFocus
+                  autoComplete="off"
                   className="inline-block px-1 py-0.5 bg-bg-secondary border border-gold rounded text-sm text-text min-w-[80px] max-w-[200px] focus:ring-1 focus:ring-gold/25"
                   style={{ width: `${Math.max(80, editingValue.length * 8)}px` }}
                 />

@@ -58,6 +58,7 @@ export function CreateBetaCodeForm() {
             placeholder="CODE-XXXXXXXX"
             className="flex-1 bg-bg-secondary border border-border rounded-md px-4 py-2.5 text-text font-mono focus:outline-none focus:border-gold"
             required
+            autoComplete="off"
           />
           <Button type="button" variant="secondary" onClick={generateCode}>
             Generate
@@ -71,6 +72,7 @@ export function CreateBetaCodeForm() {
           value={tier}
           onChange={(e) => setTier(e.target.value)}
           className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2.5 text-text focus:outline-none focus:border-gold"
+          autoComplete="off"
         >
           <option value="core">Core ($35, 30 days)</option>
           <option value="full">Full ($75, 90 days)</option>
@@ -86,6 +88,7 @@ export function CreateBetaCodeForm() {
           min="1"
           className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2.5 text-text focus:outline-none focus:border-gold"
           required
+          autoComplete="off"
         />
       </div>
 
@@ -102,6 +105,7 @@ export function CreateBetaCodeForm() {
           onChange={(e) => setNote(e.target.value)}
           placeholder="e.g., Reddit launch codes"
           className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2.5 text-text focus:outline-none focus:border-gold"
+          autoComplete="off"
         />
       </div>
     </form>

@@ -499,6 +499,7 @@ export function DictCoverLetterBuilder({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Company Name"
+                  autoComplete="organization"
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                   placeholder="Acme Corporation"
@@ -517,6 +518,7 @@ export function DictCoverLetterBuilder({
                 <input
                   type="text"
                   name="hiring-manager"
+                  autoComplete="name"
                   value={hiringManager}
                   onChange={(e) => setHiringManager(e.target.value)}
                   placeholder="e.g., Sarah Johnson"
@@ -529,6 +531,7 @@ export function DictCoverLetterBuilder({
                 </label>
                 <textarea
                   name="job-description"
+                  autoComplete="off"
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                   placeholder="Paste the job description here for automatic keyword extraction and template matching..."
@@ -959,6 +962,7 @@ export function DictCoverLetterBuilder({
                             return (
                               <div key={key} className="relative">
                                 <textarea
+                                  autoComplete="off"
                                   value={paragraphOverrides[key] ?? text}
                                   onChange={(e) => handleParagraphEdit(key, e.target.value)}
                                   className="w-full min-h-[80px] p-2 text-sm text-gray-700 leading-relaxed border border-blue-300 rounded bg-blue-50 resize-none focus:outline-none focus:border-blue-500"
@@ -1128,6 +1132,7 @@ function FieldSelector({ label, value, options, displayOptions, onChange, trunca
         {label}
       </label>
       <select
+        autoComplete="off"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="flex-1 bg-bg-secondary border border-border rounded px-2 py-1.5 text-xs text-text focus:border-gold focus:ring-1 focus:ring-gold/25 min-w-0"
@@ -1232,6 +1237,7 @@ function FieldInput({ label, value, onChange, type = 'text' }: {
       </label>
       <input
         type={type}
+        autoComplete="off"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="bg-bg-secondary border border-border rounded px-2 py-1.5 text-xs text-text focus:border-gold focus:ring-1 focus:ring-gold/25 w-24"

@@ -120,6 +120,7 @@ export function FederalJobInfoEditor({ resumeId, format, onChange }: FederalJobI
             value={jobInfo.announcement_number}
             onChange={(e) => updateField('announcement_number', e.target.value)}
             placeholder="XX-XXXXXX-XX"
+            autoComplete="off"
             className={inputClass}
           />
         </div>
@@ -131,6 +132,7 @@ export function FederalJobInfoEditor({ resumeId, format, onChange }: FederalJobI
             value={jobInfo.position_title}
             onChange={(e) => updateField('position_title', e.target.value)}
             placeholder="From job posting"
+            autoComplete="off"
             className={inputClass}
           />
         </div>
@@ -144,6 +146,7 @@ export function FederalJobInfoEditor({ resumeId, format, onChange }: FederalJobI
             value={jobInfo.series_grade}
             onChange={(e) => updateField('series_grade', e.target.value)}
             placeholder="GS-0301-12"
+            autoComplete="off"
             className={inputClass}
           />
         </div>
@@ -153,6 +156,7 @@ export function FederalJobInfoEditor({ resumeId, format, onChange }: FederalJobI
           <select
             value={jobInfo.federal_civilian_status}
             onChange={(e) => updateField('federal_civilian_status', e.target.value)}
+            autoComplete="off"
             className={inputClass}
           >
             <option value="N/A">N/A (Never worked federal)</option>
@@ -167,6 +171,7 @@ export function FederalJobInfoEditor({ resumeId, format, onChange }: FederalJobI
           <select
             value={jobInfo.citizenship}
             onChange={(e) => updateField('citizenship', e.target.value)}
+            autoComplete="off"
             className={inputClass}
           >
             <option value="USA">United States</option>

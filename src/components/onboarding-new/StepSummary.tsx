@@ -160,6 +160,7 @@ export function StepSummary({ data, updateData, onBack, onComplete, onSkip, savi
           <select
             value={data.target_industry}
             onChange={(e) => updateData({ target_industry: e.target.value })}
+            autoComplete="off"
             className={inputClass}
           >
             <option value="">Select Industry</option>
@@ -175,6 +176,7 @@ export function StepSummary({ data, updateData, onBack, onComplete, onSkip, savi
           <input
             type="text"
             name="target-role"
+            autoComplete="off"
             value={data.target_role}
             onChange={(e) => updateData({ target_role: e.target.value })}
             placeholder="e.g., Project Manager, Operations Manager"
@@ -205,6 +207,7 @@ export function StepSummary({ data, updateData, onBack, onComplete, onSkip, savi
           <select
             value={data.job_search_timeline}
             onChange={(e) => updateData({ job_search_timeline: e.target.value })}
+            autoComplete="off"
             className={inputClass}
           >
             <option value="">When are you looking to start?</option>
@@ -259,6 +262,7 @@ export function StepSummary({ data, updateData, onBack, onComplete, onSkip, savi
 
         <textarea
           name="professional-summary"
+          autoComplete="off"
           value={data.professional_summary}
           onChange={(e) => updateData({ professional_summary: e.target.value })}
           placeholder="Your professional summary will appear here. Choose a template, click 'Generate with AI', or write your own."

@@ -413,6 +413,7 @@ export default function AdminPromoCodesPage() {
                     value={createForm.discount_percent}
                     onChange={(e) => setCreateForm({ ...createForm, discount_percent: e.target.value })}
                     className="flex-1 h-2 bg-bg-tertiary rounded-lg appearance-none cursor-pointer accent-gold"
+                    autoComplete="off"
                   />
                   <Input
                     type="number"
@@ -431,6 +432,7 @@ export default function AdminPromoCodesPage() {
                   value={createForm.applies_to}
                   onChange={(e) => setCreateForm({ ...createForm, applies_to: e.target.value })}
                   className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="off"
                 >
                   {APPLIES_TO_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>

@@ -220,6 +220,7 @@ export function CommunitySubmissions({ userBranch }: CommunitySubmissionsProps) 
               onChange={e => setFormTerm(e.target.value)}
               placeholder={formType === 'acronym' ? 'e.g., NCOER' : 'e.g., field grade officer'}
               className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-sm text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
+              autoComplete="off"
             />
           </div>
 
@@ -234,6 +235,7 @@ export function CommunitySubmissions({ userBranch }: CommunitySubmissionsProps) 
               onChange={e => setFormCivilian(e.target.value)}
               placeholder={formType === 'acronym' ? 'e.g., Non-Commissioned Officer Evaluation Report' : 'e.g., senior manager'}
               className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-sm text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
+              autoComplete="off"
             />
           </div>
 
@@ -247,6 +249,7 @@ export function CommunitySubmissions({ userBranch }: CommunitySubmissionsProps) 
                 value={formBranch}
                 onChange={e => setFormBranch(e.target.value)}
                 className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                autoComplete="off"
               >
                 {BRANCHES.map(b => (
                   <option key={b.value} value={b.value}>{b.label}</option>
@@ -261,6 +264,7 @@ export function CommunitySubmissions({ userBranch }: CommunitySubmissionsProps) 
                 value={formCategory}
                 onChange={e => setFormCategory(e.target.value)}
                 className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                autoComplete="off"
               >
                 {CATEGORIES.map(c => (
                   <option key={c.value} value={c.value}>{c.label}</option>
@@ -280,6 +284,7 @@ export function CommunitySubmissions({ userBranch }: CommunitySubmissionsProps) 
               rows={2}
               placeholder="How is this term used? Any additional context?"
               className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-sm text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25 resize-none"
+              autoComplete="off"
             />
           </div>
 

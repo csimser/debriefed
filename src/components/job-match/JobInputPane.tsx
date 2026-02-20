@@ -39,6 +39,7 @@ export function JobInputPane({
         <div className="space-y-4">
           <Input
             label="Company Name"
+            autoComplete="organization"
             value={jobData.company}
             onChange={(e) => onChange({ ...jobData, company: e.target.value })}
             placeholder="Acme Corporation"
@@ -56,6 +57,7 @@ export function JobInputPane({
               Job Description
             </label>
             <textarea
+              autoComplete="off"
               value={jobData.description}
               onChange={(e) => onChange({ ...jobData, description: e.target.value })}
               placeholder="Paste the full job description here..."

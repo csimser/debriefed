@@ -47,6 +47,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
             <input
               type="text"
               name="first-name"
+              autoComplete="given-name"
               value={data.first_name}
               disabled
               className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -59,6 +60,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
             <input
               type="text"
               name="last-name"
+              autoComplete="family-name"
               value={data.last_name}
               disabled
               className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -74,6 +76,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
           <input
             type="email"
             name="email"
+            autoComplete="email"
             value={data.email}
             disabled
             className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -97,6 +100,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
             <input
               type="text"
               name="city"
+              autoComplete="address-level2"
               value={data.city}
               onChange={(e) => updateData({ city: e.target.value })}
               placeholder="San Diego"
@@ -108,6 +112,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
             <select
               value={data.state}
               onChange={(e) => updateData({ state: e.target.value })}
+              autoComplete="address-level1"
               className={inputClass}
             >
               <option value="">Select State</option>
@@ -128,6 +133,7 @@ export function StepContact({ data, updateData, onNext, onBack, onSkip, saving }
           <input
             type="url"
             name="linkedin-url"
+            autoComplete="url"
             value={data.linkedin_url}
             onChange={(e) => updateData({ linkedin_url: e.target.value })}
             placeholder="https://linkedin.com/in/yourprofile"

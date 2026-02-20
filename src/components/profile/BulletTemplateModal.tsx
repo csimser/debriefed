@@ -287,6 +287,7 @@ export function BulletTemplateModal({ isOpen, onClose, onSelect }: BulletTemplat
               placeholder="Search templates... (e.g., budget, training, safety)"
               className="w-full pl-10 pr-4 py-2.5 bg-bg-secondary border border-border rounded text-sm text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
               autoFocus
+              autoComplete="off"
             />
             {search && (
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-text-dim">

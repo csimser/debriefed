@@ -229,6 +229,7 @@ export function AdminAITranslationsPanel({ adminId }: AdminAITranslationsPanelPr
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value); setPage(1) }}
           className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm text-text focus:border-gold"
+          autoComplete="off"
         >
           <option value="all">All Status</option>
           <option value="pending">Pending{data ? ` (${data.counts.pending})` : ''}</option>
@@ -239,6 +240,7 @@ export function AdminAITranslationsPanel({ adminId }: AdminAITranslationsPanelPr
           value={sourceFilter}
           onChange={e => { setSourceFilter(e.target.value); setPage(1) }}
           className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm text-text focus:border-gold"
+          autoComplete="off"
         >
           <option value="all">All Types</option>
           <option value="bullet_translation">Bullets</option>
@@ -253,6 +255,7 @@ export function AdminAITranslationsPanel({ adminId }: AdminAITranslationsPanelPr
           value={branchFilter}
           onChange={e => { setBranchFilter(e.target.value); setPage(1) }}
           className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm text-text focus:border-gold"
+          autoComplete="off"
         >
           <option value="all">All Branches</option>
           <option value="navy">Navy</option>
@@ -266,6 +269,7 @@ export function AdminAITranslationsPanel({ adminId }: AdminAITranslationsPanelPr
           value={sortOrder}
           onChange={e => { setSortOrder(e.target.value); setPage(1) }}
           className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm text-text focus:border-gold"
+          autoComplete="off"
         >
           <option value="frequency">Most Frequent</option>
           <option value="newest">Newest</option>
@@ -408,6 +412,7 @@ export function AdminAITranslationsPanel({ adminId }: AdminAITranslationsPanelPr
                           value={editMilitary}
                           onChange={e => setEditMilitary(e.target.value)}
                           className="w-full bg-bg-secondary border border-border rounded px-3 py-1.5 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          autoComplete="off"
                         />
                       </div>
                       <div>
@@ -417,6 +422,7 @@ export function AdminAITranslationsPanel({ adminId }: AdminAITranslationsPanelPr
                           value={editCivilian}
                           onChange={e => setEditCivilian(e.target.value)}
                           className="w-full bg-bg-secondary border border-border rounded px-3 py-1.5 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          autoComplete="off"
                         />
                       </div>
                     </div>
@@ -427,6 +433,7 @@ export function AdminAITranslationsPanel({ adminId }: AdminAITranslationsPanelPr
                           value={editTable}
                           onChange={e => setEditTable(e.target.value)}
                           className="w-full bg-bg-secondary border border-border rounded px-3 py-1.5 text-sm text-text focus:border-gold"
+                          autoComplete="off"
                         >
                           {TABLE_OPTIONS.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -441,6 +448,7 @@ export function AdminAITranslationsPanel({ adminId }: AdminAITranslationsPanelPr
                           onChange={e => setEditNotes(e.target.value)}
                           placeholder="Admin notes"
                           className="w-full bg-bg-secondary border border-border rounded px-3 py-1.5 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          autoComplete="off"
                         />
                       </div>
                     </div>

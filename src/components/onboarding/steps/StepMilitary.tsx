@@ -81,6 +81,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, saving, isFirst
           <select
             value={data.branch || ''}
             onChange={(e) => handleBranchChange(e.target.value)}
+            autoComplete="off"
             className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text"
           >
             <option value="">Select branch</option>
@@ -99,6 +100,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, saving, isFirst
             <select
               value={data.paygrade || ''}
               onChange={(e) => handlePaygradeChange(e.target.value)}
+              autoComplete="off"
               className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text"
             >
               <option value="">Select</option>
@@ -113,6 +115,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, saving, isFirst
             </label>
             <input
               type="text"
+              autoComplete="off"
               value={data.rank || ''}
               onChange={(e) => updateData({ rank: e.target.value })}
               placeholder="Auto-filled from paygrade"

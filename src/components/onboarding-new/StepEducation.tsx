@@ -215,6 +215,7 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
             <label className={labelClass}>School / Institution *</label>
             <input
               type="text"
+              autoComplete="off"
               value={formData.school_name}
               onChange={(e) => setFormData(prev => ({ ...prev, school_name: e.target.value }))}
               placeholder="e.g., University of Maryland, Senior NCO Academy"
@@ -229,6 +230,7 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
               <select
                 value={formData.degree_type}
                 onChange={(e) => setFormData(prev => ({ ...prev, degree_type: e.target.value }))}
+                autoComplete="off"
                 className={inputClass}
               >
                 <option value="">Select Degree Type</option>
@@ -243,6 +245,7 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
               <label className={labelClass}>Field of Study</label>
               <input
                 type="text"
+                autoComplete="off"
                 value={formData.field_of_study}
                 onChange={(e) => setFormData(prev => ({ ...prev, field_of_study: e.target.value }))}
                 placeholder="e.g., Business Administration, Cybersecurity"
@@ -259,6 +262,7 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
                 <select
                   value={formData.graduation_month}
                   onChange={(e) => setFormData(prev => ({ ...prev, graduation_month: e.target.value }))}
+                  autoComplete="off"
                   className={inputClass}
                 >
                   <option value="">Month</option>
@@ -271,6 +275,7 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
                 <select
                   value={formData.graduation_year}
                   onChange={(e) => setFormData(prev => ({ ...prev, graduation_year: e.target.value }))}
+                  autoComplete="off"
                   className={inputClass}
                 >
                   <option value="">Year</option>
@@ -288,6 +293,7 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
               </label>
               <input
                 type="text"
+                autoComplete="off"
                 value={formData.gpa}
                 onChange={(e) => setFormData(prev => ({ ...prev, gpa: e.target.value }))}
                 placeholder="e.g., 3.8"

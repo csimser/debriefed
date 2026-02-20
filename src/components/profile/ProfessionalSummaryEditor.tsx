@@ -188,6 +188,7 @@ export function ProfessionalSummaryEditor({ value, onChange, profile, userPlan }
         onChange={(e) => { onChange(e.target.value); setSummarySource(null); setTemplateFallbacks([]) }}
         placeholder="Write a brief professional summary or choose a template below..."
         className="w-full min-h-[150px] px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-none"
+        autoComplete="off"
       />
 
       {templateFallbacks.length > 0 && (

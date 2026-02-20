@@ -247,6 +247,7 @@ export function PostActionModal({
                       rows={2}
                       maxLength={1000}
                       className="w-full bg-bg-secondary border border-border rounded-md px-3 py-2 text-sm text-text placeholder:text-text-dim resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
+                      autoComplete="off"
                     />
 
                     <label className="flex items-start gap-2 cursor-pointer">

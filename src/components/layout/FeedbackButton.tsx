@@ -177,6 +177,7 @@ export function FeedbackButton({ userId, userEmail }: FeedbackButtonProps = {}) 
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="your@email.com"
                         className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2 text-text focus:border-gold focus:ring-1 focus:ring-gold/25 placeholder:text-text-dim"
+                        autoComplete="email"
                       />
                     </div>
                   )}
@@ -201,6 +202,7 @@ export function FeedbackButton({ userId, userEmail }: FeedbackButtonProps = {}) 
                       minLength={10}
                       maxLength={5000}
                       className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25 resize-none placeholder:text-text-dim"
+                      autoComplete="off"
                     />
                     <div className="flex justify-between mt-1">
                       <span className="text-xs text-text-dim">

@@ -1008,6 +1008,7 @@ export function AnalysisPane({
 
                 {/* Template Switcher in Modal */}
                 <select
+                  autoComplete="off"
                   value={previewTemplate}
                   onChange={(e) => setPreviewTemplate(e.target.value as TemplateId)}
                   className="bg-bg-secondary border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gold"

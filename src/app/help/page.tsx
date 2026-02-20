@@ -357,6 +357,7 @@ export default function HelpPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-bg-primary border border-border rounded-lg pl-12 pr-4 py-3 text-text placeholder:text-text-dim focus:outline-none focus:border-gold transition-colors"
+              autoComplete="off"
             />
             {searchQuery && (
               <button

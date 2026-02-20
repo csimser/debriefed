@@ -428,6 +428,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <input
                 type="text"
                 name="job-title"
+                autoComplete="off"
                 value={formData.job_title}
                 onChange={(e) => setFormData(prev => ({ ...prev, job_title: e.target.value }))}
                 placeholder={formData.employment_type === 'military' ? 'e.g., Damage Controlman Chief' : 'e.g., Project Manager'}
@@ -441,6 +442,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <input
                 type="text"
                 name="company"
+                autoComplete="off"
                 value={formData.organization}
                 onChange={(e) => setFormData(prev => ({ ...prev, organization: e.target.value }))}
                 placeholder={formData.employment_type === 'military' ? 'e.g., USS Sterett (DDG-104)' : 'e.g., Acme Corp'}
@@ -465,6 +467,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <input
                 type="text"
                 name="civilian-title"
+                autoComplete="off"
                 value={formData.civilian_title}
                 onChange={(e) => setFormData(prev => ({ ...prev, civilian_title: e.target.value }))}
                 placeholder="Select above or type your own"
@@ -481,6 +484,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <input
                 type="text"
                 name="city"
+                autoComplete="address-level2"
                 value={formData.city}
                 onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
                 placeholder="e.g., San Diego"
@@ -492,6 +496,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <select
                 value={formData.state}
                 onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                autoComplete="address-level1"
                 className={inputClass}
               >
                 <option value="">Select State</option>
@@ -509,6 +514,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <input
                 type="month"
                 name="start-date"
+                autoComplete="off"
                 value={formData.start_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, start_date: e.target.value }))}
                 className={inputClass}
@@ -519,6 +525,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               <input
                 type="month"
                 name="end-date"
+                autoComplete="off"
                 value={formData.end_date}
                 onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
                 disabled={formData.is_current}

@@ -231,6 +231,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
                     onChange={e => setNewEdu({ ...newEdu, school_name: e.target.value })}
                     placeholder="University or school name"
                     className={inputClass}
+                    autoComplete="organization"
                   />
                 </div>
 
@@ -240,6 +241,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
                     value={newEdu.degree_type}
                     onChange={e => setNewEdu({ ...newEdu, degree_type: e.target.value })}
                     className={inputClass}
+                    autoComplete="off"
                   >
                     <option value="">Select Degree Type</option>
                     {DEGREE_TYPES.map((degree) => (
@@ -261,6 +263,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
                     onChange={e => setNewEdu({ ...newEdu, field_of_study: e.target.value })}
                     placeholder="e.g., Cybersecurity, Business"
                     className={inputClass}
+                    autoComplete="off"
                   />
                 </div>
 
@@ -271,6 +274,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
                       value={newEdu.graduation_month}
                       onChange={e => setNewEdu({ ...newEdu, graduation_month: e.target.value })}
                       className={inputClass}
+                      autoComplete="off"
                     >
                       <option value="">Month</option>
                       {MONTHS.map((month) => (
@@ -284,6 +288,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
                       value={newEdu.graduation_year}
                       onChange={e => setNewEdu({ ...newEdu, graduation_year: e.target.value })}
                       className={inputClass}
+                      autoComplete="off"
                     >
                       <option value="">Year</option>
                       {GRADUATION_YEARS.map((year) => (
@@ -306,6 +311,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
                     onChange={e => setNewEdu({ ...newEdu, gpa: e.target.value })}
                     placeholder="e.g., 3.8"
                     className={inputClass}
+                    autoComplete="off"
                   />
                   <p className="text-xs text-text-dim mt-1">Only include if 3.5+</p>
                 </div>

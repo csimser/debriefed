@@ -261,6 +261,7 @@ export default function AdminSettingsPage() {
                 setAnnouncement({ ...announcement, type: e.target.value as AnnouncementSettings['type'] })
               }
               className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+              autoComplete="off"
             >
               {ANNOUNCEMENT_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>
@@ -279,6 +280,7 @@ export default function AdminSettingsPage() {
               placeholder="Enter your announcement message..."
               rows={3}
               className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25 resize-none"
+              autoComplete="off"
             />
           </div>
 

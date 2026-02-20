@@ -90,6 +90,7 @@ export function TailoredPreviewModal({
             )}
             {isEditing ? (
               <textarea
+                autoComplete="off"
                 value={change.editedValue ?? change.after}
                 onChange={e => updateEditedValue(change.id, e.target.value)}
                 className="w-full bg-bg-secondary border border-border rounded px-3 py-2 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25 resize-none"

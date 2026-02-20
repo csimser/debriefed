@@ -82,6 +82,7 @@ export function BulletImportModal({ bullets, experiences, userId, onClose, onImp
             value={targetExperienceId}
             onChange={(e) => setTargetExperienceId(e.target.value)}
             className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text"
+            autoComplete="off"
           >
             <option value="">Select an experience...</option>
             {experiences.map((exp) => (

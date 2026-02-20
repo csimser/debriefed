@@ -427,6 +427,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="text"
               name="first-name"
+              autoComplete="given-name"
               value={profile.first_name}
               disabled
               className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -441,6 +442,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="text"
               name="last-name"
+              autoComplete="family-name"
               value={profile.last_name}
               disabled
               className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -455,6 +457,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="email"
               name="email"
+              autoComplete="email"
               value={profile.email}
               disabled
               className={`${inputClass} opacity-60 cursor-not-allowed`}
@@ -474,6 +477,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="text"
               name="city"
+              autoComplete="address-level2"
               value={profile.city}
               onChange={(e) => updateField('city', e.target.value)}
               className={inputClass}
@@ -486,6 +490,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
               value={profile.state}
               onChange={(e) => updateField('state', e.target.value)}
               className={inputClass}
+              autoComplete="address-level1"
             >
               <option value="">Select State</option>
               {US_STATES.map((state) => (
@@ -500,6 +505,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="text"
               name="zip-code"
+              autoComplete="postal-code"
               value={profile.zip}
               onChange={(e) => updateField('zip', e.target.value)}
               className={inputClass}
@@ -511,6 +517,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="url"
               name="linkedin-url"
+              autoComplete="url"
               value={profile.linkedin_url}
               onChange={(e) => updateField('linkedin_url', e.target.value)}
               className={inputClass}
@@ -532,6 +539,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
               value={profile.branch}
               onChange={(e) => updateField('branch', e.target.value)}
               className={inputClass}
+              autoComplete="off"
             >
               {BRANCHES.map(b => (
                 <option key={b.value} value={b.value}>{b.label}</option>
@@ -544,6 +552,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
               value={profile.paygrade}
               onChange={(e) => updateField('paygrade', e.target.value)}
               className={inputClass}
+              autoComplete="off"
             >
               {PAYGRADES.map(p => (
                 <option key={p.value} value={p.value}>{p.label}</option>
@@ -555,6 +564,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="text"
               name="rank"
+              autoComplete="off"
               value={profile.rank}
               onChange={(e) => updateField('rank', e.target.value)}
               className={`${inputClass} bg-bg-tertiary`}
@@ -568,6 +578,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="text"
               name="rating-mos"
+              autoComplete="off"
               value={profile.rating_mos}
               onChange={(e) => updateField('rating_mos', e.target.value)}
               className={inputClass}
@@ -579,6 +590,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="number"
               name="years-of-service"
+              autoComplete="off"
               value={profile.years_of_service}
               onChange={(e) => updateField('years_of_service', e.target.value)}
               className={inputClass}
@@ -593,6 +605,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
               value={profile.clearance}
               onChange={(e) => updateField('clearance', e.target.value)}
               className={inputClass}
+              autoComplete="off"
             >
               {CLEARANCES.map(c => (
                 <option key={c.value} value={c.value}>{c.label}</option>
@@ -604,6 +617,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="date"
               name="eas-date"
+              autoComplete="off"
               value={profile.eas_date}
               onChange={(e) => updateField('eas_date', e.target.value)}
               className={inputClass}
@@ -624,6 +638,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
               <input
                 type="date"
                 name="skillbridge-start"
+                autoComplete="off"
                 value={profile.skillbridge_start}
                 onChange={(e) => updateField('skillbridge_start', e.target.value)}
                 className={inputClass}
@@ -634,6 +649,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
               <input
                 type="date"
                 name="skillbridge-end"
+                autoComplete="off"
                 value={profile.skillbridge_end}
                 onChange={(e) => updateField('skillbridge_end', e.target.value)}
                 className={inputClass}
@@ -655,6 +671,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="text"
               name="target-industry"
+              autoComplete="off"
               value={profile.target_industry}
               onChange={(e) => updateField('target_industry', e.target.value)}
               className={inputClass}
@@ -666,6 +683,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             <input
               type="text"
               name="target-role"
+              autoComplete="off"
               value={profile.target_role}
               onChange={(e) => updateField('target_role', e.target.value)}
               className={inputClass}

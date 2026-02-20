@@ -287,6 +287,7 @@ function UsersPageContent() {
                   setPage(1)
                 }}
                 className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2.5 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                autoComplete="off"
               >
                 {TIER_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -306,6 +307,7 @@ function UsersPageContent() {
                   setPage(1)
                 }}
                 className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2.5 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                autoComplete="off"
               >
                 {ROLE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -325,6 +327,7 @@ function UsersPageContent() {
                   setPage(1)
                 }}
                 className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2.5 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                autoComplete="off"
               >
                 {STATUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>

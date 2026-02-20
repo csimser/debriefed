@@ -171,6 +171,7 @@ export function DeleteResumeModal({
                 value={confirmText}
                 onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
                 placeholder="DELETE"
+                autoComplete="off"
                 className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-status-red focus:ring-1 focus:ring-status-red/25 font-mono"
               />
             </div>

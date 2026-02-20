@@ -1190,6 +1190,7 @@ export function ExperienceSection({
                       onChange={e => setFormExp({ ...formExp, job_title: e.target.value })}
                       placeholder={formExp.employment_type === 'military' ? 'e.g., Damage Controlman Chief' : 'e.g., Project Manager'}
                       className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                      autoComplete="off"
                     />
                   </div>
                   <div>
@@ -1205,6 +1206,7 @@ export function ExperienceSection({
                       })}
                       placeholder={formExp.employment_type === 'military' ? 'e.g., USS Sterett (DDG-104)' : 'e.g., Acme Corporation'}
                       className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                      autoComplete="organization"
                     />
                   </div>
                 </div>
@@ -1230,6 +1232,7 @@ export function ExperienceSection({
                       onChange={e => setFormExp({ ...formExp, civilian_title: e.target.value })}
                       placeholder="Select above or type your own"
                       className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                      autoComplete="off"
                     />
                     <p className="text-xs text-text-dim mt-1">This is what will appear on your resume</p>
                   </div>
@@ -1244,6 +1247,7 @@ export function ExperienceSection({
                       onChange={e => setFormExp({ ...formExp, city: e.target.value })}
                       placeholder="e.g., San Diego"
                       className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                      autoComplete="address-level2"
                     />
                   </div>
                   <div>
@@ -1252,6 +1256,7 @@ export function ExperienceSection({
                       value={formExp.state}
                       onChange={e => setFormExp({ ...formExp, state: e.target.value })}
                       className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                      autoComplete="address-level1"
                     >
                       <option value="">Select State</option>
                       {US_STATES.map((state) => (
@@ -1269,6 +1274,7 @@ export function ExperienceSection({
                       value={formExp.start_date}
                       onChange={e => setFormExp({ ...formExp, start_date: e.target.value })}
                       className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                      autoComplete="off"
                     />
                   </div>
                 </div>
@@ -1282,6 +1288,7 @@ export function ExperienceSection({
                       onChange={e => setFormExp({ ...formExp, end_date: e.target.value })}
                       disabled={formExp.is_current}
                       className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 disabled:opacity-50"
+                      autoComplete="off"
                     />
                   </div>
                   <div className="flex items-center pt-8">
@@ -1333,6 +1340,7 @@ export function ExperienceSection({
                             min="1"
                             max="80"
                             className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                            autoComplete="off"
                           />
                         </div>
                         <div>
@@ -1343,6 +1351,7 @@ export function ExperienceSection({
                             onChange={e => setFormExp({ ...formExp, grade_level: e.target.value })}
                             placeholder="e.g., GS-12, E-8, WG-10"
                             className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                            autoComplete="off"
                           />
                         </div>
                       </div>
@@ -1366,6 +1375,7 @@ export function ExperienceSection({
                             }}
                             placeholder="$85,000"
                             className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                            autoComplete="off"
                           />
                         </div>
                       </div>
@@ -1380,6 +1390,7 @@ export function ExperienceSection({
                               onChange={e => setFormExp({ ...formExp, supervisor_name: e.target.value })}
                               placeholder="John Smith"
                               className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                              autoComplete="name"
                             />
                           </div>
                           <div>
@@ -1652,6 +1663,7 @@ export function ExperienceSection({
                                 onChange={(e) => setPasteText(e.target.value)}
                                 placeholder="Paste your evaluation write-up text here..."
                                 className="w-full min-h-[80px] px-3 py-2 bg-bg-tertiary border border-border rounded text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
+                                autoComplete="off"
                               />
                               <button
                                 type="button"
@@ -1796,6 +1808,7 @@ export function ExperienceSection({
                                   className="w-full bg-bg-secondary border border-border rounded px-3 py-2 pr-10 text-text text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
                                   rows={3}
                                   autoFocus
+                                  autoComplete="off"
                                 />
                                 {speechSupported && (
                                   <button
@@ -2017,6 +2030,7 @@ export function ExperienceSection({
                                         onChange={(e) => setCorrectionMilitary(e.target.value)}
                                         placeholder="e.g. CSMP"
                                         className="px-2 py-1 text-xs bg-bg-secondary border border-border rounded w-32 focus:border-gold focus:ring-1 focus:ring-gold/25"
+                                        autoComplete="off"
                                       />
                                       <input
                                         type="text"
@@ -2024,6 +2038,7 @@ export function ExperienceSection({
                                         onChange={(e) => setCorrectionCivilian(e.target.value)}
                                         placeholder="e.g. maintenance backlog"
                                         className="px-2 py-1 text-xs bg-bg-secondary border border-border rounded w-44 focus:border-gold focus:ring-1 focus:ring-gold/25"
+                                        autoComplete="off"
                                       />
                                       <button
                                         type="button"
@@ -2173,6 +2188,7 @@ export function ExperienceSection({
                   onChange={e => setFormExp({ ...formExp, job_title: e.target.value })}
                   placeholder={formExp.employment_type === 'military' ? 'e.g., Damage Controlman Chief' : 'e.g., Project Manager'}
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="off"
                 />
               </div>
               <div>
@@ -2188,6 +2204,7 @@ export function ExperienceSection({
                   })}
                   placeholder={formExp.employment_type === 'military' ? 'e.g., USS Sterett (DDG-104)' : 'e.g., Acme Corporation'}
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="organization"
                 />
               </div>
             </div>
@@ -2213,6 +2230,7 @@ export function ExperienceSection({
                   onChange={e => setFormExp({ ...formExp, civilian_title: e.target.value })}
                   placeholder="Select above or type your own"
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="off"
                 />
                 <p className="text-xs text-text-dim mt-1">This is what will appear on your resume</p>
               </div>
@@ -2227,6 +2245,7 @@ export function ExperienceSection({
                   onChange={e => setFormExp({ ...formExp, city: e.target.value })}
                   placeholder="e.g., San Diego"
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="address-level2"
                 />
               </div>
               <div>
@@ -2235,6 +2254,7 @@ export function ExperienceSection({
                   value={formExp.state}
                   onChange={e => setFormExp({ ...formExp, state: e.target.value })}
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="address-level1"
                 >
                   <option value="">Select State</option>
                   {US_STATES.map((state) => (
@@ -2252,6 +2272,7 @@ export function ExperienceSection({
                   value={formExp.start_date}
                   onChange={e => setFormExp({ ...formExp, start_date: e.target.value })}
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="off"
                 />
               </div>
             </div>
@@ -2265,6 +2286,7 @@ export function ExperienceSection({
                   onChange={e => setFormExp({ ...formExp, end_date: e.target.value })}
                   disabled={formExp.is_current}
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 disabled:opacity-50"
+                  autoComplete="off"
                 />
               </div>
               <div className="flex items-center pt-8">
@@ -2365,6 +2387,7 @@ export function ExperienceSection({
               rows={8}
               placeholder={"- Managed a team of 15 personnel\n- Conducted daily safety inspections\n- Trained 50+ junior staff members"}
               autoFocus
+              autoComplete="off"
             />
             {bulkPastePreview && (
               <div className="mt-3 p-3 bg-bg-tertiary rounded border border-border">

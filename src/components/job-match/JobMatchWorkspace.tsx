@@ -1386,6 +1386,7 @@ export function JobMatchWorkspace({
             {/* Company Name */}
             <Input
               label="Company Name"
+              autoComplete="organization"
               value={jobData.company}
               onChange={(e) => setJobData({ ...jobData, company: e.target.value })}
               placeholder="e.g., Acme Corporation"
@@ -1407,6 +1408,7 @@ export function JobMatchWorkspace({
             </label>
             <textarea
               name="job-description"
+              autoComplete="off"
               rows={10}
               value={jobData.description}
               onChange={(e) => setJobData({ ...jobData, description: e.target.value })}
@@ -1858,6 +1860,7 @@ export function JobMatchWorkspace({
                   <input
                     type="text"
                     name="manual-keyword"
+                    autoComplete="off"
                     value={manualKeyword}
                     onChange={(e) => setManualKeyword(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && addManualKeyword()}
@@ -2082,6 +2085,7 @@ export function JobMatchWorkspace({
               <div className="flex items-center gap-4 mb-4">
                 <label className="text-xs text-text-muted uppercase tracking-wider font-semibold">Template:</label>
                 <select
+                  autoComplete="off"
                   value={selectedTemplate}
                   onChange={(e) => setSelectedTemplate(e.target.value as TemplateId)}
                   className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-gold"
@@ -2488,6 +2492,7 @@ export function JobMatchWorkspace({
                 <div className="flex items-center gap-4">
                   <label className="text-xs text-text-muted uppercase tracking-wider font-semibold">Template:</label>
                   <select
+                    autoComplete="off"
                     value={selectedTemplate}
                     onChange={(e) => setSelectedTemplate(e.target.value as TemplateId)}
                     className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-gold"

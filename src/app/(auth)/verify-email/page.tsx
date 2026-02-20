@@ -90,6 +90,7 @@ function VerifyEmailContent() {
           <div className="mb-6">
             <input
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"

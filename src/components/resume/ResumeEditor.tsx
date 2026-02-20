@@ -504,6 +504,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                   value={currentResume.name}
                   onChange={(e) => setCurrentResume(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="Resume Name"
+                  autoComplete="off"
                   className={`w-full bg-transparent border-0 px-0 py-1 font-heading text-lg font-bold uppercase tracking-wider text-text placeholder:text-text-dim focus:ring-0 focus:outline-none ${
                     isCurrentUntitled
                       ? 'border-b-2 border-gold'
@@ -753,6 +754,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
               }}
               placeholder="e.g. Software Engineer — Feb 2026"
               autoFocus
+              autoComplete="off"
               className="w-full mb-1"
             />
             {nameModalError && (

@@ -795,6 +795,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                 onChange={(e) => handleTierChange(e.target.value)}
                 disabled={saving}
                 className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                autoComplete="off"
               >
                 {TIER_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -1005,6 +1006,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
               onChange={(e) => setDeleteConfirmText(e.target.value)}
               placeholder="Enter email to confirm"
               className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2 text-text mb-4 focus:border-status-red focus:ring-1 focus:ring-status-red/25"
+              autoComplete="off"
             />
             <div className="flex gap-3">
               <Button
@@ -1093,6 +1095,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                   value={editFirstName}
                   onChange={(e) => setEditFirstName(e.target.value)}
                   placeholder="First name"
+                  autoComplete="name"
                 />
               </div>
               <div>
@@ -1103,6 +1106,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                   value={editLastName}
                   onChange={(e) => setEditLastName(e.target.value)}
                   placeholder="Last name"
+                  autoComplete="name"
                 />
               </div>
               <div>
@@ -1114,6 +1118,7 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
                   value={editEmail}
                   onChange={(e) => setEditEmail(e.target.value)}
                   placeholder="Email address"
+                  autoComplete="email"
                 />
               </div>
             </div>

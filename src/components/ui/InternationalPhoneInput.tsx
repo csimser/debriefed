@@ -327,6 +327,7 @@ export function InternationalPhoneInput({
           ref={inputRef}
           id={generatedId}
           type="tel"
+          autoComplete="tel"
           value={inputValue}
           onChange={handleInputChange}
           disabled={disabled}

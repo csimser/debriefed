@@ -100,6 +100,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
             <select
               value={data.branch}
               onChange={(e) => updateData({ branch: e.target.value, rank: '' })}
+              autoComplete="off"
               className={inputClass}
             >
               <option value="">Select Branch</option>
@@ -113,6 +114,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
             <select
               value={data.paygrade}
               onChange={(e) => updateData({ paygrade: e.target.value })}
+              autoComplete="off"
               className={inputClass}
             >
               <option value="">Select Paygrade</option>
@@ -131,6 +133,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
           <input
             type="text"
             name="rank"
+            autoComplete="off"
             value={data.rank}
             onChange={(e) => updateData({ rank: e.target.value })}
             placeholder="Select branch and paygrade above"
@@ -151,6 +154,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
           <input
             type="text"
             name="rating-mos"
+            autoComplete="off"
             value={data.rating_mos}
             onChange={(e) => updateData({ rating_mos: e.target.value })}
             placeholder="e.g., DC, IT, 11B, 3D0X2, OS"
@@ -191,6 +195,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
           <input
             type="number"
             name="years-of-service"
+            autoComplete="off"
             value={data.years_of_service}
             onChange={(e) => updateData({ years_of_service: e.target.value })}
             placeholder="e.g., 8"
@@ -209,6 +214,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
           <select
             value={data.clearance}
             onChange={(e) => updateData({ clearance: e.target.value })}
+            autoComplete="off"
             className={inputClass}
           >
             <option value="">Select Clearance</option>
@@ -227,6 +233,7 @@ export function StepMilitary({ data, updateData, onNext, onBack, onSkip, saving 
           <input
             type="date"
             name="separation-date"
+            autoComplete="off"
             value={data.eas_date}
             onChange={(e) => updateData({ eas_date: e.target.value })}
             className={inputClass}

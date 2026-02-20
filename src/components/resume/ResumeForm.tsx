@@ -220,6 +220,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               label="LinkedIn"
               value={content.contact.linkedin_url}
               onChange={(e) => updateContent('contact', { ...content.contact, linkedin_url: e.target.value })}
+              autoComplete="url"
             />
           )}
         </div>
@@ -243,6 +244,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
             <select
               value={targetIndustry}
               onChange={(e) => updateContent('target', { ...content.target, industry: e.target.value })}
+              autoComplete="off"
               className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
             >
               <option value="">Select Industry</option>
@@ -443,6 +445,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               <select
                 value={content.citizenship || ''}
                 onChange={(e) => updateContent('citizenship', e.target.value)}
+                autoComplete="off"
                 className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
               >
                 {CITIZENSHIP_OPTIONS.map(opt => (
@@ -459,6 +462,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               <select
                 value={content.veterans_preference || ''}
                 onChange={(e) => updateContent('veterans_preference', e.target.value)}
+                autoComplete="off"
                 className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
               >
                 {VETERANS_PREFERENCE_OPTIONS.map(opt => (
@@ -475,6 +479,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               <select
                 value={content.security_clearance || userProfile?.clearance || ''}
                 onChange={(e) => updateContent('security_clearance', e.target.value)}
+                autoComplete="off"
                 className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
               >
                 {CLEARANCE_OPTIONS.map(opt => (
@@ -491,6 +496,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               <select
                 value={content.clearance_status || ''}
                 onChange={(e) => updateContent('clearance_status', e.target.value)}
+                autoComplete="off"
                 className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
               >
                 {CLEARANCE_STATUS_OPTIONS.map(opt => (
@@ -509,6 +515,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
                 value={content.federal_status || ''}
                 onChange={(e) => updateContent('federal_status', e.target.value)}
                 placeholder="e.g., N/A, GS-12, WG-10"
+                autoComplete="off"
                 className="w-full bg-bg-tertiary border border-border rounded-lg px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
               <p className="text-xs text-text-dim mt-1">
@@ -1810,6 +1817,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   type="text"
                   value={headerForm.job_title}
                   onChange={(e) => setHeaderForm({ ...headerForm, job_title: e.target.value })}
+                  autoComplete="off"
                   className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
                 />
               </div>
@@ -1819,6 +1827,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   type="text"
                   value={headerForm.organization}
                   onChange={(e) => setHeaderForm({ ...headerForm, organization: e.target.value })}
+                  autoComplete="organization"
                   className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
                 />
               </div>
@@ -1830,6 +1839,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   type="text"
                   value={headerForm.civilian_title}
                   onChange={(e) => setHeaderForm({ ...headerForm, civilian_title: e.target.value })}
+                  autoComplete="off"
                   className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
                 />
               </div>
@@ -1839,6 +1849,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   type="month"
                   value={headerForm.start_date}
                   onChange={(e) => setHeaderForm({ ...headerForm, start_date: e.target.value })}
+                  autoComplete="off"
                   className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
                 />
               </div>
@@ -1850,6 +1861,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                     value={headerForm.end_date}
                     onChange={(e) => setHeaderForm({ ...headerForm, end_date: e.target.value })}
                     disabled={headerForm.is_current}
+                    autoComplete="off"
                     className="flex-1 px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 disabled:opacity-50"
                   />
                   <label className="flex items-center gap-1 text-xs whitespace-nowrap cursor-pointer">
@@ -1914,6 +1926,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                 value={experience.grade_level || ''}
                 onChange={(e) => onChange({ ...experience, grade_level: e.target.value })}
                 placeholder="e.g., GS-12"
+                autoComplete="off"
                 className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
             </div>
@@ -1923,6 +1936,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                 type="number"
                 value={experience.hours_per_week ?? 40}
                 onChange={(e) => onChange({ ...experience, hours_per_week: parseInt(e.target.value) || 40 })}
+                autoComplete="off"
                 className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
             </div>
@@ -1933,6 +1947,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                 value={experience.salary || ''}
                 onChange={(e) => onChange({ ...experience, salary: e.target.value })}
                 placeholder="e.g., $85,000"
+                autoComplete="off"
                 className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
             </div>
@@ -1946,6 +1961,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   onChange({ ...experience, city: parts[0] || '', state: parts[1] || '' })
                 }}
                 placeholder="City, ST"
+                autoComplete="off"
                 className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
             </div>
@@ -1958,6 +1974,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                 value={experience.supervisor_name || ''}
                 onChange={(e) => onChange({ ...experience, supervisor_name: e.target.value })}
                 placeholder="Supervisor name"
+                autoComplete="name"
                 className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
             </div>
@@ -1968,6 +1985,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                 value={experience.supervisor_phone || ''}
                 onChange={(e) => onChange({ ...experience, supervisor_phone: e.target.value })}
                 placeholder="(555) 555-5555"
+                autoComplete="tel"
                 className="w-full px-2 py-1.5 bg-bg-tertiary border border-border rounded text-xs focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
             </div>
@@ -2083,6 +2101,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   onChange={(e) => setEditText(e.target.value)}
                   className="w-full p-3 bg-bg-secondary border border-gold rounded text-sm text-text min-h-[80px]"
                   autoFocus
+                  autoComplete="off"
                   placeholder="Enter bullet point text..."
                 />
                 <div className="flex gap-2">
@@ -2249,6 +2268,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                           value={correctionMilitary}
                           onChange={(e) => setCorrectionMilitary(e.target.value)}
                           placeholder="e.g. CSMP"
+                          autoComplete="off"
                           className="px-2 py-1 text-xs bg-bg-secondary border border-border rounded w-32 focus:border-gold focus:ring-1 focus:ring-gold/25"
                         />
                         <input
@@ -2256,6 +2276,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                           value={correctionCivilian}
                           onChange={(e) => setCorrectionCivilian(e.target.value)}
                           placeholder="e.g. maintenance backlog"
+                          autoComplete="off"
                           className="px-2 py-1 text-xs bg-bg-secondary border border-border rounded w-44 focus:border-gold focus:ring-1 focus:ring-gold/25"
                         />
                         <button
@@ -2413,6 +2434,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                         value={pasteText}
                         onChange={(e) => setPasteText(e.target.value)}
                         placeholder="Paste your evaluation write-up text here..."
+                        autoComplete="off"
                         className="w-full min-h-[80px] px-3 py-2 bg-bg-tertiary border border-border rounded text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
                       />
                       <button
@@ -2646,6 +2668,7 @@ function EducationItem({ education, onChange, onDelete }: {
                 type="text"
                 value={form.school_name}
                 onChange={(e) => setForm({ ...form, school_name: e.target.value })}
+                autoComplete="off"
                 className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
             </div>
@@ -2655,6 +2678,7 @@ function EducationItem({ education, onChange, onDelete }: {
                 type="text"
                 value={form.degree_type}
                 onChange={(e) => setForm({ ...form, degree_type: e.target.value })}
+                autoComplete="off"
                 className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
             </div>
@@ -2666,6 +2690,7 @@ function EducationItem({ education, onChange, onDelete }: {
                 type="text"
                 value={form.field_of_study}
                 onChange={(e) => setForm({ ...form, field_of_study: e.target.value })}
+                autoComplete="off"
                 className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
             </div>
@@ -2677,6 +2702,7 @@ function EducationItem({ education, onChange, onDelete }: {
                   value={form.graduation_month}
                   onChange={(e) => setForm({ ...form, graduation_month: e.target.value })}
                   placeholder="Month"
+                  autoComplete="off"
                   className="w-1/2 px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
                 />
                 <input
@@ -2684,6 +2710,7 @@ function EducationItem({ education, onChange, onDelete }: {
                   value={form.graduation_year}
                   onChange={(e) => setForm({ ...form, graduation_year: e.target.value })}
                   placeholder="Year"
+                  autoComplete="off"
                   className="w-1/2 px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
                 />
               </div>
@@ -2695,6 +2722,7 @@ function EducationItem({ education, onChange, onDelete }: {
                 value={form.gpa}
                 onChange={(e) => setForm({ ...form, gpa: e.target.value })}
                 placeholder="e.g., 3.8"
+                autoComplete="off"
                 className="w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25"
               />
             </div>

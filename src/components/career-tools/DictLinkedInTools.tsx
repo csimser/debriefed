@@ -618,6 +618,7 @@ export function DictLinkedInTools({
                   {editingHeadline === idx ? (
                     <input
                       type="text"
+                      autoComplete="off"
                       value={editedHeadlineText}
                       onChange={(e) => setEditedHeadlineText(e.target.value)}
                       onKeyDown={(e) => {
@@ -681,6 +682,7 @@ export function DictLinkedInTools({
           </p>
 
           <textarea
+            autoComplete="off"
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
             placeholder="Paste your LinkedIn summary or headline here..."

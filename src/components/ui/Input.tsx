@@ -25,6 +25,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           id={inputId}
+          autoComplete="off"
           className={cn(
             // Base styles with mobile-first sizing
             'w-full bg-bg-secondary border border-border rounded-lg text-text placeholder:text-text-dim transition-all',

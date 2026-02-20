@@ -268,6 +268,7 @@ function SignupForm() {
             onChange={(e) => handleBranchChange(e.target.value)}
             className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text"
             required
+            autoComplete="off"
           >
             <option value="">Select Branch</option>
             {BRANCHES.map((b) => (
@@ -284,6 +285,7 @@ function SignupForm() {
             onChange={(e) => setFormData({ ...formData, paygrade: e.target.value })}
             className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text"
             required
+            autoComplete="off"
           >
             <option value="">Select Paygrade</option>
             {validPaygrades.map((p) => (

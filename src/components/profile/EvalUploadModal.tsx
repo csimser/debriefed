@@ -644,6 +644,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                   value={evalType}
                   onChange={(e) => setEvalType(e.target.value)}
                   className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
+                  autoComplete="off"
                 >
                   <option value="">Select type...</option>
                   {EVAL_TYPES.map((t) => (
@@ -834,6 +835,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                     value={selectedExperience}
                     onChange={(e) => setSelectedExperience(e.target.value)}
                     className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold"
+                    autoComplete="off"
                   >
                     <option value="">Create new experience entry</option>
                     {experiences.map((exp) => (
@@ -907,6 +909,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                           className="w-full bg-bg-tertiary border border-border rounded px-3 py-2 text-text text-sm resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
                           rows={3}
                           autoFocus
+                          autoComplete="off"
                         />
                         <div className="flex gap-2">
                           <button

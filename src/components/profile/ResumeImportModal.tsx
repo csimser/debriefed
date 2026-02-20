@@ -528,6 +528,7 @@ export function ResumeImportModal({
                     placeholder="Paste your full resume text here..."
                     rows={12}
                     className="w-full px-4 py-3 bg-bg-secondary border border-border rounded-lg text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-y"
+                    autoComplete="off"
                   />
                   <p className="text-xs text-text-dim mt-2">
                     {pasteText.length > 0 ? `${pasteText.length} characters` : 'Copy all text from your resume and paste it above'}
@@ -611,6 +612,7 @@ export function ResumeImportModal({
                       className={inputClass}
                       value={importData.contact.phone || ''}
                       onChange={(e) => setImportData({ ...importData, contact: { ...importData.contact, phone: e.target.value || null } })}
+                      autoComplete="tel"
                     />
                   </div>
                   <div>
@@ -619,6 +621,7 @@ export function ResumeImportModal({
                       className={inputClass}
                       value={importData.contact.linkedin_url || ''}
                       onChange={(e) => setImportData({ ...importData, contact: { ...importData.contact, linkedin_url: e.target.value || null } })}
+                      autoComplete="url"
                     />
                   </div>
                   <div>
@@ -627,6 +630,7 @@ export function ResumeImportModal({
                       className={inputClass}
                       value={importData.contact.city || ''}
                       onChange={(e) => setImportData({ ...importData, contact: { ...importData.contact, city: e.target.value || null } })}
+                      autoComplete="address-level2"
                     />
                   </div>
                   <div>
@@ -636,6 +640,7 @@ export function ResumeImportModal({
                       value={importData.contact.state || ''}
                       onChange={(e) => setImportData({ ...importData, contact: { ...importData.contact, state: e.target.value || null } })}
                       maxLength={2}
+                      autoComplete="address-level1"
                     />
                   </div>
                 </div>
@@ -650,6 +655,7 @@ export function ResumeImportModal({
                   value={importData.professional_summary || ''}
                   onChange={(e) => setImportData({ ...importData, professional_summary: e.target.value || null })}
                   placeholder="No summary detected — you can add one here"
+                  autoComplete="off"
                 />
               </Card>
 
@@ -675,6 +681,7 @@ export function ResumeImportModal({
                               value={exp.civilian_title || exp.job_title}
                               onChange={(e) => updateExperience(idx, 'civilian_title', e.target.value)}
                               placeholder="Job Title"
+                              autoComplete="off"
                             />
                             <span className={`px-2 py-0.5 text-xs rounded flex-shrink-0 ${
                               exp.employment_type === 'military' ? 'bg-gold/20 text-gold' : 'bg-status-blue/20 text-status-blue'
@@ -698,6 +705,7 @@ export function ResumeImportModal({
                             value={exp.organization}
                             onChange={(e) => updateExperience(idx, 'organization', e.target.value)}
                             placeholder="Company / Organization"
+                            autoComplete="organization"
                           />
                           <div className="flex gap-2">
                             <input
@@ -705,6 +713,7 @@ export function ResumeImportModal({
                               value={exp.start_date || ''}
                               onChange={(e) => updateExperience(idx, 'start_date', e.target.value)}
                               placeholder="Start (YYYY-MM-DD)"
+                              autoComplete="off"
                             />
                             <input
                               className={inputClass}
@@ -720,6 +729,7 @@ export function ResumeImportModal({
                                 }
                               }}
                               placeholder="End (or Present)"
+                              autoComplete="off"
                             />
                           </div>
                         </div>
@@ -732,6 +742,7 @@ export function ResumeImportModal({
                                 className={`${inputClass} text-xs`}
                                 value={bullet}
                                 onChange={(e) => updateBullet(idx, bIdx, e.target.value)}
+                                autoComplete="off"
                               />
                               <button
                                 onClick={() => removeBullet(idx, bIdx)}
@@ -774,24 +785,28 @@ export function ResumeImportModal({
                               value={edu.degree_type || ''}
                               onChange={(e) => updateEducation(idx, 'degree_type', e.target.value)}
                               placeholder="Degree (e.g. Master, Bachelor, MBA)"
+                              autoComplete="off"
                             />
                             <input
                               className={inputClass}
                               value={edu.field_of_study || ''}
                               onChange={(e) => updateEducation(idx, 'field_of_study', e.target.value)}
                               placeholder="Field of Study"
+                              autoComplete="off"
                             />
                             <input
                               className={inputClass}
                               value={edu.school_name || ''}
                               onChange={(e) => updateEducation(idx, 'school_name', e.target.value)}
                               placeholder="School Name"
+                              autoComplete="organization"
                             />
                             <input
                               className={`${inputClass} w-32`}
                               value={edu.graduation_year || ''}
                               onChange={(e) => updateEducation(idx, 'graduation_year', e.target.value)}
                               placeholder="Year"
+                              autoComplete="off"
                             />
                             <button
                               onClick={() => setEditingEduIdx(null)}
@@ -898,6 +913,7 @@ export function ResumeImportModal({
                           ...importData,
                           military_info: { ...importData.military_info, branch: e.target.value || null },
                         })}
+                        autoComplete="off"
                       />
                     </div>
                     <div>
@@ -909,6 +925,7 @@ export function ResumeImportModal({
                           ...importData,
                           military_info: { ...importData.military_info, rank: e.target.value || null },
                         })}
+                        autoComplete="off"
                       />
                     </div>
                   </div>
@@ -1019,6 +1036,7 @@ function AddInlineInput({ placeholder, onAdd }: { placeholder: string; onAdd: (v
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
         placeholder={placeholder}
+        autoComplete="off"
       />
       <button
         onClick={handleSubmit}

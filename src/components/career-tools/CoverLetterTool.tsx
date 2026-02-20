@@ -464,6 +464,7 @@ export function CoverLetterTool({
           <div className="space-y-5">
             <Input
               label="Company Name"
+              autoComplete="organization"
               value={jobData.company}
               onChange={(e) => setJobData({ ...jobData, company: e.target.value })}
               placeholder="Acme Corporation"
@@ -482,6 +483,7 @@ export function CoverLetterTool({
               </label>
               <input
                 type="text"
+                autoComplete="name"
                 value={hiringManagerName}
                 onChange={(e) => setHiringManagerName(e.target.value)}
                 placeholder="e.g., Sarah Johnson"
@@ -497,6 +499,7 @@ export function CoverLetterTool({
                 Job Description
               </label>
               <textarea
+                autoComplete="off"
                 value={jobData.description}
                 onChange={(e) => setJobData({ ...jobData, description: e.target.value })}
                 placeholder="Paste the job description here..."
@@ -595,6 +598,7 @@ export function CoverLetterTool({
             <div>
               <label className="block text-xs text-text-muted mb-2 uppercase tracking-wider">Opening Style</label>
               <select
+                autoComplete="off"
                 value={openingStyle}
                 onChange={(e) => setOpeningStyle(e.target.value as typeof openingStyle)}
                 className="w-full bg-bg-secondary border border-border rounded-lg px-3 py-2 text-text text-sm focus:outline-none focus:border-gold"

@@ -264,6 +264,7 @@ export default function AdminFeedbackPage() {
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             className="bg-bg-secondary border border-border rounded-md px-3 py-2 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+            autoComplete="off"
           >
             {TYPE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -273,6 +274,7 @@ export default function AdminFeedbackPage() {
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
             className="bg-bg-secondary border border-border rounded-md px-3 py-2 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+            autoComplete="off"
           >
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
@@ -428,6 +430,7 @@ export default function AdminFeedbackPage() {
                         placeholder="Write a response that the user will see..."
                         rows={3}
                         className="w-full bg-bg-secondary border border-status-green/30 rounded-md px-4 py-3 text-text focus:border-status-green focus:ring-1 focus:ring-status-green/25 resize-none"
+                        autoComplete="off"
                       />
                       <div className="flex justify-end gap-2 mt-2">
                         <Button
@@ -460,6 +463,7 @@ export default function AdminFeedbackPage() {
                         placeholder="Add internal notes about this feedback..."
                         rows={3}
                         className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text focus:border-gold focus:ring-1 focus:ring-gold/25 resize-none"
+                        autoComplete="off"
                       />
                       <div className="flex justify-end gap-2 mt-2">
                         <Button

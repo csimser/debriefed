@@ -51,6 +51,7 @@ export function ProfessionalSummarySection({ data, onChange }: ProfessionalSumma
         onChange={e => onChange({ professional_summary: e.target.value })}
         placeholder="Write a 3-4 sentence summary of your professional background and career goals..."
         className="w-full h-32 bg-bg-secondary border border-border rounded-md px-4 py-3 text-text placeholder:text-text-dim resize-none focus:border-gold focus:ring-1 focus:ring-gold/25"
+        autoComplete="off"
       />
       <p className="text-xs text-text-muted mt-2">50-75 words recommended. No first person pronouns.</p>
     </CollapsibleSection>

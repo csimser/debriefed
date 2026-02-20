@@ -749,6 +749,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                   <input
                     type="text"
                     name="skill-search"
+                    autoComplete="off"
                     placeholder="Search skills..."
                     value={skillSearch}
                     onChange={(e) => setSkillSearch(e.target.value)}
@@ -962,6 +963,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
               ) : dictResults?.summary ? (
                 <textarea
                   name="linkedin-summary"
+                  autoComplete="off"
                   value={editedSummary}
                   onChange={(e) => setEditedSummary(e.target.value)}
                   className="w-full min-h-[200px] px-3 py-3 bg-bg-secondary border border-border rounded-lg text-sm leading-relaxed focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-y"

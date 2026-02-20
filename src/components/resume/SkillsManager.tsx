@@ -127,6 +127,7 @@ export function SkillsManager({ resumeId, allSkills, selectedSkills, onUpdate }:
           onChange={(e) => setNewSkill(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Add a skill..."
+          autoComplete="off"
           className="flex-1 bg-bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-text-primary placeholder-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
         />
         <button

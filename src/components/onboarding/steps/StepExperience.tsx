@@ -40,6 +40,7 @@ export function StepExperience({ data, updateData, onNext, onBack, saving }: Ste
           <textarea
             value={bullet1}
             onChange={(e) => setBullet1(e.target.value)}
+            autoComplete="off"
             placeholder="e.g., Led 15-person DC division through 3 major inspections with zero discrepancies"
             className="w-full h-24 bg-bg-secondary border border-border rounded-md px-4 py-3 text-text placeholder:text-text-dim resize-none"
           />
@@ -52,6 +53,7 @@ export function StepExperience({ data, updateData, onNext, onBack, saving }: Ste
           <textarea
             value={bullet2}
             onChange={(e) => setBullet2(e.target.value)}
+            autoComplete="off"
             placeholder="e.g., Managed $2.3M damage control equipment budget with 100% accountability"
             className="w-full h-24 bg-bg-secondary border border-border rounded-md px-4 py-3 text-text placeholder:text-text-dim resize-none"
           />

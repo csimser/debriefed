@@ -245,6 +245,7 @@ export function AdminDictionaryPanel({
                     onChange={e => setOverrides(prev => ({ ...prev, [sub.id]: e.target.value }))}
                     placeholder="Override civilian translation (optional)"
                     className="w-full bg-bg-secondary border border-border rounded px-3 py-1.5 text-sm text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
+                    autoComplete="off"
                   />
                 </div>
 
@@ -319,6 +320,7 @@ export function AdminDictionaryPanel({
                           onChange={e => setAddForm(prev => prev ? { ...prev, militaryTerm: e.target.value } : null)}
                           disabled={!addForm.editable}
                           className="w-full bg-bg-primary border border-border rounded px-3 py-1.5 text-sm text-text disabled:opacity-60 focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          autoComplete="off"
                         />
                       </div>
                       <div>
@@ -330,6 +332,7 @@ export function AdminDictionaryPanel({
                           placeholder="Enter civilian equivalent..."
                           className="w-full bg-bg-primary border border-border rounded px-3 py-1.5 text-sm text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
                           autoFocus
+                          autoComplete="off"
                         />
                       </div>
                     </div>
@@ -340,6 +343,7 @@ export function AdminDictionaryPanel({
                           value={addForm.targetTable}
                           onChange={e => setAddForm(prev => prev ? { ...prev, targetTable: e.target.value as TargetTable } : null)}
                           className="w-full bg-bg-primary border border-border rounded px-3 py-1.5 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          autoComplete="off"
                         >
                           <option value="dict_military_jargon">Military Jargon</option>
                           <option value="dict_phrase_translations">Phrase Translations</option>
@@ -352,6 +356,7 @@ export function AdminDictionaryPanel({
                           value={addForm.branch}
                           onChange={e => setAddForm(prev => prev ? { ...prev, branch: e.target.value } : null)}
                           className="w-full bg-bg-primary border border-border rounded px-3 py-1.5 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          autoComplete="off"
                         >
                           <option value="">All Branches</option>
                           <option value="army">Army</option>
@@ -368,6 +373,7 @@ export function AdminDictionaryPanel({
                           value={addForm.category}
                           onChange={e => setAddForm(prev => prev ? { ...prev, category: e.target.value } : null)}
                           className="w-full bg-bg-primary border border-border rounded px-3 py-1.5 text-sm text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
+                          autoComplete="off"
                         >
                           <option value="">General</option>
                           <option value="rank_title">Rank / Title</option>
