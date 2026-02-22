@@ -168,12 +168,14 @@ export async function POST(request: NextRequest) {
           throw subError;
         }
 
-        // Update user profile tier (both columns for backward compatibility)
+        // Update user profile tier (all columns for backward compatibility)
         const { error: profileError } = await supabase
           .from('profiles')
           .update({
             tier: tier,
             subscription_tier: tier,
+            plan: tier,
+            plan_expires_at: expiresAt.toISOString(),
             updated_at: now.toISOString(),
           })
           .eq('user_id', userId);

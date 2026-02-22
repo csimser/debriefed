@@ -30,15 +30,90 @@ interface TranslateInput {
     jobType?: string
     mos_rating?: string
   }
+  enhance_from_dictionary?: string // When set, skip dictionary step and use AI to enhance this dictionary translation
 }
 
 export const POST = withAISecurity<TranslateInput>(
   { feature: 'bullet_translations', inputType: 'bullet_input' },
   async (request, input, ctx) => {
-    const { bullet, context } = input
+    const { bullet, context, enhance_from_dictionary } = input
 
     if (!bullet) {
       return NextResponse.json({ error: 'Missing bullet text' }, { status: 400 })
+    }
+
+    // Enhancement mode: skip dictionary, go straight to AI with dictionary result as context
+    if (enhance_from_dictionary) {
+      const enhancePrompt = `Enhance this military-to-civilian resume bullet translation.
+
+Original military bullet: ${bullet}
+Dictionary translation (use as starting point): ${enhance_from_dictionary}
+Branch: ${context?.branch || 'military'}
+Rank: ${context?.rank || ''}
+Target: ${context?.jobType || 'private'} sector
+
+The dictionary translation above is a decent start but may be too literal or miss context. Improve it by:
+1. Making it more natural and professional-sounding
+2. Ensuring ALL military jargon and acronyms are removed
+3. Quantifying with specific numbers where possible
+4. Starting with a strong action verb
+5. Keeping to 1-2 lines maximum
+6. Focusing on transferable skills and impact
+
+Return JSON with this exact structure:
+{
+  "translated_bullet": "the improved civilian bullet",
+  "translations": [
+    { "military": "specific military term you changed", "civilian": "civilian equivalent you used" }
+  ]
+}
+Only include terms you actually changed. Do not include terms that are already civilian. Return ONLY the JSON.`
+
+      const { response, model_used } = await callWithEscalation(
+        anthropic,
+        {
+          max_tokens: 500,
+          system: secureSystemPrompt(BASE_SYSTEM_PROMPT),
+          messages: [{ role: 'user', content: enhancePrompt }],
+        },
+        { expectsJson: true }
+      )
+
+      const rawText = (response.content[0] as { text: string }).text.trim()
+      let translated = rawText
+      let termPairs: TermPair[] = []
+
+      try {
+        let jsonText = rawText
+        if (jsonText.startsWith('```json')) jsonText = jsonText.slice(7)
+        if (jsonText.startsWith('```')) jsonText = jsonText.slice(3)
+        if (jsonText.endsWith('```')) jsonText = jsonText.slice(0, -3)
+        jsonText = jsonText.trim()
+
+        const parsed = JSON.parse(jsonText)
+        if (parsed.translated_bullet) translated = parsed.translated_bullet
+        if (Array.isArray(parsed.translations)) termPairs = parsed.translations
+      } catch {
+        translated = rawText.replace(/^["']|["']$/g, '').trim()
+      }
+
+      const tokensUsed = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0)
+      await logAPIUsage(ctx.userId, 'translate', tokensUsed, getModelString(model_used))
+
+      const captureCtx: CaptureContext = {
+        userId: ctx.userId,
+        branch: context?.branch,
+        targetIndustry: context?.jobType,
+        modelUsed: model_used,
+      }
+      captureTermPairs('bullet_translation', termPairs, bullet, captureCtx)
+
+      return NextResponse.json({
+        original: bullet,
+        translated,
+        model_used,
+        source: 'ai_enhanced',
+      })
     }
 
     // Check if input is a single military term/acronym (not a full bullet)

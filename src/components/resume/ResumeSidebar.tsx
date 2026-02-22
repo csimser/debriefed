@@ -256,13 +256,7 @@ export function ResumeSidebar({ resumes, selectedId, onSelect, onCreate, onDelet
         resume={deleteModal.resume ? {
           id: deleteModal.resume.id,
           name: deleteModal.resume.name,
-          resume_type: deleteModal.resume.resume_type || 'private',
-          has_been_downloaded: (deleteModal.resume.resume_type || 'private') === 'federal'
-            ? usage.federal_downloads > 0
-            : usage.private_downloads > 0
         } : { id: '', name: '' }}
-        userPlan={userPlan}
-        usage={usage}
         onDeleted={handleDeleted}
       />
     </div>

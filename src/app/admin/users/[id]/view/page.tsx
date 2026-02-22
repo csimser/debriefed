@@ -76,6 +76,7 @@ export default async function AdminViewUserPage({ params }: { params: Promise<{ 
       .select('*')
       .eq('user_id', id)
       .eq('status', 'active')
+      .order('started_at', { ascending: false })
       .limit(1)
       .maybeSingle(),
     serviceClient

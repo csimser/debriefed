@@ -267,14 +267,14 @@ export default async function AdminDashboardPage() {
             icon="◐"
             label="Core Users"
             value={stats.coreUsers}
-            subtitle="$35 / 30 days"
+            subtitle="$25 / 30 days"
             color="green"
           />
           <StatCard
             icon="●"
             label="Full Users"
             value={stats.fullUsers}
-            subtitle="$75 / 90 days"
+            subtitle="$50 / 90 days"
             color="gold"
           />
         </div>

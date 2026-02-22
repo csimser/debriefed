@@ -32,6 +32,9 @@ interface ResumeEditorProps {
     private_downloads: number
     federal_downloads: number
     bullet_rewrites?: number
+    download_used?: number
+    download_limit?: number
+    download_remaining?: number
   }
 }
 
@@ -110,7 +113,6 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
   const [resumes, setResumes] = useState(initialResumes)
   const [selectedId, setSelectedId] = useState<string | null>(resumes[0]?.id || null)
   const [saving, setSaving] = useState(false)
-  const [translating, setTranslating] = useState(false)
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isResumeDropdownOpen, setIsResumeDropdownOpen] = useState(false)
@@ -340,12 +342,6 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
       console.error('Create resume exception:', err)
       alert(`Error: ${err?.message || 'Unknown error'}`)
     }
-  }
-
-  const handleTranslateAll = async () => {
-    setTranslating(true)
-    // TODO: Implement batch translation
-    setTimeout(() => setTranslating(false), 2000)
   }
 
   const handleDelete = (deletedId: string) => {
@@ -586,19 +582,6 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                   <span className="text-xs font-heading font-semibold uppercase tracking-wider">{currentTemplateName}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {/* Translate All — hidden for free tier */}
-                  {!isFreeUser && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleTranslateAll}
-                      disabled={translating}
-                      className="hidden md:inline-flex"
-                    >
-                      {translating ? 'Translating...' : '✦ Translate All'}
-                    </Button>
-                  )}
-
                   {/* Export */}
                   <ExportMenu
                     resumeId={selectedId || ''}
@@ -609,6 +592,8 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                     onLimitReached={handleLimitReached}
                     isTemplateLocked={isCurrentTemplateLocked}
                     isUntitled={isCurrentUntitled}
+                    downloadRemaining={usage?.download_remaining}
+                    downloadLimit={usage?.download_limit}
                   />
 
                   {/* Delete */}
@@ -699,13 +684,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
           resume={{
             id: selectedResume.id,
             name: selectedResume.name,
-            resume_type: selectedResume.resume_type || 'private',
-            has_been_downloaded: selectedResume.resume_type === 'federal'
-              ? usage.federal_downloads > 0
-              : usage.private_downloads > 0
           }}
-          userPlan={userPlan}
-          usage={usage}
           onDeleted={() => handleDelete(selectedResume.id)}
         />
       )}

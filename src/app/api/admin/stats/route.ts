@@ -42,7 +42,7 @@ export async function GET() {
     signupsWeekResult,
     signupsMonthResult,
     totalResumesResult,
-    proUsersResult,
+    legacyProUsersResult,
     basicUsersResult,
     monthlyUsersResult,
     quarterlyUsersResult,
@@ -81,7 +81,7 @@ export async function GET() {
       .from('resumes')
       .select('*', { count: 'exact', head: true }),
 
-    // Pro users
+    // Legacy 'pro' tier users (now mapped to 'full')
     serviceClient
       .from('profiles')
       .select('*', { count: 'exact', head: true })
@@ -193,7 +193,7 @@ export async function GET() {
     signupsWeek: signupsWeekResult.count || 0,
     signupsMonth: signupsMonthResult.count || 0,
     totalResumes: totalResumesResult.count || 0,
-    proUsers: proUsersResult.count || 0,
+    legacyProUsers: legacyProUsersResult.count || 0,
     basicUsers: basicUsersResult.count || 0,
     monthlyUsers: monthlyUsersResult.count || 0,
     quarterlyUsers: quarterlyUsersResult.count || 0,

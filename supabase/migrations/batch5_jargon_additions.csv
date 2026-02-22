@@ -1,0 +1,11 @@
+military_term,civilian_equivalent,context,category,example_military,example_civilian
+EOOW,Engineering shift supervisor,Used in bullets to indicate supervising engineering plant operations under strict safety standards.,operations,Qualified EOOW for reactor operations.,Served as engineering shift supervisor ensuring safety compliance.
+EOW,Engineering shift supervisor,Watchstanding shorthand for supervising technical operations during assigned shifts.,operations,Stood EOW during high-tempo operations.,Supervised shift operations ensuring continuity.
+EDPO,Maintenance program manager,"Indicates ownership of maintenance planning, tracking, and readiness reporting.",leadership,Managed EDPO for department.,Managed maintenance program planning and readiness reporting.
+ER09,Urgent corrective maintenance event,Shorthand for engineering casualty/repair event requiring immediate response.,maintenance,Responded to ER09 casualty.,Led urgent corrective maintenance to restore availability.
+ERUL,Urgent logistics/repair support,Shorthand for expedited parts/repair coordination during casualties.,maintenance,Submitted ERUL for critical part.,Coordinated urgent logistics to restore operations.
+boat crew,Small-team maritime operations crew,Common Coast Guard term for boat operations teams.,operations,Qualified boat crew for SAR.,Executed small-team maritime operations for emergency response.
+boarding team,Maritime law enforcement inspection team,Common Coast Guard term for compliance/security boardings.,compliance,Led boarding team operations.,Conducted regulatory compliance inspections and security operations.
+S-6 shop,IT/communications office,Common shorthand for unit communications/IT section.,cyber,Worked in the S-6 shop.,Supported IT/communications operations restoring network services.
+COMSEC custodian,Communications security program owner,Custodian responsible for secure handling/accountability of crypto material and compliance.,cyber,Served as COMSEC custodian.,Managed communications security compliance and accountability.
+IAO,Information Assurance Officer,Cybersecurity compliance/controls owner (varies by unit).,cyber,Acted as IAO for network.,Oversaw cybersecurity compliance controls and risk reduction actions.

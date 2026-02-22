@@ -1,0 +1,34 @@
+military_phrase,civilian_phrase,branch,category,context_notes
+EOOW,"supervised engineering plant operations during high-risk shifts, ensuring safety compliance and operational continuity",Navy,operations,Nuclear/engineering watchstanding shorthand
+EOW,"supervised technical operations during assigned shifts, accountable for equipment status and team performance",Navy,operations,Engineering watchstanding shorthand
+PPWO,"led propulsion plant operations, coordinating personnel and equipment to maintain regulatory compliance",Navy,maintenance,Propulsion plant watchstanding
+SRO,oversaw reactor operations and compliance activities to ensure safe and efficient plant performance,Navy,maintenance,Senior reactor operations shorthand
+RO,monitored and controlled reactor systems to maintain safe operating parameters,Navy,maintenance,Reactor operator shorthand
+EDPO,managed divisional maintenance planning and personnel development to improve readiness outcomes,Navy,leadership,Maintenance program management
+ER09,led urgent corrective maintenance actions to restore equipment availability and reduce downtime,Navy,maintenance,Engineering casualty shorthand
+ERUL,coordinated rapid response logistics and maintenance actions to mitigate equipment failures and restore mission capability,Navy,maintenance,Urgent logistics shorthand
+DIVO,"supervised 10–25 personnel while managing training, evaluations, and operational execution",Navy,leadership,Division officer shorthand
+DH,managed department-level operations and personnel performance across multiple teams,Navy,leadership,Department head shorthand
+SAR,coordinated emergency response operations to safeguard personnel and property under time-critical conditions,Coast Guard,operations,Search and rescue shorthand
+AtoN,managed maritime navigation systems to ensure safe and compliant vessel traffic operations,Coast Guard,operations,Aids to navigation shorthand
+TACLET,supported specialized maritime security operations within multi-agency environments,Coast Guard,operations,Tactical law enforcement shorthand
+boat crew,executed small-team maritime operations ensuring mission success and personnel safety,Coast Guard,operations,Common CG term
+boarding team,conducted compliance inspections and security operations to enforce maritime regulations,Coast Guard,compliance,Common CG term
+1SG,"served as senior enlisted leader responsible for personnel readiness, discipline, and performance standards across a company-sized organization",Army,leadership,First Sergeant shorthand
+CSM,advised senior leadership while overseeing workforce standards and readiness across battalion-level operations,Army,leadership,Command Sergeant Major shorthand
+XO,"served as deputy operations manager coordinating planning, resources, and personnel execution",Army,leadership,Executive officer shorthand
+CDR,led organizational operations and personnel performance to achieve strategic objectives,Army,leadership,Commander shorthand
+BN S3,coordinated operational planning and execution across multiple teams to meet mission timelines,Army,operations,Staff shorthand
+BDE S4,managed brigade-level logistics operations ensuring supply continuity and accountability,Army,logistics,Staff shorthand
+J3,coordinated joint operational planning and execution across multi-service teams,All,operations,Joint staff shorthand
+J4,managed joint logistics planning and supply chain execution across multiple units,All,logistics,Joint staff shorthand
+J2,integrated multi-source intelligence to support strategic decision-making,All,intelligence,Joint staff shorthand
+J6,oversaw enterprise communications and IT operations supporting mission continuity,All,cyber,Joint staff shorthand
+G3,managed organizational operations planning and readiness tracking,Army,operations,Army staff shorthand
+G4,oversaw logistics strategy and resource distribution to sustain operations,Army,logistics,Army staff shorthand
+maintained 100% accountability,"ensured complete asset accountability, preventing discrepancies and compliance violations",All,logistics,High-frequency eval bullet stem
+led X personnel,"supervised a team of X personnel, driving performance and measurable operational outcomes",All,leadership,Template placeholder; replace X when known
+trained X personnel,"delivered structured training to X team members, improving readiness and performance standards",All,training,Template placeholder; replace X when known
+reduced downtime,implemented corrective actions that decreased equipment downtime and improved operational availability,All,maintenance,Outcome phrasing
+improved readiness,improved operational readiness through targeted training and maintenance initiatives,All,operations,Outcome phrasing
+conducted inspections,performed compliance audits identifying gaps and implementing corrective action plans,All,compliance,Inspection mapping

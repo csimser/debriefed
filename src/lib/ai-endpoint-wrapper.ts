@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse, after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service';
+import { canUseFeature, incrementUsage, isAdmin, getUserEmail, getUserTier } from '@/lib/usage-service';
 import {
   validateAIRequest,
   getSecureSystemPrompt,
@@ -18,6 +18,7 @@ export interface AIEndpointConfig {
   feature: FeatureName;
   inputType?: string;
   requireAuth?: boolean;
+  requiredTier?: 'core' | 'full'; // Minimum tier required (AI-only features)
 }
 
 export interface AIEndpointContext {
@@ -39,7 +40,7 @@ export function withAISecurity<T>(
   handler: AIHandler<T>
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
-    const { feature, inputType = 'default', requireAuth = true } = config;
+    const { feature, inputType = 'default', requireAuth = true, requiredTier } = config;
     const ip = getClientIP(request.headers);
 
     try {
@@ -63,6 +64,20 @@ export function withAISecurity<T>(
         if (!statusCheck.allowed) {
           return NextResponse.json(
             { error: statusCheck.reason },
+            { status: 403 }
+          );
+        }
+      }
+
+      // Check minimum tier requirement (for AI-only features)
+      if (requiredTier && !adminStatus) {
+        const tierInfo = await getUserTier(userId);
+        const tierOrder: Record<string, number> = { free: 0, expired: -1, core: 1, full: 2 };
+        const userLevel = tierOrder[tierInfo.tier] ?? 0;
+        const requiredLevel = tierOrder[requiredTier] ?? 1;
+        if (userLevel < requiredLevel) {
+          return NextResponse.json(
+            { error: 'upgrade_required', feature },
             { status: 403 }
           );
         }
@@ -180,7 +195,7 @@ export async function logAPIUsage(
   userId: string,
   feature: string,
   tokensUsed: number,
-  model: string = 'claude-sonnet-4-20250514'
+  model: string = 'claude-haiku-4-5-20251001'
 ): Promise<void> {
   try {
     const supabase = await createClient();

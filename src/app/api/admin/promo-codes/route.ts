@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Code already exists' }, { status: 400 })
       }
       console.error('Error creating promo code:', error)
-      return NextResponse.json({ error: error.message }, { status: 400 })
+      return NextResponse.json({ error: 'Failed to create promo code' }, { status: 400 })
     }
 
     // Log creation

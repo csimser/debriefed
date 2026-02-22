@@ -12,10 +12,15 @@ const supabaseAdmin = createAdminClient(
 );
 
 export async function POST(request: NextRequest) {
-  console.log('STRIPE_SECRET_KEY prefix:', process.env.STRIPE_SECRET_KEY?.substring(0, 10));
-  console.log('STRIPE_CORE_PRICE_ID:', process.env.STRIPE_CORE_PRICE_ID);
-  console.log('STRIPE_FULL_PRICE_ID:', process.env.STRIPE_FULL_PRICE_ID);
-  console.log('PAYMENTS_ENABLED:', PAYMENTS_ENABLED);
+  console.log('[create-checkout] Route hit');
+  console.log('[create-checkout] STRIPE env vars:', {
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY ? `${process.env.STRIPE_SECRET_KEY.slice(0, 7)}...${process.env.STRIPE_SECRET_KEY.slice(-4)}` : 'NOT SET',
+    STRIPE_CORE_PRICE_ID: process.env.STRIPE_CORE_PRICE_ID || 'NOT SET',
+    STRIPE_FULL_PRICE_ID: process.env.STRIPE_FULL_PRICE_ID || 'NOT SET',
+    STRIPE_EVAL_PACK_PRICE_ID: process.env.STRIPE_EVAL_PACK_PRICE_ID || 'NOT SET',
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET ? `${process.env.STRIPE_WEBHOOK_SECRET.slice(0, 6)}...` : 'NOT SET',
+    PAYMENTS_ENABLED: process.env.NEXT_PUBLIC_PAYMENTS_ENABLED ?? '(not set, defaults to true)',
+  });
 
   const supabase = await createClient();
 
@@ -23,12 +28,14 @@ export async function POST(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  console.log('[create-checkout] Auth:', user ? `user=${user.id}` : 'NO USER');
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     const body = await request.json();
+    console.log('[create-checkout] Request body:', JSON.stringify(body));
     const { tier } = body as { tier: 'core' | 'full' | 'eval_pack' };
 
     // Validate tier
@@ -126,12 +133,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Update user profile tier (both columns for backward compatibility)
+      // Update user profile tier (all columns for backward compatibility)
       await supabaseAdmin
         .from('profiles')
         .update({
           tier: tier,
           subscription_tier: tier,
+          plan: tier,
+          plan_expires_at: expiresAt.toISOString(),
           updated_at: now.toISOString(),
         })
         .eq('user_id', user.id);
@@ -185,6 +194,7 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment', // One-time payment, not subscription
+      allow_promotion_codes: true, // Enable Stripe-hosted promo code entry
       customer_email: profile?.email || user.email,
       success_url: `${baseUrl}/dashboard?payment=success&tier=${tier}`,
       cancel_url: `${baseUrl}/pricing?payment=cancelled`,
@@ -206,8 +216,23 @@ export async function POST(request: NextRequest) {
       sessionId: session.id,
       url: session.url,
     });
-  } catch (error) {
-    console.error('Error creating checkout session:', error);
+  } catch (error: any) {
+    const isStripeError = error?.type?.startsWith('Stripe');
+    console.error('Error creating checkout session:', {
+      message: error?.message,
+      type: error?.type,
+      code: error?.code,
+      statusCode: error?.statusCode,
+      param: error?.param,
+    });
+
+    if (isStripeError) {
+      return NextResponse.json(
+        { error: 'Stripe error: ' + error.message },
+        { status: error.statusCode || 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }

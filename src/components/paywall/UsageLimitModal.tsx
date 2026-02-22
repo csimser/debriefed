@@ -177,7 +177,7 @@ export function UsageLimitModal({
                     <span className="font-heading font-bold text-gold">CORE</span>
                     <span className="text-xs text-text-muted ml-2">Best Value</span>
                   </div>
-                  <span className="text-lg font-bold">$35</span>
+                  <span className="text-lg font-bold">$25</span>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
                   30 days access with {formatLimit(PRICING_TIERS.core.limits[feature])} {featureName}
@@ -189,7 +189,7 @@ export function UsageLimitModal({
                   loading={loading === 'core'}
                   onClick={() => handleUpgrade('core')}
                 >
-                  Upgrade to Core - $35
+                  Upgrade to Core - $25
                 </Button>
               </div>
             )}
@@ -198,10 +198,10 @@ export function UsageLimitModal({
               <div className="p-4 border border-gold/50 rounded-lg bg-gold/5">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-heading font-bold text-gold">FULL</span>
-                  <span className="text-lg font-bold">$75</span>
+                  <span className="text-lg font-bold">$50</span>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
-                  90 days access with {formatLimit(PRICING_TIERS.full.limits[feature])}/mo {featureName}
+                  90 days access with {formatLimit(PRICING_TIERS.full.limits[feature])} {featureName}
                 </p>
                 <Button
                   variant="primary"
@@ -210,7 +210,7 @@ export function UsageLimitModal({
                   loading={loading === 'full'}
                   onClick={() => handleUpgrade('full')}
                 >
-                  Upgrade to Full - $75
+                  Upgrade to Full - $50
                 </Button>
               </div>
             )}

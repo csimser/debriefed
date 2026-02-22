@@ -83,7 +83,7 @@ export function UpgradeBanner({
               ? `You've used ${currentUsage} of ${freeLimit} free ${feature.toLowerCase()}. `
               : ''}
             {coreLimit
-              ? `Upgrade to Core for ${coreLimit}+ ${feature.toLowerCase()} — just $35 for 30 days.`
+              ? `Upgrade to Core for ${coreLimit}+ ${feature.toLowerCase()} — just $25 for 30 days.`
               : `Upgrade to unlock more ${feature.toLowerCase()} and premium features.`}
           </p>
         </div>

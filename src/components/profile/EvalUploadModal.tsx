@@ -333,6 +333,12 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
 
       const data = await response.json()
 
+      if (response.status === 403 && data.limitReached) {
+        setError(data.error || 'Eval upload limit reached')
+        setStep('upload')
+        return
+      }
+
       if (data.error) {
         setError(data.error)
         setStep('crop')
@@ -592,36 +598,54 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
 
           {/* Step: Upload */}
           {step === 'upload' && fetchedRemaining !== undefined && fetchedRemaining <= 0 && (
-            <div className="space-y-4 text-center py-4">
+            <div className="space-y-5 text-center py-4">
               <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 flex items-center justify-center">
                 <span className="text-gold text-2xl">&#9670;</span>
               </div>
-              <p className="text-sm text-text-muted">
-                You&apos;ve used all {fetchedLimit || 0} eval upload{(fetchedLimit || 0) !== 1 ? 's' : ''}.
-              </p>
-              <p className="text-sm text-text-muted">
+              <div>
+                <p className="font-heading text-base font-bold uppercase tracking-wider mb-1">Eval Upload Limit Reached</p>
+                <p className="text-sm text-text-muted">
+                  You&apos;ve used your {fetchedLimit || 0} free eval upload{(fetchedLimit || 0) !== 1 ? 's' : ''}.
+                </p>
+              </div>
+
+              {/* Eval Pack CTA */}
+              <div className="mx-auto max-w-sm border-2 border-gold/40 rounded-lg p-5 bg-gold/5">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="text-gold text-lg">&#9889;</span>
+                  <span className="font-heading text-sm font-bold uppercase tracking-wider">Eval Pack — $5 one-time</span>
+                </div>
+                <p className="text-xs text-text-muted mb-3">Add 5 more uploads to any plan</p>
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch('/api/stripe/create-checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tier: 'eval_pack' }),
+                      })
+                      const data = await res.json()
+                      if (data.url) window.location.href = data.url
+                    } catch {}
+                  }}
+                  className="w-full px-5 py-2.5 bg-gold text-bg-primary font-heading text-xs font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
+                >
+                  Get Eval Pack &rarr;
+                </button>
+              </div>
+
+              <div>
+                <p className="text-sm text-text-muted mb-2">Want unlimited evals + everything else?</p>
+                <UpgradeLink
+                  className="text-sm text-gold hover:text-gold-bright hover:underline transition-colors"
+                >
+                  View upgrade options &rarr;
+                </UpgradeLink>
+              </div>
+
+              <p className="text-xs text-text-dim">
                 Paste eval text into experience bullets for free dictionary translation anytime.
               </p>
-              <div className="flex flex-col gap-2 items-center">
-                <UpgradeLink
-                  className="px-5 py-2.5 bg-gold text-bg-primary font-heading text-xs font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
-                >
-                  Buy Eval Pack — $5 / 10 uploads
-                </UpgradeLink>
-                {!isPaidTier(getUserTier({ tier: userPlan })) && (
-                  <UpgradeLink
-                    className="text-xs text-text-dim hover:text-gold transition-colors"
-                  >
-                    or upgrade to Core for 5 uploads
-                  </UpgradeLink>
-                )}
-              </div>
-              <button
-                onClick={onClose}
-                className="px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border text-text-muted font-semibold rounded text-sm transition-colors"
-              >
-                Close
-              </button>
             </div>
           )}
           {step === 'upload' && (fetchedRemaining === undefined || fetchedRemaining > 0) && (

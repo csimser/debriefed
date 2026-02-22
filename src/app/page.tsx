@@ -321,18 +321,19 @@ export default async function HomePage({
               <span className="text-sm text-text-muted ml-1">forever</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes" limit="5" />
-              <PricingFeature label="Federal Resumes" limit="5" />
-              <PricingFeature label="Dictionary Translations" limit="Unlimited" />
-              <PricingFeature label="Job Match (Dictionary)" limit="Unlimited" />
-              <PricingFeature label="Cover Letter Builder" limit="Unlimited" />
+              <PricingFeature label="Resumes" limit="5 total" />
+              <PricingFeature label="Federal Resumes" limit="2 total" />
+              <PricingFeature label="Dictionary Translations" limit="Unlimited (20/day)" />
+              <PricingFeature label="Job Analyses" limit="3 total" />
+              <PricingFeature label="Cover Letters" limit="3 total" />
+              <PricingFeature label="Cover Letter Exports" limit="5 total" />
               <PricingFeature label="Resume Imports" limit="3" />
-              <PricingFeature label="Downloads" limit="Unlimited" />
+              <PricingFeature label="Downloads" limit="5 total" />
               <PricingFeature label="Smart Apply" />
-              <PricingFeature label="Templates" limit="5" />
-              <PricingFeature label="Eval Upload" limit="1" />
-              <PricingFeature label="AI Features" unavailable isLast />
+              <PricingFeature label="Templates" limit="All 6" />
+              <PricingFeature label="Eval Upload" limit="1" isLast />
             </ul>
+            <p className="text-xs text-text-dim mb-4 text-center">*Daily rate limits apply</p>
 
             <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
               Get Started Free
@@ -347,17 +348,19 @@ export default async function HomePage({
             <div className="font-heading text-2xl font-bold uppercase mb-2">Core</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">AI-powered tools to land the job</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$15</span>
+              <span className="font-heading text-3xl font-bold text-gold">$25</span>
               <span className="text-sm text-text-muted ml-1">/ 30 days</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes" limit="10" />
-              <PricingFeature label="Federal Resumes" limit="5" />
-              <PricingFeature label="AI Cover Letters" limit="5" />
+              <PricingFeature label="Resumes" limit="10 / 30 days" tooltip="5/day" />
+              <PricingFeature label="Federal Resumes" limit="5 / 30 days" tooltip="3/day" />
+              <PricingFeature label="AI Cover Letters" limit="10 / 30 days" tooltip="10/day" />
               <PricingFeature label="AI Summary Generation" limit="Unlimited" />
-              <PricingFeature label="AI Job Match Analysis" limit="Unlimited" />
+              <PricingFeature label="AI Job Match Analysis" limit="10 / 30 days" tooltip="10/day" />
               <PricingFeature label="AI LinkedIn Headlines & Summaries" limit="Unlimited" />
-              <PricingFeature label="Eval Uploads" limit="5" />
+              <PricingFeature label="Eval Uploads" limit="10 / 30 days" tooltip="5/day" />
+              <PricingFeature label="Cover Letter Exports" limit="10 / 30 days" />
+              <PricingFeature label="Downloads" limit="10 / 30 days" tooltip="5/day" />
               <PricingFeature label="Resume Imports" limit="Unlimited" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
@@ -376,19 +379,19 @@ export default async function HomePage({
             <div className="font-heading text-2xl font-bold uppercase mb-2">Full</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">Unlimited AI for serious job searches</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$30</span>
+              <span className="font-heading text-3xl font-bold text-gold">$50</span>
               <span className="text-sm text-text-muted ml-1">/ 90 days</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes" limit="Unlimited" />
-              <PricingFeature label="Federal Resumes" limit="Unlimited" />
-              <PricingFeature label="AI Cover Letters" limit="Unlimited" />
+              <PricingFeature label="Resumes" limit="Unlimited" tooltip="7/day" />
+              <PricingFeature label="Federal Resumes" limit="Unlimited" tooltip="7/day" />
+              <PricingFeature label="AI Cover Letters" limit="200 / 90 days" tooltip="15/day" />
               <PricingFeature label="AI Summaries" limit="Unlimited" />
-              <PricingFeature label="AI Job Match Analysis" limit="Unlimited" />
+              <PricingFeature label="AI Job Match Analysis" limit="200 / 90 days" tooltip="15/day" />
               <PricingFeature label="LinkedIn Tools" limit="Unlimited" />
-              <PricingFeature label="LinkedIn Profile Analysis" limit="Unlimited" />
-              <PricingFeature label="LinkedIn Recommendations" />
-              <PricingFeature label="Eval Uploads" limit="20" />
+              <PricingFeature label="LinkedIn Profile Analysis & Recommendations" />
+              <PricingFeature label="Eval Uploads" limit="30 / 90 days" tooltip="10/day" />
+              <PricingFeature label="Downloads" limit="Unlimited" tooltip="10/day" />
               <PricingFeature label="Smart Apply" />
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
@@ -402,7 +405,7 @@ export default async function HomePage({
         {/* Eval Pack Callout */}
         <div className="text-center mt-8">
           <p className="text-sm text-text-muted">
-            Need more eval uploads? <Link href="/pricing" className="text-gold hover:text-gold-bright hover:underline">Eval Credit Pack</Link> — $5 for 10 uploads, works with any tier.
+            Need more eval uploads? <Link href="/pricing" className="text-gold hover:text-gold-bright hover:underline">Eval Credit Pack</Link> — $5 for 5 uploads, works with any tier.
           </p>
         </div>
 

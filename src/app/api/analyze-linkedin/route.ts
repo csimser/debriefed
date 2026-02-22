@@ -2,8 +2,8 @@ import { NextRequest, NextResponse, after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { logApiUsage } from '@/lib/usage-tracking'
-import { canUseFeature, incrementUsage } from '@/lib/usage-service'
-import { callWithEscalation, getModelString } from '@/lib/ai-model'
+import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
+import { PRIMARY_MODEL } from '@/lib/ai-model'
 import crypto from 'crypto'
 
 const anthropic = new Anthropic({
@@ -11,10 +11,10 @@ const anthropic = new Anthropic({
 })
 
 // Create cache key from LinkedIn data + target criteria
-function createCacheKey(linkedInData: any, targetCriteria: any, isPro: boolean): string {
+function createCacheKey(linkedInData: any, targetCriteria: any, hasPaidAccess: boolean): string {
   const contentHash = crypto
     .createHash('md5')
-    .update(JSON.stringify(linkedInData) + JSON.stringify(targetCriteria) + isPro)
+    .update(JSON.stringify(linkedInData) + JSON.stringify(targetCriteria) + hasPaidAccess)
     .digest('hex')
   return `linkedin_analysis:${contentHash}`
 }
@@ -99,23 +99,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }
 
-    // Check usage limit
-    const usageCheck = await canUseFeature(user.id, 'linkedin_profile_analysis')
-    if (!usageCheck.allowed) {
-      return NextResponse.json({
-        error: usageCheck.reason || 'LinkedIn analysis limit reached. Upgrade your plan for more.',
-        limitReached: true,
-      }, { status: 403 })
+    // Check usage limit (skip for admins)
+    const userEmail = await getUserEmail(user.id)
+    if (!isAdmin(userEmail)) {
+      const usageCheck = await canUseFeature(user.id, 'linkedin_profile_analysis')
+      if (!usageCheck.allowed) {
+        return NextResponse.json({
+          error: usageCheck.reason || 'LinkedIn analysis limit reached. Upgrade your plan for more.',
+          limitReached: true,
+        }, { status: 403 })
+      }
     }
 
-    const { linkedInData, targetCriteria, isPro } = await request.json()
+    const { linkedInData, targetCriteria, hasPaidAccess } = await request.json()
 
     if (!linkedInData || !targetCriteria) {
       return NextResponse.json({ error: 'Missing required data' }, { status: 400 })
     }
 
     // Check cache first
-    const cacheKey = createCacheKey(linkedInData, targetCriteria, isPro)
+    const cacheKey = createCacheKey(linkedInData, targetCriteria, hasPaidAccess)
     const cached = analysisCache.get(cacheKey)
     if (cached && cached.expires > Date.now()) {
       console.log('LinkedIn analysis cache hit')
@@ -184,198 +187,94 @@ Provide analysis in this exact JSON format:
 
 Return ONLY valid JSON.`
 
-    // Format experience data for the prompt
-    const experienceText = linkedInData.experience?.map((exp: any, idx: number) => `
-POSITION ${idx + 1}:
-Title: ${exp.title || 'Unknown'}
-Company: ${exp.company || 'Unknown'}
-Dates: ${exp.dates || 'Unknown'}
-Bullets:
-${exp.bullets?.map((b: string, i: number) => `  ${i + 1}. ${b}`).join('\n') || '  No bullets found'}
-`).join('\n---\n') || 'No experience found'
+    const paidPrompt = `You are a LinkedIn optimization expert for military veterans transitioning to civilian careers.
 
-    // Format education data
-    const educationText = linkedInData.education?.map((edu: any, idx: number) =>
-      `${idx + 1}. ${edu.school || 'Unknown'} - ${edu.degree || 'Unknown'} ${edu.dates ? `(${edu.dates})` : ''}`
-    ).join('\n') || 'No education found'
+PROFILE:
+Name: ${linkedInData.name || 'N/A'}
+Headline: ${linkedInData.headline || 'N/A'}
+About: ${(linkedInData.about || linkedInData.summary || 'N/A').substring(0, 500)}
+Experience (${linkedInData.experience?.length || 0}): ${linkedInData.experience?.slice(0, 5).map((exp: any) => `${exp.title || '?'} @ ${exp.company || '?'}`).join('; ') || 'None'}
+Skills (${linkedInData.skills?.length || 0}): ${linkedInData.skills?.slice(0, 15).join(', ') || 'None'}
+Certs: ${linkedInData.certifications?.slice(0, 5).join(', ') || 'None'}
+Education: ${linkedInData.education?.slice(0, 3).map((e: any) => `${e.degree || '?'} - ${e.school || '?'}`).join('; ') || 'None'}
 
-    const proPrompt = `You are a LinkedIn profile optimization expert for military veterans transitioning to civilian careers.
+TARGET: ${targetCriteria.targetRole || 'Operations'} in ${targetCriteria.targetIndustry || 'Private Sector'}
 
-Analyze this LinkedIn profile and provide specific, actionable improvements.
+SCORING BASELINES (use as minimums): Headline: ${baselineScores.headline}, About: ${baselineScores.about}, Experience: ${baselineScores.experience}, Skills: ${baselineScores.skills}
 
-PROFILE DATA:
-Name: ${linkedInData.name || 'Not found'}
-Headline: ${linkedInData.headline || 'Not found'}
-Location: ${linkedInData.location || 'Not found'}
-
-Summary/About:
-${linkedInData.about || linkedInData.summary || 'Not found'}
-
-Experience (${linkedInData.experience?.length || 0} positions):
-${experienceText}
-
-Education (${linkedInData.education?.length || 0} entries):
-${educationText}
-
-Current Skills (${linkedInData.skills?.length || 0}): ${linkedInData.skills?.join(', ') || 'None listed'}
-
-Certifications (${linkedInData.certifications?.length || 0}): ${linkedInData.certifications?.join(', ') || 'None listed'}
-
-TARGET:
-- Role: ${targetCriteria.targetRole || 'Program Management / Operations'}
-- Industry: ${targetCriteria.targetIndustry || 'Defense / Private Sector'}
-
-SCORING GUIDELINES:
-- Baseline scores (use as approximate minimums): Headline: ${baselineScores.headline}, About: ${baselineScores.about}, Experience: ${baselineScores.experience}, Skills: ${baselineScores.skills}
-- Existing content should score 50+ unless actively harmful
-- Score 60-80 for good content that could be optimized
-- Score 80-100 only for excellent, well-optimized content
-
-Respond with this exact JSON structure:
+Return ONLY this compact JSON:
 {
-  "overallScore": <number 40-100>,
+  "overallScore": <40-100>,
   "sections": {
     "headline": {
       "score": <number>,
       "current": "${(linkedInData.headline || 'No headline').replace(/"/g, '\\"').substring(0, 200)}",
-      "suggested": "<improved headline max 220 chars>",
+      "suggested": "<improved headline max 220 chars with civilian keywords>",
       "tips": ["<tip>", "<tip>", "<tip>"]
     },
     "about": {
       "score": <number>,
       "current": "${((linkedInData.about || linkedInData.summary || 'No summary').substring(0, 300)).replace(/"/g, '\\"')}",
-      "suggested": "<complete rewritten About section 250-350 words - PRESERVE authentic voice and personality>",
+      "suggested": "<rewritten About, 100-150 words, first person, preserve authentic voice>",
       "tips": ["<tip>", "<tip>", "<tip>"]
     },
     "experience": {
       "score": <number>,
-      "overallTips": [
-        "<general tip for all experience sections>",
-        "<another general tip>"
-      ],
+      "overallTips": ["<tip>", "<tip>"],
       "positions": [
-        {
-          "originalTitle": "<current job title>",
-          "suggestedTitle": "<civilian-friendly title if needed, or same as original>",
-          "company": "<company name>",
-          "score": <number 0-100>,
-          "disposition": "keep" | "enhance" | "condense" | "remove",
-          "dispositionReason": "<why this recommendation - be specific>",
-          "bullets": [
-            {
-              "original": "<original bullet text>",
-              "score": <number 0-100>,
-              "issues": ["<issue>"],
-              "rewritten": "<improved bullet>"
-            }
-          ],
-          "missingBullets": ["<suggested bullet to add>"]
-        }
+        {"originalTitle": "<title>", "suggestedTitle": "<civilian title>", "company": "<co>", "disposition": "keep|enhance|condense|remove"}
       ]
-    },
-    "certifications": {
-      "score": <number>,
-      "current": ${JSON.stringify(linkedInData.certifications?.slice(0, 10) || [])},
-      "analysis": [
-        {
-          "name": "<certification name>",
-          "relevance": "high" | "medium" | "low",
-          "note": "<why relevant or not for target role>"
-        }
-      ],
-      "recommended": ["<cert to pursue for target role>"],
-      "tips": ["<tip about certifications>"]
-    },
-    "education": {
-      "score": <number>,
-      "entries": [
-        {
-          "school": "<school>",
-          "degree": "<degree>",
-          "relevance": "high" | "medium" | "low",
-          "tip": "<how to better leverage this>"
-        }
-      ],
-      "tips": ["<tip about education section>"]
     },
     "skills": {
       "score": <number>,
-      "add": ["<skill>", "<skill>", "<skill>", "<skill>", "<skill>"],
-      "remove": [],
-      "reorder": ["<skill>", "<skill>", "<skill>"]
-    },
-    "keywords": {
-      "missing": ["<keyword>", "<keyword>", "<keyword>"],
-      "present": ["<keyword>", "<keyword>"]
+      "add": ["<skill>", ...max 5],
+      "remove": [...max 3],
+      "missingKeywords": ["<keyword>", ...max 5]
     }
   },
-  "quickWins": ["<quick win>", "<quick win>", "<quick win>"],
+  "quickWins": ["<win>", "<win>", "<win>"],
   "priorityActions": [
-    {"action": "<action>", "impact": "high", "effort": "easy"},
-    {"action": "<action>", "impact": "high", "effort": "medium"}
+    {"action": "<text>", "impact": "high|medium", "effort": "easy|medium|hard"}
   ]
 }
 
-ABOUT SECTION REWRITE RULES:
-- PRESERVE the candidate's authentic voice and personality
-- Keep phrases that show character like "owning outcomes" or "decisions have consequences"
-- Don't make it generic corporate speak - maintain their unique perspective
-- Add quantified results but maintain the original tone
-- Keep first-person voice throughout
+RULES:
+- Max 5 positions in experience.positions (most recent/relevant only)
+- Max 3 items per tips array, max 3 priorityActions, max 3 quickWins
+- Translate military titles to civilian equivalents
+- Keep suggested About to 100-150 words max
+- No long explanations — short actionable phrases only
+- Return ONLY valid JSON, no markdown`
 
-EXPERIENCE ANALYSIS RULES:
-1. Analyze ALL positions, including those with NO bullets
-2. For positions with NO bullets:
-   - Set score to 20-30
-   - Recommend one of: add bullets (if recent/relevant), remove (if old/irrelevant), condense (if similar to other roles)
-3. Position disposition recommendations:
-   - "keep": Position is strong and relevant, minimal changes needed
-   - "enhance": Position is relevant but needs better bullets/description
-   - "condense": Combine with similar roles (e.g., multiple early Navy ranks into one entry)
-   - "remove": Position hurts the profile (unrelated to target, no accomplishments, very old entry-level)
-4. Flag positions that HURT the profile:
-   - Unrelated roles (e.g., Security Guard when targeting PM roles)
-   - Very old entry-level positions (10+ years ago) with no bullets
-   - Roles that contradict the target positioning
-5. INCLUDE and value side businesses/entrepreneurial ventures - these show ownership mentality
-6. For very old positions (10+ years), recommend condensing to single line or removing
+    // Haiku only — no Sonnet escalation (speed + cost priority)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30_000)
 
-EXPERIENCE BULLET SCORING (0-100):
-- Quantified results (numbers, percentages, dollar amounts) = +30 points
-- Action verb at start = +15 points
-- Civilian-friendly language (no military jargon) = +20 points
-- Relevant to target role = +20 points
-- Proper length (1-2 lines) = +15 points
+    let response: Anthropic.Message
+    try {
+      response = await anthropic.messages.create(
+        {
+          model: PRIMARY_MODEL,
+          max_tokens: 2000,
+          messages: [{ role: 'user', content: hasPaidAccess ? paidPrompt : freePrompt }],
+        },
+        { signal: controller.signal }
+      )
+    } catch (err: any) {
+      if (err.name === 'AbortError' || err.message?.includes('abort')) {
+        return NextResponse.json(
+          { error: 'Analysis timed out. Please try again.' },
+          { status: 504 }
+        )
+      }
+      throw err
+    } finally {
+      clearTimeout(timeout)
+    }
 
-BULLET ISSUES to identify:
-- "military jargon" - terms civilians won't understand
-- "not quantified" - missing numbers/metrics
-- "weak verb" - starts with "Responsible for" or passive voice
-- "too vague" - doesn't specify what was actually done
-- "too long" - more than 2 lines
-- "not relevant" - doesn't relate to target role
+    const analysisText = (response.content[0] as { text: string }).text.trim()
 
-MILITARY TITLE TRANSLATIONS:
-- "Senior Chief Petty Officer" → "Senior Operations Manager"
-- "Program Evaluator" → "Program Quality Analyst"
-- "Engineering Officer of the Watch" → "Shift Operations Manager"
-- "Maintenance Material Manager" → "Maintenance Program Manager"
-- "Machinery Repairman" → "Technical Operations Specialist"
-- Keep civilian titles as-is
-
-Return ONLY valid JSON.`
-
-    const { response, model_used } = await callWithEscalation(
-      anthropic,
-      {
-        max_tokens: isPro ? 6000 : 1500,
-        messages: [{ role: 'user', content: isPro ? proPrompt : freePrompt }],
-      },
-      { expectsJson: true }
-    )
-
-    const analysisText = (response.content[0] as { text: string }).text
-
+    // Parse JSON from response, with repair for truncated output
     let analysis
     try {
       const jsonMatch = analysisText.match(/\{[\s\S]*\}/)
@@ -385,8 +284,24 @@ Return ONLY valid JSON.`
         throw new Error('No JSON found in response')
       }
     } catch (parseError) {
-      console.error('Failed to parse analysis JSON:', parseError)
-      return NextResponse.json({ error: 'Failed to parse analysis' }, { status: 500 })
+      // JSON repair: truncate at last complete closing brace and retry
+      try {
+        const lastBrace = analysisText.lastIndexOf('}')
+        if (lastBrace > 0) {
+          const truncated = analysisText.substring(0, lastBrace + 1)
+          const jsonMatch = truncated.match(/\{[\s\S]*\}/)
+          if (jsonMatch) {
+            analysis = JSON.parse(jsonMatch[0])
+            console.warn('[analyze-linkedin] Used JSON repair fallback — response was truncated')
+          }
+        }
+      } catch { /* repair failed too */ }
+
+      if (!analysis) {
+        console.error('Failed to parse analysis JSON:', parseError)
+        console.error('Raw response (last 500 chars):', analysisText.slice(-500))
+        return NextResponse.json({ error: 'Failed to parse analysis' }, { status: 500 })
+      }
     }
 
     // Post-process: Ensure scores are reasonable based on content presence
@@ -416,7 +331,7 @@ Return ONLY valid JSON.`
         }
       }
 
-      if (isPro) {
+      if (hasPaidAccess) {
         if (analysis.sections.experience && linkedInData.experience?.length > 0) {
           analysis.sections.experience.score = Math.max(
             analysis.sections.experience.score,
@@ -435,7 +350,7 @@ Return ONLY valid JSON.`
 
     // Recalculate overall score as weighted average
     const sections = analysis.sections
-    if (isPro) {
+    if (hasPaidAccess) {
       const weights = { headline: 0.2, about: 0.3, experience: 0.3, skills: 0.2 }
       let totalWeight = 0
       let weightedSum = 0
@@ -468,7 +383,7 @@ Return ONLY valid JSON.`
     }
 
     // Add flag to indicate tier
-    analysis.isPro = isPro
+    analysis.hasPaidAccess = hasPaidAccess
 
     console.log('Final analysis scores:', {
       overall: analysis.overallScore,
@@ -478,7 +393,7 @@ Return ONLY valid JSON.`
       skills: analysis.sections?.skills?.score,
     })
 
-    const tokensUsed = response.usage?.input_tokens + response.usage?.output_tokens || 6000
+    const tokensUsed = (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0) || 2000
     const hasValidAnalysis = analysis && analysis.overallScore !== undefined
 
     // Cache the result
@@ -490,11 +405,11 @@ Return ONLY valid JSON.`
     }
 
     // Return response to client first, then track usage
-    const jsonResponse = NextResponse.json({ analysis, model_used })
+    const jsonResponse = NextResponse.json({ analysis, model_used: 'haiku' })
 
     after(async () => {
       try {
-        await logApiUsage(user.id, 'analyze-linkedin', tokensUsed, getModelString(model_used))
+        await logApiUsage(user.id, 'analyze-linkedin', tokensUsed, PRIMARY_MODEL)
         if (hasValidAnalysis) {
           await incrementUsage(user.id, 'linkedin_profile_analysis')
         }
@@ -507,7 +422,7 @@ Return ONLY valid JSON.`
   } catch (error: any) {
     console.error('LinkedIn analysis error:', error)
     return NextResponse.json({
-      error: 'Analysis failed: ' + (error.message || 'Unknown error')
+      error: 'Analysis failed. Please try again.'
     }, { status: 500 })
   }
 }

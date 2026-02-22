@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { TEMPLATES, TemplateId, resolveTemplate } from '@/lib/templates'
 import { logActivity, logApiUsage } from '@/lib/usage-tracking'
-import { getUserTier } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage, getUserTier, checkDailyLimit, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { trimForFederalLimit } from '@/lib/resume/federalTrimmer'
 import React from 'react'
 
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = user.id
+    console.log('[debug] export-resume route hit, userId:', userId)
     const body = await request.json()
     const { resumeId, format, template: rawTemplate = 'classic_professional' } = body
     const template = resolveTemplate(rawTemplate)
@@ -39,16 +40,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid format' }, { status: 400 })
     }
 
-    // Check if template is locked for free-tier users
-    if (TEMPLATES[template]?.free === false) {
-      const tier = await getUserTier(userId)
-      if (tier === 'free') {
+    // Check download usage limits (daily + period) — skip for admins
+    const userEmail = await getUserEmail(userId)
+    const adminUser = isAdmin(userEmail)
+
+    if (!adminUser) {
+      const usageCheck = await canUseFeature(userId, 'downloads')
+      if (!usageCheck.allowed) {
         return NextResponse.json(
-          { error: 'Upgrade to Core to use this template', limitReached: true, tier: 'free' },
+          { error: usageCheck.reason || 'Download limit reached', limitReached: true },
           { status: 403 }
         )
       }
     }
+
+    // Get tier + daily remaining for response headers (toast on client)
+    const tierInfo = await getUserTier(userId)
+    const dailyCheck = await checkDailyLimit(userId, 'downloads')
 
     // Fetch resume - verify it belongs to the authenticated user
     const { data: resume, error: resumeError } = await supabaseAdmin
@@ -92,16 +100,31 @@ export async function POST(request: NextRequest) {
       extension = 'docx'
     }
 
-    const filename = `${resume.name || 'resume'}.${extension}`
+    const filename = `${(resume.name || 'resume')
+      .replace(/[—–]/g, '-')
+      .replace(/[""'']/g, '')
+      .replace(/[^\x00-\xFF]/g, '')
+      .trim()}.${extension}`
+
+    // Increment usage INLINE — after() callbacks don't fire for binary/ArrayBuffer responses
+    console.log('[debug] about to increment downloads for userId:', userId)
+    await incrementUsage(userId, 'downloads')
+    console.log('[debug] increment complete')
+
+    // remaining - 1 because increment just happened
+    const remainingAfter = Math.max(0, dailyCheck.remaining - 1)
 
     const response = new NextResponse(arrayBuffer, {
       headers: {
         'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${filename}"`,
+        'X-User-Tier': tierInfo.tier,
+        'X-Daily-Remaining': String(remainingAfter),
+        'X-Daily-Limit': String(dailyCheck.limit),
       },
     })
 
-    // Defer usage tracking to after response is sent
+    // Non-critical logging — safe in after() since it doesn't affect usage tracking
     after(async () => {
       try {
         await logActivity(userId, 'resume_downloaded', {
@@ -113,7 +136,7 @@ export async function POST(request: NextRequest) {
         })
         await logApiUsage(userId, 'export-resume', 0, 'pdf-generation')
       } catch (err) {
-        console.error('Post-response usage tracking failed:', err)
+        console.error('Post-response activity logging failed:', err)
       }
     })
 

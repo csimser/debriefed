@@ -20,6 +20,7 @@ interface AnalysisPaneProps {
   onApplyBullet: (suggestion: BulletSuggestion) => void
   onReset: () => void
   jobData: { company: string; title: string; description: string }
+  suggestionsLoading?: boolean
 }
 
 export function AnalysisPane({
@@ -34,8 +35,9 @@ export function AnalysisPane({
   onApplyBullet,
   onReset,
   jobData,
+  suggestionsLoading,
 }: AnalysisPaneProps) {
-  const isPro = isPaidTier(getUserTier({ tier: userPlan }))
+  const hasPaidAccess = isPaidTier(getUserTier({ tier: userPlan }))
   const { openUpgradeModal } = useUpgradeModal()
   const [activeTab, setActiveTab] = useState<'overview' | 'details' | 'changes'>('overview')
   const [downloading, setDownloading] = useState(false)
@@ -71,7 +73,7 @@ export function AnalysisPane({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [showPreviewModal, previewTemplate, isPro, templateList])
+  }, [showPreviewModal, previewTemplate, hasPaidAccess, templateList])
 
   if (analyzing) {
     return (
@@ -467,8 +469,16 @@ export function AnalysisPane({
                 </div>
               )}
 
+              {/* Bullet Suggestions Loading */}
+              {hasPaidAccess && suggestionsLoading && !analysis.bulletSuggestions?.length && (
+                <div className="flex items-center gap-3 text-text-muted py-2">
+                  <div className="w-4 h-4 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+                  <span className="text-xs">Loading suggestions...</span>
+                </div>
+              )}
+
               {/* Bullet Suggestions Preview */}
-              {isPro && analysis.bulletSuggestions?.length > 0 && (
+              {hasPaidAccess && analysis.bulletSuggestions?.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold uppercase tracking-wider">Suggested Rewrites</span>
@@ -517,7 +527,7 @@ export function AnalysisPane({
               )}
 
               {/* Upgrade Prompt for Free Users */}
-              {!isPro && (
+              {!hasPaidAccess && (
                 <div className="p-4 bg-bg-tertiary rounded-lg border border-border">
                   <div className="flex items-center gap-3">
                     <svg className="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -844,7 +854,7 @@ export function AnalysisPane({
       </div>
 
       {/* Action Buttons */}
-      {isPro && (
+      {hasPaidAccess && (
         <div className="px-4 py-3 border-t border-border bg-bg-tertiary">
           {/* Success Message */}
           {applySuccess && (
@@ -870,7 +880,7 @@ export function AnalysisPane({
               {showTemplateSelector && (
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   {Object.values(SELECTABLE_TEMPLATES).map((template) => {
-                    const isLocked = !template.free && !isPro
+                    const isLocked = !template.free && !hasPaidAccess
                     const isSelected = selectedTemplate === template.id
 
                     return (
@@ -1014,7 +1024,7 @@ export function AnalysisPane({
                   className="bg-bg-secondary border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gold"
                 >
                   {templateList.map((t) => {
-                    const isLocked = !t.free && !isPro
+                    const isLocked = !t.free && !hasPaidAccess
                     return (
                       <option key={t.id} value={t.id} disabled={isLocked}>
                         {t.name} {isLocked ? '(Core)' : ''}

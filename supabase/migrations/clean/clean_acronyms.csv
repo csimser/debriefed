@@ -1,0 +1,120 @@
+acronym,full_term,civilian_explanation,branch,category
+AE,Architect-Engineer,Design professional / design firm,general,engineering
+AFPC,Air Force Personnel Center,AF human resources center,usaf,admin
+AMSCO,Army Management Structure Code,Army budget classification code,army,financial
+APOD,Aerial Port of Debarkation,Military air cargo receiving terminal,general,logistics
+APOE,Aerial Port of Embarkation,Military air cargo departure terminal,general,logistics
+ASP,Ammunition Supply Point,Ammunition storage and distribution facility,general,logistics
+BA,Budget Activity,Budget sub-category,general,financial
+BCD,Base Civil Development,Installation construction planning,general,engineering
+BDE S1,Brigade S-1 (Personnel/HR Section),"Brigade-level human resources office responsible for personnel actions, records, and administrative support.",army,administration
+BDE S2,Brigade S-2 (Intelligence Section),"Brigade-level intelligence office responsible for threat analysis, briefings, and situational awareness.",army,intelligence
+BDE S3,Brigade S-3 (Operations Section),"Brigade-level operations office responsible for planning, coordinating, and tracking operational execution.",army,operations
+BDE S4,Brigade S-4 (Logistics Section),"Brigade-level logistics office responsible for supply, transportation, and sustainment planning.",army,logistics
+BES,Budget Estimate Submission,Annual budget request package,general,financial
+BN S1,Battalion S-1 (Personnel/HR Section),Battalion-level HR office handling personnel actions and administrative processing.,army,administration
+BN S2,Battalion S-2 (Intelligence Section),Battalion-level intelligence office providing threat updates and reporting.,army,intelligence
+BN S3,Battalion S-3 (Operations Section),"Battalion-level operations office coordinating plans, training schedules, and mission execution.",army,operations
+BN S4,Battalion S-4 (Logistics Section),"Battalion-level logistics office coordinating supply, maintenance support, and sustainment.",army,logistics
+BN S6,Battalion Communications/IT Section,"Unit communications/IT office responsible for networks, radios, and technical support at battalion level.",army,staff_section
+BOD,Basis of Design,Design requirements document,general,engineering
+BOL,BUPERS Online,Navy personnel self-service portal,navy,admin
+BOLC,Basic Officer Leader Course,New Army officer training,army,training
+BSA,Budget Sub-Activity,Detailed budget line,general,financial
+CDR,Commander,"Organizational leader accountable for operations, personnel performance, and mission outcomes.",army,leadership
+CEFMS,Corps of Engineers Financial Management System,USACE accounting system,army,financial
+CGSC,Command and General Staff College,Army mid-career officer school,army,training
+CNATT,Center for Naval Aviation Technical Training,Navy aviation maintenance school,navy,training
+CONEX,Container Express,Shipping container / storage container,general,logistics
+CQC,Contractor Quality Control,Builder's quality management program,general,engineering
+CTI,Cryptologic Technician Interpretive,Language-enabled signals intelligence analyst.,navy,rate
+CTR,Cryptologic Technician Collection,Signals intelligence collector/analyst supporting threat detection.,navy,rate
+CWO,Chief Warrant Officer,Technical expert/leader role bridging hands-on expertise and management responsibilities.,army,rank_title
+DAI,Defense Agencies Initiative,Defense agency accounting system,general,financial
+DCIPS,Defense Civilian Intelligence Personnel System,Intelligence community civilian pay system,general,training
+DMC,Distribution Management Center,Logistics coordination facility,general,logistics
+DMDC,Defense Manpower Data Center,DoD personnel data management,general,admin
+EAD,Earliest Arrival Date,First acceptable delivery date,general,logistics
+EBS,Environmental Baseline Survey,Site contamination assessment,general,engineering
+EDPO,Engineering Department Program Officer,Managed maintenance planning and personnel development to improve readiness outcomes.,navy,leadership
+EOW,Engineering Officer of the Watch,"Shift supervisor accountable for equipment status, operational decisions, and team performance.",navy,operations
+ER09,Engineering casualty response (ER09),Led urgent corrective maintenance actions to restore equipment availability and reduce downtime.,navy,maintenance
+ERUL,Engineering urgent logistics (ERUL),Coordinated rapid-response logistics and maintenance actions to mitigate failures and restore capability.,navy,maintenance
+FEAD,Facilities Engineering Activity Detail,Engineering project management team,general,engineering
+FEC,Facilities Engineering Command,Navy construction management command,navy,engineering
+FIAR,Financial Improvement and Audit Remediation,Financial audit compliance program,general,financial
+FLTMPS,Fleet Training Management and Planning System,Navy training database,navy,admin
+FMO,Financial Management Office,Finance and accounting department,general,financial
+FSRM,"Facilities Sustainment, Restoration, and Modernization",Building maintenance and upgrade program,general,engineering
+FYDP,Future Years Defense Program,Five-year budget projection,general,financial
+G-6,G-6 (Division/Corps Communications/IT),Senior-level communications/IT directorate responsible for enterprise connectivity and technical governance.,army,cyber
+GS,General Schedule,Federal civilian pay grade system,general,admin
+GWOT,Global War on Terrorism,Post-9/11 military operations era,general,admin
+GWOTEM,Global War on Terrorism Expeditionary Medal,Overseas deployment service medal,general,admin
+HRC,Human Resources Command,Army HR headquarters,army,admin
+IFB,Invitation for Bid,Competitive bidding solicitation,general,engineering
+IPAC,Installation Personnel Admin Center,Marine Corps HR office,usmc,admin
+iPERMS,Interactive Personnel Electronic Records Management System,Army digital personnel records,army,admin
+IS,Intelligence Specialist,Analyst role producing intelligence products and briefings.,navy,rate
+ISO,International Organization for Standardization container,Standard shipping container,general,logistics
+J2,Joint Intelligence (J-2),Joint intelligence section integrating multi-source intel for decision support.,general,intelligence
+J3,Joint Operations (J-3),Joint operations section coordinating planning and execution across services.,general,operations
+J4,Joint Logistics (J-4),Joint logistics section managing supply chain planning and sustainment across units.,general,logistics
+J6,Joint Communications/IT (J-6),Enterprise communications and IT section supporting service continuity and cybersecurity.,general,cyber
+JOC,Job Order Contract,Quick-turnaround construction contract,general,engineering
+JSM,Joint Service Medal,Multi-service assignment recognition,general,admin
+LAD,Latest Arrival Date,Final acceptable delivery date,general,logistics
+MACC,Multiple Award Construction Contract,Pre-competed construction contract vehicle,general,engineering
+MCTFS,Marine Corps Total Force System,Marine Corps personnel database,usmc,admin
+MFP,Major Force Program,Major budget category,general,financial
+MHE,Material Handling Equipment,Forklifts and cargo moving equipment,general,logistics
+MILPDS,Military Personnel Data System,Air Force personnel database,usaf,admin
+MILVAN,Military Van,Military-standard shipping container,general,logistics
+MOL,Marine Online,Marine Corps self-service portal,usmc,admin
+NDSM,National Defense Service Medal,Medal for service during conflict period,general,admin
+NDU,National Defense University,Senior military/civilian joint education,general,training
+NEPA,National Environmental Policy Act,Environmental impact review law,general,engineering
+NMP,Navy Manning Plan,Navy staffing document,navy,training
+NPC,Navy Personnel Command,Navy HR operations,navy,admin
+NSIPS,Navy Standard Integrated Personnel System,Navy HR database,navy,admin
+NSTC,Naval Service Training Command,Navy recruit and officer training,navy,training
+OICC,Officer in Charge of Construction,Senior construction oversight officer,navy,engineering
+OSA,Overseas Service Award,Recognition for overseas assignment,general,admin
+PBAC,Program and Budget Advisory Committee,Budget review committee,general,financial
+PBD,Program Budget Decision,Senior budget allocation decision,general,financial
+PCC,Pre-Command Course,Commander preparation training,general,training
+PEC,Program Element Code,Budget tracking identifier,general,financial
+POD,Port of Debarkation,Arrival port,general,logistics
+POE,Port of Embarkation,Departure port,general,logistics
+PPBE,"Planning, Programming, Budgeting, and Execution",DoD budget lifecycle process,general,financial
+PPO,Personnel Processing Office,In/out-processing office,general,admin
+PPWO,Propulsion Plant Watch Officer,"Led propulsion plant operations, coordinating personnel and equipment to maintain compliance and availability.",navy,maintenance
+PRDA,Personnel Records Display Application,Air Force digital personnel file,usaf,admin
+PWD,Public Works Department,Base facilities management office,navy,engineering
+QAE,Quality Assurance Evaluator,Construction quality inspector,general,engineering
+RAPIDS,Real-time Automated Personnel Identification System,Military ID card system,general,admin
+RDD,Required Delivery Date,Shipment deadline,general,logistics
+RFP,Request for Proposal,Solicitation for contractor bids,general,engineering
+RO,Reactor Operator,Monitored and controlled reactor systems to maintain safe operating parameters.,navy,maintenance
+ROICC,Resident Officer in Charge of Construction,Government construction manager,navy,engineering
+S6 SHOP,Communications/IT Section,"In-house IT/communications team responsible for network support, troubleshooting, and service restoration.",army,staff_section
+SABRS,"Standard Accounting, Budgeting, and Reporting System",Marine Corps accounting system,usmc,financial
+SAG,Sub-Activity Group,Detailed budget grouping,general,financial
+SEAVAN,Sea Van,Ocean shipping container,general,logistics
+SES,Senior Executive Service,Federal civilian senior leadership tier,general,admin
+SOQ,Statement of Qualifications,Contractor experience submittal,general,engineering
+SPOD,Seaport of Debarkation,Military sea cargo receiving terminal,general,logistics
+SPOE,Seaport of Embarkation,Military sea cargo departure terminal,general,logistics
+SRO,Senior Reactor Operator,"Oversaw reactor operations and compliance activities to ensure safe, efficient plant performance.",navy,maintenance
+SSA,Supply Support Activity,Supply distribution point,army,logistics
+STANFINS,Standard Finance System,Army accounting system,army,financial
+SWPPP,Stormwater Pollution Prevention Plan,Environmental runoff management plan,general,engineering
+TCN,Transportation Control Number,Shipment tracking number,general,logistics
+TEMADD,Temporary Additional Duty,Short-term training assignment,navy,training
+TOPMIS,Total Officer Personnel Management Information System,Army officer management system,army,admin
+TWMS,Total Workforce Management Services,Navy training tracking system,navy,admin
+USMA,United States Military Academy,West Point,army,training
+vMPF,Virtual Military Personnel Flight,Air Force online HR portal,usaf,admin
+WOAC,Warrant Officer Advanced Course,Senior warrant officer training,army,training
+WOBC,Warrant Officer Basic Course,Initial warrant officer training,army,training
+XO,Executive Officer,"Deputy operations manager coordinating planning, resources, and execution.",army,leadership

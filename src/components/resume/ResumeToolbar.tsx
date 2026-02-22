@@ -1,6 +1,5 @@
 'use client'
 
-import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ExportMenu } from './ExportMenu'
 
@@ -11,9 +10,7 @@ interface ResumeToolbarProps {
   resumeType: 'private' | 'federal'
   template: string
   onToggleType: (type: 'private' | 'federal') => void
-  onTranslateAll: () => void
   onDelete: () => void
-  translating: boolean
   saving: boolean
   onLimitReached?: (error: string, tier: string) => void
   isTemplateLocked?: boolean
@@ -26,9 +23,7 @@ export function ResumeToolbar({
   resumeType,
   template,
   onToggleType,
-  onTranslateAll,
   onDelete,
-  translating,
   saving,
   onLimitReached,
   isTemplateLocked,
@@ -83,17 +78,6 @@ export function ResumeToolbar({
 
         {/* Row 2 on mobile: Actions */}
         <div className="flex items-center gap-2 md:gap-3">
-          {/* Translate All - hidden on mobile to reduce clutter */}
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onTranslateAll}
-            disabled={translating}
-            className="hidden md:inline-flex"
-          >
-            {translating ? 'Translating...' : '✦ Translate All'}
-          </Button>
-
           {/* Export Menu - only show when resume is selected */}
           {resumeId && (
             <ExportMenu

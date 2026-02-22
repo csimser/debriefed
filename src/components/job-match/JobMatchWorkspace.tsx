@@ -356,6 +356,9 @@ export function JobMatchWorkspace({
   const [translatedSuggestions, setTranslatedSuggestions] = useState<Map<string, string>>(new Map())
   const [translating, setTranslating] = useState(false)
 
+  // Lazy-loaded suggestions state
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false)
+
   // Dictionary bullet translations for free tier: key → translated text
   const [dictBulletTranslations, setDictBulletTranslations] = useState<Map<string, string>>(new Map())
   const [dictTranslating, setDictTranslating] = useState(false)
@@ -395,7 +398,7 @@ export function JobMatchWorkspace({
 
   const selectedResume = resumes.find(r => r.id === selectedResumeId)
   const remaining = usageLimit - currentUsage
-  const isPro = isPaidTier(getUserTier({ tier: userPlan }))
+  const hasPaidAccess = isPaidTier(getUserTier({ tier: userPlan }))
 
   // Translate AI bullet suggestions through the dictionary engine
   useEffect(() => {
@@ -441,7 +444,7 @@ export function JobMatchWorkspace({
   // Translate resume bullets through dictionary for free tier users
   // Passes top 8 selected keywords for job-specific synonym injection
   useEffect(() => {
-    if (!dictResult || !selectedResume || isPro) return
+    if (!dictResult || !selectedResume || hasPaidAccess) return
     const experiences = selectedResume.content?.experiences ?? []
     if (experiences.length === 0) return
 
@@ -474,7 +477,7 @@ export function JobMatchWorkspace({
 
     translateAllBullets()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dictResult, selectedResume, isPro, userProfile?.branch])
+  }, [dictResult, selectedResume, hasPaidAccess, userProfile?.branch])
 
   const handleAnalyze = async () => {
     if (!selectedResume || !jobData.description) {
@@ -519,7 +522,7 @@ export function JobMatchWorkspace({
     }
 
     // Free tier: dictionary-only analysis, skip AI
-    if (!isPro) {
+    if (!hasPaidAccess) {
       // Initialize tailoredResume so free tier can apply bullet translations
       if (selectedResume) {
         setTailoredResume({
@@ -530,6 +533,12 @@ export function JobMatchWorkspace({
           excludedBullets: new Set(),
         })
       }
+      // Track dictionary-only job match usage
+      fetch('/api/track-usage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feature: 'job_match_analysis' }),
+      }).catch(() => {})
       setAnalyzing(false)
       setCurrentStep(2)
       return
@@ -560,6 +569,13 @@ export function JobMatchWorkspace({
 
       const data = await res.json()
 
+      if (res.status === 403) {
+        setError(data.details?.reason || data.error || 'Usage limit reached')
+        openUpgradeModal()
+        setAnalyzing(false)
+        return
+      }
+
       if (data.error) {
         setError(data.error)
       } else {
@@ -575,6 +591,30 @@ export function JobMatchWorkspace({
         setCurrentStep(2)
         // Trigger post-action modal after results render
         setTimeout(() => triggerPostActionModal('job-match-complete'), 800)
+
+        // Lazy-load bullet suggestions in background
+        setSuggestionsLoading(true)
+        fetch('/api/job-match/suggestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resumeContent: selectedResume.content,
+            jobPosting: jobData,
+            gaps: data.analysis.gaps,
+          }),
+        })
+          .then(sugRes => sugRes.json())
+          .then(sugData => {
+            if (sugData.bulletSuggestions?.length || sugData.skillChanges) {
+              setAnalysis(prev => prev ? {
+                ...prev,
+                bulletSuggestions: sugData.bulletSuggestions || prev.bulletSuggestions,
+                skillChanges: sugData.skillChanges || prev.skillChanges,
+              } : prev)
+            }
+          })
+          .catch(() => {}) // Non-critical, silently fail
+          .finally(() => setSuggestionsLoading(false))
       }
     } catch (err) {
       setError('Analysis failed. Please try again.')
@@ -1008,46 +1048,107 @@ export function JobMatchWorkspace({
     })
   }, [])
 
-  // Load professional summary templates when dict result is available
+  // Generate professional summary templates — 6 distinct structures per rank tier
   useEffect(() => {
     if (!dictResult) return
-    const loadSummaries = async () => {
-      try {
-        const dict = await getDictionary()
-        const summaries = dict.professionalSummaries
-        if (summaries.length === 0) return
 
-        // Map paygrade → rank_tier
-        const pg = (userProfile?.paygrade ?? '').toUpperCase().trim()
-        let rankTier = 'nco' // default
-        if (/^E-?[1-4]$/.test(pg)) rankTier = 'junior_enlisted'
-        else if (/^E-?[5-6]$/.test(pg)) rankTier = 'nco'
-        else if (/^E-?[7-9]$/.test(pg)) rankTier = 'senior_nco'
-        else if (/^(W-?[1-5]|CW[1-5])$/.test(pg)) rankTier = 'senior_nco'
-        else if (/^O-?[1-9]$|^O-?10$/.test(pg)) rankTier = 'officer'
+    const pg = (userProfile?.paygrade ?? '').toUpperCase().trim()
+    const years = userProfile?.years_of_service ?? '10+'
+    const branchShort = (() => {
+      const b = (userProfile?.branch ?? '').toLowerCase()
+      if (b.includes('navy')) return 'Navy'
+      if (b.includes('army')) return 'Army'
+      if (b.includes('air') || b === 'air_force') return 'Air Force'
+      if (b.includes('marine')) return 'Marine Corps'
+      if (b.includes('coast')) return 'Coast Guard'
+      if (b.includes('space')) return 'Space Force'
+      return userProfile?.branch || 'military'
+    })()
+    const domain = dictResult.extraction.industry ?? userProfile?.target_industry ?? 'operations'
+    const targetRole = jobData.title || userProfile?.target_role || 'operations professional'
+    const certs = userCertifications.map(c => c.name)
+    const topCert = certs[0] || ''
+    const certStr = certs.length > 0 ? certs.slice(0, 3).join(', ') : ''
+    const clearanceRaw = userProfile?.clearance
+    const clearance = clearanceRaw && clearanceRaw !== 'none'
+      ? (CLEARANCE_DISPLAY[clearanceRaw] ?? clearanceRaw.charAt(0).toUpperCase() + clearanceRaw.slice(1))
+      : ''
+    const skill1 = userSkills[0] || 'project management'
+    const skill2 = userSkills[1] || 'team leadership'
+    const skill3 = userSkills[2] || 'operations management'
+    const edu0 = userEducation[0]
+    const degree = edu0?.degree_type ? (edu0.degree_type.charAt(0).toUpperCase() + edu0.degree_type.slice(1)) : ''
+    const experiences = selectedResume?.content?.experiences ?? []
+    const teamSize = extractTeamSize(experiences) || '40'
+    const budget = extractDollarValue(experiences) || 'multi-million-dollar'
+    const achievement = extractAchievement(experiences) || 'measurable operational improvements'
+    const mos = userProfile?.rating_mos || ''
 
-        const industry = (dictResult.extraction.industry ?? userProfile?.target_industry ?? '').toLowerCase()
-        const role = (dictResult.extraction.roleType ?? userProfile?.target_role ?? '').toLowerCase()
+    const now = new Date().toISOString()
+    const templates: DictProfessionalSummary[] = []
 
-        // Score each summary
-        const scored = summaries.map(s => {
-          let score = 0
-          if (s.rank_tier.toLowerCase() === rankTier) score += 4
-          if (industry && s.target_industry.toLowerCase().includes(industry)) score += 3
-          else if (industry && industry.includes(s.target_industry.toLowerCase())) score += 2
-          if (role && s.target_role?.toLowerCase().includes(role)) score += 2
-          else if (role && s.target_role && role.includes(s.target_role.toLowerCase())) score += 1
-          return { summary: s, score }
-        })
+    // 1. SENIOR ENLISTED (E-7 to E-9) — leads with team leadership in domain
+    templates.push({
+      id: 'gen-senior-enlisted', template_name: 'Senior Enlisted', rank_tier: 'SENIOR ENLISTED',
+      target_industry: domain, target_role: targetRole, example_output: null, created_at: now,
+      template_text: `${years}-year ${branchShort} veteran with a proven record of leading ${teamSize}-person teams through high-stakes ${domain} operations. ${topCert ? `${topCert} certified. ` : ''}${clearance ? `Holds active ${clearance} clearance. ` : ''}Deep expertise in ${skill1}, ${skill2}, and ${skill3} developed through decades of hands-on military service. Known for delivering results in resource-constrained environments while maintaining the highest standards of compliance. Now pursuing ${targetRole} roles in ${domain}.`.trim(),
+    })
 
-        scored.sort((a, b) => b.score - a.score)
-        setSummaryTemplates(scored.slice(0, 6).map(s => s.summary))
-      } catch (err) {
-        console.error('[SummaryTemplates] Failed to load:', err)
-      }
-    }
-    loadSummaries()
-  }, [dictResult, userProfile?.paygrade, userProfile?.target_industry, userProfile?.target_role])
+    // 2. JUNIOR/MID OFFICER (O-1 to O-4) — leads with commission and operational focus
+    templates.push({
+      id: 'gen-junior-officer', template_name: 'Junior/Mid Officer', rank_tier: 'JUNIOR OFFICER',
+      target_industry: domain, target_role: targetRole, example_output: null, created_at: now,
+      template_text: `Commission-trained ${branchShort} officer with ${years} years executing ${domain} operations at the operational level. ${degree ? `${degree} graduate. ` : ''}${topCert ? `${topCert} certified. ` : ''}Led ${achievement}. Transitioning to ${targetRole} with a focus on ${skill1} and ${skill2}. ${clearance ? `${clearance} clearance. ` : ''}Combines structured military decision-making with adaptable problem-solving to deliver mission-critical outcomes.`.trim(),
+    })
+
+    // 3. SENIOR OFFICER (O-5+) — strategic level, budget/personnel emphasis
+    templates.push({
+      id: 'gen-senior-officer', template_name: 'Senior Officer', rank_tier: 'SENIOR OFFICER',
+      target_industry: domain, target_role: targetRole, example_output: null, created_at: now,
+      template_text: `Senior ${branchShort} officer with ${years} years of ${domain} leadership at the strategic level. Managed ${budget} budgets and led ${teamSize}+ personnel across multiple commands and joint organizations. ${clearance ? `${clearance} clearance. ` : ''}${certStr ? `${certStr}. ` : ''}${degree ? `${degree}. ` : ''}Targeting executive ${targetRole} roles where strategic vision, stakeholder management, and organizational transformation drive measurable impact in ${domain}.`.trim(),
+    })
+
+    // 4. MID ENLISTED (E-4 to E-6) — hands-on technical, minimal oversight
+    templates.push({
+      id: 'gen-mid-enlisted', template_name: 'Mid Enlisted', rank_tier: 'MID ENLISTED',
+      target_industry: domain, target_role: targetRole, example_output: null, created_at: now,
+      template_text: `${years}-year ${branchShort}${mos ? ` ${mos}` : ''} transitioning to ${targetRole}. Hands-on expertise in ${skill1} and ${skill2} gained through real-world ${domain} operations. ${topCert ? `${topCert} certified. ` : ''}${clearance ? `${clearance} cleared. ` : ''}Proven ability to execute under pressure with minimal oversight. Brings a disciplined, mission-first approach to every assignment and a track record of operational excellence.`.trim(),
+    })
+
+    // 5. ANALYST/TECHNICAL — leads with technical skills, not leadership
+    templates.push({
+      id: 'gen-technical', template_name: 'Analyst/Technical', rank_tier: 'TECHNICAL',
+      target_industry: domain, target_role: targetRole, example_output: null, created_at: now,
+      template_text: `Technical professional with specialized expertise in ${skill1}, ${skill2}, and ${skill3} developed over ${years} years of military service. ${certStr ? `${certStr} certified. ` : ''}Combines hands-on ${domain} experience with analytical problem-solving and attention to detail. ${clearance ? `${clearance} clearance. ` : ''}Seeking ${targetRole} in ${domain} where technical depth and structured methodology drive measurable outcomes.`.trim(),
+    })
+
+    // 6. LEADERSHIP/PROGRAM MANAGEMENT — leads with results and scope
+    templates.push({
+      id: 'gen-leadership', template_name: 'Leadership/Program Mgmt', rank_tier: 'LEADERSHIP',
+      target_industry: domain, target_role: targetRole, example_output: null, created_at: now,
+      template_text: `Results-driven ${domain} leader with ${years}+ years of progressive military experience directing teams of ${teamSize}+ and managing ${budget} in resources. ${topCert ? `${topCert} certified. ` : ''}${clearance ? `${clearance} clearance. ` : ''}Proven ability to deliver ${achievement}. Adept at translating complex operational challenges into actionable strategies. Pursuing ${targetRole} opportunities in ${domain}.`.trim(),
+    })
+
+    // Sort: user's rank category first
+    let userRankCategory = 'MID ENLISTED'
+    if (/^E-?[7-9]$/.test(pg)) userRankCategory = 'SENIOR ENLISTED'
+    else if (/^E-?[4-6]$/.test(pg)) userRankCategory = 'MID ENLISTED'
+    else if (/^E-?[1-3]$/.test(pg)) userRankCategory = 'MID ENLISTED'
+    else if (/^O-?[1-4]$/.test(pg)) userRankCategory = 'JUNIOR OFFICER'
+    else if (/^O-?[5-9]$|^O-?10$/.test(pg)) userRankCategory = 'SENIOR OFFICER'
+    else if (/^(W-?[1-5]|CW[1-5])$/.test(pg)) userRankCategory = 'TECHNICAL'
+
+    templates.sort((a, b) => {
+      const aMatch = a.rank_tier === userRankCategory ? 1 : 0
+      const bMatch = b.rank_tier === userRankCategory ? 1 : 0
+      return bMatch - aMatch
+    })
+
+    setSummaryTemplates(templates)
+  }, [dictResult, userProfile?.paygrade, userProfile?.branch, userProfile?.clearance,
+      userProfile?.years_of_service, userProfile?.target_role, userProfile?.target_industry,
+      userProfile?.rating_mos, userCertifications, userEducation, userSkills,
+      selectedResume, jobData.title])
 
   // Apply a summary template to the tailored resume
   const applySummaryTemplate = useCallback((templateText: string, idx: number) => {
@@ -1120,6 +1221,14 @@ export function JobMatchWorkspace({
         }),
       })
 
+      if (response.status === 403) {
+        const errorData = await response.json().catch(() => ({}))
+        setError(errorData.error || 'Usage limit reached')
+        openUpgradeModal()
+        setDownloading(false)
+        return
+      }
+
       if (!response.ok) {
         const errorText = await response.text()
         let errorMessage = 'Export failed'
@@ -1182,6 +1291,14 @@ export function JobMatchWorkspace({
           template: selectedTemplate,
         }),
       })
+
+      if (response.status === 403) {
+        const errorData = await response.json().catch(() => ({}))
+        setError(errorData.error || 'Usage limit reached')
+        openUpgradeModal()
+        setDownloading(false)
+        return
+      }
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -1350,7 +1467,7 @@ export function JobMatchWorkspace({
         </div>
 
         {/* Usage Warning Banner (Step 1 only) */}
-        {currentStep === 1 && !isPro && remaining <= 2 && remaining > 0 && (
+        {currentStep === 1 && !hasPaidAccess && remaining <= 2 && remaining > 0 && (
           <div className="flex items-center gap-3 p-4 bg-status-amber/10 border-l-4 border-status-amber rounded-r-lg">
             <svg className="w-5 h-5 text-status-amber flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
@@ -1540,7 +1657,6 @@ export function JobMatchWorkspace({
                     {[
                       { label: 'Required Skills', score: dictResult.match.categories.requiredSkills.percentage },
                       { label: 'Preferred Skills', score: dictResult.match.categories.preferredSkills.percentage, hide: dictResult.extraction.preferredSkills.length === 0 },
-                      { label: 'Tools', score: dictResult.match.categories.tools.percentage, hide: dictResult.extraction.tools.length === 0 },
                       { label: 'Certifications', score: dictResult.match.categories.certifications.percentage, hide: dictResult.extraction.requiredCerts.length === 0 && dictResult.extraction.preferredCerts.length === 0 },
                       { label: 'Education', score: dictResult.match.categories.education.met ? 100 : 0, hide: !dictResult.extraction.educationRequired },
                       { label: 'Experience', score: dictResult.match.categories.experience.met ? 100 : (dictResult.match.categories.experience.candidate && dictResult.match.categories.experience.required ? Math.min(100, Math.round(((dictResult.match.categories.experience.candidate as number) / (dictResult.match.categories.experience.required as number)) * 100)) : 0), hide: dictResult.extraction.yearsRequired === null },
@@ -1578,18 +1694,23 @@ export function JobMatchWorkspace({
                 </h3>
                 <div className="space-y-3">
                   {/* Matched Skills */}
-                  {(dictResult.match.categories.requiredSkills.matched.length > 0 || dictResult.match.categories.preferredSkills.matched.length > 0) && (
-                    <div>
-                      <div className="text-xs text-text-muted mb-2">Matched Skills</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {[...dictResult.match.categories.requiredSkills.matched, ...dictResult.match.categories.preferredSkills.matched].map((skill, idx) => (
-                          <span key={idx} className="px-2 py-1 text-xs bg-status-green/15 text-status-green border border-status-green/30 rounded-md">
-                            {skill}
-                          </span>
-                        ))}
+                  {(dictResult.match.categories.requiredSkills.matched.length > 0 || dictResult.match.categories.preferredSkills.matched.length > 0) && (() => {
+                    const SKILL_BLACKLIST = new Set(['support', 'teams', 'team', 'management', 'services'])
+                    const filtered = [...dictResult.match.categories.requiredSkills.matched, ...dictResult.match.categories.preferredSkills.matched]
+                      .filter(s => !SKILL_BLACKLIST.has(s.toLowerCase()))
+                    return filtered.length > 0 ? (
+                      <div>
+                        <div className="text-xs text-text-muted mb-2">Matched Skills</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {filtered.map((skill, idx) => (
+                            <span key={idx} className="px-2 py-1 text-xs bg-status-green/15 text-status-green border border-status-green/30 rounded-md">
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    ) : null
+                  })()}
 
                   {/* Matched Certs */}
                   {dictResult.match.categories.certifications.matched.length > 0 && (
@@ -1599,20 +1720,6 @@ export function JobMatchWorkspace({
                         {dictResult.match.categories.certifications.matched.map((cert, idx) => (
                           <span key={idx} className="px-2 py-1 text-xs bg-status-green/15 text-status-green border border-status-green/30 rounded-md">
                             {cert}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Matched Tools */}
-                  {dictResult.match.categories.tools.matched.length > 0 && (
-                    <div>
-                      <div className="text-xs text-text-muted mb-2">Tools</div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {dictResult.match.categories.tools.matched.map((tool, idx) => (
-                          <span key={idx} className="px-2 py-1 text-xs bg-status-green/15 text-status-green border border-status-green/30 rounded-md">
-                            {tool}
                           </span>
                         ))}
                       </div>
@@ -1655,8 +1762,7 @@ export function JobMatchWorkspace({
                   {/* Empty state */}
                   {dictResult.match.categories.requiredSkills.matched.length === 0 &&
                    dictResult.match.categories.preferredSkills.matched.length === 0 &&
-                   dictResult.match.categories.certifications.matched.length === 0 &&
-                   dictResult.match.categories.tools.matched.length === 0 && (
+                   dictResult.match.categories.certifications.matched.length === 0 && (
                     <p className="text-sm text-text-dim">No matching skills or certifications found in your profile.</p>
                   )}
                 </div>
@@ -1692,6 +1798,9 @@ export function JobMatchWorkspace({
                               {isAddressed ? 'Addressed' : gap.severity === 'high' ? 'Required' : 'Preferred'}
                             </span>
                           </div>
+                          {gap.recommendation && (
+                            <p className="text-xs text-text-dim mb-2 leading-relaxed">{gap.recommendation}</p>
+                          )}
                           <div className="flex items-center justify-end">
                             <button
                               onClick={() => addressGap(gap.keyword)}
@@ -1889,7 +1998,6 @@ export function JobMatchWorkspace({
                 </p>
                 <div className="space-y-3">
                   {(showAllSummaries ? summaryTemplates : summaryTemplates.slice(0, 3)).map((tmpl, idx) => {
-                    const filledText = fillSummaryTemplate(tmpl.template_text, resolvedSummaryData)
                     const isApplied = appliedSummaryIdx === idx
                     return (
                       <div key={tmpl.id || idx} className={`p-4 rounded-lg border transition-all ${
@@ -1902,19 +2010,14 @@ export function JobMatchWorkspace({
                           <span className="px-2 py-0.5 text-[10px] font-semibold uppercase rounded bg-bg-secondary text-text-dim">
                             {tmpl.target_industry}
                           </span>
-                          {tmpl.target_role && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold uppercase rounded bg-bg-secondary text-text-dim">
-                              {tmpl.target_role}
-                            </span>
-                          )}
                         </div>
-                        <p className="text-sm text-text-muted leading-relaxed mb-3">{filledText}</p>
+                        <p className="text-sm text-text-muted leading-relaxed mb-3">{tmpl.template_text}</p>
                         <div className="flex items-center gap-2">
                           {isApplied ? (
                             <span className="px-2.5 py-1 text-xs font-semibold text-status-green">✓ Applied</span>
                           ) : (
                             <button
-                              onClick={() => applySummaryTemplate(filledText, idx)}
+                              onClick={() => applySummaryTemplate(tmpl.template_text, idx)}
                               className="px-2.5 py-1 text-xs font-semibold text-gold hover:text-gold-bright bg-gold/10 border border-gold/30 rounded transition-colors hover:bg-gold/20"
                             >
                               Use This Summary
@@ -2014,7 +2117,7 @@ export function JobMatchWorkspace({
                     })
                   ).filter(Boolean)}
                 </div>
-                {!isPro && (
+                {!hasPaidAccess && (
                   <div className="mt-4 p-3 rounded-lg bg-gold/5 border border-gold/20">
                     <p className="text-xs text-text-dim">
                       <UpgradeLink className="text-gold hover:text-gold-bright hover:underline font-semibold">Upgrade to Core</UpgradeLink>
@@ -2091,10 +2194,10 @@ export function JobMatchWorkspace({
                   className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-gold"
                 >
                   {Object.values(TEMPLATES).map((t) => {
-                    const isLocked = !t.free && !isPro
+                    const isLocked = !t.free && !hasPaidAccess
                     return (
                       <option key={t.id} value={t.id} disabled={isLocked}>
-                        {t.name} {isLocked ? '(PRO)' : ''}
+                        {t.name} {isLocked ? '(CORE+)' : ''}
                       </option>
                     )
                   })}
@@ -2115,7 +2218,7 @@ export function JobMatchWorkspace({
         )}
 
         {/* Upgrade nudge (Step 2) */}
-        {currentStep === 2 && dictResult && !isPro && !analyzing && !analysis && (
+        {currentStep === 2 && dictResult && !hasPaidAccess && !analyzing && !analysis && (
           <Card className="p-5 bg-gradient-to-r from-gold/5 to-transparent border-gold/20">
             <div className="flex items-start gap-4">
               <div className="w-10 h-10 rounded-lg bg-gold/20 flex items-center justify-center flex-shrink-0">
@@ -2359,7 +2462,7 @@ export function JobMatchWorkspace({
             </Card>
 
             {/* Upgrade Prompt for Free Users (Step 2) */}
-            {!isPro && (
+            {!hasPaidAccess && (
               <Card className="p-6 bg-gradient-to-r from-gold/5 to-transparent border-gold/20">
                 <div className="flex items-center gap-6">
                   <div className="w-16 h-16 rounded-xl bg-gold/20 flex items-center justify-center flex-shrink-0">
@@ -2370,7 +2473,7 @@ export function JobMatchWorkspace({
                   <div className="flex-1">
                     <h3 className="font-heading text-lg font-bold mb-1">Unlock AI-Powered Rewrites</h3>
                     <p className="text-text-muted text-sm">
-                      Your resume is {analysis.overallScore}% matched. With Pro, get AI-generated bullet point rewrites
+                      Your resume is {analysis.overallScore}% matched. Upgrade to Core or Full for AI-generated bullet point rewrites
                       that can push your match score to 90%+.
                     </p>
                   </div>
@@ -2395,8 +2498,18 @@ export function JobMatchWorkspace({
               </p>
             </div>
 
+            {/* Loading state for suggestions */}
+            {hasPaidAccess && suggestionsLoading && !analysis.bulletSuggestions?.length && (
+              <Card className="p-6">
+                <div className="flex items-center gap-3 text-text-muted">
+                  <div className="w-5 h-5 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+                  <span className="text-sm">Loading AI-powered rewrite suggestions...</span>
+                </div>
+              </Card>
+            )}
+
             {/* Pro Features - Bullet Rewrites */}
-            {isPro && analysis.bulletSuggestions?.filter(s => s.action === 'rewrite').length > 0 && (
+            {hasPaidAccess && analysis.bulletSuggestions?.filter(s => s.action === 'rewrite').length > 0 && (
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
@@ -2498,10 +2611,10 @@ export function JobMatchWorkspace({
                     className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-gold"
                   >
                     {Object.values(TEMPLATES).map((t) => {
-                      const isLocked = !t.free && !isPro
+                      const isLocked = !t.free && !hasPaidAccess
                       return (
                         <option key={t.id} value={t.id} disabled={isLocked}>
-                          {t.name} {isLocked ? '(PRO)' : ''}
+                          {t.name} {isLocked ? '(CORE+)' : ''}
                         </option>
                       )
                     })}
@@ -2568,25 +2681,6 @@ export function JobMatchWorkspace({
               </Card>
             )}
 
-            {/* Create Cover Letter CTA */}
-            <Card className="p-6 border-gold/20 bg-gold/5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                    <span className="text-gold">◈</span> Ready for a Cover Letter?
-                  </h3>
-                  <p className="text-xs text-text-muted mt-1">
-                    Auto-fill a cover letter template using this job&apos;s details — free, instant, no credits used
-                  </p>
-                </div>
-                <button
-                  onClick={handleCreateCoverLetter}
-                  className="px-5 py-2.5 bg-gold text-bg-primary rounded font-heading font-bold uppercase text-sm hover:bg-gold-bright transition-colors whitespace-nowrap"
-                >
-                  Create Cover Letter
-                </button>
-              </div>
-            </Card>
               </>
             )}
           </div>
@@ -2741,7 +2835,7 @@ export function JobMatchWorkspace({
       {showLastUseWarning && (
         <LastUseWarningModal
           featureName="Job Match Analysis"
-          tier={isPro ? (userPlan === 'full' ? 'full' : 'core') : 'free'}
+          tier={hasPaidAccess ? (userPlan === 'full' ? 'full' : 'core') : 'free'}
           limitType="tier"
           onContinue={() => {
             setShowLastUseWarning(false)

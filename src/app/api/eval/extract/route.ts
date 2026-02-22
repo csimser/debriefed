@@ -364,9 +364,46 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
         text = text.replace(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, '')
         // Remove excessive asterisks
         text = text.replace(/\*{2,}/g, '')
+
+        // Fix OCR concatenation: insert space between letter→digit and digit→letter boundaries
+        // e.g. "supervised7" → "supervised 7", "13personnel" → "13 personnel"
+        // But preserve legitimate patterns like "$2.3M", "98%", "E7", "E-7", ordinals "1st/2nd/3rd"
+        text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2')
+        text = text.replace(/(\d)([a-zA-Z])/g, (match, digit, letter) => {
+          // Preserve: $2.3M, 98%, ordinals (1st, 2nd, 3rd, 4th), pay grades (E7, O3)
+          if (/^[MBKk%]$/.test(letter)) return match
+          if (/^(st|nd|rd|th)/.test(text.slice(text.indexOf(match) + match.length - 1))) return match
+          return `${digit} ${letter}`
+        })
+
+        // Remove duplicate consecutive phrases (OCR artifact)
+        // Matches 3+ word phrases that repeat immediately
+        text = text.replace(/\b((?:\S+\s+){2,}\S+)\s+\1\b/gi, '$1')
+        // Also catch 2-word repeats: "compliance review compliance review" → "compliance review"
+        text = text.replace(/\b(\S+\s+\S+)\s+\1\b/gi, '$1')
+
         // Clean up multiple spaces
         text = text.replace(/\s{2,}/g, ' ')
         return text.trim()
+      }
+
+      // Clean metrics: split any concatenated metric strings and trim
+      const cleanMetrics = (metrics: string[]): string[] => {
+        if (!metrics || !Array.isArray(metrics)) return []
+        const cleaned: string[] = []
+        for (const m of metrics) {
+          // Split metrics that are concatenated without proper delimiters
+          // e.g. "1 senior leader supervised7 junior officers led13 personnel managed"
+          // Split on patterns where a word is followed by a digit starting a new metric
+          const parts = m.split(/(?<=[a-zA-Z])\s*(?=\d+\s+[a-zA-Z])/).map(s => s.trim()).filter(Boolean)
+          if (parts.length > 1) {
+            cleaned.push(...parts)
+          } else {
+            // Fix any remaining letter-digit concatenation within a single metric
+            cleaned.push(m.replace(/([a-zA-Z])(\d)/g, '$1 $2').replace(/(\d)([a-zA-Z])/g, '$1 $2').trim())
+          }
+        }
+        return cleaned
       }
 
       const cleanedOriginal = cleanText(bullet.original || '')
@@ -380,7 +417,7 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
         ...bullet,
         original: processedOriginal,
         translated: processedTranslated,
-        metrics: bullet.metrics || [],
+        metrics: cleanMetrics(bullet.metrics),
         skills: bullet.skills || [],
         unflaggedTerms: [...new Set([...originalUnflagged, ...translatedUnflagged])],
       }

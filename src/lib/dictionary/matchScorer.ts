@@ -73,9 +73,7 @@ export async function calculateMatch(
   if ((extraction.preferredSkills ?? []).length > 0) {
     weights.push({ score: preferredSkills.percentage, weight: 1 });
   }
-  if ((extraction.tools ?? []).length > 0) {
-    weights.push({ score: tools.percentage, weight: 2 });
-  }
+  // Tools removed from scoring — always shows 0%, no value to users
   if ((extraction.requiredCerts ?? []).length > 0 || (extraction.preferredCerts ?? []).length > 0) {
     weights.push({ score: certifications.percentage, weight: 2 });
   }
@@ -621,10 +619,11 @@ async function buildGaps(
 /** Filter out generic, too-short, or already-present gap keywords */
 const GAP_BLACKLIST = new Set([
   'policy', 'policies', 'requirements', 'requirement', 'documentation',
-  'communication', 'teamwork', 'teams', 'support', 'planning', 'reporting',
+  'communication', 'teamwork', 'teams', 'team', 'support', 'planning', 'reporting',
   'oversight', 'coordination', 'compliance', 'standards', 'procedures',
   'processes', 'tracking', 'monitoring', 'analysis', 'budget', 'scheduling',
-  'risk', 'confluence', 'teams', 'sharepoint', 'slack',
+  'risk', 'confluence', 'sharepoint', 'slack', 'briefings', 'services',
+  'cross-functional', 'cross functional', 'cross-functional teams',
 ])
 
 function filterGaps(gaps: GapItem[], profile: UserProfileForMatch): GapItem[] {
@@ -668,6 +667,10 @@ const GAP_SYNONYMS: Record<string, string> = {
   'lean six sigma': 'six sigma',
   'six sigma or lean': 'six sigma',
   'lean': 'lean',
+  'cross-functional': 'cross-functional teams',
+  'cross functional': 'cross-functional teams',
+  'cross-functional team': 'cross-functional teams',
+  'cross functional teams': 'cross-functional teams',
 };
 
 /**
@@ -713,7 +716,18 @@ function deduplicateGaps(gaps: GapItem[]): GapItem[] {
     // Otherwise keep existing (first occurrence)
   }
 
-  return Array.from(seen.values());
+  // Second pass: substring dedup — if one gap keyword contains another, keep only the more specific (longer) one
+  const result = Array.from(seen.values());
+  return result.filter((gap, i) => {
+    const kwNorm = normalize(gap.keyword);
+    return !result.some((other, j) => {
+      if (i === j) return false;
+      const otherNorm = normalize(other.keyword);
+      // If this keyword is a proper substring of another, drop it (keep the longer one)
+      if (otherNorm.includes(kwNorm) && otherNorm !== kwNorm) return true;
+      return false;
+    });
+  });
 }
 
 /**

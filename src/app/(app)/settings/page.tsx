@@ -12,7 +12,7 @@ interface UserProfile {
   email: string
   first_name: string
   last_name: string
-  plan: string
+  tier: string
   created_at: string
   plan_expires_at: string | null
   employer_sharing_opt_in: boolean | null
@@ -49,7 +49,7 @@ export default function SettingsPage() {
 
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('email, first_name, last_name, plan, created_at, plan_expires_at, employer_sharing_opt_in, marketing_opt_in')
+        .select('email, first_name, last_name, tier, created_at, plan_expires_at, employer_sharing_opt_in, marketing_opt_in')
         .eq('user_id', user.id)
         .single()
 
@@ -185,7 +185,7 @@ export default function SettingsPage() {
             <div>
               <label className="block text-xs text-text-muted uppercase tracking-wider mb-1">Plan</label>
               <p className="text-gold font-medium">
-                {profile ? getPlanDisplay(profile.plan, profile.plan_expires_at) : '-'}
+                {profile ? getPlanDisplay(profile.tier, profile.plan_expires_at) : '-'}
               </p>
             </div>
             <div>
@@ -195,7 +195,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {profile?.plan === 'free' && (
+        {profile?.tier === 'free' && (
           <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
             <p className="text-sm text-text-muted">
               Current plan: <span className="text-text font-medium">Free</span>

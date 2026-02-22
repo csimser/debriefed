@@ -1,7 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import { Document as DocxDocument, Packer, Paragraph, TextRun, AlignmentType, convertInchesToTwip, BorderStyle } from 'docx'
 import { formatPhoneForDisplay } from '@/lib/formatPhone'
+import { createClient } from '@/lib/supabase/server'
+import { canUseFeature, incrementUsage, getUserTier, checkDailyLimit, isAdmin, getUserEmail } from '@/lib/usage-service'
+import { logActivity, logApiUsage } from '@/lib/usage-tracking'
 
 interface CoverLetterData {
   content: string
@@ -97,6 +100,34 @@ function formatDate(): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate user
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const userId = user.id
+
+    // Check cover letter export limits (daily + period) — skip for admins
+    const userEmail = await getUserEmail(userId)
+    const adminUser = isAdmin(userEmail)
+
+    if (!adminUser) {
+      const usageCheck = await canUseFeature(userId, 'cover_letter_exports')
+      if (!usageCheck.allowed) {
+        return NextResponse.json(
+          { error: usageCheck.reason || 'Cover letter export limit reached', limitReached: true },
+          { status: 403 }
+        )
+      }
+    }
+
+    // Get tier + daily remaining for response headers (toast on client)
+    const tierInfo = await getUserTier(userId)
+    const dailyCheck = await checkDailyLimit(userId, 'cover_letter_exports')
+
     const data: CoverLetterData = await request.json()
     const {
       content,
@@ -132,6 +163,11 @@ export async function POST(request: NextRequest) {
     if (formattedPhone) contactParts.push(formattedPhone)
     const locationPart = [applicantCity, applicantState].filter(Boolean).join(', ')
     if (locationPart) contactParts.push(locationPart)
+
+    // Generate file — variables populated by format-specific branch below
+    let responseBody: Buffer | Uint8Array | string
+    let responseContentType: string
+    let responseFilename: string
 
     if (format === 'pdf') {
       const pdfDoc = await PDFDocument.create()
@@ -309,12 +345,9 @@ export async function POST(request: NextRequest) {
 
       const pdfBytes = await pdfDoc.save()
 
-      return new NextResponse(Buffer.from(pdfBytes), {
-        headers: {
-          'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="Cover-Letter-${safeCompanyName}.pdf"`,
-        },
-      })
+      responseBody = Buffer.from(pdfBytes)
+      responseContentType = 'application/pdf'
+      responseFilename = `Cover-Letter-${safeCompanyName}.pdf`
     } else if (format === 'docx') {
       // Professional DOCX with proper business letter formatting
       const children: Paragraph[] = []
@@ -543,12 +576,9 @@ export async function POST(request: NextRequest) {
 
       const docxBuffer = await Packer.toBuffer(doc)
 
-      return new NextResponse(new Uint8Array(docxBuffer), {
-        headers: {
-          'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'Content-Disposition': `attachment; filename="Cover-Letter-${safeCompanyName}.docx"`,
-        },
-      })
+      responseBody = new Uint8Array(docxBuffer)
+      responseContentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      responseFilename = `Cover-Letter-${safeCompanyName}.docx`
     } else {
       // Plain text with professional formatting
       const textParts: string[] = []
@@ -592,18 +622,47 @@ export async function POST(request: NextRequest) {
 
       const textContent = textParts.join('\n')
 
-      return new NextResponse(textContent, {
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Content-Disposition': `attachment; filename="Cover-Letter-${safeCompanyName}.txt"`,
-        },
-      })
+      responseBody = textContent
+      responseContentType = 'text/plain; charset=utf-8'
+      responseFilename = `Cover-Letter-${safeCompanyName}.txt`
     }
+
+    // Increment usage INLINE — after() callbacks don't fire for binary responses
+    await incrementUsage(userId, 'cover_letter_exports')
+
+    // remaining - 1 because increment just happened
+    const remainingAfter = Math.max(0, dailyCheck.remaining - 1)
+
+    const response = new NextResponse(responseBody, {
+      headers: {
+        'Content-Type': responseContentType,
+        'Content-Disposition': `attachment; filename="${responseFilename}"`,
+        'X-User-Tier': tierInfo.tier,
+        'X-Daily-Remaining': String(remainingAfter),
+        'X-Daily-Limit': String(dailyCheck.limit),
+      },
+    })
+
+    // Non-critical logging — safe in after() since it doesn't affect usage tracking
+    after(async () => {
+      try {
+        await logActivity(userId, 'cover_letter_exported', {
+          format,
+          company_name: companyName,
+          job_title: jobTitle,
+        })
+        await logApiUsage(userId, 'export-cover-letter', 0, 'file-generation')
+      } catch (err) {
+        console.error('Post-response activity logging failed:', err)
+      }
+    })
+
+    return response
   } catch (error: any) {
     console.error('Cover letter export error:', error)
     return NextResponse.json(
       {
-        error: 'Export failed: ' + (error.message || 'Unknown error'),
+        error: 'Export failed. Please try again.',
       },
       { status: 500 }
     )

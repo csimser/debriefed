@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { capitalizeName } from '@/lib/formatName'
+import { resetUsageOnPurchase, resetDailyUsage } from '@/lib/usage-service'
+import type { TierId } from '@/lib/pricing-config'
 
 // Service role client bypasses RLS for admin queries
 const serviceClient = createServiceClient(
@@ -206,17 +208,21 @@ export async function PATCH(
   if (tier !== undefined && tier !== currentUser.tier) {
     updates.tier = tier
     updates.subscription_tier = tier
+    updates.plan = tier
     changes.push(`tier: ${currentUser.tier || 'free'} → ${tier}`)
 
     // Sync subscriptions table so getUserTier() returns the correct tier
     const now = new Date()
     if (tier === 'free') {
-      // Cancel any active subscription
+      updates.plan_expires_at = null
+
+      // Cancel any active subscription (most recently purchased first)
       const { data: activeSub } = await serviceClient
         .from('subscriptions')
         .select('id')
         .eq('user_id', id)
         .eq('status', 'active')
+        .order('started_at', { ascending: false })
         .limit(1)
         .single()
 
@@ -230,13 +236,15 @@ export async function PATCH(
       // Upsert an active subscription for core/full tiers
       const durationDays = tier === 'full' ? 90 : 30
       const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000)
+      updates.plan_expires_at = expiresAt.toISOString()
 
-      // Check if an active subscription already exists
+      // Check if an active subscription already exists (most recently purchased first)
       const { data: existingSub } = await serviceClient
         .from('subscriptions')
         .select('id')
         .eq('user_id', id)
         .eq('status', 'active')
+        .order('started_at', { ascending: false })
         .limit(1)
         .single()
 
@@ -268,6 +276,18 @@ export async function PATCH(
       new_tier: tier,
       target_email: currentUser.email,
     })
+
+    // Reset usage for the new tier — clean slate on tier change
+    if (tier === 'free') {
+      // Downgrade: just clear daily limits (period-based tracking stays for history)
+      await resetDailyUsage(id)
+    } else {
+      // Upgrade: reset both period tracking and daily limits
+      const now = new Date()
+      const durationDays = tier === 'full' ? 90 : 30
+      const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000)
+      await resetUsageOnPurchase(id, tier as TierId, now, expiresAt)
+    }
   }
 
   if (is_admin !== undefined && is_admin !== currentUser.is_admin) {

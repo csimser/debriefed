@@ -155,6 +155,7 @@ function buildFederalSections(
         children: [new TextRun({ text: `\u2022 ${text}`, size: 21, font })],
         spacing: { after: 50 },
         indent: { left: 360 },
+        keepLines: true,
       }))
     })
   }
@@ -166,6 +167,7 @@ function buildFederalSections(
         children: [new TextRun({ text: `\u2022 ${lang.language}: ${getProficiencyLabel(lang.proficiency)}`, size: 21, font })],
         spacing: { after: 50 },
         indent: { left: 360 },
+        keepLines: true,
       }))
     })
   }
@@ -178,6 +180,7 @@ function buildFederalSections(
         children: [new TextRun({ text: `\u2022 ${text}`, size: 21, font })],
         spacing: { after: 50 },
         indent: { left: 360 },
+        keepLines: true,
       }))
     })
   }
@@ -190,6 +193,7 @@ function buildFederalSections(
         children: [new TextRun({ text: `\u2022 ${text}`, size: 21, font })],
         spacing: { after: 50 },
         indent: { left: 360 },
+        keepLines: true,
       }))
     })
   }
@@ -201,6 +205,7 @@ function buildFederalSections(
         children: [new TextRun({ text: `\u2022 ${elig}`, size: 21, font })],
         spacing: { after: 50 },
         indent: { left: 360 },
+        keepLines: true,
       }))
     })
   }
@@ -274,12 +279,14 @@ function buildExecutive(
     children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 20, font: SERIF, color: '1a2a44' })],
     border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'b8943e' } },
     spacing: { before: 200, after: 120 },
+    keepNext: true,
   })
 
   const sideHeading = (text: string) => new Paragraph({
     children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 18, font: SERIF, color: '1a2a44' })],
     border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'b8943e' } },
     spacing: { before: 160, after: 80 },
+    keepNext: true,
   })
 
   // === Main column content ===
@@ -317,6 +324,7 @@ function buildExecutive(
           ],
           spacing: { after: 30 },
           indent: { left: 180 },
+          keepLines: true,
         }))
       })
     })
@@ -456,6 +464,7 @@ function buildClassicProfessional(
     children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 24, font: SERIF, color: '1a1a1a' })],
     border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: 'c0c0c0' } },
     spacing: { before: 250, after: 150 },
+    keepNext: true,
   })
 
   // Header
@@ -544,6 +553,7 @@ function buildClassicProfessional(
           ],
           spacing: { after: 40 },
           indent: { left: 360 },
+          keepLines: true,
         }))
       })
     })
@@ -640,6 +650,7 @@ function buildFederal(
     children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 22, font: SERIF, color: 'ffffff' })],
     shading: { type: ShadingType.SOLID, color: '000000' },
     spacing: { before: 200, after: 120 },
+    keepNext: true,
   })
 
   // Header
@@ -786,6 +797,7 @@ function buildFederal(
           ],
           spacing: { after: 30 },
           indent: { left: 360 },
+          keepLines: true,
         }))
       })
     })
@@ -823,6 +835,7 @@ function buildFederal(
         ],
         spacing: { after: 30 },
         indent: { left: 360 },
+        keepLines: true,
       }))
     })
   }
@@ -889,6 +902,7 @@ function buildModern(
     children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 22, font: SANS, color: '0f2b3c' })],
     border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: '3b9ec2' } },
     spacing: { before: 250, after: 150 },
+    keepNext: true,
   })
 
   // Dark header (shading on paragraphs)
@@ -967,6 +981,7 @@ function buildModern(
           border: { left: { style: BorderStyle.SINGLE, size: 12, color: 'e0e8ec' } },
           indent: { left: 480 },
           spacing: { after: 40 },
+          keepLines: true,
         }))
       })
     })
@@ -1054,6 +1069,7 @@ function buildMinimal(
     children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 28, font: SERIF, color: '222222' })],
     border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'e0e0e0' } },
     spacing: { before: 300, after: 150 },
+    keepNext: true,
   })
 
   // Header
@@ -1122,6 +1138,7 @@ function buildMinimal(
           ],
           spacing: { after: 40 },
           indent: { left: 360 },
+          keepLines: true,
         }))
       })
     })
@@ -1188,12 +1205,14 @@ function buildTwoColumn(
     children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 18, font: SANS, color: 'd4a855' })],
     border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: '444444' } },
     spacing: { before: 200, after: 120 },
+    keepNext: true,
   })
 
   const mainHeading = (text: string) => new Paragraph({
     children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 26, font: SERIF, color: '2b2b2b' })],
     border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: '2b2b2b' } },
     spacing: { before: 250, after: 150 },
+    keepNext: true,
   })
 
   // === SIDEBAR ===
@@ -1309,6 +1328,7 @@ function buildTwoColumn(
           ],
           spacing: { after: 40 },
           indent: { left: 360 },
+          keepLines: true,
         }))
       })
     })

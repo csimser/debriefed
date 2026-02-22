@@ -33,7 +33,7 @@ export default async function JobMatchPage() {
             feature="Job Match Analyses"
             currentUsage={currentUsage}
             freeLimit={limit}
-            coreLimit={15}
+            coreLimit={10}
             tier={tier}
             variant="inline"
           />

@@ -1,0 +1,1077 @@
+id,military_phrase,civilian_phrase,branch,category,context_notes,created_at,job_family
+,served as repair locker leader,served as emergency response team leader,navy,operations,,,operations
+,briefed flag officers,presented to C-suite executives,navy,communication,,,operations
+,received Joint Service Achievement Medal,received joint organization achievement award,general,admin,,,admin
+,brief down,communicate to the team,general,Communication,,,operations
+,took the helm,assumed executive leadership,navy,Leadership,,,leadership
+,hand-selected for,competitively selected for,general,Leadership,,,leadership
+,intelligence fusion,multi-source data integration and analysis,general,intel,,,operations
+,medical treatment facility,healthcare facility / clinic,general,medical,,,medical
+,shaping operations,preparatory activities / preliminary operations,general,operations,,,operations
+,HAZMAT locker,hazardous materials storage facility,general,Safety,,,operations
+,corrective action,performance improvement action,general,admin,,,admin
+,perfect score,achieved maximum score,general,performance,,,operations
+,delivered on time and on target,completed all deliverables on schedule and within scope,general,Performance,,,operations
+,corrective action report,corrective and preventive action documentation,general,Safety,,,operations
+,information brief,informational presentation with no decision required,general,Communication,,,operations
+,safety officer,safety compliance manager,general,safety,,,operations
+,PMCS,preventive maintenance checks and services,army,Equipment,,,operations
+,signals intelligence,electronic data collection and analysis,general,intel,,,operations
+,troop leading procedures,team planning and execution methodology,general,leadership,,,leadership
+,radio operator,communications specialist / radio technician,general,comms,,,operations
+,promote immediately,strongest recommendation for accelerated advancement,general,performance,,,operations
+,right-hand man,primary deputy,general,Leadership,,,leadership
+,counterintelligence,security threat mitigation / insider threat prevention,general,intel,,,operations
+,courts-martial proceedings,formal legal proceedings / adjudication,general,legal,,,legal
+,disaster relief operations,natural disaster emergency response operations,general,operations,,,operations
+,served as NCOIC,served as section noncommissioned officer in charge,usaf,leadership,,,leadership
+,casualty report,critical equipment failure report,navy,technical,,,operations
+,offensive cyber operations,penetration testing / red team operations,general,cyber,,,cyber
+,COSAL allowance,authorized equipment and parts list,navy,Equipment,,,operations
+,controlled inventory item,high-value item requiring special tracking,general,Equipment,,,operations
+,acquisition management,procurement management / purchasing oversight,general,financial,,,finance
+,earned SNCO of the Quarter,selected as senior manager of the quarter,usaf,performance,,,operations
+,saved man-hours,reduced labor hours,general,performance,,,operations
+,broke down barriers,removed organizational obstacles,general,Leadership,,,leadership
+,execute order,authorization to proceed,general,Operations,,,operations
+,SCBA qualified,self-contained breathing apparatus certified,navy,training,,,leadership
+,served as flight chief,served as section supervisor for 20-50 personnel,usaf,leadership,,,leadership
+,master training specialist,certified master-level instructor,navy,training,,,leadership
+,earned NCO of the Quarter,selected as supervisor of the quarter,usaf,performance,,,operations
+,OPPE results,operational readiness evaluation results,navy,compliance,,,admin
+,EOC operations,emergency operations center management,general,Operations,,,operations
+,force health protection,occupational health and safety program,general,medical,,,medical
+,mine countermeasures,underwater threat detection and neutralization,navy,operations,,,operations
+,participated in MEU deployment,participated in expeditionary deployment operations,usmc,operations,,,operations
+,government purchase card program,corporate purchasing card program / procurement card management,general,financial,,,finance
+,aircrew coordination,flight crew resource management,general,aviation,,,operations
+,maintained motor pool,maintained vehicle fleet maintenance facility,army,technical,,,operations
+,prepared naval messages,drafted executive communications,navy,communication,,,operations
+,earned Combat Infantry Badge,earned combat operations qualification badge,army,training,,,leadership
+,supported MAGTF operations,supported multi-element combined operations,usmc,operations,,,operations
+,DC drill,damage control emergency drill,navy,Safety,,,operations
+,exemplary conduct,exemplary professional conduct,general,performance,,,operations
+,maintained good order and discipline,upheld professional standards and workplace conduct,general,Leadership,,,leadership
+,transformed the organization,led organizational change and restructuring,general,Leadership,,,leadership
+,contingency operations,emergency response operations,general,Operations,,,operations
+,bench stock,commonly used parts kept at the work center,general,Equipment,,,operations
+,sea duty,operational assignment,navy,Operations,,,operations
+,route clearance,road safety inspection / route survey operations,general,engineering,,,operations
+,command duty officer,senior on-call manager,general,Leadership,,,leadership
+,qualified as CDO,certified as after-hours senior facility manager,navy,operations,,,operations
+,combat zone,high-risk operational environment,general,operations,,,operations
+,main body,primary workforce,general,Operations,,,operations
+,risk mitigation,risk mitigation,general,safety,,,operations
+,communications watch,network monitoring shift / communications monitoring duty,general,comms,,,operations
+,developed subordinates,coached and developed direct reports,general,Leadership,,,leadership
+,in port,at home station,navy,Operations,,,operations
+,PRT,physical readiness test or fitness assessment,navy,Medical,,,medical
+,turned around,reversed declining performance,general,Performance,,,operations
+,decision brief,presentation requiring leadership decision,general,Communication,,,operations
+,mass casualty drill,mass casualty incident exercise,general,training,,,leadership
+,enforced standards,ensured compliance with organizational policies,general,Leadership,,,leadership
+,FOD walkdown,foreign object debris prevention inspection,general,Safety,,,operations
+,sailor of the year,employee of the year,navy,Leadership,,,leadership
+,board eligible,met all requirements for advancement,general,Training,,,leadership
+,cold iron,complete system shutdown,navy,technical,,,operations
+,deployment health assessment,pre- and post-assignment medical screening,general,Medical,,,medical
+,served as UDM,served as unit deployment manager,usaf,operations,,,operations
+,underway,during operations,navy,Operations,,,operations
+,NCOER,noncommissioned officer performance evaluation,army,Admin,,,admin
+,advance party,advance planning team,general,Operations,,,operations
+,suspense date,deadline for completion,general,Communication,,,operations
+,boots on ground,on-site presence,general,operations,,,operations
+,anti-terrorism,threat prevention and force protection,general,security,,,operations
+,Class VII supplies,major end items and capital equipment,general,Equipment,,,operations
+,AIT graduate,completed advanced individual training program,army,Training,,,leadership
+,on hand,currently in stock,general,Equipment,,,operations
+,earned Combat Action Ribbon,earned combat operations recognition,usmc,performance,,,operations
+,drafted OPORD,developed operational execution plan,general,communication,,,operations
+,word from on high,direction from senior leadership,general,Communication,,,operations
+,selected as Senior Sailor of the Year,selected as senior employee of the year,navy,performance,,,operations
+,white paper,detailed research and recommendation document,general,Communication,,,operations
+,wrote evaluations for,authored performance reviews for,general,admin,,,admin
+,coalition operations,multinational partnership operations,general,Operations,,,operations
+,rules of engagement,operating guidelines / standard engagement protocols,general,legal,,,legal
+,processed 4187s,processed personnel action requests,army,admin,,,admin
+,flight scheduling,aircraft scheduling / operations planning,general,aviation,,,operations
+,PSD,personnel support detachment or HR office,navy,Admin,,,admin
+,deployment cycle,operational rotation,general,Operations,,,operations
+,mishap investigation,incident investigation and root cause analysis,general,Safety,,,operations
+,conducted proficiency training,delivered skills-based professional development,general,training,,,leadership
+,cleared the path,eliminated roadblocks for the team,general,Leadership,,,leadership
+,permanent change of station,permanent relocation / corporate transfer,general,admin,,,admin
+,combat stress,work-related stress and mental health concern,general,Medical,,,medical
+,FEP,fitness enhancement program,navy,Medical,,,medical
+,recall roster,emergency contact notification list,general,Operations,,,operations
+,DEFCON,defense readiness condition,general,Operations,,,operations
+,scored 300 on APFT,achieved maximum score on physical fitness assessment,army,performance,,,operations
+,horizontal construction,road and runway construction / earthwork operations,general,engineering,,,operations
+,trained to standard,trained to meet all certification requirements,general,training,,,leadership
+,trained and ready to deploy,fully onboarded and prepared for assignment,general,Leadership,,,leadership
+,completed ALS,completed initial leadership development course,usaf,training,,,leadership
+,completed PMS on schedule,completed all scheduled preventive maintenance on time,navy,technical,,,operations
+,DRMO,surplus property disposal,general,Equipment,,,operations
+,turnover,transition of responsibilities,general,Operations,,,operations
+,investigations officer,internal investigations manager / compliance investigator,general,legal,,,legal
+,selected as Junior Sailor of the Year,selected as junior employee of the year,navy,performance,,,operations
+,earned Combat Action Badge,earned combat operations qualification badge,army,training,,,leadership
+,conducted PMCS,performed preventive maintenance checks and services,army,technical,,,operations
+,attended ALC,completed mid-level supervisor leadership course,army,training,,,leadership
+,CO2 system,carbon dioxide fire suppression system,navy,technical,,,operations
+,maintained Zone Inspection readiness,maintained ongoing facility inspection readiness,navy,compliance,,,admin
+,razor sharp,highly precise and detail-oriented,general,Performance,,,operations
+,ran drills,conducted emergency preparedness exercises,general,training,,,leadership
+,quarters,unit formation or team meeting,general,Admin,,,admin
+,freedom of navigation,international maritime patrol operations,navy,operations,,,operations
+,OJT complete,completed on-the-job training,general,Training,,,leadership
+,peacekeeping operations,stability and support operations,general,Operations,,,operations
+,championed the cause,advocated for the initiative,general,Leadership,,,leadership
+,shore duty,headquarters or support assignment,navy,Operations,,,operations
+,turn-in,returned equipment to supply,general,Equipment,,,operations
+,received flag letter,received written recognition from executive leadership,general,admin,,,admin
+,administered PQS,administered professional qualification program,navy,training,,,leadership
+,owned the battlespace,managed all operations within the assigned area,general,Leadership,,,leadership
+,OCONUS,outside the continental United States,general,Operations,,,operations
+,records management,document management / records retention,general,admin,,,admin
+,served as SAPR VA,served as sexual assault prevention and response victim advocate,navy,admin,,,admin
+,voting assistance officer,employee civic engagement coordinator,general,Admin,,,admin
+,can-do attitude,"positive, results-oriented approach",general,Performance,,,operations
+,empowered junior leaders,empowered emerging leaders through delegation,general,Leadership,,,leadership
+,improved readiness,improved operational availability,general,performance,,,operations
+,class A mishap,severity level 1 incident with major loss,general,Safety,,,operations
+,performs at the next higher paygrade,performs at the next organizational level,general,performance,,,operations
+,shipmate of the quarter,employee of the quarter,navy,Leadership,,,leadership
+,inspired warfighters,motivated team members to achieve objectives,general,Leadership,,,leadership
+,exceeded the standard,surpassed performance benchmarks,general,Performance,,,operations
+,quad chart,four-quadrant visual summary,general,Communication,,,operations
+,theater of operations,regional area of business operations,general,Operations,,,operations
+,open purchase,commercial off-the-shelf procurement,general,Equipment,,,operations
+,SPOTREP,spot report or incident notification,general,Communication,,,operations
+,war college graduate,completed executive leadership program,general,Training,,,leadership
+,unlimited potential,demonstrates exceptional growth potential,general,performance,,,operations
+,force beddown,temporary facility setup / rapid site establishment,general,engineering,,,operations
+,served as team leader,served as front-line team supervisor,army,leadership,,,leadership
+,operation and maintenance funds,operating budget / O&M budget,general,financial,,,finance
+,equal opportunity advisor,equal employment opportunity specialist,general,Admin,,,admin
+,battle tested,proven in high-pressure environments,general,Performance,,,operations
+,zone inspection,facility/area compliance inspection,navy,compliance,,,admin
+,forward deployed,stationed in operational area,general,Operations,,,operations
+,24/7 operations,around-the-clock operations / continuous coverage,general,operations,,,operations
+,top of the class,ranked first among peers,general,Performance,,,operations
+,training cycle,professional development schedule / learning cycle,general,training,,,leadership
+,zero loss rate,achieved zero inventory loss,general,Performance,,,operations
+,page 13 counseling,documented performance counseling session,navy,admin,,,admin
+,operational readiness rate,equipment availability rate / uptime percentage,general,performance,,,operations
+,negative,no or not confirmed,general,Communication,,,operations
+,took the helm,assumed leadership of / took charge of,general,leadership,,,leadership
+,PMS,planned maintenance system,navy,Equipment,,,operations
+,demobilized from,returned from deployment/activation,general,operations,,,operations
+,plugman,structural damage containment specialist,navy,operations,,,operations
+,master fitness trainer,certified physical fitness program leader,army,Medical,,,medical
+,barrier plan,perimeter security design / access control plan,general,engineering,,,operations
+,met every milestone,achieved all project milestones on schedule,general,Performance,,,operations
+,ACFT,army combat fitness test,army,Medical,,,medical
+,sick call,walk-in medical appointment,general,Medical,,,medical
+,selection board,promotion review panel / selection committee,general,training,,,leadership
+,combat training center rotation,intensive field training exercise / major training event,general,training,,,leadership
+,sponsor,onboarding coordinator for incoming employees,general,Admin,,,admin
+,answered the call,responded to critical organizational need,general,Leadership,,,leadership
+,achieved mission success,successfully completed all objectives,general,performance,,,operations
+,earned 7-level,achieved craftsman-level technical certification,usaf,training,,,leadership
+,remedial training,corrective performance coaching,general,training,,,leadership
+,served in hostile fire zone,served in hazardous duty environment,general,operations,,,operations
+,nailed the inspection,achieved outstanding inspection results,general,Performance,,,operations
+,received Bronze Star Medal,received senior-level achievement/service award,general,admin,,,admin
+,area of responsibility,assigned territory / managed region,general,operations,,,operations
+,in-rate training,specialty-specific professional development,navy,Training,,,leadership
+,aviation safety program,flight safety management system,general,aviation,,,operations
+,mission capable rate,operational availability rate,general,compliance,,,admin
+,open door policy,accessible leadership communication policy,general,Communication,,,operations
+,geospatial intelligence,geographic information systems analysis / location-based analytics,general,intel,,,operations
+,top block evaluation,highest possible performance rating,general,performance,,,operations
+,managed departmental 3M program,managed department-level preventive maintenance program,navy,technical,,,operations
+,TAP/TAPS,transition assistance program,general,Admin,,,admin
+,combat leadership,leadership under high-pressure conditions,general,leadership,,,leadership
+,assumed the watch,took over shift operations,navy,operations,,,operations
+,served as EKMS manager,served as electronic key/encryption material manager,navy,security,,,operations
+,ahead of schedule,completed before the deadline,general,Performance,,,operations
+,area denial operations,restricted access zone management,general,operations,,,operations
+,achieved first class PFT,achieved top-tier physical fitness rating,usmc,performance,,,operations
+,force multiplier,high-impact contributor / productivity amplifier,general,performance,,,operations
+,qualified ahead of peers,achieved certification ahead of timeline,general,Training,,,leadership
+,received unit citation,received organizational excellence award,general,admin,,,admin
+,demolition operations,controlled demolition / structural demolition,general,engineering,,,operations
+,pipeline,training program,general,Training,,,leadership
+,participated in CPO 365,participated in year-long leadership development program,navy,training,,,leadership
+,mentored up-and-comers,mentored high-potential employees,general,Leadership,,,leadership
+,exceeded all metrics,surpassed all key performance indicators,general,Performance,,,operations
+,tactical communications,field communications / mobile communications systems,general,comms,,,operations
+,hot seat qualified,certified for primary operator role,general,Training,,,leadership
+,deckplate leadership,hands-on operational leadership,navy,leadership,,,leadership
+,managed a section of,managed a team of,general,leadership,,,leadership
+,awarded Navy Commendation Medal,received superior performance award,navy,admin,,,admin
+,an exceptional communicator,an exceptional communicator at all organizational levels,general,performance,,,operations
+,mishap,workplace incident,general,Safety,,,operations
+,battle handover,operational shift transition brief,general,Operations,,,operations
+,secured the plant,performed controlled system shutdown,navy,technical,,,operations
+,served as battalion commander,served as division/regional director,army,leadership,,,leadership
+,held accountable,maintained team accountability for results,general,Leadership,,,leadership
+,served as ISSM,served as information system security manager,navy,security,,,operations
+,safety walkthrough,safety compliance inspection,general,Safety,,,operations
+,preventive medicine,preventive health services / occupational health,general,medical,,,medical
+,on the mark,met all specified targets and standards,general,Performance,,,operations
+,non-judicial punishment,administrative disciplinary action,general,legal,,,legal
+,safety stand-down,organization-wide safety review day,general,safety,,,operations
+,meritorious mast,formal recognition ceremony,navy,Admin,,,admin
+,served as department head,served as senior department director,navy,leadership,,,leadership
+,reported directly to,reported directly to,general,leadership,,,leadership
+,wrote NCOERs,authored employee performance evaluations,army,admin,,,admin
+,kept the division on track,maintained department alignment with goals,general,Leadership,,,leadership
+,awarded Air Force Commendation Medal,received superior performance award,usaf,admin,,,admin
+,soldier of the month,employee of the month,army,Leadership,,,leadership
+,medical hold,held at current assignment pending medical evaluation,general,Medical,,,medical
+,served as UFPM,served as unit fitness program manager,usaf,admin,,,admin
+,three-section duty,three-shift rotation schedule,navy,Operations,,,operations
+,zero disciplinary issues,maintained clean disciplinary record,general,performance,,,operations
+,target development,priority identification / target market analysis,general,intel,,,operations
+,combat medic,emergency medical technician / field paramedic,general,medical,,,medical
+,interagency operations,multi-agency government operations,general,operations,,,operations
+,set the example,served as a role model / established best practices,general,performance,,,operations
+,all hands,organization-wide or all-personnel,navy,Communication,,,operations
+,reduction in rate,demotion,general,admin,,,admin
+,commanded a detachment,managed an independent work group,general,leadership,,,leadership
+,on order,ordered and pending delivery,general,Equipment,,,operations
+,patient administration,patient records management / healthcare administration,general,medical,,,medical
+,deployed in support of,assigned to support,general,operations,,,operations
+,special staff officer,specialized advisor / subject matter expert,general,leadership,,,leadership
+,shift work,rotating shift schedule management,general,Operations,,,operations
+,led from the front,led by example in high-pressure situations,general,leadership,,,leadership
+,received NJP,received formal disciplinary action,general,admin,,,admin
+,administrative law,regulatory compliance / administrative policy,general,legal,,,legal
+,nozzleman,primary fire suppression operator,navy,operations,,,operations
+,reported aboard,joined the organization,navy,admin,,,admin
+,served as khaki mentor,served as leadership mentor for management candidates,navy,leadership,,,leadership
+,awarded restriction,received workplace restriction as discipline,general,admin,,,admin
+,completed SWOS training,completed surface warfare officer training,navy,training,,,leadership
+,enlisted record brief,employee profile / personnel summary,general,admin,,,admin
+,served as departmental 3M assistant,served as department maintenance manager,navy,technical,,,operations
+,consistently exceeded expectations,routinely surpassed performance goals,general,Performance,,,operations
+,NEC holder,holds specialized professional credential,navy,Training,,,leadership
+,completed shore tour,completed headquarters/support assignment,navy,operations,,,operations
+,under budget,completed under budget,general,performance,,,operations
+,completed ACSC,completed intermediate-level officer professional school,usaf,training,,,leadership
+,respiratory protection program,respiratory safety and equipment program,general,Safety,,,operations
+,JHA,job hazard analysis,general,Safety,,,operations
+,battle E award,organizational excellence award,navy,Performance,,,operations
+,served as squad leader,supervised 13-person operational team,usmc,leadership,,,leadership
+,processed evals,completed employee performance evaluations,navy,admin,,,admin
+,welcome aboard package,new hire onboarding materials,navy,Admin,,,admin
+,earned Pathfinder qualification,completed advanced navigation and air traffic certification,army,training,,,leadership
+,air assault qualified,completed air assault operations training,army,Training,,,leadership
+,warfare qualified,specialty operations certified,general,training,,,leadership
+,man overboard drill,personnel recovery exercise,navy,training,,,leadership
+,hand-picked for,selected from competitive pool for,general,leadership,,,leadership
+,completed Sergeants Course,completed team leader development course,usmc,training,,,leadership
+,increased efficiency,improved operational efficiency,general,performance,,,operations
+,C school graduate,completed advanced technical training,navy,Training,,,leadership
+,held the line,maintained standards under pressure,general,Leadership,,,leadership
+,fleet-up,promoted into next-level role / advanced within the team,general,training,,,leadership
+,earned Distinguished Graduate,graduated at top of class,usaf,performance,,,operations
+,vertical construction,building construction / structural construction,general,engineering,,,operations
+,under instruction,in training,general,Training,,,leadership
+,separation date,employment end date,general,Admin,,,admin
+,served as battle captain,served as operations shift lead,general,leadership,,,leadership
+,selected for Chief Petty Officer,selected for senior management promotion,navy,performance,,,operations
+,cannibalize,sourced parts from another unit or system,general,Equipment,,,operations
+,medical surveillance,occupational health monitoring / health screening,general,medical,,,medical
+,passed ATG assessment,passed external readiness assessment,navy,compliance,,,admin
+,served as LCPO,served as department supervisor,navy,leadership,,,leadership
+,EPR,enlisted performance report,usaf,Admin,,,admin
+,commanders intent,leadership vision and desired end state,general,Communication,,,operations
+,shelf life item,item with expiration-based inventory management,general,Equipment,,,operations
+,served as DCPO,served as safety/damage control petty officer,navy,leadership,,,leadership
+,lessons learned,post-project improvement findings,general,Operations,,,operations
+,relief in place,personnel replacement and handover,general,Operations,,,operations
+,knows no boundaries,demonstrates exceptional initiative,general,Leadership,,,leadership
+,APFT,physical fitness test,army,Medical,,,medical
+,NEC qualified,earned additional specialty certification code,navy,training,,,leadership
+,liaison with,coordinated with,general,communication,,,operations
+,qualified as EOOW,certified as engineering operations shift supervisor,navy,operations,,,operations
+,train the trainer certified,certified as instructor of instructors,general,Training,,,leadership
+,AOR,assigned area of responsibility,general,Operations,,,operations
+,passed with zero findings,achieved full compliance with no deficiencies,general,performance,,,operations
+,for your SA,for your situational awareness,general,Communication,,,operations
+,secured space,restricted access facility,general,security,,,operations
+,received Joint Service Commendation Medal,received joint organization superior performance award,general,admin,,,admin
+,force protection,personnel and facility security,general,Operations,,,operations
+,integrated operations,multi-organization coordinated operations,general,operations,,,operations
+,earned Safety S,earned safety excellence recognition,navy,safety,,,operations
+,watch rotation,shift rotation schedule,navy,Operations,,,operations
+,earned Surface Warfare designation,earned surface operations warfare qualification,navy,training,,,leadership
+,completed ESWS board,passed comprehensive oral qualification board,navy,training,,,leadership
+,stepped up,assumed additional responsibilities,general,Leadership,,,leadership
+,administrative action,formal administrative disciplinary process,general,admin,,,admin
+,purchase request,procurement authorization form,general,Equipment,,,operations
+,LIMDU,limited duty status due to medical condition,navy,Medical,,,medical
+,MRC,maintenance requirement card or procedure,navy,Equipment,,,operations
+,shattered records,exceeded all historical performance records,general,Performance,,,operations
+,draw,issued equipment from supply,general,Equipment,,,operations
+,ORM assessment,operational risk management assessment,general,safety,,,operations
+,awarded Navy Achievement Medal,received organizational achievement award,navy,admin,,,admin
+,dual qualified,dual certified in two specialties,general,training,,,leadership
+,zero defects,zero-error performance,general,Performance,,,operations
+,rallied the team,motivated and aligned the team,general,Leadership,,,leadership
+,order of battle analysis,competitive landscape analysis / organizational assessment,general,intel,,,operations
+,conducted counseling,provided performance feedback and coaching,general,admin,,,admin
+,maintained hand receipts,maintained property accountability documentation,army,admin,,,admin
+,safety climate survey,workplace safety culture assessment,general,Safety,,,operations
+,conducted pre-deployment training,delivered pre-project mobilization training,general,training,,,leadership
+,installed and maintained communication systems,deployed and maintained telecommunications infrastructure,general,comms,,,operations
+,led the charge,spearheaded the initiative,general,Leadership,,,leadership
+,closed the gap,eliminated the performance deficit,general,Performance,,,operations
+,top performer in the division,highest-rated employee in the department,general,Leadership,,,leadership
+,ready now for increased responsibility,immediately qualified for advancement,general,performance,,,operations
+,served as damage control petty officer,served as division safety coordinator,navy,safety,,,operations
+,port operations,maritime terminal operations,navy,Operations,,,operations
+,Class II supplies,clothing and individual equipment,general,Equipment,,,operations
+,PMC,partially mission capable or limited capability,general,Equipment,,,operations
+,completed sea tour,completed operational/field assignment,navy,operations,,,operations
+,command investigation,internal investigation / workplace inquiry,general,legal,,,legal
+,IPAC,personnel administration center,usmc,Admin,,,admin
+,water walker,exceptionally high performer,navy,Performance,,,operations
+,information assurance,information security / data protection compliance,general,cyber,,,cyber
+,frequency management,spectrum management / radio frequency coordination,general,comms,,,operations
+,conducted UCI preparation,prepared organization for compliance inspection,usaf,compliance,,,admin
+,CGSC graduate,completed intermediate leadership education,army,Training,,,leadership
+,served as first sergeant,served as senior enlisted advisor and personnel manager,usaf,leadership,,,leadership
+,peak performance,optimal operational output,general,Performance,,,operations
+,inventory reconciliation,physical count verification against records,general,Equipment,,,operations
+,maintained operational tempo,sustained high-volume workflow / kept pace of operations,general,performance,,,operations
+,attended SGM Academy,completed executive-level leadership course,army,training,,,leadership
+,retrograde of equipment,equipment return and redistribution,general,logistics,,,logistics
+,field maintenance operations,on-site equipment maintenance / mobile repair operations,general,logistics,,,logistics
+,attended WLC/BLC,completed first-line supervisor leadership course,army,training,,,leadership
+,NIIN,national item identification number,general,Equipment,,,operations
+,hearing conservation program,occupational hearing protection program,general,Safety,,,operations
+,crushed it,delivered exceptional results,general,Performance,,,operations
+,captain's mast,administrative disciplinary hearing,navy,Admin,,,admin
+,combat engineering,construction and demolition engineering / field engineering,general,engineering,,,operations
+,action item,assigned task requiring completion,general,Communication,,,operations
+,completed Army readiness training,completed organizational readiness certification,army,training,,,leadership
+,received CSMC score of,received maintenance readiness score of,navy,compliance,,,admin
+,risk mitigation plan,risk reduction strategy,general,Safety,,,operations
+,increased retention,improved employee retention,general,performance,,,operations
+,#1 of all E-6s,ranked #1 among all mid-level supervisors,navy,performance,,,operations
+,joint operations,multi-department collaborative operations,general,Operations,,,operations
+,ready for tasking,prepared and available for any assignment,general,Performance,,,operations
+,dialed in,precision-focused,general,Performance,,,operations
+,issue and receipt,distribution and receiving operations,general,logistics,,,logistics
+,battle update brief,operational status meeting,general,Operations,,,operations
+,family readiness group,employee family support organization,army,Admin,,,admin
+,maintained 100% accountability,maintained full inventory accuracy,general,Performance,,,operations
+,quarterdeck watch officer,front desk operations supervisor,navy,Leadership,,,leadership
+,communications interoperability,cross-platform communications compatibility,general,comms,,,operations
+,hot standby,standby/ready state,navy,technical,,,operations
+,served as UTM,served as unit training manager,usaf,training,,,leadership
+,gapped billet,unfilled position,navy,Admin,,,admin
+,op-tempo,operational pace,general,Operations,,,operations
+,fast-tracked through qualifications,completed certifications on an accelerated timeline,general,Training,,,leadership
+,claims processing,insurance claims processing / liability management,general,legal,,,legal
+,mission brief,project kickoff meeting,general,Operations,,,operations
+,rapid deployment,rapid mobilization / quick-response deployment,general,operations,,,operations
+,conducted inventory management,performed inventory control and tracking,general,logistics,,,logistics
+,drug interdiction,counter-narcotics law enforcement operations,general,operations,,,operations
+,maintenance float,spare equipment pool / backup inventory,general,logistics,,,logistics
+,promote now,highest recommendation for immediate advancement,general,Performance,,,operations
+,met all deadlines,achieved 100% on-time delivery,general,performance,,,operations
+,TLV,threshold limit value for chemical exposure,general,Safety,,,operations
+,legal assistance operations,legal advisory services / employee legal support,general,legal,,,legal
+,completed PQS,completed professional qualification requirements,navy,training,,,leadership
+,combat qualified,certified for combat/field operations,general,training,,,leadership
+,detached from,departed/transferred from,navy,admin,,,admin
+,pathfinder qualified,completed advanced navigation and coordination training,army,Training,,,leadership
+,achieved Battle E,achieved top operational excellence award,navy,performance,,,operations
+,ergonomic assessment,workplace ergonomic evaluation,general,Safety,,,operations
+,temporary additional duty,temporary assignment / short-term project assignment,general,admin,,,admin
+,morning brief,daily standup meeting,general,Communication,,,operations
+,hand-carried the issue,personally escalated and resolved the issue,general,Leadership,,,leadership
+,served as company commander,served as operations director,army,leadership,,,leadership
+,CSMP,current ship maintenance backlog,navy,Safety,,,operations
+,served as squad leader,served as team supervisor,general,leadership,,,leadership
+,officer of the deck,shift supervisor with full operational authority,navy,Leadership,,,leadership
+,#1 of all E-5s,ranked #1 among all front-line supervisors,navy,performance,,,operations
+,early promote,recommended for accelerated promotion,general,Performance,,,operations
+,maintained common operating picture,maintained real-time operational dashboard / situational awareness,general,operations,,,operations
+,flight operations,aviation operations management,general,Operations,,,operations
+,base camp construction,temporary facility construction / field site development,general,engineering,,,operations
+,outperformed the competition,outpaced comparable organizations,general,Performance,,,operations
+,a proven warrior,a proven performer in high-stress environments,general,performance,,,operations
+,command climate survey,employee engagement and culture survey,general,Communication,,,operations
+,supply chain management,end-to-end supply chain management,general,logistics,,,logistics
+,NSN,national stock number for cataloged items,general,Equipment,,,operations
+,delivered under fire,performed effectively under extreme pressure,general,Performance,,,operations
+,took charge of,assumed leadership of,general,leadership,,,leadership
+,saved the day,resolved critical issue under time pressure,general,Performance,,,operations
+,AFSC trained,completed specialty career field training,usaf,Training,,,leadership
+,principal staff officer,senior department head / chief advisor,general,leadership,,,leadership
+,bridged the gap between officers and enlisted,facilitated communication between leadership and staff,general,Leadership,,,leadership
+,MDMP,structured decision-making process,army,Operations,,,operations
+,hot work,welding and cutting permit-required work,general,Safety,,,operations
+,near miss,near-miss incident report,general,Safety,,,operations
+,jump qualified,earned airborne operations certification,army,Training,,,leadership
+,minefield operations,hazardous area management / restricted zone operations,general,engineering,,,operations
+,obligation authority,spending authorization / budget commitment authority,general,financial,,,finance
+,cyber threat intelligence,cybersecurity threat analysis / threat intelligence,general,cyber,,,cyber
+,basic training graduate,completed foundational workforce training,general,Training,,,leadership
+,submitted requisitions,submitted procurement/purchase requests,general,logistics,,,logistics
+,IG complaint,formal grievance through oversight channel,general,Communication,,,operations
+,ensured mission accomplishment,ensured all objectives were met,general,Leadership,,,leadership
+,BLUF,executive summary placed first,general,Communication,,,operations
+,the embodiment of Navy core values,exemplifies organizational core values,navy,performance,,,operations
+,kept the momentum,sustained progress toward objectives,general,Performance,,,operations
+,GPC,government purchase card or corporate procurement card,general,Equipment,,,operations
+,exceeded unit standards,surpassed departmental benchmarks,general,performance,,,operations
+,collection management,data collection strategy and oversight,general,intel,,,operations
+,request mast,formal request to meet with senior leadership,usmc,Communication,,,operations
+,awarded Air Force Achievement Medal,received organizational achievement award,usaf,admin,,,admin
+,EAWS qualified,earned enlisted aviation warfare specialist certification,navy,Training,,,leadership
+,stood down,decommissioned or closed,general,Operations,,,operations
+,made the cut,met competitive selection criteria,general,Performance,,,operations
+,combat ready,fully operational and certified,general,compliance,,,admin
+,signal plan,communications plan / network architecture,general,comms,,,operations
+,took ownership,accepted full accountability,general,Leadership,,,leadership
+,strengthened the chain of command,improved organizational communication and accountability,general,Leadership,,,leadership
+,change of command,leadership transition,general,Operations,,,operations
+,transfer of authority,transfer of responsibility / handover of authority,general,admin,,,admin
+,served as acting commander,served as interim director,general,Leadership,,,leadership
+,a true deckplate leader,a hands-on leader who leads from the front,navy,leadership,,,leadership
+,liberty,personal time off,navy,Admin,,,admin
+,established a forward operating base,established a satellite office / remote operations center,general,operations,,,operations
+,extra duty,additional assigned duties as corrective action,general,Admin,,,admin
+,SDS,safety data sheet,general,Safety,,,operations
+,CIAL,component identification and authorization list,navy,Equipment,,,operations
+,end item,final assembled product or system,general,Equipment,,,operations
+,combat casualty care,emergency trauma care / field emergency medicine,general,medical,,,medical
+,warning order,advance notice of upcoming tasking,general,Operations,,,operations
+,zero discrepancies,achieved 100% compliance,general,Performance,,,operations
+,active shooter drill,active threat response training exercise,general,Safety,,,operations
+,civil-military operations,public-private partnership operations,general,operations,,,operations
+,maintained arms room,managed secure property storage facility,army,technical,,,operations
+,post-deployment stand-down,post-assignment recovery period,general,Operations,,,operations
+,JPME complete,completed joint professional military education,general,Training,,,leadership
+,depot-level maintenance,major overhaul at specialized repair facility,general,Equipment,,,operations
+,SARP,substance abuse rehabilitation program,general,Medical,,,medical
+,keeper of the keys,custodian of critical resources,general,Leadership,,,leadership
+,filled the gap,addressed critical staffing shortage,general,Leadership,,,leadership
+,utilities infrastructure,facility utilities management / building systems,general,engineering,,,operations
+,theater security cooperation,international partnership operations,general,operations,,,operations
+,ground safety officer,workplace safety officer,usaf,Safety,,,operations
+,qualified personnel in,certified personnel in,general,training,,,leadership
+,expert marksman,achieved expert-level proficiency certification,general,Training,,,leadership
+,warfare qualified,earned professional certification,navy,Training,,,leadership
+,base operations,facility operations management,general,Operations,,,operations
+,mission essential,business-critical,general,Performance,,,operations
+,broke the mold,introduced innovative approaches that redefined standards,general,Performance,,,operations
+,intermediate-level maintenance,repair performed at regional maintenance center,general,Equipment,,,operations
+,chop chain,review and approval routing,general,Communication,,,operations
+,med down,unavailable for duty due to medical reason,general,Medical,,,medical
+,restriction,limited privileges as disciplinary measure,general,Admin,,,admin
+,field sanitation,environmental health and sanitation,general,medical,,,medical
+,put it on the radar,brought it to leadership awareness,general,Communication,,,operations
+,battle buddy,accountability partner,army,Leadership,,,leadership
+,reenlistment eligible,eligible for contract renewal,general,admin,,,admin
+,among the best,recognized as a top performer,general,performance,,,operations
+,assigned to,assigned to,general,admin,,,admin
+,subject matter expert in,recognized authority in / deep expertise in,general,performance,,,operations
+,awarded Meritorious Service Medal,received executive-level achievement award,general,admin,,,admin
+,fill rate,staffing level percentage,general,Admin,,,admin
+,formal counseling,formal performance documentation session,general,admin,,,admin
+,leave chit,time-off request form,navy,Admin,,,admin
+,served as CFL,served as physical fitness program coordinator,navy,admin,,,admin
+,CENTCOM AOR,Middle East operational region,general,Operations,,,operations
+,material condition,equipment and asset condition,navy,Safety,,,operations
+,fire drill,fire emergency response drill,general,Safety,,,operations
+,ETS,end of term of service date,army,Admin,,,admin
+,fitness report,annual performance evaluation,usmc,Admin,,,admin
+,medical readiness,health compliance and clearance status,general,Medical,,,medical
+,airman of the quarter,employee of the quarter,usaf,Leadership,,,leadership
+,clean bill of health,passed all compliance reviews,general,Performance,,,operations
+,CDB complete,completed career development board review,navy,Training,,,leadership
+,officer call,leadership-only meeting,general,Communication,,,operations
+,port and starboard,alternating two-shift rotation,navy,Operations,,,operations
+,downrange,in the operational area,general,Operations,,,operations
+,executed change of command,completed leadership transition,general,leadership,,,leadership
+,served as ADPE custodian,served as IT equipment custodian,usaf,technical,,,operations
+,CCC,command career counselor,navy,Admin,,,admin
+,flight line operations,aircraft ramp operations / apron management,general,aviation,,,operations
+,best in fleet,top-performing unit in the organization,navy,Performance,,,operations
+,equipment casualty,equipment failure/malfunction,navy,technical,,,operations
+,no findings,received zero audit findings,general,Performance,,,operations
+,days underway,days of deployed operations,navy,operations,,,operations
+,completed NCOA,completed mid-level leadership development course,usaf,training,,,leadership
+,reenlistment,contract renewal,general,Admin,,,admin
+,reporting aboard,checking in at new assignment,navy,Admin,,,admin
+,sustained exceptional performance,consistently delivered outstanding results,general,performance,,,operations
+,board certified,passed oral examination board,general,training,,,leadership
+,outstanding rating,achieved the highest performance rating,general,Performance,,,operations
+,in country,deployed to the region,general,Operations,,,operations
+,above and beyond,exceeded all performance expectations,general,Performance,,,operations
+,highest state of readiness,peak operational performance,general,Performance,,,operations
+,joint and combined operations,multi-organizational and international operations,general,operations,,,operations
+,received Letter of Commendation,received formal written recognition from senior leadership,general,admin,,,admin
+,RFI,ready for issue or fully serviceable,general,Equipment,,,operations
+,unfunded requirements list,unfunded budget request / supplemental funding request,general,financial,,,finance
+,earned 9-level,achieved superintendent-level certification,usaf,training,,,leadership
+,guided junior personnel,mentored entry-level employees,general,Leadership,,,leadership
+,pre-deployment workup,pre-assignment preparation and training,general,Operations,,,operations
+,supervised the training of,oversaw professional development for,general,leadership,,,leadership
+,supported ATG assessment,supported external readiness assessment team,navy,compliance,,,admin
+,combined operations,multi-organization collaborative operations,general,Operations,,,operations
+,submitted awards,submitted employee recognition nominations,army,admin,,,admin
+,passed INSURV,passed major regulatory compliance inspection,navy,compliance,,,admin
+,NSTM,Naval Ships Technical Manual / technical reference,navy,technical,,,operations
+,program objective memorandum,multi-year budget proposal / strategic financial plan,general,financial,,,finance
+,ORM,operational risk management assessment,navy,Safety,,,operations
+,movement to contact,proactive engagement / outreach operations,general,operations,,,operations
+,surge,increased operational capacity,general,Operations,,,operations
+,cost-benefit analysis,cost-benefit analysis / return on investment analysis,general,financial,,,finance
+,sustained operations,continuous operations / around-the-clock activities,general,operations,,,operations
+,medical readiness classification,employee health clearance status,general,medical,,,medical
+,earned information warfare designation,earned information operations warfare qualification,navy,training,,,leadership
+,groomed for command,developed for senior leadership,general,Leadership,,,leadership
+,heads up,advance notification of upcoming issue,general,Communication,,,operations
+,received Purple Heart,received combat injury recognition,general,admin,,,admin
+,OER,officer performance evaluation,army,Admin,,,admin
+,sustainment operations,ongoing support and resupply operations,general,logistics,,,logistics
+,school trained not yet qualified,completed coursework pending on-the-job certification,general,Training,,,leadership
+,served as OIC,served as officer-in-charge / program director,army,leadership,,,leadership
+,FYI traffic,information-only distribution,general,Communication,,,operations
+,completed deployment,completed extended field assignment,general,operations,,,operations
+,DD-214,certificate of release from employment,general,Admin,,,admin
+,syllabus complete,completed required curriculum,general,Training,,,leadership
+,detaching,separating from current assignment,navy,Admin,,,admin
+,safety violation,safety noncompliance finding,general,Safety,,,operations
+,participated in COMPTUEX,participated in comprehensive operational training exercise,navy,training,,,leadership
+,intelligence cycle,research and analysis lifecycle,general,intel,,,operations
+,survey,formal process for writing off damaged or lost equipment,general,Equipment,,,operations
+,operational readiness,organizational preparedness,general,Performance,,,operations
+,completed Warrior Leader Course,completed initial leadership development course,army,training,,,leadership
+,weapons qualification,proficiency certification / skills verification,general,training,,,leadership
+,dwell time,time between operational rotations,general,Operations,,,operations
+,instilled discipline,established accountability and work standards,general,Leadership,,,leadership
+,tasker,assigned project or action item from leadership,general,Communication,,,operations
+,PT standards,physical fitness standards,general,Medical,,,medical
+,Halon system,fixed gas fire suppression system,navy,technical,,,operations
+,frocked to Chief,given acting senior management authority,navy,admin,,,admin
+,key leader engagement,executive stakeholder relationship management,general,leadership,,,leadership
+,locked on,fully committed and focused,general,Performance,,,operations
+,A school graduate,completed initial technical training,navy,Training,,,leadership
+,served as first sergeant,served as senior enlisted manager for 100-200 personnel,army,leadership,,,leadership
+,set the example for others to follow,modeled professional behavior and performance,general,Leadership,,,leadership
+,class C mishap,severity level 3 incident with moderate impact,general,Safety,,,operations
+,sortie generation,flight operations throughput / aircraft mission launch rate,general,aviation,,,operations
+,fragmentary order,amendment to existing plan,general,Operations,,,operations
+,mission command,empowered leadership / decentralized decision-making,general,leadership,,,leadership
+,battle staff,executive operations team / crisis management team,general,leadership,,,leadership
+,pre-expend,pre-staged supplies for immediate use,general,Equipment,,,operations
+,resource management officer,budget manager / financial controller,general,financial,,,finance
+,contracting officer representative,contract manager / vendor relationship manager,general,financial,,,finance
+,ensured training readiness,verified all staff met training requirements,general,training,,,leadership
+,combat proven,validated through operational experience,general,Performance,,,operations
+,cross-deck,transferred equipment between units,navy,Equipment,,,operations
+,served as company gunnery sergeant,served as senior operations manager,usmc,leadership,,,leadership
+,squared away,thoroughly organized and prepared,general,Performance,,,operations
+,served as security manager,served as information security program manager,navy,security,,,operations
+,full send,committed fully to achieving the objective,general,Performance,,,operations
+,deployment ready,certified operationally ready,general,compliance,,,admin
+,conducted change of command inventory,conducted leadership transition property audit,army,admin,,,admin
+,unmatched technical expertise,unparalleled technical expertise in the field,general,performance,,,operations
+,administrative reduction,demotion / reduction in grade,general,admin,,,admin
+,passed with flying colors,achieved superior results in evaluation,general,Performance,,,operations
+,raised the bar,elevated performance standards,general,Leadership,,,leadership
+,zero defect mentality,zero-error mindset / quality-first approach,general,performance,,,operations
+,phone tree,emergency communication cascade,general,Operations,,,operations
+,stood up a new unit,established a new department / launched a new team,general,leadership,,,leadership
+,access control,facility access control management,general,security,,,operations
+,safety investigation board,incident investigation committee,general,Safety,,,operations
+,frocked to,given acting authority at higher level,navy,admin,,,admin
+,intelligence preparation of the battlefield,comprehensive environmental analysis / market intelligence,general,intel,,,operations
+,danger tag,lockout/tagout safety tag,navy,technical,,,operations
+,attended SLC,completed senior supervisor leadership course,army,training,,,leadership
+,equipment readiness rate,equipment availability percentage,general,Equipment,,,operations
+,maintained the watch,ensured continuous operational coverage,navy,operations,,,operations
+,unified the effort,aligned cross-functional teams toward common goals,general,Leadership,,,leadership
+,range qualified,certified in equipment operation and safety,general,Training,,,leadership
+,safety petty officer,department safety coordinator,navy,Safety,,,operations
+,COOL program participant,enrolled in civilian credentialing program,general,Training,,,leadership
+,served as adjutant,served as chief administrative officer,general,leadership,,,leadership
+,tag-out procedures,lockout/tagout safety procedures,navy,technical,,,operations
+,brief sheet,one-page summary document,general,Communication,,,operations
+,Class IV supplies,construction materials,general,Equipment,,,operations
+,logistics support area,supply and distribution center,general,logistics,,,logistics
+,led joint operations,managed cross-functional initiatives,general,leadership,,,leadership
+,maintenance turnaround,aircraft servicing cycle / turnaround time,general,aviation,,,operations
+,requisition,purchase order or supply request,general,Equipment,,,operations
+,gas free engineering,atmospheric testing and safety certification,navy,Safety,,,operations
+,served as XO,served as deputy director/chief operating officer,navy,leadership,,,leadership
+,board qualified,passed comprehensive oral qualification examination,general,training,,,leadership
+,the finest Senior Chief I have served with,the most exceptional senior manager in my career,navy,performance,,,operations
+,general quarters drill,full-scale emergency response exercise,navy,training,,,leadership
+,convoy operations,coordinated fleet movement operations,army,Operations,,,operations
+,command fitness leader,unit physical fitness program coordinator,navy,Medical,,,medical
+,supported TSTA/FEP,supported multi-phase operational readiness training,navy,training,,,leadership
+,awarded Army Commendation Medal,received superior performance award,army,admin,,,admin
+,advanced to,promoted to,general,admin,,,admin
+,served as 3M work center supervisor,served as maintenance section supervisor,navy,technical,,,operations
+,conducted inventories,performed asset accountability audits,army,admin,,,admin
+,EAOS,end of active obligated service date,navy,Admin,,,admin
+,brought to bear,leveraged all available resources,general,Performance,,,operations
+,watch team supervisor,shift operations supervisor,navy,operations,,,operations
+,served as BN training NCO,served as organization training manager,army,training,,,leadership
+,SAPR victim advocate,confidential victim support specialist,general,Admin,,,admin
+,risk management framework,cybersecurity risk management framework / NIST compliance,general,cyber,,,cyber
+,CONUS,domestic United States,general,Operations,,,operations
+,briefed the CO,briefed senior executive leadership,navy,communication,,,operations
+,dual-hatted,served in dual roles simultaneously,general,Training,,,leadership
+,completed SOS,completed company-grade officer professional school,usaf,training,,,leadership
+,affirmative,yes or confirmed,general,Communication,,,operations
+,general court-martial,formal felony-level legal proceeding,general,legal,,,legal
+,annual training requirements,annual compliance and certification requirements,general,training,,,leadership
+,briefed the XO,briefed deputy director/COO,navy,communication,,,operations
+,COMSEC custodian,communications security custodian,general,security,,,operations
+,attached to,temporarily assigned to,general,admin,,,admin
+,Class III supplies,fuel and lubricants,general,Equipment,,,operations
+,held the watch,maintained oversight / served as duty manager,general,leadership,,,leadership
+,humanitarian assistance operations,disaster relief and humanitarian aid operations,general,operations,,,operations
+,top performer in division,ranked as top performer in department,general,performance,,,operations
+,100% accountability,maintained complete asset accountability,general,performance,,,operations
+,overmanned,staffed above authorized level,general,Admin,,,admin
+,HAZMAT program,hazardous materials management program,general,Safety,,,operations
+,command sponsorship,employee sponsorship / relocation assistance,general,admin,,,admin
+,earned Ranger tab,completed elite small unit leadership course,army,training,,,leadership
+,TM,technical manual or equipment documentation,army,Equipment,,,operations
+,operations center management,command center management / operations hub oversight,general,operations,,,operations
+,AFFF system,aqueous film-forming foam fire suppression system,navy,technical,,,operations
+,unmatched performance,top-tier performance among peers,general,Performance,,,operations
+,served as PQS coordinator,served as certification and qualification program manager,navy,training,,,leadership
+,trained the next generation,developed the talent pipeline,general,Leadership,,,leadership
+,entrusted with,selected to manage,general,Leadership,,,leadership
+,indications and warnings,early warning indicators / predictive analysis,general,intel,,,operations
+,stood up a command,established a new organization,general,Operations,,,operations
+,processed out-processing checklist,completed employee offboarding checklist,general,admin,,,admin
+,moved the needle,produced measurable improvement,general,Performance,,,operations
+,GQ,general quarters emergency readiness drill,navy,Safety,,,operations
+,served as section chief,served as team supervisor for 10-20 personnel,usaf,leadership,,,leadership
+,fleet returnee,experienced operational professional returning from field assignment,navy,operations,,,operations
+,set the tone,established organizational standards,general,Leadership,,,leadership
+,qualified as OOD,certified as senior operations shift supervisor,navy,operations,,,operations
+,eval/fitrep,annual performance review,navy,Admin,,,admin
+,talking points,prepared key messages for discussion,general,Communication,,,operations
+,completed Corporals Course,completed first-line supervisor course,usmc,training,,,leadership
+,completed Advanced Course,completed senior supervisor course,usmc,training,,,leadership
+,duty roster management,work schedule management / shift scheduling,general,admin,,,admin
+,trusted agent,key team member,general,Leadership,,,leadership
+,conducted ORI preparation,prepared organization for major readiness inspection,usaf,compliance,,,admin
+,fostered a culture of excellence,cultivated a high-performance work environment,general,Leadership,,,leadership
+,served on promotion board,served on promotion selection committee,army,admin,,,admin
+,OPTAR,operating target or department budget allocation,navy,Equipment,,,operations
+,check in/check out,in-process and out-process,general,Admin,,,admin
+,ESWS qualified,earned enlisted surface warfare specialist certification,navy,Training,,,leadership
+,officer record brief,professional profile / executive summary,general,admin,,,admin
+,prime power operations,large-scale power generation / electrical utility management,general,engineering,,,operations
+,interagency coordination,cross-organizational coordination,general,Operations,,,operations
+,property book,organizational property accountability record,army,Equipment,,,operations
+,humanitarian assistance,disaster relief and humanitarian aid,general,Operations,,,operations
+,assumed duties in the absence of,served as acting manager during absence of,general,leadership,,,leadership
+,direct report to,direct report to,general,leadership,,,leadership
+,on point,consistently accurate and reliable,general,Performance,,,operations
+,SIQ,on bed rest per medical order,navy,Medical,,,medical
+,conducted inventory,performed inventory audit,general,logistics,,,logistics
+,promote ahead of peers,recommended for early promotion over contemporaries,general,performance,,,operations
+,awarded Army Achievement Medal,received organizational achievement award,army,admin,,,admin
+,TA approved,approved for employer-funded education,general,Training,,,leadership
+,orders,assignment documentation,general,Admin,,,admin
+,counter-insurgency operations,complex security and stabilization operations,general,operations,,,operations
+,instructor qualified,certified as professional instructor,general,training,,,leadership
+,say again,please repeat for clarification,general,Communication,,,operations
+,classified material handling,sensitive document management / confidential records handling,general,admin,,,admin
+,by the numbers,following standard procedures step by step,general,Communication,,,operations
+,back on track,restored to standard performance,general,Performance,,,operations
+,operations order,detailed project execution plan,general,Operations,,,operations
+,high speed low drag,efficient and effective,general,Performance,,,operations
+,profile,medical work restriction documentation,army,Medical,,,medical
+,go-to person,subject matter expert and reliable contributor,general,Leadership,,,leadership
+,fully mission qualified,fully certified for all operational duties,general,training,,,leadership
+,communications security,information security / encrypted communications management,general,comms,,,operations
+,authority to operate,security authorization / system accreditation,general,cyber,,,cyber
+,decisive operations,primary effort / main objective operations,general,operations,,,operations
+,span of control,number of direct reports / management scope,general,leadership,,,leadership
+,Class VIII supplies,medical supplies and equipment,general,Equipment,,,operations
+,hoseman,fire suppression support operator,navy,operations,,,operations
+,counseling chit,performance counseling documentation,navy,Admin,,,admin
+,guidance from above,direction from senior management,general,Communication,,,operations
+,electrical safety program,electrical hazard prevention program,general,Safety,,,operations
+,served as NCOIC,served as senior noncommissioned supervisor,army,leadership,,,leadership
+,PHA,periodic health assessment,general,Medical,,,medical
+,served as command sergeant major,served as senior enlisted executive advisor,army,leadership,,,leadership
+,dental readiness,dental health compliance status,general,Medical,,,medical
+,served as LPO,served as front-line team lead,navy,leadership,,,leadership
+,served as division officer,served as department manager,navy,leadership,,,leadership
+,supported real-world operations,supported live operational missions,general,operations,,,operations
+,spot checks,quality assurance inspections,general,technical,,,operations
+,maintained TS/SCI clearance,holds active Top Secret/SCI security clearance,general,security,,,operations
+,decisive leadership,confident and timely decision-making,general,leadership,,,leadership
+,no safety violations,zero OSHA/safety violations,general,performance,,,operations
+,responsible for the welfare of,accountable for the well-being of,general,Leadership,,,leadership
+,REDCON level,readiness condition level,army,Operations,,,operations
+,lesson plan author,authored instructional materials and course content,general,Training,,,leadership
+,curriculum developer,designed and developed training materials,general,Training,,,leadership
+,number one of all peers,top-ranked employee among all peers,general,Performance,,,operations
+,PQS qualified in,professionally qualified and certified in,navy,training,,,leadership
+,PACOM AOR,Pacific region of operations,general,Operations,,,operations
+,passed inspection,achieved full compliance during audit,general,compliance,,,admin
+,cyber hygiene,cybersecurity best practices / security awareness,general,cyber,,,cyber
+,served in combat zone,served in high-risk operational environment,general,operations,,,operations
+,DRMO turn-in,coordinated surplus property disposal,general,logistics,,,logistics
+,administrative separation,involuntary termination / administrative discharge,general,admin,,,admin
+,earned air warfare designation,earned aviation operations warfare qualification,navy,training,,,leadership
+,spot check,unannounced compliance inspection,general,Safety,,,operations
+,served on command triad,served on executive leadership team,navy,leadership,,,leadership
+,served as squad leader,served as team supervisor for 9-13 personnel,army,leadership,,,leadership
+,task organized,restructured teams for specific objectives,general,leadership,,,leadership
+,pass the word,disseminate information,navy,Communication,,,operations
+,tireless work ethic,consistently high-performing,general,Leadership,,,leadership
+,IDP on file,individual development plan documented,general,Training,,,leadership
+,deckplate leader,hands-on frontline leader,navy,leadership,,,leadership
+,unity of effort,coordinated teamwork / aligned objectives,general,leadership,,,leadership
+,completed maintenance checks,completed preventive maintenance inspections,general,technical,,,operations
+,pinned Chief,promoted to senior management level,navy,admin,,,admin
+,briefed general officers,presented to C-suite executives,army,communication,,,operations
+,muster,accountability formation or roll call,navy,Admin,,,admin
+,medical evacuation operations,emergency patient transport / air ambulance operations,general,medical,,,medical
+,stood up the JOC,established the joint operations center,general,Operations,,,operations
+,stood EOOW watches,supervised 24/7 engineering plant operations as shift supervisor,navy,operations,,,operations
+,built unit cohesion,strengthened team collaboration and morale,general,Leadership,,,leadership
+,all-hands call,organization-wide town hall meeting,general,Communication,,,operations
+,served as senior enlisted advisor,served as senior workforce advisor,general,Leadership,,,leadership
+,developed lesson plans,created training curriculum / designed course materials,general,training,,,leadership
+,served as superintendent,served as senior operations superintendent,usaf,leadership,,,leadership
+,served as scene leader,served as on-scene incident commander,navy,operations,,,operations
+,produced intelligence estimates,produced analytical forecasts / risk assessments,general,intel,,,operations
+,command ombudsman,employee liaison and family support coordinator,navy,Admin,,,admin
+,no discrepancies noted,clean audit results with no findings,general,compliance,,,admin
+,surface warfare qualified,earned surface operations professional certification,navy,Training,,,leadership
+,budget execution,budget management and expenditure tracking,general,financial,,,finance
+,maintained satellite communications,managed satellite-based communications systems,general,comms,,,operations
+,signed off,certified and approved,general,Training,,,leadership
+,FMC,fully mission capable or fully operational,general,Equipment,,,operations
+,served as at-sea fire party member,served as emergency fire response team member,navy,operations,,,operations
+,Class IX supplies,repair parts and components,general,Equipment,,,operations
+,signed PQS for,certified personnel qualification completion for,navy,training,,,leadership
+,cross-trained,trained across multiple disciplines,general,Training,,,leadership
+,fit for duty,cleared for full work duties,general,Medical,,,medical
+,submitted SITREP,submitted status report to leadership,general,communication,,,operations
+,command and control,management oversight and coordination,general,leadership,,,leadership
+,explosive safety,explosive and ordnance safety protocols,general,Safety,,,operations
+,hand receipt,signed equipment custody document,army,Equipment,,,operations
+,established battle rhythm,established recurring operational cadence,general,leadership,,,leadership
+,read ahead,pre-meeting briefing materials,general,Communication,,,operations
+,confined space entry,confined space entry safety procedure,general,Safety,,,operations
+,triage operations,emergency patient prioritization / triage management,general,medical,,,medical
+,zero deficiencies,zero audit findings/deficiencies,general,compliance,,,admin
+,service record,official personnel file,general,Admin,,,admin
+,mishap free,zero workplace incidents,general,safety,,,operations
+,SITREP,situation report or status update,general,Communication,,,operations
+,mission debrief,after-action review meeting,general,Operations,,,operations
+,exceeds standards,consistently surpasses performance benchmarks,general,performance,,,operations
+,left seat right seat ride,supervised transition period with predecessor,army,Operations,,,operations
+,ran a tight ship,maintained high operational standards,general,Leadership,,,leadership
+,served as CPO mess president,served as senior management council president,navy,leadership,,,leadership
+,equipment serviceability rate,equipment availability / asset uptime rate,general,logistics,,,logistics
+,maintained AF Form 623,maintained individual training records,usaf,admin,,,admin
+,vulnerability assessment,security vulnerability assessment / penetration testing,general,cyber,,,cyber
+,preflight inspection,pre-operation safety inspection / equipment check,general,aviation,,,operations
+,mission planning,project planning and preparation,general,Operations,,,operations
+,a consummate professional,a consummate professional,general,performance,,,operations
+,selected as Blue Jacket of the Year,selected as top entry-level employee of the year,navy,performance,,,operations
+,must promote,highest recommendation for immediate promotion,general,performance,,,operations
+,copy,message received and understood,general,Communication,,,operations
+,PPE compliance,personal protective equipment compliance,general,Safety,,,operations
+,FLIPL,financial liability investigation for lost property,army,Equipment,,,operations
+,fiscal year planning,annual budget planning / fiscal year forecasting,general,financial,,,finance
+,delivered results under pressure,produced outcomes in demanding conditions,general,performance,,,operations
+,conducted ship-to-shore movement,coordinated complex personnel and equipment transfer operations,usmc,operations,,,operations
+,earned Enlisted Surface Warfare Specialist,earned advanced surface operations qualification,navy,training,,,leadership
+,forward deployed,assigned to remote operations,navy,operations,,,operations
+,special request chit,formal request form,navy,Admin,,,admin
+,anti-piracy operations,maritime law enforcement operations,navy,operations,,,operations
+,stand by,please wait for further information,general,Communication,,,operations
+,COMSEC material,encrypted communications material,general,security,,,operations
+,imagery intelligence,satellite and aerial imagery analysis,general,intel,,,operations
+,brought online,successfully launched,general,Performance,,,operations
+,served as CMEO,served as equal opportunity program manager,navy,admin,,,admin
+,FPCON,security alert level,general,Operations,,,operations
+,steady state,normal operations,general,Operations,,,operations
+,SNCO academy graduate,completed senior leadership development program,general,Training,,,leadership
+,hazard identification,workplace hazard identification,general,safety,,,operations
+,#1 of all E-7s,ranked #1 among all senior managers,navy,performance,,,operations
+,up and running,fully operational,general,Performance,,,operations
+,served as PME instructor,served as professional development instructor,usmc,training,,,leadership
+,earned Expert Infantry Badge,earned advanced infantry proficiency certification,army,training,,,leadership
+,up the chain,escalated to higher management,general,Communication,,,operations
+,indoc,new employee orientation program,general,Admin,,,admin
+,patrol base operations,forward operating base activities / remote site operations,general,operations,,,operations
+,held feet to the fire,enforced accountability for deliverables,general,Leadership,,,leadership
+,stability operations,stabilization and support activities,general,operations,,,operations
+,class B mishap,severity level 2 incident with significant damage,general,Safety,,,operations
+,threat assessment,risk assessment / threat analysis,general,intel,,,operations
+,counter-terrorism operations,counter-terrorism and force protection operations,general,operations,,,operations
+,THA,tool hazard analysis,general,Safety,,,operations
+,organizational-level maintenance,routine maintenance performed by operating unit,general,Equipment,,,operations
+,earned Airman of the Quarter,selected as employee of the quarter,usaf,performance,,,operations
+,tag out,lockout/tagout safety procedure,navy,Safety,,,operations
+,knocked it out of the park,far exceeded expectations,general,Performance,,,operations
+,noncombatant evacuation,civilian evacuation operations,general,operations,,,operations
+,served as battalion sergeant major,served as senior enlisted executive advisor for 800+ personnel,usmc,leadership,,,leadership
+,principal advisor to the commander,chief advisor to the executive director,general,Leadership,,,leadership
+,human intelligence,human source information gathering / interview-based research,general,intel,,,operations
+,combat stress control,crisis counseling / behavioral health support,general,medical,,,medical
+,marine of the quarter,employee of the quarter,usmc,Leadership,,,leadership
+,established communications architecture,designed and deployed network infrastructure,general,comms,,,operations
+,supply discipline,inventory control / asset accountability,general,logistics,,,logistics
+,fund execution rate,budget utilization rate / spend rate,general,financial,,,finance
+,conducted AAR,led post-project lessons learned review,general,communication,,,operations
+,stood watch,supervised operational shift,navy,operations,,,operations
+,passed LOE,passed engineering systems readiness examination,navy,compliance,,,admin
+,served as CO,served as commanding officer/chief executive,navy,leadership,,,leadership
+,CPO Mess,Senior Leadership Team,navy,leadership,,,leadership
+,FMF qualified,earned Fleet Marine Force qualification,navy,Training,,,leadership
+,conducted training,developed and delivered training,general,training,,,leadership
+,in-processing procedures,employee onboarding procedures,general,admin,,,admin
+,roger that,understood and acknowledged,general,Communication,,,operations
+,100% mission completion,achieved a 100% task completion rate,general,Performance,,,operations
+,material inspection,equipment condition assessment,navy,compliance,,,admin
+,fall protection,fall prevention and safety system,general,Safety,,,operations
+,set the standard,established the performance benchmark,general,Performance,,,operations
+,huddle up,quick team meeting,general,Communication,,,operations
+,CBRN drill,"chemical, biological, radiological, nuclear response drill",general,Safety,,,operations
+,from the ground up,from initial concept to completion,general,Performance,,,operations
+,career counselor,employee career advisor,general,Admin,,,admin
+,selected as Sailor of the Quarter,selected as employee of the quarter,navy,performance,,,operations
+,served as platoon sergeant,served as senior operations supervisor for 40+ personnel,usmc,leadership,,,leadership
+,maximum effort,full commitment to achieving results,general,Performance,,,operations
+,firemain system,facility fire water distribution system,navy,technical,,,operations
+,urinalysis coordinator,workplace drug testing program coordinator,general,Admin,,,admin
+,qualified in rate,earned professional certification in specialty,general,training,,,leadership
+,unfunded requirement,budget shortfall for required item,general,Equipment,,,operations
+,earned the trust and confidence of,earned the full confidence of senior leadership,general,performance,,,operations
+,flag it,highlight for leadership attention,general,Communication,,,operations
+,received Defense Meritorious Service Medal,received defense-level executive achievement award,general,admin,,,admin
+,master training specialist,certified master instructor / lead training facilitator,general,training,,,leadership
+,tech school graduate,completed technical skills training,usaf,Training,,,leadership
+,directed multi-echelon operations,managed multi-level organizational operations,general,leadership,,,leadership
+,accountability report,personnel status and location report,general,Operations,,,operations
+,backbone of the unit,essential to organizational success,general,Leadership,,,leadership
+,be advised,please note the following information,general,Communication,,,operations
+,completed advanced training,completed advanced professional development,general,training,,,leadership
+,exceeded readiness goals,surpassed operational preparedness targets,general,Performance,,,operations
+,manning document,staffing authorization document,general,Admin,,,admin
+,light duty,modified work assignment due to medical restriction,general,Medical,,,medical
+,built the team from scratch,recruited and developed a new team,general,Leadership,,,leadership
+,boots on the ground,deployed personnel,general,Operations,,,operations
+,charted the course,developed the strategic direction,navy,Leadership,,,leadership
+,medical supply management,pharmaceutical and medical supply chain management,general,medical,,,medical
+,served as platoon sergeant,served as senior operations supervisor for 30-50 personnel,army,leadership,,,leadership
+,served as platoon leader,served as operations team lead,army,leadership,,,leadership
+,coordinated with adjacent units,coordinated with peer departments / partner teams,general,operations,,,operations
+,network security monitoring,security operations center monitoring / SIEM management,general,cyber,,,cyber
+,undermanned,staffed below authorized level,general,Admin,,,admin
+,GMT complete,completed mandatory annual compliance training,general,Training,,,leadership
+,superior mission accomplishment,exceptional project delivery / outstanding results,general,performance,,,operations
+,brief up,present to leadership,general,Communication,,,operations
+,breaking in,onboarding and training,general,Training,,,leadership
+,battle damage assessment,impact and damage evaluation,general,Operations,,,operations
+,performed with distinction,delivered exceptional results / excelled,general,performance,,,operations
+,completed Career Course,completed mid-level supervisor course,usmc,training,,,leadership
+,drove results,consistently delivered measurable outcomes,general,Leadership,,,leadership
+,unity of command,clear reporting structure / single point of authority,general,leadership,,,leadership
+,meritorious promotion,performance-based early promotion,general,admin,,,admin
+,received Letter of Appreciation,received formal written appreciation from leadership,general,admin,,,admin
+,survivability positions,reinforced protective structures / hardened facilities,general,engineering,,,operations
+,aircraft weight and balance,load planning / weight distribution management,general,aviation,,,operations
+,coordinated with higher headquarters,coordinated with corporate headquarters / senior leadership,general,operations,,,operations
+,distinguished graduate,graduated with honors,general,Performance,,,operations
+,earned Airborne qualification,completed airborne operations certification,army,training,,,leadership
+,served as fire team leader,served as small team lead,general,leadership,,,leadership
+,in theater,on-site at operational location,general,operations,,,operations
+,unprecedented results,achieved historic performance milestones,general,Performance,,,operations
+,staff meeting,leadership coordination meeting,general,Communication,,,operations
+,net call,conference call or group communication,general,Communication,,,operations
+,rear detachment,home station support team,army,Operations,,,operations
+,safety observer,safety monitor,general,Safety,,,operations
+,network operations center,IT operations center / network management hub,general,comms,,,operations
+,personnel readiness,workforce readiness / staffing preparedness,general,admin,,,admin
+,PCS to,transferred/relocated to,general,admin,,,admin
+,MOS qualified,certified in occupational specialty,army,Training,,,leadership
+,IA deployment,individual deployment/temporary assignment,general,operations,,,operations
+,sustained superior performance,maintained outstanding results over an extended period,general,Performance,,,operations
+,zero lost time,zero lost-time incidents,general,performance,,,operations
+,sharpened the focus,refined team priorities and direction,general,Leadership,,,leadership
+,military justice,workplace disciplinary process / legal proceedings,general,legal,,,legal
+,corrective maintenance,corrective/reactive maintenance repair,general,technical,,,operations
+,reset operations,equipment refurbishment and reconditioning,general,logistics,,,logistics
+,at the deckplate level,at the operational/front-line level,navy,leadership,,,leadership
+,combat effective,fully operational and productive,general,performance,,,operations
+,operational command,executive oversight / operational authority,general,leadership,,,leadership
+,evening brief,end-of-day status meeting,general,Communication,,,operations
+,Class I supplies,food and subsistence items,general,Equipment,,,operations
+,after-action report,post-project lessons learned report,general,Operations,,,operations
+,relieved the watch,completed shift turnover,navy,operations,,,operations
+,mission-ready status,fully operational and prepared,general,performance,,,operations
+,managed a fighting force,managed a high-performance team,general,Leadership,,,leadership
+,PQS qualified,completed qualification program,navy,Training,,,leadership
+,watch station qualified,certified to operate independently at assigned station,navy,Training,,,leadership
+,qualified in rate,demonstrated competency in assigned specialty,navy,Training,,,leadership
+,bottom line up front,lead with the key conclusion,general,Communication,,,operations
+,billet,authorized position,navy,Admin,,,admin
+,correspondence management,business correspondence / official communications management,general,admin,,,admin
+,strength management,headcount management / workforce planning,general,admin,,,admin
+,honor graduate,top-ranked graduate,general,Performance,,,operations
+,TOC operations,tactical operations center management,army,Operations,,,operations
+,information operations,strategic communications / information management,general,operations,,,operations
+,received Meritorious Unit Commendation,received organizational merit award,general,admin,,,admin
+,redeployment,return from operational deployment,general,Operations,,,operations
+,battlespace,operational environment / competitive landscape,general,operations,,,operations
+,collective training event,team-based training exercise / group workshop,general,training,,,leadership
+,head count,personnel accountability check,general,Operations,,,operations
+,served as DCTT member,served as safety training team member,navy,training,,,leadership
+,cyber incident response,security incident response / breach containment,general,cyber,,,cyber
+,hand-picked by the CO,personally selected by the director,general,Leadership,,,leadership
+,served as urinalysis coordinator,served as substance abuse testing program coordinator,navy,admin,,,admin
+,3M system,planned maintenance management system,navy,Safety,,,operations
+,combat multiplier,force multiplier / high-impact contributor,general,performance,,,operations
+,CLEP tested,earned college credit through standardized testing,general,Training,,,leadership
+,garrison operations,routine facility and personnel management,army,Operations,,,operations
+,OPR,officer performance report,usaf,Admin,,,admin
+,completed Top Level School,completed executive leadership course,usmc,training,,,leadership
+,conducted PFT/CFT,completed organizational physical fitness assessment,usmc,training,,,leadership
+,page 13,administrative counseling record,navy,Admin,,,admin
+,aircraft availability rate,fleet availability rate / aircraft uptime percentage,general,aviation,,,operations
+,PCA,local reassignment,general,Admin,,,admin
+,MEB,medical evaluation board review,general,Medical,,,medical
+,GAR model,risk assessment tool,uscg,Safety,,,operations
+,performed PMS,executed scheduled preventive maintenance,navy,technical,,,operations
+,designated instructor,certified trainer,general,Training,,,leadership
+,managed a supply account,managed inventory account / procurement account,general,logistics,,,logistics
+,medical board,medical fitness for duty review board,general,Medical,,,medical
+,NMC,non-mission capable or out of service,general,Equipment,,,operations
+,ASI qualified,earned additional skill identifier certification,army,training,,,leadership
+,Class V supplies,ammunition and explosives,general,Equipment,,,operations
+,network operations,network administration / IT infrastructure management,general,cyber,,,cyber
+,mobilized for,activated/deployed for,general,operations,,,operations
+,OSHA compliance,workplace safety regulatory compliance,general,Safety,,,operations
+,allowance list,authorized inventory of required items,general,Equipment,,,operations
+,mentored junior leaders,mentored emerging leaders / coached new supervisors,general,leadership,,,leadership
+,selected as Sailor of the Year,selected as employee of the year,navy,performance,,,operations
+,flawless execution,error-free implementation,general,Performance,,,operations
+,maintenance availability,scheduled maintenance downtime window,general,Equipment,,,operations
+,liberty port,scheduled port visit,navy,Operations,,,operations
+,point paper,executive summary or issue brief,general,Communication,,,operations
+,stood OOD watches,served as senior operations shift supervisor responsible for all organizational activities,navy,operations,,,operations
+,completed SNCOA,completed senior leadership development course,usaf,training,,,leadership
+,stood watch as OOD,served as senior on-duty manager,navy,Leadership,,,leadership
+,signal support,IT support / communications infrastructure support,general,comms,,,operations
+,gain and loss report,personnel arrivals and departures report,general,Admin,,,admin
+,scored 600 on ACFT,achieved maximum score on physical fitness assessment,army,performance,,,operations
+,completed SABC training,completed self-aid/buddy care first responder training,usaf,training,,,leadership
+,PT DLCPO,Part-Time Division Senior Supervisor,navy,leadership,,,leadership
+,handled classified material,managed sensitive/classified information,general,security,,,operations
+,open-source intelligence,open-source data analysis / public information research,general,intel,,,operations
+,served as battle NCO,served as operations center shift supervisor,army,operations,,,operations
+,deadline,non-operational due to required maintenance,army,Equipment,,,operations
+,served as fire team leader,led 4-person tactical team,usmc,leadership,,,leadership
+,earned 5-level,achieved journeyman-level technical certification,usaf,training,,,leadership
+,managed USR report,managed unit status/readiness report,army,compliance,,,admin
+,plan of the day,daily schedule and announcements,navy,Communication,,,operations
+,air traffic control,air traffic management / airspace coordination,general,aviation,,,operations
+,unit citation,organizational achievement award,general,Performance,,,operations
+,stood the watch,maintained continuous operations,navy,Performance,,,operations
+,hit the ground running,achieved immediate productivity,general,Leadership,,,leadership
+,shift operations,rotating shift coverage / multi-shift operations,general,operations,,,operations
+,completed all prerequisite training,completed all required certifications,general,training,,,leadership
+,stacked the deck,assembled the strongest team and resources,general,Performance,,,operations
+,managed divisional 3M program,managed section-level preventive maintenance program,navy,technical,,,operations
+,hot wash,immediate after-action debrief,general,Communication,,,operations
+,BCA,body composition assessment,navy,Medical,,,medical
+,defensive cyber operations,cybersecurity defense / network security operations,general,cyber,,,cyber
+,light off,system startup/initialization,navy,technical,,,operations
+,individual training plan,personal development plan / individual learning plan,general,training,,,leadership
+,served aboard amphib,served aboard amphibious operations vessel,usmc,operations,,,operations
+,firewall five,received the maximum performance evaluation score,navy,Performance,,,operations
+,served as 3M coordinator,served as preventive maintenance program manager,navy,technical,,,operations
+,served as readiness NCO,served as organizational readiness coordinator,army,operations,,,operations
+,PEB,physical evaluation board review,general,Medical,,,medical
+,earned Air Assault qualification,completed helicopter assault operations certification,army,training,,,leadership
+,served as ESO,served as educational services officer / training coordinator,navy,training,,,leadership
+,field operations,remote site operations,army,Operations,,,operations
+,distribution management,distribution logistics / shipping and receiving management,general,logistics,,,logistics
+,safety council,safety review board,general,Safety,,,operations
+,earned the respect of,built credibility with,general,Leadership,,,leadership
+,served as DCTT team leader,served as safety training team lead,navy,training,,,leadership
+,logistics readiness,supply chain preparedness / operational logistics readiness,general,logistics,,,logistics
+,fleet logistics,enterprise-wide supply operations,navy,logistics,,,logistics
+,system hardening,security hardening / system configuration management,general,cyber,,,cyber
+,clean sweep,passed all inspection areas,general,Performance,,,operations
+,kept the lights on,ensured operational continuity,general,Performance,,,operations
+,COOP plan,continuity of operations plan,general,Operations,,,operations
+,put the mission first,prioritized organizational objectives,general,Leadership,,,leadership
+,exceeded standards,surpassed performance benchmarks,general,performance,,,operations
+,managed OPTAR,managed annual operating budget,navy,logistics,,,logistics
+,first to volunteer,proactively seeks challenging assignments,general,Leadership,,,leadership
+,medical logistics,healthcare supply chain / medical equipment management,general,medical,,,medical
+,mission planning cycle,project planning process / operational planning cycle,general,operations,,,operations
+,mission accomplished,objective achieved,general,Performance,,,operations
+,worked in S6,supported the unit IT/communications team by troubleshooting issues and restoring network services,Army,cyber,Common shorthand in bullets,,cyber
+,coordinated with BN S6,partnered with the unit IT team to resolve outages and restore service availability,Army,cyber,Battalion S6 coordination,,cyber
+,served as COMSEC custodian,"managed communications security controls, safeguarding cryptographic materials and ensuring compliance",All,compliance,Avoid too-classified wording; focus on compliance,,admin
+,worked with the IAO,partnered with the cybersecurity compliance lead to document controls and reduce security risk,All,cyber,IAO often means IA/RMF lead,,cyber
+,sent to BDE S1,routed personnel actions through the brigade HR office to meet administrative timelines,Army,administration,Personnel processing,,admin
+,synced with BDE S3,aligned plans and schedules with the operations office to support on-time execution,Army,operations,Ops planning coordination,,operations
+,coordinated with BDE S4,coordinated supply and sustainment requirements with the logistics office to prevent shortages,Army,logistics,Logistics coordination,,logistics
+,supported cutter operations,"supported vessel operations through planning, coordination, and readiness tracking",Coast Guard,operations,Coast Guard cutter term,,operations
+,qualified as boat crew,earned qualification as a small boat operations team member through training and evaluated performance,Coast Guard,training,Qualification pipeline,,leadership
+,led a boarding team,"led maritime inspection operations, ensuring safety, compliance, and effective execution",Coast Guard,security,ME/boarding operations,,operations
+,EOOW,"supervised engineering plant operations during high-risk shifts, ensuring safety compliance and operational continuity",Navy,operations,Nuclear/engineering watchstanding shorthand,,operations
+,EOW,"supervised technical operations during assigned shifts, accountable for equipment status and team performance",Navy,operations,Engineering watchstanding shorthand,,operations
+,PPWO,"led propulsion plant operations, coordinating personnel and equipment to maintain regulatory compliance",Navy,maintenance,Propulsion plant watchstanding,,maintenance
+,SRO,oversaw reactor operations and compliance activities to ensure safe and efficient plant performance,Navy,maintenance,Senior reactor operations shorthand,,maintenance
+,RO,monitored and controlled reactor systems to maintain safe operating parameters,Navy,maintenance,Reactor operator shorthand,,maintenance
+,EDPO,managed divisional maintenance planning and personnel development to improve readiness outcomes,Navy,leadership,Maintenance program management,,leadership
+,ER09,led urgent corrective maintenance actions to restore equipment availability and reduce downtime,Navy,maintenance,Engineering casualty shorthand,,maintenance
+,ERUL,coordinated rapid response logistics and maintenance actions to mitigate equipment failures and restore mission capability,Navy,maintenance,Urgent logistics shorthand,,maintenance
+,DIVO,"supervised 10–25 personnel while managing training, evaluations, and operational execution",Navy,leadership,Division officer shorthand,,leadership
+,DH,managed department-level operations and personnel performance across multiple teams,Navy,leadership,Department head shorthand,,leadership
+,SAR,coordinated emergency response operations to safeguard personnel and property under time-critical conditions,Coast Guard,operations,Search and rescue shorthand,,operations
+,AtoN,managed maritime navigation systems to ensure safe and compliant vessel traffic operations,Coast Guard,operations,Aids to navigation shorthand,,operations
+,TACLET,supported specialized maritime security operations within multi-agency environments,Coast Guard,operations,Tactical law enforcement shorthand,,operations
+,boat crew,executed small-team maritime operations ensuring mission success and personnel safety,Coast Guard,operations,Common CG term,,operations
+,boarding team,conducted compliance inspections and security operations to enforce maritime regulations,Coast Guard,compliance,Common CG term,,admin
+,1SG,"served as senior enlisted leader responsible for personnel readiness, discipline, and performance standards across a company-sized organization",Army,leadership,First Sergeant shorthand,,leadership
+,CSM,advised senior leadership while overseeing workforce standards and readiness across battalion-level operations,Army,leadership,Command Sergeant Major shorthand,,leadership
+,XO,"served as deputy operations manager coordinating planning, resources, and personnel execution",Army,leadership,Executive officer shorthand,,leadership
+,CDR,led organizational operations and personnel performance to achieve strategic objectives,Army,leadership,Commander shorthand,,leadership
+,BN S3,coordinated operational planning and execution across multiple teams to meet mission timelines,Army,operations,Staff shorthand,,operations
+,BDE S4,managed brigade-level logistics operations ensuring supply continuity and accountability,Army,logistics,Staff shorthand,,logistics
+,J3,coordinated joint operational planning and execution across multi-service teams,All,operations,Joint staff shorthand,,operations
+,J4,managed joint logistics planning and supply chain execution across multiple units,All,logistics,Joint staff shorthand,,logistics
+,J2,integrated multi-source intelligence to support strategic decision-making,All,intelligence,Joint staff shorthand,,intelligence
+,J6,oversaw enterprise communications and IT operations supporting mission continuity,All,cyber,Joint staff shorthand,,cyber
+,G3,managed organizational operations planning and readiness tracking,Army,operations,Army staff shorthand,,operations
+,G4,oversaw logistics strategy and resource distribution to sustain operations,Army,logistics,Army staff shorthand,,logistics
+,maintained 100% accountability,"ensured complete asset accountability, preventing discrepancies and compliance violations",All,logistics,High-frequency eval bullet stem,,logistics
+,led X personnel,"supervised a team of X personnel, driving performance and measurable operational outcomes",All,leadership,Template placeholder; replace X when known,,leadership
+,trained X personnel,"delivered structured training to X team members, improving readiness and performance standards",All,training,Template placeholder; replace X when known,,leadership
+,reduced downtime,implemented corrective actions that decreased equipment downtime and improved operational availability,All,maintenance,Outcome phrasing,,maintenance
+,improved readiness,improved operational readiness through targeted training and maintenance initiatives,All,operations,Outcome phrasing,,operations
+,conducted inspections,performed compliance audits identifying gaps and implementing corrective action plans,All,compliance,Inspection mapping,,admin

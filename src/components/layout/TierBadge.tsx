@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 interface TierInfo {
-  plan: string;
+  tier: string;
   expires_at: string | null;
 }
 
 export function TierBadge() {
-  const [tier, setTier] = useState<TierInfo>({ plan: 'free', expires_at: null });
+  const [tierInfo, setTierInfo] = useState<TierInfo>({ tier: 'free', expires_at: null });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,21 +20,21 @@ export function TierBadge() {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('plan, plan_expires_at')
+          .select('tier, plan_expires_at')
           .eq('user_id', user.id)
           .single();
 
         if (profile) {
-          // Check if plan has expired client-side
-          if (profile.plan === 'full' && profile.plan_expires_at) {
+          // Check if tier has expired client-side
+          if ((profile.tier === 'full' || profile.tier === 'core') && profile.plan_expires_at) {
             const expiresAt = new Date(profile.plan_expires_at);
             if (expiresAt < new Date()) {
-              setTier({ plan: 'free', expires_at: null });
+              setTierInfo({ tier: 'expired', expires_at: null });
             } else {
-              setTier({ plan: profile.plan, expires_at: profile.plan_expires_at });
+              setTierInfo({ tier: profile.tier, expires_at: profile.plan_expires_at });
             }
           } else {
-            setTier({ plan: profile.plan || 'free', expires_at: profile.plan_expires_at });
+            setTierInfo({ tier: profile.tier || 'free', expires_at: profile.plan_expires_at });
           }
         }
       }
@@ -52,27 +52,26 @@ export function TierBadge() {
   useEffect(() => {
     const handleTierUpdate = () => {
       setLoading(true);
-      // Re-fetch tier info
       const fetchTier = async () => {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('plan, plan_expires_at')
+            .select('tier, plan_expires_at')
             .eq('user_id', user.id)
             .single();
 
           if (profile) {
-            if (profile.plan === 'full' && profile.plan_expires_at) {
+            if ((profile.tier === 'full' || profile.tier === 'core') && profile.plan_expires_at) {
               const expiresAt = new Date(profile.plan_expires_at);
               if (expiresAt < new Date()) {
-                setTier({ plan: 'free', expires_at: null });
+                setTierInfo({ tier: 'expired', expires_at: null });
               } else {
-                setTier({ plan: profile.plan, expires_at: profile.plan_expires_at });
+                setTierInfo({ tier: profile.tier, expires_at: profile.plan_expires_at });
               }
             } else {
-              setTier({ plan: profile.plan || 'free', expires_at: profile.plan_expires_at });
+              setTierInfo({ tier: profile.tier || 'free', expires_at: profile.plan_expires_at });
             }
           }
         }
@@ -112,7 +111,7 @@ export function TierBadge() {
     }
   };
 
-  const config = tierConfig[tier.plan] || tierConfig.free;
+  const config = tierConfig[tierInfo.tier] || tierConfig.free;
 
   // Format expiration for display
   const formatExpiration = (dateStr: string) => {
@@ -138,9 +137,9 @@ export function TierBadge() {
           <span className="font-medium text-sm">
             {config.label}
           </span>
-          {tier.expires_at && (tier.plan === 'core' || tier.plan === 'full') && (
+          {tierInfo.expires_at && (tierInfo.tier === 'core' || tierInfo.tier === 'full') && (
             <p className="text-xs opacity-70">
-              {formatExpiration(tier.expires_at)}
+              {formatExpiration(tierInfo.expires_at)}
             </p>
           )}
         </div>

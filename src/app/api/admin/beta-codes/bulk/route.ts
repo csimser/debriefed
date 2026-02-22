@@ -102,9 +102,8 @@ export async function POST(request: NextRequest) {
       .select()
 
     if (error) {
-      console.error('Error creating bulk codes:', error)
-      console.error('Error details:', JSON.stringify(error, null, 2))
-      return NextResponse.json({ error: error.message || 'Database error' }, { status: 400 })
+      console.error('Error creating bulk codes:', error?.code || 'unknown')
+      return NextResponse.json({ error: 'Failed to create codes' }, { status: 400 })
     }
 
     if (!data || data.length === 0) {

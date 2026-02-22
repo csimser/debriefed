@@ -39,14 +39,14 @@ export async function GET(request: NextRequest) {
     // Get all usage
     const usage = await getAllUsage(user.id);
 
-    // Get active subscription details if any
+    // Get active subscription details (most recently purchased first)
     const { data: subscription } = await supabase
       .from('subscriptions')
       .select('*')
       .eq('user_id', user.id)
       .eq('status', 'active')
       .gt('expires_at', new Date().toISOString())
-      .order('expires_at', { ascending: false })
+      .order('started_at', { ascending: false })
       .limit(1)
       .single();
 

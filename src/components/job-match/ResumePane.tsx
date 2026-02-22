@@ -23,16 +23,26 @@ export function ResumePane({ resume, analysis }: ResumePaneProps) {
   const keywordsFound = analysis?.keywordsFound || []
   const keywordsMissing = analysis?.keywordsMissing || []
 
-  // Function to highlight keywords in text
-  const highlightText = (text: string) => {
-    if (!text || (!keywordsFound.length && !keywordsMissing.length)) return text
+  // Escape HTML special chars to prevent XSS when using dangerouslySetInnerHTML
+  const escapeHtml = (str: string) =>
+    str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-    let result = text
+  // Escape regex special chars in keyword strings
+  const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  // Function to highlight keywords in text (XSS-safe)
+  const highlightText = (text: string) => {
+    if (!text || (!keywordsFound.length && !keywordsMissing.length)) return escapeHtml(text)
+
+    const escaped = escapeHtml(text)
+
+    let result = escaped
 
     // Highlight found keywords in green
     keywordsFound.forEach((kw: string) => {
-      const regex = new RegExp(`\\b${kw}\\b`, 'gi')
-      result = result.replace(regex, `<span class="bg-status-green/30 text-status-green px-1 rounded">${kw}</span>`)
+      const safeKw = escapeRegex(escapeHtml(kw))
+      const regex = new RegExp(`\\b${safeKw}\\b`, 'gi')
+      result = result.replace(regex, (match) => `<span class="bg-status-green/30 text-status-green px-1 rounded">${match}</span>`)
     })
 
     return result

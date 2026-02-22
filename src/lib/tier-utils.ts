@@ -1,6 +1,8 @@
 // Utility functions for consistent tier checking across the application
 // This ensures all tier-related logic uses the same validation
 
+import { PRICING_TIERS, type TierId, type TierLimits } from '@/lib/pricing-config'
+
 export type Tier = 'free' | 'core' | 'full' | 'expired'
 
 // Tier hierarchy for access checks
@@ -81,75 +83,22 @@ export function canAccessLinkedInAnalyzer(tier: Tier): boolean {
   return hasAccess(tier, 'full')
 }
 
-// Usage limits per tier (matches pricing-config.ts)
-// Note: 'resumes' is kept as an alias for 'private_resumes' for backward compat
+// Usage limits per tier — derived from pricing-config.ts (single source of truth)
+// 'resumes' is an alias for 'private_resumes' for backward compat
 // with ResumeEditor and ResumeSidebar components
-export const TIER_LIMITS = {
-  expired: {
-    private_resumes: 999,
-    federal_resumes: 999,
-    resumes: 999,           // alias for private_resumes (backward compat)
-    cover_letters: 0,
-    resume_imports: 0,
-    job_match_analysis: 0,
-    ai_summaries: 0,
-    linkedin_headline: 0,
-    linkedin_summary: 0,
-    linkedin_profile_analysis: 0,
-    linkedin_recommendations: 0,
-    eval_uploads: 0,
-    bullet_translations: 0,
-    downloads: 999,
-  },
-  free: {
-    private_resumes: 5,
-    federal_resumes: 5,
-    resumes: 5,             // alias for private_resumes (backward compat)
-    cover_letters: 999,
-    resume_imports: 3,
-    job_match_analysis: 999,
-    ai_summaries: 0,
-    linkedin_headline: 0,
-    linkedin_summary: 0,
-    linkedin_profile_analysis: 0,
-    linkedin_recommendations: 0,
-    eval_uploads: 1,
-    bullet_translations: 999,
-    downloads: 999,
-  },
-  core: {
-    private_resumes: 10,
-    federal_resumes: 5,
-    resumes: 10,            // alias for private_resumes (backward compat)
-    cover_letters: 5,
-    resume_imports: 999,
-    job_match_analysis: 999,
-    ai_summaries: 999,
-    linkedin_headline: 999,
-    linkedin_summary: 999,
-    linkedin_profile_analysis: 0,
-    linkedin_recommendations: 0,
-    eval_uploads: 5,
-    bullet_translations: 999,
-    downloads: 999,
-  },
-  full: {
-    private_resumes: 999,
-    federal_resumes: 999,
-    resumes: 999,           // alias for private_resumes (backward compat)
-    cover_letters: 999,
-    resume_imports: 999,
-    job_match_analysis: 999,
-    ai_summaries: 999,
-    linkedin_headline: 999,
-    linkedin_summary: 999,
-    linkedin_profile_analysis: 999,
-    linkedin_recommendations: 999,
-    eval_uploads: 20,
-    bullet_translations: 999,
-    downloads: 999,
-  },
-} as const
+type TierLimitsWithAlias = TierLimits & { resumes: number }
+
+function buildTierLimits(tierId: TierId): TierLimitsWithAlias {
+  const limits = PRICING_TIERS[tierId].limits
+  return { ...limits, resumes: limits.private_resumes }
+}
+
+export const TIER_LIMITS: Record<Tier, TierLimitsWithAlias> = {
+  expired: buildTierLimits('expired'),
+  free: buildTierLimits('free'),
+  core: buildTierLimits('core'),
+  full: buildTierLimits('full'),
+}
 
 /**
  * Check if user has access to LinkedIn Recommendations
@@ -159,7 +108,7 @@ export function canAccessLinkedInRecommendations(tier: Tier): boolean {
   return hasAccess(tier, 'full')
 }
 
-export type LimitFeature = keyof typeof TIER_LIMITS.free
+export type LimitFeature = keyof TierLimitsWithAlias
 
 /**
  * Get the usage limit for a feature based on tier

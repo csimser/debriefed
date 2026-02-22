@@ -2,6 +2,7 @@
 // Handles tier checks, usage limits, and usage tracking
 
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createAdminSupabase } from '@supabase/supabase-js';
 import {
   PRICING_TIERS,
   DAILY_RATE_LIMITS,
@@ -10,6 +11,15 @@ import {
   FeatureName,
   FEATURE_DISPLAY_NAMES,
 } from '@/lib/pricing-config';
+
+// Admin client for write operations — does NOT depend on cookies/request context
+// Safe to use inside after() callbacks
+function getAdminClient() {
+  return createAdminSupabase(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export interface UsageCheckResult {
   allowed: boolean;
@@ -43,13 +53,13 @@ export function isAdmin(email: string | null | undefined): boolean {
 export async function getUserTier(userId: string): Promise<UserTierInfo> {
   const supabase = await createClient();
 
-  // Check for active or expired subscription (most recent first)
+  // Check for active or expired subscription (most recently purchased first)
   const { data: subscription } = await supabase
     .from('subscriptions')
     .select('id, tier, expires_at, status')
     .eq('user_id', userId)
     .or('status.eq.active,status.eq.expired')
-    .order('expires_at', { ascending: false })
+    .order('started_at', { ascending: false })
     .limit(1)
     .single();
 
@@ -148,20 +158,27 @@ export async function getUsage(
 }
 
 // Get daily usage count for a feature
+// Uses admin client to avoid cookie/auth issues and bypass RLS
 export async function getDailyUsage(
   userId: string,
   feature: FeatureName
 ): Promise<number> {
-  const supabase = await createClient();
-  const today = new Date().toISOString().split('T')[0];
+  const admin = getAdminClient();
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'UTC' });
 
-  const { data } = await supabase
+  const { data, error } = await admin
     .from('daily_usage')
     .select('count')
     .eq('user_id', userId)
     .eq('feature', feature)
     .eq('date', today)
-    .single();
+    .maybeSingle();
+
+  if (error) {
+    console.error(`[usage] getDailyUsage query failed for ${feature}/${userId}:`, error);
+    // FAIL SAFE: return high number to trigger limit, not 0 which allows unlimited
+    return 9999;
+  }
 
   return data?.count || 0;
 }
@@ -201,11 +218,19 @@ export async function checkLimit(
 
   // Check if feature is available in this tier
   if (limit === 0) {
+    // Still query actual usage so dashboard checklist can see dictionary-path activity
+    const { data: usageRows } = await supabase
+      .from('usage_tracking')
+      .select('count')
+      .eq('user_id', userId)
+      .eq('feature', feature);
+    const actualUsed = usageRows?.reduce((sum, row) => sum + (row.count || 0), 0) || 0;
+
     return {
       allowed: false,
       remaining: 0,
       limit: 0,
-      used: 0,
+      used: actualUsed,
       reason: `${FEATURE_DISPLAY_NAMES[feature]} is not available in the ${tierConfig.name} tier`,
     };
   }
@@ -288,7 +313,7 @@ export async function checkLimit(
   };
 }
 
-// Check daily rate limit (applies to Core and Full tiers)
+// Check daily rate limit (applies to all tiers)
 export async function checkDailyLimit(
   userId: string,
   feature: FeatureName
@@ -305,8 +330,8 @@ export async function checkDailyLimit(
 
   const { tier } = await getUserTier(userId);
 
-  // Daily limits only apply to Core and Full tiers
-  if (tier !== 'core' && tier !== 'full') {
+  // Daily limits apply to free, core, and full tiers
+  if (tier !== 'free' && tier !== 'core' && tier !== 'full') {
     return {
       allowed: true,
       remaining: 999999,
@@ -338,7 +363,7 @@ export async function canUseFeature(
     return tierCheck;
   }
 
-  // Check daily limit for Core and Full tiers
+  // Check daily limit for all tiers
   const dailyCheck = await checkDailyLimit(userId, feature);
   if (!dailyCheck.allowed) {
     return {
@@ -346,7 +371,7 @@ export async function canUseFeature(
       remaining: 0,
       limit: dailyCheck.limit,
       used: dailyCheck.used,
-      reason: `Daily limit reached for ${FEATURE_DISPLAY_NAMES[feature]}. Resets at midnight.`,
+      reason: `You've used your ${dailyCheck.limit} ${FEATURE_DISPLAY_NAMES[feature].toLowerCase()} today. Come back tomorrow or upgrade for more.`,
     };
   }
 
@@ -354,53 +379,85 @@ export async function canUseFeature(
 }
 
 // Increment usage counter
+// Uses admin client (service role key) so it works reliably inside after() callbacks
+// without depending on cookies/request context
 export async function incrementUsage(
   userId: string,
   feature: FeatureName
 ): Promise<boolean> {
-  const supabase = await createClient();
+  console.log('[usage-service] incrementUsage called with:', userId, feature);
+  const admin = getAdminClient();
 
-  // Admin doesn't need tracking
-  const email = await getUserEmail(userId);
-  if (isAdmin(email)) {
+  // Admin doesn't need tracking — check via direct query (no cookies needed)
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('email')
+    .eq('user_id', userId)
+    .single();
+
+  if (isAdmin(profile?.email)) {
+    console.log('[usage] ADMIN BYPASS — skipping all tracking for:', profile?.email);
     return true;
   }
 
-  const { tier, subscriptionId } = await getUserTier(userId);
+  // Get tier via admin client (most recently purchased first)
+  const { data: subscription } = await admin
+    .from('subscriptions')
+    .select('id, tier, started_at, expires_at, status')
+    .eq('user_id', userId)
+    .or('status.eq.active,status.eq.expired')
+    .order('started_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  let tier: TierId = 'free';
+  let subscriptionId: string | null = null;
+
+  if (subscription) {
+    const isExpired = new Date(subscription.expires_at) < new Date();
+    if (isExpired) {
+      tier = 'expired';
+    } else {
+      tier = subscription.tier as TierId;
+    }
+    subscriptionId = subscription.id;
+  } else {
+    // Check profiles table for tier
+    const { data: profileTier } = await admin
+      .from('profiles')
+      .select('tier')
+      .eq('user_id', userId)
+      .single();
+
+    const legacyTierMap: Record<string, TierId> = {
+      pro: 'core', basic: 'core', monthly: 'full', quarterly: 'full',
+    };
+    const pt = profileTier?.tier;
+    const mapped = pt ? (legacyTierMap[pt] || pt) : 'free';
+    tier = (['free', 'core', 'full'].includes(mapped) ? mapped : 'free') as TierId;
+  }
+
   const now = new Date();
-  const today = now.toISOString().split('T')[0];
+  const today = now.toLocaleDateString('en-CA', { timeZone: 'UTC' });
 
   // Get or create period bounds
   let periodStart: Date;
   let periodEnd: Date;
 
   if (tier === 'free' || tier === 'expired') {
-    // Free/expired tier: use a far past and future date for "lifetime"
     periodStart = new Date('2024-01-01');
     periodEnd = new Date('2099-12-31');
   } else if (subscriptionId) {
-    // Get subscription period
-    const { data: subscription } = await supabase
-      .from('subscriptions')
-      .select('started_at, expires_at')
-      .eq('id', subscriptionId)
-      .single();
-
-    if (subscription) {
-      periodStart = new Date(subscription.started_at);
-      periodEnd = new Date(subscription.expires_at);
-    } else {
-      periodStart = now;
-      periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    }
+    periodStart = new Date(subscription!.started_at);
+    periodEnd = new Date(subscription!.expires_at);
   } else {
-    // Fallback for legacy tier without subscription
     periodStart = new Date('2024-01-01');
     periodEnd = new Date('2099-12-31');
   }
 
-  // Atomic increment of usage_tracking via RPC (INSERT ... ON CONFLICT)
-  const { error: usageError } = await supabase.rpc('increment_usage_tracking', {
+  // === PERIOD TRACKING (usage_tracking table) ===
+  console.log(`[usage] period tracking: calling RPC increment_usage_tracking for ${feature}/${userId}`);
+  const { data: periodResult, error: usageError } = await admin.rpc('increment_usage_tracking', {
     p_user_id: userId,
     p_feature: feature,
     p_period_start: periodStart.toISOString(),
@@ -409,13 +466,12 @@ export async function incrementUsage(
   });
 
   if (usageError) {
-    console.error('RPC increment_usage_tracking failed, trying direct upsert:', usageError);
-    // Fallback: direct query if RPC doesn't exist (migration not applied)
+    console.error(`[usage] RPC increment_usage_tracking failed for ${feature}/${userId}:`, usageError);
+    // Fallback: direct query
     const pStart = periodStart.toISOString();
     const pEnd = periodEnd.toISOString();
 
-    // Try to update existing row first
-    const { data: existing } = await supabase
+    const { data: existing } = await admin
       .from('usage_tracking')
       .select('id, count')
       .eq('user_id', userId)
@@ -424,17 +480,17 @@ export async function incrementUsage(
       .maybeSingle();
 
     if (existing) {
-      const { error: updateError } = await supabase
+      const { error: updateError } = await admin
         .from('usage_tracking')
         .update({ count: existing.count + 1, updated_at: new Date().toISOString() })
         .eq('id', existing.id);
 
       if (updateError) {
-        console.error('Fallback update also failed:', updateError);
+        console.error(`[usage] Fallback update failed for ${feature}/${userId}:`, updateError);
         return false;
       }
     } else {
-      const { error: insertError } = await supabase
+      const { error: insertError } = await admin
         .from('usage_tracking')
         .insert({
           user_id: userId,
@@ -445,37 +501,81 @@ export async function incrementUsage(
         });
 
       if (insertError) {
-        console.error('Fallback insert also failed:', insertError);
+        console.error(`[usage] Fallback insert failed for ${feature}/${userId}:`, insertError);
         return false;
       }
     }
+  } else {
+    console.log(`[usage] RPC increment_usage_tracking succeeded for ${feature}/${userId}, new count:`, periodResult);
   }
 
-  // Also track daily usage for Core and Full tiers (atomic via RPC)
-  if (tier === 'core' || tier === 'full') {
-    const { error: dailyError } = await supabase.rpc('increment_daily_usage', {
-      p_user_id: userId,
-      p_feature: feature,
-      p_date: today,
-      p_amount: 1,
-    });
+  // === DAILY TRACKING (daily_usage table) ===
+  console.log('[usage] tier check for daily write:', tier, '| userId:', userId, '| feature:', feature);
+  if (tier === 'free' || tier === 'core' || tier === 'full') {
+    console.log(`[usage] daily tracking: direct write for ${feature}/${userId}, date=${today}`);
+    const { data: existing } = await admin
+      .from('daily_usage')
+      .select('id, count')
+      .eq('user_id', userId)
+      .eq('feature', feature)
+      .eq('date', today)
+      .maybeSingle();
 
-    if (dailyError) {
-      console.error('Failed to increment daily usage:', dailyError);
+    if (existing) {
+      const { error: updateError } = await admin
+        .from('daily_usage')
+        .update({ count: (existing.count || 0) + 1 })
+        .eq('id', existing.id);
+
+      if (updateError) {
+        console.error(`[usage] daily_usage update failed for ${feature}/${userId}:`, updateError);
+      } else {
+        console.log(`[usage] daily_usage updated for ${feature}/${userId}: ${existing.count} -> ${(existing.count || 0) + 1}`);
+      }
+    } else {
+      const { error: insertError } = await admin
+        .from('daily_usage')
+        .insert({ user_id: userId, feature, date: today, count: 1 });
+
+      if (insertError) {
+        console.error(`[usage] daily_usage insert failed for ${feature}/${userId}:`, insertError);
+      } else {
+        console.log(`[usage] daily_usage inserted for ${feature}/${userId}: count=1`);
+      }
     }
+  } else {
+    console.log(`[usage] skipping daily tracking for tier=${tier} (only free/core/full)`);
   }
 
+  console.log(`[usage] incremented ${feature} for ${userId} (tier: ${tier})`);
   return true;
 }
 
+// Clear all daily_usage rows for a user — gives a clean daily-limit slate
+// Uses admin client — safe in after() callbacks and webhook handlers
+export async function resetDailyUsage(userId: string): Promise<void> {
+  const admin = getAdminClient();
+  const { error } = await admin
+    .from('daily_usage')
+    .delete()
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error(`[usage] resetDailyUsage failed for ${userId}:`, error);
+  } else {
+    console.log(`[usage] daily_usage cleared for ${userId}`);
+  }
+}
+
 // Reset usage when user purchases a new subscription
+// Uses admin client — called from Stripe webhook (no user cookies)
 export async function resetUsageOnPurchase(
   userId: string,
   tier: TierId,
   subscriptionStartedAt: Date,
   subscriptionExpiresAt: Date
 ): Promise<void> {
-  const supabase = await createClient();
+  const admin = getAdminClient();
 
   // We don't delete old usage records, we just create new period records
   // The old records will be ignored due to period filtering
@@ -495,10 +595,11 @@ export async function resetUsageOnPurchase(
     'linkedin_profile_analysis',
     'linkedin_recommendations',
     'downloads',
+    'cover_letter_exports',
   ];
 
   for (const feature of features) {
-    await supabase.from('usage_tracking').upsert({
+    const { error } = await admin.from('usage_tracking').upsert({
       user_id: userId,
       feature,
       count: 0,
@@ -509,13 +610,24 @@ export async function resetUsageOnPurchase(
     }, {
       onConflict: 'user_id,feature,period_start',
     });
+
+    if (error) {
+      console.error(`[usage] resetUsageOnPurchase upsert failed for ${feature}/${userId}:`, error);
+    }
   }
 
+  // Clear daily limits so the user starts fresh
+  await resetDailyUsage(userId);
+
   // Update profile tier
-  await supabase
+  const { error: profileError } = await admin
     .from('profiles')
     .update({ tier })
     .eq('user_id', userId);
+
+  if (profileError) {
+    console.error(`[usage] resetUsageOnPurchase profile update failed for ${userId}:`, profileError);
+  }
 }
 
 // Get all usage for a user (for displaying in UI)
@@ -534,6 +646,7 @@ export async function getAllUsage(userId: string): Promise<Record<FeatureName, U
     'linkedin_profile_analysis',
     'linkedin_recommendations',
     'downloads',
+    'cover_letter_exports',
   ];
 
   const usage: Partial<Record<FeatureName, UsageCheckResult>> = {};

@@ -14,14 +14,17 @@ interface ExportMenuProps {
   onLimitReached?: (error: string, tier: string) => void
   isTemplateLocked?: boolean
   isUntitled?: boolean
+  downloadRemaining?: number
+  downloadLimit?: number
 }
 
-export function ExportMenu({ resumeId, resumeName, userId, template, resumeType = 'private', onLimitReached, isTemplateLocked, isUntitled }: ExportMenuProps) {
+export function ExportMenu({ resumeId, resumeName, userId, template, resumeType = 'private', onLimitReached, isTemplateLocked, isUntitled, downloadRemaining, downloadLimit }: ExportMenuProps) {
   const { triggerPostActionModal } = usePostActionModal()
   const { openUpgradeModal } = useUpgradeModal()
   const [isOpen, setIsOpen] = useState(false)
   const [exporting, setExporting] = useState<'pdf' | 'docx' | null>(null)
   const [limitError, setLimitError] = useState<string | null>(null)
+  const [downloadToast, setDownloadToast] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
   // Close on click outside
@@ -90,6 +93,11 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
       // Clear any previous limit error on successful download
       setLimitError(null)
 
+      // Read usage headers for free tier toast
+      const userTier = res.headers.get('X-User-Tier')
+      const dailyRemaining = res.headers.get('X-Daily-Remaining')
+      const dailyLimit = res.headers.get('X-Daily-Limit')
+
       // Download the file
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
@@ -100,6 +108,17 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
+
+      // Show remaining export count toast for free tier users
+      if (userTier === 'free' && dailyRemaining !== null && dailyLimit !== null) {
+        const remaining = parseInt(dailyRemaining, 10)
+        if (remaining <= 0) {
+          setDownloadToast('Resume downloaded \u00B7 Daily export limit reached. Resets tomorrow.')
+        } else {
+          setDownloadToast(`Resume downloaded \u00B7 ${remaining} of ${dailyLimit} exports remaining today`)
+        }
+        setTimeout(() => setDownloadToast(null), 5000)
+      }
 
       // Trigger post-action modal after successful download
       setTimeout(() => {
@@ -115,6 +134,19 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
 
   return (
     <div className="relative" ref={menuRef}>
+      {/* Download Success Toast */}
+      {downloadToast && (
+        <div className="absolute right-0 bottom-full mb-2 w-80 bg-status-green/10 border border-status-green/30 rounded-lg shadow-lg z-20 p-3">
+          <p className="text-sm text-status-green">{downloadToast}</p>
+          <button
+            onClick={() => setDownloadToast(null)}
+            className="absolute top-2 right-2 text-status-green/50 hover:text-status-green"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Limit Error Toast */}
       {limitError && (
         <div className="absolute right-0 bottom-full mb-2 w-72 bg-status-amber-dim border border-status-amber/30 rounded-lg shadow-lg z-20 p-3">
@@ -151,6 +183,15 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
           <span className="text-[10px] text-gold whitespace-nowrap">
             Name your resume to export
           </span>
+        )}
+        {downloadRemaining !== undefined && downloadLimit !== undefined && !isTemplateLocked && !isUntitled && (
+          downloadLimit >= 999
+            ? <span className="text-[10px] text-text-dim whitespace-nowrap">Downloads: ∞</span>
+            : downloadRemaining <= 0
+              ? <span className="text-[10px] text-status-red whitespace-nowrap">Download limit reached</span>
+              : downloadRemaining <= 3
+                ? <span className="text-[10px] text-status-amber whitespace-nowrap">{downloadRemaining} of {downloadLimit} downloads left</span>
+                : <span className="text-[10px] text-text-dim whitespace-nowrap">{downloadRemaining} of {downloadLimit} downloads left</span>
         )}
       </div>
 

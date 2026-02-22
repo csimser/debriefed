@@ -1,0 +1,113 @@
+military_phrase,civilian_phrase,branch,category,context_notes
+PMCS,preventive maintenance checks and services,army,equipment,
+COSAL allowance,authorized equipment and parts list,navy,equipment,
+controlled inventory item,high-value item requiring special tracking,general,equipment,
+bench stock,commonly used parts kept at the work center,general,equipment,
+PRT,physical readiness test or fitness assessment,navy,medical,
+deployment health assessment,pre- and post-assignment medical screening,general,medical,
+Class VII supplies,major end items and capital equipment,general,equipment,
+on hand,currently in stock,general,equipment,
+combat stress,work-related stress and mental health concern,general,medical,
+FEP,fitness enhancement program,navy,medical,
+DRMO,surplus property disposal,general,equipment,
+turn-in,returned equipment to supply,general,equipment,
+open purchase,commercial off-the-shelf procurement,general,equipment,
+PMS,planned maintenance system,navy,equipment,
+master fitness trainer,certified physical fitness program leader,army,medical,
+ACFT,army combat fitness test,army,medical,
+sick call,walk-in medical appointment,general,medical,
+medical hold,held at current assignment pending medical evaluation,general,medical,
+on order,ordered and pending delivery,general,equipment,
+cannibalize,sourced parts from another unit or system,general,equipment,
+shelf life item,item with expiration-based inventory management,general,equipment,
+APFT,physical fitness test,army,medical,
+purchase request,procurement authorization form,general,equipment,
+LIMDU,limited duty status due to medical condition,navy,medical,
+MRC,maintenance requirement card or procedure,navy,equipment,
+draw,issued equipment from supply,general,equipment,
+Class II supplies,clothing and individual equipment,general,equipment,
+PMC,partially mission capable or limited capability,general,equipment,
+inventory reconciliation,physical count verification against records,general,equipment,
+NIIN,national item identification number,general,equipment,
+NSN,national stock number for cataloged items,general,equipment,
+GPC,government purchase card or corporate procurement card,general,equipment,
+CIAL,component identification and authorization list,navy,equipment,
+end item,final assembled product or system,general,equipment,
+SARP,substance abuse rehabilitation program,general,medical,
+intermediate-level maintenance,repair performed at regional maintenance center,general,equipment,
+med down,unavailable for duty due to medical reason,general,medical,
+RFI,ready for issue or fully serviceable,general,equipment,
+survey,formal process for writing off damaged or lost equipment,general,equipment,
+PT standards,physical fitness standards,general,medical,
+pre-expend,pre-staged supplies for immediate use,general,equipment,
+cross-deck,transferred equipment between units,navy,equipment,
+equipment readiness rate,equipment availability percentage,general,equipment,
+Class IV supplies,construction materials,general,equipment,
+requisition,purchase order or supply request,general,equipment,
+command fitness leader,unit physical fitness program coordinator,navy,medical,
+Class III supplies,fuel and lubricants,general,equipment,
+TM,technical manual or equipment documentation,army,equipment,
+OPTAR,operating target or department budget allocation,navy,equipment,
+property book,organizational property accountability record,army,equipment,
+SIQ,on bed rest per medical order,navy,medical,
+profile,medical work restriction documentation,army,medical,
+Class VIII supplies,medical supplies and equipment,general,equipment,
+PHA,periodic health assessment,general,medical,
+dental readiness,dental health compliance status,general,medical,
+FMC,fully mission capable or fully operational,general,equipment,
+Class IX supplies,repair parts and components,general,equipment,
+hand receipt,signed equipment custody document,army,equipment,
+FLIPL,financial liability investigation for lost property,army,equipment,
+unfunded requirement,budget shortfall for required item,general,equipment,
+light duty,modified work assignment due to medical restriction,general,medical,
+Class I supplies,food and subsistence items,general,equipment,
+MEB,medical evaluation board review,general,medical,
+medical board,medical fitness for duty review board,general,medical,
+NMC,non-mission capable or out of service,general,equipment,
+Class V supplies,ammunition and explosives,general,equipment,
+allowance list,authorized inventory of required items,general,equipment,
+maintenance availability,scheduled maintenance downtime window,general,equipment,
+deadline,non-operational due to required maintenance,army,equipment,
+BCA,body composition assessment,navy,medical,
+PEB,physical evaluation board review,general,medical,
+worked in S6,supported the unit IT/communications team by troubleshooting issues and restoring network services,army,cyber,Common shorthand in bullets
+coordinated with BN S6,partnered with the unit IT team to resolve outages and restore service availability,army,cyber,Battalion S6 coordination
+served as COMSEC custodian,"managed communications security controls, safeguarding cryptographic materials and ensuring compliance",general,compliance,Avoid too-classified wording; focus on compliance
+worked with the IAO,partnered with the cybersecurity compliance lead to document controls and reduce security risk,general,cyber,IAO often means IA/RMF lead
+sent to BDE S1,routed personnel actions through the brigade HR office to meet administrative timelines,army,administration,Personnel processing
+synced with BDE S3,aligned plans and schedules with the operations office to support on-time execution,army,operations,Ops planning coordination
+coordinated with BDE S4,coordinated supply and sustainment requirements with the logistics office to prevent shortages,army,logistics,Logistics coordination
+supported cutter operations,"supported vessel operations through planning, coordination, and readiness tracking",uscg,operations,Coast Guard cutter term
+qualified as boat crew,earned qualification as a small boat operations team member through training and evaluated performance,uscg,training,Qualification pipeline
+led a boarding team,"led maritime inspection operations, ensuring safety, compliance, and effective execution",uscg,security,ME/boarding operations
+EOOW,"supervised engineering plant operations during high-risk shifts, ensuring safety compliance and operational continuity",navy,operations,Nuclear/engineering watchstanding shorthand
+EOW,"supervised technical operations during assigned shifts, accountable for equipment status and team performance",navy,operations,Engineering watchstanding shorthand
+PPWO,"led propulsion plant operations, coordinating personnel and equipment to maintain regulatory compliance",navy,maintenance,Propulsion plant watchstanding
+SRO,oversaw reactor operations and compliance activities to ensure safe and efficient plant performance,navy,maintenance,Senior reactor operations shorthand
+RO,monitored and controlled reactor systems to maintain safe operating parameters,navy,maintenance,Reactor operator shorthand
+EDPO,managed divisional maintenance planning and personnel development to improve readiness outcomes,navy,leadership,Maintenance program management
+ER09,led urgent corrective maintenance actions to restore equipment availability and reduce downtime,navy,maintenance,Engineering casualty shorthand
+ERUL,coordinated rapid response logistics and maintenance actions to mitigate equipment failures and restore mission capability,navy,maintenance,Urgent logistics shorthand
+DIVO,"supervised 10–25 personnel while managing training, evaluations, and operational execution",navy,leadership,Division officer shorthand
+DH,managed department-level operations and personnel performance across multiple teams,navy,leadership,Department head shorthand
+SAR,coordinated emergency response operations to safeguard personnel and property under time-critical conditions,uscg,operations,Search and rescue shorthand
+AtoN,managed maritime navigation systems to ensure safe and compliant vessel traffic operations,uscg,operations,Aids to navigation shorthand
+TACLET,supported specialized maritime security operations within multi-agency environments,uscg,operations,Tactical law enforcement shorthand
+boat crew,executed small-team maritime operations ensuring mission success and personnel safety,uscg,operations,Common CG term
+boarding team,conducted compliance inspections and security operations to enforce maritime regulations,uscg,compliance,Common CG term
+1SG,"served as senior enlisted leader responsible for personnel readiness, discipline, and performance standards across a company-sized organization",army,leadership,First Sergeant shorthand
+CSM,advised senior leadership while overseeing workforce standards and readiness across battalion-level operations,army,leadership,Command Sergeant Major shorthand
+XO,"served as deputy operations manager coordinating planning, resources, and personnel execution",army,leadership,Executive officer shorthand
+CDR,led organizational operations and personnel performance to achieve strategic objectives,army,leadership,Commander shorthand
+BN S3,coordinated operational planning and execution across multiple teams to meet mission timelines,army,operations,Staff shorthand
+BDE S4,managed brigade-level logistics operations ensuring supply continuity and accountability,army,logistics,Staff shorthand
+J3,coordinated joint operational planning and execution across multi-service teams,general,operations,Joint staff shorthand
+J4,managed joint logistics planning and supply chain execution across multiple units,general,logistics,Joint staff shorthand
+J2,integrated multi-source intelligence to support strategic decision-making,general,intelligence,Joint staff shorthand
+J6,oversaw enterprise communications and IT operations supporting mission continuity,general,cyber,Joint staff shorthand
+G3,managed organizational operations planning and readiness tracking,army,operations,Army staff shorthand
+G4,oversaw logistics strategy and resource distribution to sustain operations,army,logistics,Army staff shorthand
+led X personnel,"supervised a team of X personnel, driving performance and measurable operational outcomes",general,leadership,Template placeholder; replace X when known
+trained X personnel,"delivered structured training to X team members, improving readiness and performance standards",general,training,Template placeholder; replace X when known
+reduced downtime,implemented corrective actions that decreased equipment downtime and improved operational availability,general,maintenance,Outcome phrasing
+conducted inspections,performed compliance audits identifying gaps and implementing corrective action plans,general,compliance,Inspection mapping

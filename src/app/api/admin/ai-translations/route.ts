@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
   const { data, count, error } = await query
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to fetch translations' }, { status: 500 })
   }
 
   // Get counts by status

@@ -3,8 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage } from '@/lib/usage-tracking'
-import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
-import { canUseFeature, incrementUsage } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { translateTerm } from '@/lib/debriefed-token-saver/termLookup'
 import { callWithEscalation, getModelString } from '@/lib/ai-model'
@@ -36,8 +35,9 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .single()
 
-    // Admin bypass
-    if (!userProfile?.email || !ADMIN_BYPASS_EMAILS.includes(userProfile.email)) {
+    // Admin bypass using centralized isAdmin check (handles case normalization)
+    const userEmail = await getUserEmail(user.id)
+    if (!isAdmin(userEmail)) {
       const usageCheck = await canUseFeature(user.id, 'ai_summaries')
       if (!usageCheck.allowed) {
         return NextResponse.json({

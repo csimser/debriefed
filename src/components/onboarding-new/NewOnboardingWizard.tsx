@@ -202,7 +202,7 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
         .update({
           onboarding_completed: true,
           onboarding_skipped: true,
-          onboarding_step: step,
+          onboarding_step: STEPS.length,
           updated_at: new Date().toISOString(),
         })
         .eq('user_id', userId)

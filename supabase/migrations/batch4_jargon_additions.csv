@@ -1,0 +1,15 @@
+military_term,civilian_equivalent,context,category,example_military,example_civilian
+BDE S1,Brigade-level HR office,Often referenced in bullets for personnel actions and admin processing.,administration,Coordinated awards routing with BDE S1,Coordinated awards processing with the brigade HR office
+BDE S2,Brigade-level intelligence office,Used for intelligence reporting/briefing support.,intelligence,Submitted reports to BDE S2,Submitted reports to the brigade intelligence office
+BDE S3,Brigade-level operations office,"Used for training schedules, ops planning, tasking.",operations,Synced training calendar with BDE S3,Aligned training schedule with the operations office
+BDE S4,Brigade-level logistics office,"Used for supply, transportation, sustainment requests.",logistics,Tracked shortages with BDE S4,Tracked shortages with the logistics office
+BN S6,Battalion communications/IT office,Shorthand for unit IT/comms section.,cyber,Worked with BN S6 to restore SIPR,Partnered with the unit IT team to restore secure network services
+S6 shop,Unit IT/communications team,Informal way people refer to the comms/IT section.,cyber,Submitted ticket to the S6 shop,Submitted a service request to the IT support team
+COMSEC custodian,Communications security program manager,Role responsible for safeguarding cryptographic material and compliance.,compliance,Served as COMSEC custodian for the unit,Managed communications security controls and compliance for the organization
+IAO,Information assurance officer / cybersecurity compliance lead,Used across DoD; often means the person managing RMF/controls locally.,cyber,Worked with the IAO on RMF package,Partnered with the cybersecurity compliance lead on security control documentation
+G6,Senior-level communications/IT office (division/corps),Staff section responsible for communications and IT at higher headquarters.,cyber,Coordinated outage response with G6,Coordinated outage response with enterprise IT leadership
+J6,Joint communications/IT office,Joint staff section responsible for communications and IT.,cyber,Coordinated requirements with J6,Coordinated requirements with joint IT leadership
+cutter,operational ship / vessel,Coast Guard term for ships; shows up in bullets.,operations,Supported cutter maintenance availability,Supported vessel maintenance availability
+boat crew,small boat operations team,Coast Guard small boat ops term.,operations,Qualified as boat crew,Qualified as small boat operations team member
+boarding team,maritime law enforcement team,Common Coast Guard/ME term.,security,Led boarding team brief,Led law enforcement inspection team brief
+AtoN,Aids to Navigation,Coast Guard buoy/marker/navigation support mission.,operations,Supported AtoN mission planning,Supported navigation aids mission planning

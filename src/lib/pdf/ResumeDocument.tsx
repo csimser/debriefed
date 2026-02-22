@@ -272,14 +272,14 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                           </View>
                           <Text style={s.expCompany}>{exp.organization}{exp.location ? ` | ${exp.location}` : ''}</Text>
                           {bullets.length > 0 && (
-                            <View style={s.bullet}>
+                            <View style={s.bullet} wrap={false}>
                               <Text style={s.bulletChar}>{'\u2022'}</Text>
                               <Text style={s.bulletText}>{getBulletText(bullets[0])}</Text>
                             </View>
                           )}
                         </View>
                         {bullets.slice(1).map((b: any, bi: number) => (
-                          <View key={bi} style={s.bullet}>
+                          <View key={bi} style={s.bullet} wrap={false}>
                             <Text style={s.bulletChar}>{'\u2022'}</Text>
                             <Text style={s.bulletText}>{getBulletText(b)}</Text>
                           </View>
@@ -411,14 +411,14 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                       </View>
                       <Text style={s.expCompany}>{exp.organization}{exp.location ? ` | ${exp.location}` : ''}</Text>
                       {bullets.length > 0 && (
-                        <View style={s.bullet}>
+                        <View style={s.bullet} wrap={false}>
                           <Text style={s.bulletChar}>{'\u2022'}</Text>
                           <Text style={s.bulletText}>{getBulletText(bullets[0])}</Text>
                         </View>
                       )}
                     </View>
                     {bullets.slice(1).map((b: any, bi: number) => (
-                      <View key={bi} style={s.bullet}>
+                      <View key={bi} style={s.bullet} wrap={false}>
                         <Text style={s.bulletChar}>{'\u2022'}</Text>
                         <Text style={s.bulletText}>{getBulletText(b)}</Text>
                       </View>
@@ -573,14 +573,14 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                         {exp.salary && <Text style={s.expMeta}><Text style={s.expMetaLabel}>Salary: </Text>{exp.salary.startsWith('$') ? exp.salary : `$${exp.salary}`}</Text>}
                         <Text style={s.dutiesHeader}>Duties and Accomplishments:</Text>
                         {bullets.length > 0 && (
-                          <View style={s.bullet}>
+                          <View style={s.bullet} wrap={false}>
                             <Text style={s.bulletChar}>{'\u2022'}</Text>
                             <Text style={s.bulletText}>{getBulletText(bullets[0])}</Text>
                           </View>
                         )}
                       </View>
                       {bullets.slice(1).map((b: any, bi: number) => (
-                        <View key={bi} style={s.bullet}>
+                        <View key={bi} style={s.bullet} wrap={false}>
                           <Text style={s.bulletChar}>{'\u2022'}</Text>
                           <Text style={s.bulletText}>{getBulletText(b)}</Text>
                         </View>
@@ -611,7 +611,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                 {fedCertifications.map((c: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Certifications &amp; Licenses</Text>}
-                    <View style={s.bullet}>
+                    <View style={s.bullet} wrap={false}>
                       <Text style={s.bulletChar}>{'\u2022'}</Text>
                       <Text style={s.bulletText}>{c.name}{c.issuing_org ? ` \u2014 ${c.issuing_org}` : ''}</Text>
                     </View>
@@ -651,7 +651,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                 {fedTraining.map((t: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Job-Related Training</Text>}
-                    <View style={s.bullet}>
+                    <View style={s.bullet} wrap={false}>
                       <Text style={s.bulletChar}>{'\u2022'}</Text>
                       <Text style={s.bulletText}>{t.name}{t.provider ? ` \u2013 ${t.provider}` : ''}{t.completion_date ? ` (${t.completion_date})` : ''}{t.hours ? ` \u2013 ${t.hours} hours` : ''}</Text>
                     </View>
@@ -665,7 +665,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                 {fedLanguages.map((lang: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Language Skills</Text>}
-                    <View style={s.bullet}>
+                    <View style={s.bullet} wrap={false}>
                       <Text style={s.bulletChar}>{'\u2022'}</Text>
                       <Text style={s.bulletText}>{lang.language}: {getProficiencyLabel(lang.proficiency)}</Text>
                     </View>
@@ -679,7 +679,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                 {fedAffiliations.map((aff: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Professional Affiliations</Text>}
-                    <View style={s.bullet}>
+                    <View style={s.bullet} wrap={false}>
                       <Text style={s.bulletChar}>{'\u2022'}</Text>
                       <Text style={s.bulletText}>{aff.name}{aff.role ? ` \u2013 ${aff.role}` : ''}</Text>
                     </View>
@@ -693,7 +693,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                 {fedPublications.map((pub: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Publications</Text>}
-                    <View style={s.bullet}>
+                    <View style={s.bullet} wrap={false}>
                       <Text style={s.bulletChar}>{'\u2022'}</Text>
                       <Text style={s.bulletText}>{pub.title}{pub.publication ? `, ${pub.publication}` : ''}{pub.date ? ` (${pub.date})` : ''}</Text>
                     </View>
@@ -707,7 +707,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                 {profile.special_eligibility.map((elig: string, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.sectionTitle}>Special Hiring Authorities</Text>}
-                    <View style={s.bullet}>
+                    <View style={s.bullet} wrap={false}>
                       <Text style={s.bulletChar}>{'\u2022'}</Text>
                       <Text style={s.bulletText}>{elig}</Text>
                     </View>
@@ -801,7 +801,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                           <Text style={s.expDate}>{formatDateRange(exp.start_date, exp.end_date, exp.is_current, resumeType)}</Text>
                           <Text style={s.expCompany}>{exp.organization}{exp.location ? ` | ${exp.location}` : ''}</Text>
                           {bullets.length > 0 && (
-                            <View style={s.bullet}>
+                            <View style={s.bullet} wrap={false}>
                               <Text style={s.bulletChar}>{'\u2022'}</Text>
                               <Text style={s.bulletText}>{getBulletText(bullets[0])}</Text>
                             </View>
@@ -811,7 +811,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                       {bullets.length > 1 && (
                         <View style={{ paddingLeft: 16, borderLeftWidth: 2, borderLeftColor: '#e0e8ec' }}>
                           {bullets.slice(1).map((b: any, bi: number) => (
-                            <View key={bi} style={s.bullet}>
+                            <View key={bi} style={s.bullet} wrap={false}>
                               <Text style={s.bulletChar}>{'\u2022'}</Text>
                               <Text style={s.bulletText}>{getBulletText(b)}</Text>
                             </View>
@@ -944,14 +944,14 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                         <Text style={s.expDate}>{formatDateRange(exp.start_date, exp.end_date, exp.is_current, resumeType)}</Text>
                         <Text style={s.expCompany}>{exp.organization}{exp.location ? ` | ${exp.location}` : ''}</Text>
                         {bullets.length > 0 && (
-                          <View style={s.bullet}>
+                          <View style={s.bullet} wrap={false}>
                             <Text style={s.bulletChar}>{'\u00B7'}</Text>
                             <Text style={s.bulletText}>{getBulletText(bullets[0])}</Text>
                           </View>
                         )}
                       </View>
                       {bullets.slice(1).map((b: any, bi: number) => (
-                        <View key={bi} style={s.bullet}>
+                        <View key={bi} style={s.bullet} wrap={false}>
                           <Text style={s.bulletChar}>{'\u00B7'}</Text>
                           <Text style={s.bulletText}>{getBulletText(b)}</Text>
                         </View>
@@ -1141,14 +1141,14 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                         <Text style={s.expDate}>{formatDateRange(exp.start_date, exp.end_date, exp.is_current, resumeType)}</Text>
                         <Text style={s.expCompany}>{exp.organization}{exp.location ? ` | ${exp.location}` : ''}</Text>
                         {bullets.length > 0 && (
-                          <View style={s.bullet}>
+                          <View style={s.bullet} wrap={false}>
                             <Text style={s.bulletChar}>{'\u2022'}</Text>
                             <Text style={s.bulletText}>{getBulletText(bullets[0])}</Text>
                           </View>
                         )}
                       </View>
                       {bullets.slice(1).map((b: any, bi: number) => (
-                        <View key={bi} style={s.bullet}>
+                        <View key={bi} style={s.bullet} wrap={false}>
                           <Text style={s.bulletChar}>{'\u2022'}</Text>
                           <Text style={s.bulletText}>{getBulletText(b)}</Text>
                         </View>
@@ -1165,7 +1165,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                 {training.map((t: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.mainSectionTitle}>Job-Related Training</Text>}
-                    <View style={s.bullet}>
+                    <View style={s.bullet} wrap={false}>
                       <Text style={s.bulletChar}>{'\u2022'}</Text>
                       <Text style={s.bulletText}>{t.name}{t.provider ? ` \u2013 ${t.provider}` : ''}{t.completion_date ? ` (${t.completion_date})` : ''}</Text>
                     </View>
@@ -1179,7 +1179,7 @@ export function ResumeDocument({ content, resumeType, template: rawTemplate = 'c
                 {languages.map((lang: any, idx: number) => (
                   <View key={idx} wrap={false}>
                     {idx === 0 && <Text style={s.mainSectionTitle}>Language Skills</Text>}
-                    <View style={s.bullet}>
+                    <View style={s.bullet} wrap={false}>
                       <Text style={s.bulletChar}>{'\u2022'}</Text>
                       <Text style={s.bulletText}>{lang.language}: {getProficiencyLabel(lang.proficiency)}</Text>
                     </View>

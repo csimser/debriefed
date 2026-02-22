@@ -1,0 +1,26 @@
+acronym,full_term,civilian_explanation,branch,category
+EOOW,Engineering Officer of the Watch,"Shift supervisor responsible for engineering plant operations, safety compliance, and operational continuity.",Navy,operations
+EOW,Engineering Officer of the Watch,"Shift supervisor accountable for equipment status, operational decisions, and team performance.",Navy,operations
+PPWO,Propulsion Plant Watch Officer,"Led propulsion plant operations, coordinating personnel and equipment to maintain compliance and availability.",Navy,maintenance
+SRO,Senior Reactor Operator,"Oversaw reactor operations and compliance activities to ensure safe, efficient plant performance.",Navy,maintenance
+RO,Reactor Operator,Monitored and controlled reactor systems to maintain safe operating parameters.,Navy,maintenance
+EDPO,Engineering Department Program Officer,Managed maintenance planning and personnel development to improve readiness outcomes.,Navy,leadership
+ER09,Engineering casualty response (ER09),Led urgent corrective maintenance actions to restore equipment availability and reduce downtime.,Navy,maintenance
+ERUL,Engineering urgent logistics (ERUL),Coordinated rapid-response logistics and maintenance actions to mitigate failures and restore capability.,Navy,maintenance
+DIVO,Division Officer,"Front-line manager supervising 10–25 personnel; responsible for training, evaluations, and execution.",Navy,leadership
+DH,Department Head,"Department-level leader managing multi-team operations, performance, and readiness objectives.",Navy,leadership
+SAR,Search and Rescue,Coordinated time-critical emergency response operations to safeguard personnel and property.,Coast Guard,operations
+AtoN,Aids to Navigation,Managed/maintained navigation aids and compliance processes to support safe maritime operations.,Coast Guard,operations
+TACLET,Tactical Law Enforcement Team,Supported specialized maritime security operations in joint/multi-agency environments.,Coast Guard,operations
+1SG,First Sergeant,"Senior enlisted leader responsible for readiness, discipline, and personnel performance across a company-sized organization.",Army,leadership
+CSM,Command Sergeant Major,Senior advisor overseeing workforce standards and readiness across battalion-level operations.,Army,leadership
+XO,Executive Officer,"Deputy operations manager coordinating planning, resources, and execution.",Army,leadership
+CDR,Commander,"Organizational leader accountable for operations, personnel performance, and mission outcomes.",Army,leadership
+BN S3,Battalion S-3 (Operations),"Operations staff section coordinating planning, readiness tracking, and execution timelines.",Army,operations
+BDE S4,Brigade S-4 (Logistics),"Logistics staff section managing supply chain, distribution, and resource sustainment.",Army,logistics
+J3,Joint Operations (J-3),Joint operations section coordinating planning and execution across services.,All,operations
+J4,Joint Logistics (J-4),Joint logistics section managing supply chain planning and sustainment across units.,All,logistics
+J2,Joint Intelligence (J-2),Joint intelligence section integrating multi-source intel for decision support.,All,intelligence
+J6,Joint Communications/IT (J-6),Enterprise communications and IT section supporting service continuity and cybersecurity.,All,cyber
+G3,Operations (G-3),"Operations staff section coordinating planning, readiness tracking, and execution.",Army,operations
+G4,Logistics (G-4),"Logistics staff section managing sustainment, distribution, and resource planning.",Army,logistics

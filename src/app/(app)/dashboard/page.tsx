@@ -6,17 +6,17 @@ import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
 import { IncompleteProfileBanner } from '@/components/layout/IncompleteProfileBanner'
 import { OptInPrompt } from '@/components/layout/OptInPrompt'
 import { CommunityMissionWidget } from '@/components/dashboard/CommunityMissionWidget'
+import { DictionaryIntroModal } from '@/components/dictionary/DictionaryIntroModal'
 import Link from 'next/link'
 
 // Profile fields for completeness calculation
+// Only fields collected during signup (first/last/branch/rank) and onboarding (years_of_service, eas_date)
 const PROFILE_FIELDS = [
   'first_name',
   'last_name',
   'branch',
   'rank',
-  'rating_mos',
   'years_of_service',
-  'target_role',
   'eas_date',
 ]
 
@@ -57,31 +57,41 @@ export default async function DashboardPage() {
   const defaultSubscription = { tier: 'free' as const, tierName: 'Free', expiresAt: null, daysRemaining: null, isActive: true }
   const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
 
+  // Helper: query usage_tracking directly for checklist (bypasses admin short-circuit in checkLimit)
+  async function getFeatureUsageCount(userId: string, feature: string): Promise<number> {
+    const { data } = await supabase
+      .from('usage_tracking')
+      .select('count')
+      .eq('user_id', userId)
+      .eq('feature', feature)
+    return data?.reduce((sum, row) => sum + (row.count || 0), 0) || 0
+  }
+
   // Run ALL queries in parallel — they all only need user.id
   const [
     { count: resumeCount },
     { data: profile },
     subscriptionInfo,
-    jobMatchUsage,
-    coverLetterUsage,
-    linkedinUsage,
+    jobMatchUsed,
+    coverLetterUsed,
+    linkedinUsed,
     privateDownloadUsage,
     federalDownloadUsage,
   ] = user?.id
     ? await Promise.all([
         supabase.from('resumes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('profiles').select('first_name, last_name, branch, rank, rating_mos, years_of_service, target_role, eas_date, tier, onboarding_skipped, employer_sharing_opt_in, marketing_opt_in, opt_in_dismiss_count').eq('user_id', user.id).single(),
+        supabase.from('profiles').select('first_name, last_name, branch, rank, years_of_service, eas_date, tier, onboarding_skipped, employer_sharing_opt_in, marketing_opt_in, opt_in_dismiss_count, dictionary_intro_shown').eq('user_id', user.id).single(),
         getSubscriptionInfo(user.id),
-        checkLimit(user.id, 'job_match_analysis'),
-        checkLimit(user.id, 'cover_letters'),
-        checkLimit(user.id, 'linkedin_profile_analysis'),
+        getFeatureUsageCount(user.id, 'job_match_analysis'),
+        getFeatureUsageCount(user.id, 'cover_letters'),
+        getFeatureUsageCount(user.id, 'linkedin_profile_analysis'),
         checkLimit(user.id, 'private_resumes'),
         checkLimit(user.id, 'federal_resumes'),
       ])
     : [
         { count: 0 }, { data: null },
         defaultSubscription,
-        defaultUsage, defaultUsage, defaultUsage, defaultUsage, defaultUsage,
+        0, 0, 0, defaultUsage, defaultUsage,
       ]
 
   const tier = subscriptionInfo.tier
@@ -115,6 +125,11 @@ export default async function DashboardPage() {
       {/* Opt-In Prompt (existing users who haven't been asked) */}
       {user?.id && profile?.employer_sharing_opt_in === null && profile?.marketing_opt_in === null && (
         <OptInPrompt userId={user.id} dismissCount={profile?.opt_in_dismiss_count || 0} />
+      )}
+
+      {/* Dictionary Intro Modal (one-time, first login) */}
+      {user?.id && profile?.dictionary_intro_shown !== true && (
+        <DictionaryIntroModal userId={user.id} />
       )}
 
       {/* Feedback Banner */}
@@ -170,17 +185,17 @@ export default async function DashboardPage() {
             href="/resumes"
           />
           <ChecklistItem
-            done={(jobMatchUsage.used || 0) > 0}
+            done={jobMatchUsed > 0}
             label="Run a job match"
             href="/job-match"
           />
           <ChecklistItem
-            done={(coverLetterUsage.used || 0) > 0}
+            done={coverLetterUsed > 0}
             label="Generate a cover letter"
             href="/career-tools"
           />
           <ChecklistItem
-            done={(linkedinUsage.used || 0) > 0}
+            done={linkedinUsed > 0}
             label="Optimize your LinkedIn"
             href="/career-tools"
           />
@@ -191,12 +206,11 @@ export default async function DashboardPage() {
       <CommunityMissionWidget />
 
       {/* Upgrade Banner - shows for free users at 50%+ usage */}
-      {!isPaid && (jobMatchUsage.used || 0) + (coverLetterUsage.used || 0) + (privateDownloadUsage.used || 0) > 0 && (
+      {!isPaid && jobMatchUsed + coverLetterUsed + (privateDownloadUsage.used || 0) > 0 && (
         <UpgradeBanner
-          feature="features"
+          feature="AI features"
           tier={tier}
           variant="banner"
-          coreLimit={15}
         />
       )}
 

@@ -81,19 +81,20 @@ function PricingContent() {
               <span className="font-heading text-3xl font-bold text-status-green">$0</span>
               <span className="text-sm text-text-muted ml-1">forever</span>
             </div>
-            <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes" limit="5" />
-              <PricingFeature label="Federal Resumes" limit="5" />
-              <PricingFeature label="Dictionary Translations" limit="Unlimited" />
-              <PricingFeature label="Job Match (Dictionary)" limit="Unlimited" />
-              <PricingFeature label="Cover Letter Builder" limit="Unlimited" />
-              <PricingFeature label="Resume Imports" limit="3" />
-              <PricingFeature label="Downloads" limit="Unlimited" />
-              <PricingFeature label="Smart Apply" />
-              <PricingFeature label="Templates" limit="5" />
+            <ul className="flex-1 mb-6">
+              <PricingFeature label="Resumes" limit="5 total" />
+              <PricingFeature label="Federal Resumes" limit="2 total" />
+              <PricingFeature label="Templates" limit="All 6" />
+              <PricingFeature label="Dictionary Translations" limit="Unlimited (20/day)" />
+              <PricingFeature label="Job Analyses" limit="3 total" tooltip="3/day rate limit" />
+              <PricingFeature label="Cover Letters" limit="3 total" tooltip="3/day rate limit" />
+              <PricingFeature label="Cover Letter Exports" limit="5 total" tooltip="5/day rate limit" />
+              <PricingFeature label="Downloads" limit="5 total" tooltip="5/day rate limit" />
               <PricingFeature label="Eval Upload" limit="1" tooltip="First one's free — try AI eval parsing" />
-              <PricingFeature label="AI Features" unavailable isLast />
+              <PricingFeature label="Resume Imports" limit="3" />
+              <PricingFeature label="Smart Apply" isLast />
             </ul>
+            <p className="text-xs text-text-dim mb-4 text-center">*Daily rate limits apply</p>
             <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
               Get Started Free
             </Link>
@@ -107,20 +108,23 @@ function PricingContent() {
             <div className="font-heading text-2xl font-bold uppercase mb-2">Core</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">AI-powered tools to land the job</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$15</span>
+              <span className="font-heading text-3xl font-bold text-gold">$25</span>
               <span className="text-sm text-text-muted ml-1">/ 30 days</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes" limit="10" />
-              <PricingFeature label="Federal Resumes" limit="5" />
-              <PricingFeature label="AI Cover Letters" limit="5" />
+              <PricingFeature label="Resumes" limit="10 / 30 days" tooltip="5/day rate limit" />
+              <PricingFeature label="Federal Resumes" limit="5 / 30 days" tooltip="3/day rate limit" />
+              <PricingFeature label="Templates" limit="All 6" />
+              <PricingFeature label="AI Cover Letters" limit="10 / 30 days" tooltip="10/day rate limit" />
+              <PricingFeature label="AI Job Match Analysis" limit="10 / 30 days" tooltip="10/day rate limit" />
               <PricingFeature label="AI Summary Generation" limit="Unlimited" />
-              <PricingFeature label="AI Job Match Analysis" limit="Unlimited" />
               <PricingFeature label="AI LinkedIn Headlines & Summaries" limit="Unlimited" />
-              <PricingFeature label="Eval Uploads" limit="5" />
+              <PricingFeature label="Bullet Translations" limit="50 / 30 days" tooltip="50/day rate limit" />
+              <PricingFeature label="Eval Uploads" limit="10 / 30 days" tooltip="5/day rate limit" />
+              <PricingFeature label="Cover Letter Exports" limit="10 / 30 days" />
+              <PricingFeature label="Downloads" limit="10 / 30 days" tooltip="5/day rate limit" />
               <PricingFeature label="Resume Imports" limit="Unlimited" />
-              <PricingFeature label="Smart Apply" />
-              <PricingFeature label="Templates" limit="All 6" isLast />
+              <PricingFeature label="Smart Apply" isLast />
             </ul>
             <button
               onClick={() => handleCheckout('core')}
@@ -139,21 +143,23 @@ function PricingContent() {
             <div className="font-heading text-2xl font-bold uppercase mb-2">Full</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">Unlimited AI for serious job searches</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$30</span>
+              <span className="font-heading text-3xl font-bold text-gold">$50</span>
               <span className="text-sm text-text-muted ml-1">/ 90 days</span>
             </div>
             <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes" limit="Unlimited" />
-              <PricingFeature label="Federal Resumes" limit="Unlimited" />
-              <PricingFeature label="AI Cover Letters" limit="Unlimited" />
+              <PricingFeature label="Resumes" limit="Unlimited" tooltip="7/day rate limit" />
+              <PricingFeature label="Federal Resumes" limit="Unlimited" tooltip="7/day rate limit" />
+              <PricingFeature label="Templates" limit="All 6" />
+              <PricingFeature label="AI Cover Letters" limit="200 / 90 days" tooltip="15/day rate limit" />
+              <PricingFeature label="AI Job Match Analysis" limit="200 / 90 days" tooltip="15/day rate limit" />
               <PricingFeature label="AI Summaries" limit="Unlimited" />
-              <PricingFeature label="AI Job Match Analysis" limit="Unlimited" />
-              <PricingFeature label="LinkedIn Tools" limit="Unlimited" />
-              <PricingFeature label="LinkedIn Profile Analysis" limit="Unlimited" tooltip="Full tier exclusive" />
+              <PricingFeature label="AI LinkedIn Tools" limit="Unlimited" />
+              <PricingFeature label="LinkedIn Profile Analysis" tooltip="Full tier exclusive" />
               <PricingFeature label="LinkedIn Recommendations" tooltip="Full tier exclusive" />
-              <PricingFeature label="Eval Uploads" limit="20" />
-              <PricingFeature label="Smart Apply" />
-              <PricingFeature label="Templates" limit="All 6" isLast />
+              <PricingFeature label="Bullet Translations" limit="150 / 90 days" tooltip="75/day rate limit" />
+              <PricingFeature label="Eval Uploads" limit="30 / 90 days" tooltip="10/day rate limit" />
+              <PricingFeature label="Downloads" limit="Unlimited" tooltip="10/day rate limit" />
+              <PricingFeature label="Smart Apply" isLast />
             </ul>
             <button
               onClick={() => handleCheckout('full')}
@@ -174,7 +180,7 @@ function PricingContent() {
           <div className="text-sm text-text-muted mb-3">AI-powered eval parsing — works with any tier</div>
           <div className="mb-4">
             <span className="font-heading text-2xl font-bold text-gold">$5</span>
-            <span className="text-sm text-text-muted ml-1">/ 10 uploads</span>
+            <span className="text-sm text-text-muted ml-1">/ 5 uploads</span>
           </div>
           <p className="text-xs text-text-dim mb-4">Upload your eval as a photo or PDF. AI extracts and translates every bullet. Buy multiple packs anytime.</p>
           <button
@@ -188,7 +194,7 @@ function PricingContent() {
 
         {/* Footer Note */}
         <p className="text-center text-sm text-text-muted mt-8 max-w-2xl mx-auto">
-          All paid tiers include daily rate limits to ensure fair usage. Dictionary features are always unlimited.
+          All tiers include daily rate limits to ensure fair usage. Dictionary features are available on every plan.
         </p>
       </section>
     </>

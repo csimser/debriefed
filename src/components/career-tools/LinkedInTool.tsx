@@ -19,14 +19,31 @@ interface LinkedInToolProps {
   skills: string[]
   certifications?: any[]
   education?: any[]
-  isPro: boolean
+  hasPaidAccess: boolean
   userTier?: 'free' | 'core' | 'full' | 'expired'
   currentUsage?: number
   usageLimit?: number
   onBack: () => void
 }
 
-export function LinkedInTool({ userProfile, experiences, skills, certifications, education, isPro, userTier = 'free', currentUsage = 0, usageLimit = 999, onBack }: LinkedInToolProps) {
+// Credential formatting — ensure correct casing in headlines and about sections
+const CREDENTIAL_CASE_MAP: Record<string, string> = {
+  'pmp': 'PMP\u00AE', 'cissp': 'CISSP', 'cism': 'CISM', 'ceh': 'CEH',
+  'cysa+': 'CySA+', 'pentest+': 'PenTest+', 'security+': 'Sec+', 'sec+': 'Sec+',
+  'network+': 'Net+', 'net+': 'Net+', 'a+': 'A+', 'casp+': 'CASP+',
+  'ccsp': 'CCSP', 'cisa': 'CISA', 'itil': 'ITIL\u00AE',
+  'aws': 'AWS', 'azure': 'Azure',
+  'mba': 'MBA', 'ms': 'M.S.', 'bs': 'B.S.', 'ba': 'B.A.',
+  'capm': 'CAPM', 'comptia': 'CompTIA', 'dod': 'DoD',
+  'ts/sci': 'TS/SCI', 'secret': 'Secret', 'top secret': 'Top Secret',
+}
+function formatCredential(cert: string): string {
+  if (!cert) return ''
+  const lower = cert.toLowerCase().trim()
+  return CREDENTIAL_CASE_MAP[lower] || cert
+}
+
+export function LinkedInTool({ userProfile, experiences, skills, certifications, education, hasPaidAccess, userTier = 'free', currentUsage = 0, usageLimit = 999, onBack }: LinkedInToolProps) {
   const remaining = usageLimit - currentUsage
   // Mode toggle
   const [mode, setMode] = useState<'generate' | 'analyze'>('generate')
@@ -138,6 +155,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     }
     return false
   })
+  const [aboutTemplateIndex, setAboutTemplateIndex] = useState(0)
   const emphasisKey = emphasis.join(',')
   const selectedSkillsKey = selectedSkills.join(',')
   useEffect(() => {
@@ -146,6 +164,8 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tone, aboutLength, emphasisKey, leadWith, selectedSkillsKey])
+  // Reset template variant when tone or length changes
+  useEffect(() => { setAboutTemplateIndex(0) }, [tone, aboutLength])
 
   const getCivilianTitle = () => {
     if (!userProfile?.paygrade || !userProfile?.branch || rankEquivalents.length === 0)
@@ -159,7 +179,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     return match?.civilian_equivalent || targetRole || 'Professional'
   }
 
-  const handleDictGenerate = () => {
+  const handleDictGenerate = (overrideTemplateIndex?: number) => {
     if (!targetRole) {
       setError('Please enter your target role')
       return
@@ -181,13 +201,77 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     const values = buildLinkedInValues(userProfile, orderedSkills, certs.map((c: string) => ({ name: c })), education || [], civTitle, targetRole)
     const clearance = values['clearance'] || ''
     const industry = userProfile?.target_industry || targetRole
-    const topSkill = orderedSkills[0] || 'Operations'
-    const skill2 = orderedSkills[1] || ''
-    const topCert = certs[0] || ''
     const years = userProfile?.years_of_service || '10+'
-    const degree = values['degree'] || ''
 
-    // Helper: build headline, enforce 220 char limit, title case, deduplicate
+    // --- Credential ranking: use FULL cert stack ---
+    const HIGH_VALUE = ['PMP', 'CISSP', 'CISM', 'CCSP', 'CISA']
+    const CLOUD = ['AWS', 'AZURE', 'GCP']
+    const COMPTIA = ['CYSA+', 'PENTEST+', 'SECURITY+', 'SEC+', 'NETWORK+', 'NET+', 'A+', 'CASP+']
+    const rankCert = (cert: string): number => {
+      const upper = cert.toUpperCase().replace(/[®™]/g, '')
+      if (HIGH_VALUE.some(h => upper.includes(h))) return 100
+      if (CLOUD.some(c => upper.includes(c))) return 90
+      if (COMPTIA.some(c => upper.includes(c))) return 80
+      return 50
+    }
+    const rankedCerts = [...certs].sort((a, b) => rankCert(b) - rankCert(a))
+    const cert1 = formatCredential(rankedCerts[0] || '')
+    const cert2 = formatCredential(rankedCerts[1] || '')
+    const cert3 = formatCredential(rankedCerts[2] || '')
+
+    // Short degree label for headlines (MBA, M.S., B.S., etc.)
+    const degreeShort = formatCredential((() => {
+      const edu0 = (education || [])[0]
+      if (!edu0) return ''
+      const deg = (edu0.degree_type || edu0.degree || '').toLowerCase()
+      const field = (edu0.field_of_study || '').toLowerCase()
+      if (deg.includes('mba') || (deg.includes('master') && field.includes('business'))) return 'MBA'
+      if (deg.includes('master') || deg === 'ms' || deg === 'ma') return 'MS'
+      if (deg.includes('bachelor') || deg === 'bs' || deg === 'ba') return 'BS'
+      if (deg.includes('associate')) return 'AS'
+      if (deg.includes('phd') || deg.includes('doctor')) return 'PhD'
+      if (deg.length > 0 && deg.length <= 4) return deg.toUpperCase()
+      return ''
+    })())
+
+    // Short branch name for about section
+    const branchShort = (() => {
+      const b = (userProfile?.branch || '').toLowerCase()
+      if (b.includes('navy')) return 'Navy'
+      if (b.includes('army')) return 'Army'
+      if (b.includes('air') || b === 'air_force') return 'Air Force'
+      if (b.includes('marine')) return 'Marine Corps'
+      if (b.includes('coast')) return 'Coast Guard'
+      if (b.includes('space')) return 'Space Force'
+      return userProfile?.branch || 'military'
+    })()
+
+    // Top skills
+    const skill1 = orderedSkills[0] || 'Operations'
+    const skill2 = orderedSkills[1] || ''
+    const skill3 = orderedSkills[2] || ''
+
+    // Best achievement from experience bullets (prefer metric-heavy)
+    const allBullets = (experiences || []).flatMap((exp: any) => {
+      const bullets = exp.experience_bullets ?? exp.bullets ?? exp.achievements ?? []
+      return (Array.isArray(bullets) ? bullets : []).map((b: any) =>
+        typeof b === 'string' ? b : b?.translated_text || b?.original_text || ''
+      ).filter((b: string) => b.trim().length > 15)
+    })
+    const metricPattern = /\d{2,}%|\$[\d,.]+[KkMmBb]?|\b\d{2,}\b/
+    const metricBullet = allBullets.find((b: string) => metricPattern.test(b))
+    const bestAchievement = metricBullet || allBullets[0] || ''
+    const shortAchievement = bestAchievement
+      ? (bestAchievement.length > 80
+          ? bestAchievement.substring(0, bestAchievement.lastIndexOf(' ', 75)) + '...'
+          : bestAchievement)
+      : 'delivering measurable results across complex operations'
+    const topBullets = allBullets.slice(0, 3)
+
+    // Team size from rank
+    const teamSize = values['team_size'] || ''
+
+    // --- HEADLINE GENERATION ---
     const build = (parts: string[], toneTag: string): { text: string; tone: string } | null => {
       const filtered = parts.filter(Boolean)
       if (filtered.length < 2) return null
@@ -212,270 +296,187 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
     // --- Lead-with headline (user-selected priority) ---
     if (leadWith === 'experience') {
-      addUnique(build([`${years}+ Year ${industry} Veteran`, civTitle, topCert, topSkill], tone))
+      addUnique(build([`${years}-Year ${branchShort} Veteran`, civTitle, cert1, clearance], tone))
     } else if (leadWith === 'clearance' && clearance) {
-      addUnique(build([`${clearance} Cleared`, civTitle, industry, topSkill], tone))
-    } else if (leadWith === 'certification' && topCert) {
-      addUnique(build([`${topCert} Certified ${civTitle}`, industry, topSkill, clearance], tone))
+      addUnique(build([`${clearance} Cleared`, civTitle, industry, cert1], tone))
+    } else if (leadWith === 'certification' && cert1) {
+      addUnique(build([`${cert1} Certified ${civTitle}`, industry, cert2 || skill1, clearance], tone))
     } else if (leadWith === 'role') {
-      addUnique(build([civTitle, industry, `${years}+ Years`, topCert, clearance], tone))
+      addUnique(build([civTitle, industry, `${years}+ Years`, cert1, clearance], tone))
     } else if (leadWith === 'skill') {
-      addUnique(build([`${topSkill} Expert`, civTitle, industry, topCert], tone))
+      addUnique(build([`${skill1} Expert`, civTitle, industry, cert1], tone))
     }
 
-    // --- Professional tone variants (4) ---
-    // 1. [Title] | [Industry] | [Top Skill] | [Cert] | [Clearance]
-    addUnique(build([civTitle, industry, topSkill, topCert, clearance], 'professional'))
-    // 2. [Title] | [Cert] Certified | [Skill 1] & [Skill 2] | [Years]+ Years Experience
-    addUnique(build([
-      civTitle,
-      topCert ? `${topCert} Certified` : '',
-      skill2 ? `${topSkill} & ${skill2}` : topSkill,
-      `${years}+ Years Experience`,
-    ], 'professional'))
-    // 3. [Title] | [Degree] | [Cert] | [Clearance]
-    if (degree) addUnique(build([civTitle, degree.replace(/^a /i, ''), topCert, clearance], 'professional'))
-    // 4. [Years]+ Year [Industry] Veteran | [Title] | [Cert] | [Skill 1]
-    addUnique(build([`${years}+ Year ${industry} Veteran`, civTitle, topCert, topSkill], 'professional'))
+    // --- Professional tone (3+ headlines, rotating credentials) ---
+    // P1: Years Veteran | Role | Cert1 | Clearance
+    addUnique(build([`${years}-Year ${branchShort} Veteran`, civTitle, cert1, clearance], 'professional'))
+    // P2: Role | Cert2 | Degree | Years+ Years
+    addUnique(build([civTitle, cert2 || cert1, degreeShort, `${years}+ Years ${industry} Experience`], 'professional'))
+    // P3: Role | Cert1 + Cert2 combined | Clearance
+    if (cert2) {
+      addUnique(build([civTitle, `${cert1} | ${cert2}`, clearance || `${years}+ Years Experience`], 'professional'))
+    }
+    // P4: Role | Degree | Cert3 or Cert1 | Clearance
+    if (degreeShort) addUnique(build([civTitle, degreeShort, cert3 || cert1, clearance], 'professional'))
+    // P5: Skill-forward with different cert
+    addUnique(build([civTitle, skill1, cert3 || cert2 || cert1, `${years}+ Years`], 'professional'))
 
-    // --- Conversational tone variants (3) ---
-    // 5. [Title] helping [industry] organizations with [skill] and [skill] | [Cert]
-    const convSkillPhrase = skill2 ? `${topSkill} and ${skill2}` : topSkill
+    // --- Conversational tone (3+ headlines, rotating credentials) ---
+    // C1: From Branch to Industry — Role | Cert1 | Clearance
     addUnique(buildFree(
-      [
-        `${civTitle} helping ${industry} organizations with ${convSkillPhrase}`,
-        topCert,
-      ].filter(Boolean).join(' | '),
+      [`From ${branchShort} to ${industry} — ${civTitle}`, cert1, clearance].filter(Boolean).join(' | '),
       'conversational',
     ))
-    // 6. Passionate about [skill] and [skill] | [Title] | [Years]+ years in [industry]
+    // C2: Role helping Industry | Cert2 | Degree
     addUnique(buildFree(
-      [
-        `Passionate about ${convSkillPhrase}`,
-        civTitle,
-        `${years}+ years in ${industry}`,
-      ].join(' | '),
+      [`${civTitle} helping ${industry} organizations with ${skill1}${skill2 ? ` and ${skill2}` : ''}`, cert2 || cert1, degreeShort].filter(Boolean).join(' | '),
       'conversational',
     ))
-    // 7. From military service to [industry] — [Title] | [Cert] | [Clearance]
+    // C3: Passionate about Skills | Role | Years | Cert3
     addUnique(buildFree(
-      [
-        `From military service to ${industry} — ${civTitle}`,
-        topCert,
-        clearance,
-      ].filter(Boolean).join(' | '),
+      [`Passionate about ${skill1}${skill2 ? ` and ${skill2}` : ''}`, civTitle, `${years}+ years in ${industry}`, cert3 || cert1].filter(Boolean).join(' | '),
       'conversational',
     ))
 
-    // --- Bold & Direct tone variants (3) ---
-    // 8. [Title] → [Years]+ Years Driving [Skill] Results | [Cert] | [Clearance]
+    // --- Bold & Direct tone (3+ headlines, rotating credentials) ---
+    // B1: Role → Years driving results | Cert1 | Clearance
     addUnique(buildFree(
-      [
-        `${civTitle} → ${years}+ Years Driving ${topSkill} Results`,
-        topCert,
-        clearance,
-      ].filter(Boolean).join(' | '),
+      [`${civTitle} → ${years}+ Years Driving ${skill1} Results`, cert1, clearance ? `${clearance.replace(' Clearance', '')} Cleared` : ''].filter(Boolean).join(' | '),
       'bold',
     ))
-    // 9. [Industry] [Title] | [Cert] Certified | Proven Leader | [Clearance]
+    // B2: Mission-Driven Role | Cert1 + Cert2 | Industry
+    if (cert2) {
+      addUnique(build([`Mission-Driven ${civTitle}`, `${cert1} + ${cert2}`, `${years}+ Years ${industry}`], 'bold'))
+    } else {
+      addUnique(build([`Mission-Driven ${civTitle}`, cert1, `${years}+ Years ${industry}`, clearance], 'bold'))
+    }
+    // B3: Industry Role | Cert3 | Proven Leader | Clearance
     addUnique(build([
       `${industry} ${civTitle}`.replace(new RegExp(`${industry}\\s+${industry}`, 'i'), industry),
-      topCert ? `${topCert} Certified` : '',
+      cert3 || cert2 || cert1,
       'Proven Leader',
       clearance ? `${clearance.replace(' Clearance', '')} Cleared` : '',
     ], 'bold'))
-    // 10. Mission-Driven [Title] | [Years]+ Years [Industry] | [Cert] | [Skill 1]
-    addUnique(build([`Mission-Driven ${civTitle}`, `${years}+ Years ${industry}`, topCert, topSkill], 'bold'))
 
-    // --- Generate summary ---
-    const matching = summaries.filter(dt => {
-      const tierMatch = !rankTier || dt.rank_tier.toLowerCase() === rankTier
-      const industryMatch = !targetIndustry ||
-        dt.target_industry.toLowerCase().includes(targetIndustry) ||
-        targetIndustry.includes(dt.target_industry.toLowerCase())
-      return tierMatch || industryMatch
-    }).sort((a, b) => {
-      const scoreA = (a.rank_tier.toLowerCase() === rankTier ? 1 : 0) +
-        (targetIndustry && a.target_industry.toLowerCase().includes(targetIndustry) ? 1 : 0)
-      const scoreB = (b.rank_tier.toLowerCase() === rankTier ? 1 : 0) +
-        (targetIndustry && b.target_industry.toLowerCase().includes(targetIndustry) ? 1 : 0)
-      return scoreB - scoreA
-    })
+    // --- ABOUT SECTION: tone × length × templateIndex (3 visibly distinct variants per tone) ---
+    const templateIndex = (overrideTemplateIndex ?? aboutTemplateIndex) % 3
+    const clearanceStmt = clearance ? `Holds active ${clearance}.` : ''
+    const certStmt = cert1 ? `${cert1} certified.` : ''
+    const credLine = [degreeShort, cert1].filter(Boolean).join(' | ')
+    const credSuffix = [clearanceStmt, credLine ? `${credLine}.` : ''].filter(Boolean).join(' ')
+    const allCredSuffix = [clearanceStmt, certStmt, degreeShort ? `${degreeShort}.` : ''].filter(Boolean).join(' ')
+    const skillList = [skill1, skill2, skill3].filter(Boolean)
+    const skillPhrase = skillList.length >= 3
+      ? `${skillList[0]}, ${skillList[1]}, and ${skillList[2]}`
+      : skillList.length === 2
+        ? `${skillList[0]} and ${skillList[1]}`
+        : skillList[0] || 'operations management'
 
-    // Fill the best-matching template (or build a fallback)
-    let filledTemplate = ''
-    if (matching.length > 0) {
-      console.log('[LinkedIn] Selected template:', matching[0].id, matching[0].rank_tier, matching[0].target_industry)
-      filledTemplate = fillLinkedInTemplate(matching[0].template_text, values)
-    } else {
-      filledTemplate = `${civTitle} with ${years}+ years of experience in ${values['key_skills'] || 'strategic planning and operations'}. Proven track record of delivering measurable results in ${industry} environments. Skilled in ${orderedSkills.slice(0, 3).join(', ')}, with a focus on translating complex operational challenges into business outcomes.${clearance ? ` Holds active ${clearance}.` : ''}${topCert ? ` ${topCert} certified.` : ''}`
-    }
-    console.log('[LinkedIn] Settings:', { tone, aboutLength, emphasis })
-
-    // --- Build emphasis-aware lead-in elements ---
-    const emphasisLower = emphasis.map(e => e.toLowerCase())
-    const hasEmphasis = (tag: string) => emphasisLower.some(e => e.includes(tag) || tag.includes(e))
-
-    let emphasisLead = ''
-    if (hasEmphasis('cybersecurity') || hasEmphasis('security') || hasEmphasis('technical')) {
-      emphasisLead = topCert
-        ? `${topCert}-certified ${civTitle.toLowerCase()}`
-        : `${topSkill}-focused ${civTitle.toLowerCase()}`
-    } else if (hasEmphasis('leadership') || hasEmphasis('team')) {
-      emphasisLead = `${civTitle.toLowerCase()} who has led cross-functional teams`
-    } else if (hasEmphasis('certification') || hasEmphasis('cert')) {
-      emphasisLead = topCert
-        ? `${topCert}-certified ${civTitle.toLowerCase()}`
-        : civTitle.toLowerCase()
-    } else if (hasEmphasis('project') || hasEmphasis('program')) {
-      emphasisLead = `${civTitle.toLowerCase()} specializing in ${topSkill}`
-    } else {
-      emphasisLead = civTitle.toLowerCase()
-    }
-
-    // Get the body sentences from the filled template (skip the first sentence — we rewrite it)
-    const allSentences = filledTemplate.match(/[^.!?]+[.!?]+/g) || [filledTemplate]
-    const bodySentences = allSentences.slice(1)
-
-    // --- Construct summary per tone ---
     let summary = ''
 
     if (tone === 'professional') {
-      // Third person. Keep template voice but rewrite opening with emphasis.
-      const opening = emphasis.length > 0
-        ? `Seasoned ${emphasisLead} with ${years}+ years of experience in ${industry}.`
-        : allSentences[0]?.trim() || `${civTitle} with ${years}+ years of experience in ${industry}.`
-      summary = [opening, ...bodySentences.map(s => s.trim())].join(' ')
+      // 3 openings: 0=transition story, 1=achievement lead, 2=role + value prop
+      const openings = [
+        `${years}-year ${branchShort} veteran transitioning to ${targetRole} in ${industry}.`,
+        `Proven track record of ${shortAchievement} — now bringing ${years}+ years of ${branchShort} experience to ${industry}.`,
+        `${targetRole} with deep expertise in ${skillPhrase}, combining ${years}+ years of military leadership with ${[cert1, degreeShort].filter(Boolean).join(' and ') || 'proven results'}.`,
+      ]
+      const opening = openings[templateIndex]
+
+      if (aboutLength === 'concise') {
+        summary = `${opening} Skilled in ${skillPhrase}.`
+        if (credSuffix) summary += ` ${credSuffix}`
+      } else if (aboutLength === 'detailed') {
+        summary = `${opening} Combines deep expertise in ${skillPhrase} with a proven record of delivering measurable outcomes in high-stakes environments. ${allCredSuffix}`
+        if (topBullets.length > 0) {
+          summary += `\n\nKey Achievements:\n${topBullets.map((b: string) => `• ${b.trim()}`).join('\n')}`
+        }
+        const competencies = orderedSkills.filter(s => s && s.trim()).slice(0, 8).map(s => s.trim())
+        if (competencies.length > 0) {
+          summary += `\n\nCore Competencies:\n${competencies.join(' • ')}`
+        }
+        summary += `\n\nCurrently seeking ${targetRole} opportunities where I can leverage ${years}+ years of operational experience to drive ${industry} outcomes.`
+      } else {
+        summary = `${opening} Skilled in ${skillPhrase} with a proven record of ${shortAchievement}. ${credSuffix}`
+        summary += `\n\nCurrently seeking ${targetRole} opportunities where I can leverage ${years}+ years of operational experience to drive results in ${industry}.`
+      }
     } else if (tone === 'conversational') {
-      // First person. Completely rewrite opening.
-      let opening = ''
-      if (emphasis.length > 0) {
-        opening = `With over ${years} years in ${industry}, I'm a ${emphasisLead} who thrives on turning complex challenges into real results.`
+      // 3 openings: 0=transition story, 1=achievement lead, 2=value prop
+      const openings = [
+        `After ${years} years in the ${branchShort}, I've learned that mission success comes down to ${skill1.toLowerCase()}${skill2 ? ` and ${skill2.toLowerCase()}` : ''}.`,
+        `What drives me? Results like: ${shortAchievement}. That's what ${years} years in the ${branchShort} taught me.`,
+        `I help ${industry} organizations tackle ${skill1.toLowerCase()}${skill2 ? ` and ${skill2.toLowerCase()}` : ''} challenges — backed by ${years}+ years of ${branchShort} leadership.`,
+      ]
+      const opening = openings[templateIndex]
+
+      if (aboutLength === 'concise') {
+        summary = `${opening} Now I'm bringing that experience to ${industry} as a ${targetRole.toLowerCase()}.${clearanceStmt ? ` ${clearanceStmt}` : ''}`
+      } else if (aboutLength === 'detailed') {
+        summary = `${opening} Now I'm bringing that experience to ${industry} as a ${targetRole.toLowerCase()}.`
+        // Avoid repeating achievement when opening already mentions it
+        if (templateIndex === 1) {
+          summary += `\n\nMy background spans ${skillPhrase.toLowerCase()}, from team leadership to strategic execution. ${[clearanceStmt, certStmt].filter(Boolean).join(' ')}`
+        } else {
+          summary += `\n\nMy background includes ${skillPhrase.toLowerCase()}, with results like: ${shortAchievement}. ${[clearanceStmt, certStmt].filter(Boolean).join(' ')}`
+        }
+        if (topBullets.length > 0) {
+          summary += `\n\nA few things I'm proud of:\n${topBullets.map((b: string) => `• ${b.trim()}`).join('\n')}`
+        }
+        summary += `\n\nIf you're looking for someone who can turn complex challenges into real outcomes, let's connect.`
       } else {
-        opening = `I'm a ${emphasisLead} with ${years}+ years of experience in ${industry}, and I'm passionate about driving results.`
+        summary = `${opening} Now I'm bringing that experience to ${industry} as a ${targetRole.toLowerCase()}.`
+        summary += `\n\nMy background includes ${skillPhrase.toLowerCase()}. ${[clearanceStmt, certStmt].filter(Boolean).join(' ')} If you're looking for someone who delivers results, let's connect.`
       }
-      // Convert remaining body sentences to first person
-      const body = bodySentences.map(s => s.trim()
-        .replace(/\bThis professional\b/gi, 'I')
-        .replace(/\bThe professional\b/gi, 'I')
-        .replace(/\bthis professional\b/g, 'I')
-        .replace(/\bHe\/She\b/gi, 'I')
-        .replace(/\bhe\/she\b/g, 'I')
-        .replace(/\bhis\/her\b/g, 'my')
-        .replace(/\bHis\/Her\b/gi, 'My')
-        // Handle common third-person openers
-        .replace(/^A \w+ (leader|professional|manager|specialist|expert)\b/i, (m) => `I'm ${m.toLowerCase().replace(/^a /, 'a ')}`)
-        .replace(/\bDemonstrated\b/g, 'I\'ve demonstrated')
-        .replace(/\bProven ability\b/gi, 'I have a proven ability')
-        .replace(/\bKnown for\b/gi, 'I\'m known for')
-        .replace(/\bSpecializes in\b/gi, 'I specialize in')
-        .replace(/\bExperienced in\b/gi, 'I\'m experienced in')
-        .replace(/\bExpertise in\b/gi, 'My expertise is in')
-      ).join(' ')
-      summary = [opening, body].filter(Boolean).join(' ')
     } else {
-      // Bold & Direct. Action-forward, punchy.
-      let opening = ''
-      if (emphasis.length > 0) {
-        opening = `Driving ${industry} outcomes as a ${emphasisLead} across ${years}+ years of high-impact operations.`
+      // Bold & Direct — 3 openings: 0=years + teams, 1=achievement lead, 2=role + industry
+      const openings = [
+        `${years} years.${teamSize ? ` ${teamSize}-person teams.` : ''} Results delivered.`,
+        `${shortAchievement}. That's the standard.`,
+        `${targetRole}. ${industry}. Mission-ready.`,
+      ]
+      const opening = openings[templateIndex]
+
+      if (aboutLength === 'concise') {
+        summary = `${opening}\n\n${branchShort} veteran. ${cert1 || targetRole}.${clearance ? ` ${clearance.replace(' Clearance', '')} cleared.` : ''} Now targeting ${targetRole} in ${industry}.`
+      } else if (aboutLength === 'detailed') {
+        summary = opening
+        summary += `\n\n${branchShort} veteran. ${cert1 || targetRole}.${cert2 ? ` ${cert2}.` : ''}${clearance ? ` ${clearance.replace(' Clearance', '')} cleared.` : ''}${degreeShort ? ` ${degreeShort}.` : ''}`
+        summary += `\n\nNow targeting ${targetRole} in ${industry}. I bring ${skillPhrase.toLowerCase()} — and the discipline to execute.`
+        if (topBullets.length > 0) {
+          summary += `\n\nTrack record:\n${topBullets.map((b: string) => `• ${b.trim()}`).join('\n')}`
+        }
+        const competencies = orderedSkills.filter(s => s && s.trim()).slice(0, 6).map(s => s.trim())
+        if (competencies.length > 0) {
+          summary += `\n\n${competencies.join(' • ')}`
+        }
       } else {
-        opening = `Driving enterprise ${industry} operations and leading cross-functional teams across ${years}+ years of ${civTitle.toLowerCase()} experience.`
-      }
-      // Bold-ify body sentences
-      const body = bodySentences.map(s => s.trim()
-        .replace(/\bResponsible for\b/gi, 'Drove')
-        .replace(/\bTasked with\b/gi, 'Spearheaded')
-        .replace(/\bAssisted in\b/gi, 'Delivered')
-        .replace(/\bManaged\b/g, 'Commanded')
-        .replace(/\bOversight of\b/gi, 'Directed')
-        .replace(/\bDemonstrated\b/g, 'Delivered')
-      ).join(' ')
-      summary = [opening, body].filter(Boolean).join(' ')
-    }
-
-    // --- Apply length ---
-    if (aboutLength === 'concise') {
-      // 2-3 sentences, ~400-500 chars. Who you are + value prop + clearance/cert.
-      const conciseCore = summary.match(/[^.!?]+[.!?]+/g) || [summary]
-      let concise = conciseCore.slice(0, 2).join(' ').trim()
-      // Append clearance/cert if not already mentioned and there's room
-      if (clearance && !concise.toLowerCase().includes('clearance') && concise.length < 400) {
-        concise += ` Holds active ${clearance}.`
-      }
-      if (topCert && !concise.toLowerCase().includes(topCert.toLowerCase()) && concise.length < 450) {
-        concise += ` ${topCert} certified.`
-      }
-      if (concise.length > 500) {
-        const sents = concise.match(/[^.!?]+[.!?]+/g) || [concise]
-        concise = sents.slice(0, 2).join(' ').trim()
-      }
-      summary = concise
-    } else if (aboutLength === 'detailed') {
-      // Full template + achievements + competencies, ~1800-2200 chars
-      // Build achievements from actual experience data — only real bullets
-      const topBullets = (experiences || [])
-        .flatMap((exp: any) => {
-          const bullets = exp.bullets || exp.achievements || []
-          return Array.isArray(bullets) ? bullets : []
-        })
-        .filter((b: any) => typeof b === 'string' && b.trim().length > 10)
-        .slice(0, 3)
-
-      // Only show Key Achievements if we have actual content
-      if (topBullets.length > 0) {
-        summary += `\n\nKey Achievements:\n${topBullets.map((b: string) => `• ${b.trim()}`).join('\n')}`
-      }
-
-      // Core Competencies — filter empty, trim, no trailing separator
-      const competencies = orderedSkills
-        .filter(s => s && s.trim())
-        .slice(0, 8)
-        .map(s => s.trim())
-      if (competencies.length > 0) {
-        summary += `\n\nCore Competencies:\n${competencies.join(' • ')}`
+        summary = opening
+        summary += `\n\n${branchShort} veteran. ${cert1 || targetRole}.${clearance ? ` ${clearance.replace(' Clearance', '')} cleared.` : ''}${degreeShort ? ` ${degreeShort}.` : ''}`
+        summary += `\n\nNow targeting ${targetRole} in ${industry}. I bring ${skillPhrase.toLowerCase()} — and the discipline to execute.`
       }
     }
-    // Standard: keep summary as-is (full template, ~1000-1200 chars)
 
-    // --- Final cleanup pass ---
+    // --- Final cleanup ---
     summary = summary
-      // Remove leftover placeholders / brackets
       .replace(/\{\{\w+\}\}/g, '')
       .replace(/\[[^\]]*\]/g, '')
-      // Replace numeric ranges like "15-50-person", "15-50 teams", "10-30-person" with clean text
-      .replace(/\b\d{1,3}-\d{1,3}[- ]person\b/g, 'cross-functional')
-      .replace(/\b\d{1,3}-\d{1,3}\s+teams?\b/gi, 'cross-functional teams')
-      .replace(/\b\d{1,3}-\d{1,3}\s+personnel\b/gi, 'team members')
-      // Remove empty bullet points (lines that are just "•" or "• " with no text)
-      .replace(/^•\s*$/gm, '')
-      // Remove trailing pipes/separators
-      .replace(/\|\s*$/gm, '')
-      .replace(/\|\s*\./g, '.')
-      // Cleanup double spaces, orphaned punctuation
-      .replace(/\s{2,}/g, ' ')
+      .replace(/\s{2,}(?!\n)/g, ' ')
       .replace(/,\s*,/g, ',')
       .replace(/,\s*\./g, '.')
       .replace(/\.\s*\./g, '.')
-
-    // Remove section headers if their content is empty
-    summary = summary.replace(/\n\nKey Achievements:\s*\n?\s*$/g, '')
-    summary = summary.replace(/\n\nCore Competencies:\n?\s*$/g, '')
-    // Remove blank lines left behind
-    summary = summary.replace(/\n{3,}/g, '\n\n').trim()
-
-    // Ensure summary doesn't end mid-sentence (skip if it ends with a competencies/achievements list)
-    const endsWithList = /Core Competencies:\n.+$/s.test(summary) || /^• .+$/m.test(summary.split('\n').pop() || '')
-    if (summary && !endsWithList && !/[.!?]$/.test(summary)) {
-      const lastPeriod = Math.max(summary.lastIndexOf('.'), summary.lastIndexOf('!'), summary.lastIndexOf('?'))
-      if (lastPeriod > summary.length * 0.7) {
-        summary = summary.substring(0, lastPeriod + 1)
-      } else {
-        summary += '.'
-      }
-    }
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
 
     setDictResults({ headlines: allHeadlines, summary })
     setEditedSummary(summary)
+    // Track dictionary LinkedIn generation (only on first generate, not setting-change re-renders)
+    if (!hasGenerated) {
+      fetch('/api/track-usage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feature: 'linkedin_profile_analysis' }),
+      }).catch(() => {})
+    }
     setHasGenerated(true)
     // Clear any previous AI results
     setResults(null)
@@ -520,6 +521,12 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
       const data = await res.json()
 
+      if (res.status === 403) {
+        setError(data.details?.reason || data.error || 'Usage limit reached')
+        openUpgradeModal()
+        return
+      }
+
       if (data.error) {
         setError(data.error)
       } else {
@@ -550,7 +557,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
           <span className="text-gold">&rsaquo;</span>
           <span className="text-text-muted">LinkedIn Optimizer</span>
         </div>
-        {isPro && (
+        {hasPaidAccess && (
           <Badge variant={remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
             {remaining} AI {remaining === 1 ? 'Use' : 'Uses'} Left
           </Badge>
@@ -853,26 +860,50 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                 </div>
               ) : dictResults?.headlines ? (
                 <div className="space-y-2">
-                  {dictResults.headlines.map((h, idx) => (
+                  {/* Selected tone headlines first */}
+                  {dictResults.headlines
+                    .filter(h => h.tone === tone)
+                    .map((h, idx) => (
                     <div
-                      key={idx}
-                      className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                        h.tone === tone
-                          ? 'bg-gold/10 border-gold/30'
-                          : 'bg-bg-secondary border-border'
-                      }`}
+                      key={`match-${idx}`}
+                      className="flex items-center justify-between p-3 rounded-lg border transition-colors bg-gold/10 border-gold/30"
                     >
                       <div className="flex-1 min-w-0">
                         <span className="text-xs text-text-dim uppercase tracking-wider">
                           {h.tone === 'professional' ? 'Professional' : h.tone === 'conversational' ? 'Conversational' : 'Bold & Direct'}
                         </span>
-                        <p className={`text-sm ${h.tone === tone ? 'font-medium text-text' : 'text-text-muted'}`}>{h.text}</p>
+                        <p className="text-sm font-medium text-text">{h.text}</p>
                       </div>
                       <button
-                        onClick={() => handleCopy(h.text, `headline-${idx}`)}
+                        onClick={() => handleCopy(h.text, `headline-match-${idx}`)}
                         className="ml-2 px-2 py-1 text-xs bg-gold/20 text-gold rounded hover:bg-gold/30 transition-colors flex-shrink-0"
                       >
-                        {copied === `headline-${idx}` ? 'Copied!' : 'Copy'}
+                        {copied === `headline-match-${idx}` ? 'Copied!' : 'Copy'}
+                      </button>
+                    </div>
+                  ))}
+                  {/* Other tone headlines dimmed */}
+                  {dictResults.headlines.some(h => h.tone !== tone) && (
+                    <p className="text-xs text-text-dim uppercase tracking-wider pt-2">More Options</p>
+                  )}
+                  {dictResults.headlines
+                    .filter(h => h.tone !== tone)
+                    .map((h, idx) => (
+                    <div
+                      key={`other-${idx}`}
+                      className="flex items-center justify-between p-3 rounded-lg border transition-colors bg-bg-secondary border-border opacity-70"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs text-text-dim uppercase tracking-wider">
+                          {h.tone === 'professional' ? 'Professional' : h.tone === 'conversational' ? 'Conversational' : 'Bold & Direct'}
+                        </span>
+                        <p className="text-sm text-text-muted">{h.text}</p>
+                      </div>
+                      <button
+                        onClick={() => handleCopy(h.text, `headline-other-${idx}`)}
+                        className="ml-2 px-2 py-1 text-xs bg-gold/20 text-gold rounded hover:bg-gold/30 transition-colors flex-shrink-0"
+                      >
+                        {copied === `headline-other-${idx}` ? 'Copied!' : 'Copy'}
                       </button>
                     </div>
                   ))}
@@ -905,7 +936,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
               {/* Enhance with AI / Upgrade nudge */}
               {dictResults?.headlines && !results?.headline && !generating && (
-                isPro ? (
+                hasPaidAccess ? (
                   <button
                     onClick={handleGenerate}
                     disabled={generating || remaining <= 0}
@@ -932,10 +963,14 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                 <div className="flex items-center gap-2">
                   {dictResults?.summary && !results?.summary && (
                     <button
-                      onClick={handleDictGenerate}
+                      onClick={() => {
+                        const nextIdx = (aboutTemplateIndex + 1) % 3
+                        setAboutTemplateIndex(nextIdx)
+                        handleDictGenerate(nextIdx)
+                      }}
                       className="text-xs text-text-muted hover:text-text"
                     >
-                      Regenerate
+                      Regenerate ({aboutTemplateIndex + 1}/3)
                     </button>
                   )}
                   {(results?.summary || editedSummary) && (
@@ -987,7 +1022,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
               {/* Inline upgrade prompt instead of card */}
               {dictResults?.summary && !results?.summary && !generating && (
-                isPro ? (
+                hasPaidAccess ? (
                   <button
                     onClick={handleGenerate}
                     disabled={generating || remaining <= 0}
@@ -1019,14 +1054,14 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
           isUploading={isUploading}
           setIsUploading={setIsUploading}
           targetRole={targetRole}
-          isPro={userTier === 'full'}
+          hasPaidAccess={userTier === 'full'}
         />
       )}
 
       {showLastUseWarning && (
         <LastUseWarningModal
           featureName="LinkedIn Generation"
-          tier={isPro ? 'full' : 'free'}
+          tier={hasPaidAccess ? 'full' : 'free'}
           limitType="tier"
           onContinue={() => {
             setShowLastUseWarning(false)
@@ -1052,7 +1087,7 @@ function AnalyzeMode({
   isUploading,
   setIsUploading,
   targetRole,
-  isPro,
+  hasPaidAccess,
 }: {
   linkedInPDF: any
   setLinkedInPDF: (data: any) => void
@@ -1063,7 +1098,7 @@ function AnalyzeMode({
   isUploading: boolean
   setIsUploading: (val: boolean) => void
   targetRole: string
-  isPro: boolean
+  hasPaidAccess: boolean
 }) {
   const { openUpgradeModal } = useUpgradeModal()
   const [showInstructions, setShowInstructions] = useState(false)
@@ -1117,10 +1152,14 @@ function AnalyzeMode({
             careerLevel: 'senior',
             priorities: [],
           },
-          isPro: true,
+          hasPaidAccess: true,
         }),
       })
       const data = await response.json()
+      if (response.status === 403) {
+        openUpgradeModal()
+        return
+      }
       if (data.error) {
         throw new Error(data.error)
       }
@@ -1240,10 +1279,10 @@ function AnalyzeMode({
         </Card>
 
         {/* Paywall for free users - show after scores */}
-        {!isPro && <RecommendationsPaywall />}
+        {!hasPaidAccess && <RecommendationsPaywall />}
 
         {/* Quick Wins - only for pro users */}
-        {isPro && analysis.quickWins && (
+        {hasPaidAccess && analysis.quickWins && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
               <span className="text-gold">⚡</span> Quick Wins
@@ -1260,7 +1299,7 @@ function AnalyzeMode({
         )}
 
         {/* Headline - only for pro users */}
-        {isPro && (
+        {hasPaidAccess && (
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
@@ -1291,7 +1330,7 @@ function AnalyzeMode({
         )}
 
         {/* About - only for pro users */}
-        {isPro && (
+        {hasPaidAccess && (
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
@@ -1322,7 +1361,7 @@ function AnalyzeMode({
         )}
 
         {/* Experience Analysis (if available) - only for pro users */}
-        {isPro && analysis.sections.experience && (
+        {hasPaidAccess && analysis.sections.experience && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="text-gold">◆</span> Experience Analysis
@@ -1503,7 +1542,7 @@ function AnalyzeMode({
         )}
 
         {/* Skills (if available) - only for pro users */}
-        {isPro && analysis.sections.skills && (
+        {hasPaidAccess && analysis.sections.skills && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="text-gold">◈</span> Skills Analysis
@@ -1541,7 +1580,7 @@ function AnalyzeMode({
         )}
 
         {/* Certifications (if available) - only for pro users */}
-        {isPro && analysis.sections.certifications && (
+        {hasPaidAccess && analysis.sections.certifications && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="text-gold">◎</span> Certifications
@@ -1600,7 +1639,7 @@ function AnalyzeMode({
         )}
 
         {/* Education (if available) - only for pro users */}
-        {isPro && analysis.sections.education && (
+        {hasPaidAccess && analysis.sections.education && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="text-gold">◫</span> Education
@@ -1650,7 +1689,7 @@ function AnalyzeMode({
         )}
 
         {/* Keywords (if available) - only for pro users */}
-        {isPro && analysis.sections.keywords && (
+        {hasPaidAccess && analysis.sections.keywords && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="text-gold">◇</span> Keyword Analysis
@@ -1677,7 +1716,7 @@ function AnalyzeMode({
         )}
 
         {/* Priority Actions (if available) - only for pro users */}
-        {isPro && analysis.priorityActions && (
+        {hasPaidAccess && analysis.priorityActions && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
               <span className="text-gold">▶</span> Priority Actions
@@ -1750,7 +1789,7 @@ function AnalyzeMode({
           </div>
         </Card>
 
-        {isPro ? (
+        {hasPaidAccess ? (
           <Button
             className="w-full"
             onClick={handleAnalyze}

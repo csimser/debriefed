@@ -12,6 +12,7 @@ const adminNavItems = [
   { href: '/admin/promo-codes', label: 'Promo Codes', icon: '◇' },
   { href: '/admin/dictionary', label: 'Dictionary', icon: '◆' },
   { href: '/admin/feedback', label: 'Feedback', icon: '◫' },
+  { href: '/admin/testimonials', label: 'Testimonials', icon: '★' },
   { href: '/admin/settings', label: 'Settings', icon: '⚙' },
 ]
 

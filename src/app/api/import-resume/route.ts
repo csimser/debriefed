@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse, after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage } from '@/lib/usage-tracking'
-import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
-import { canUseFeature, incrementUsage } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { callWithEscalation, getModelString, type ModelUsed } from '@/lib/ai-model'
 
 const anthropic = new Anthropic()
-
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 const RESUME_PROMPT = `You are a resume parser. Extract ALL structured data from this resume text. Return a single JSON object with these exact keys:
 
@@ -94,14 +87,9 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Check resume import usage limit
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('email')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
+    // Check resume import usage limit (centralized admin check with case normalization)
+    const userEmail = await getUserEmail(user.id)
+    if (!isAdmin(userEmail)) {
       const usageCheck = await canUseFeature(user.id, 'resume_imports')
       if (!usageCheck.allowed) {
         return NextResponse.json({

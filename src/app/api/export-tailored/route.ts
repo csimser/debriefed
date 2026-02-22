@@ -5,7 +5,7 @@ import { generateDocx } from '@/lib/docx/generateDocx'
 import { TemplateId, resolveTemplate, isTemplateFreeTier } from '@/lib/templates'
 import { createClient } from '@/lib/supabase/server'
 import { logApiUsage, logActivity } from '@/lib/usage-tracking'
-import { canUseFeature, incrementUsage, getUserTier } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage, getUserTier, checkDailyLimit, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { trimForFederalLimit } from '@/lib/resume/federalTrimmer'
 import React from 'react'
 
@@ -40,27 +40,33 @@ export async function POST(request: NextRequest) {
 
     // Check tier for template gating (free users get classic_professional + federal only)
     const tierInfo = await getUserTier(user.id)
-    if (tierInfo.tier === 'free' && !isTemplateFreeTier(template)) {
+    const isPaidUser = tierInfo.tier === 'core' || tierInfo.tier === 'full'
+
+    if (!isPaidUser && !isTemplateFreeTier(template)) {
       return NextResponse.json({
-        error: 'This template requires Core tier. Free users can export with Classic Professional or Federal templates.',
+        error: 'This template requires Core or Full tier.',
         limitReached: true,
-        tier: 'free'
+        tier: tierInfo.tier
       }, { status: 403 })
     }
 
-    // Check usage limit via usage_tracking (single source of truth)
-    // canUseFeature handles: admin bypass, period limits, daily limits
-    // Tailored resumes count against private_resumes
-    const usageCheck = await canUseFeature(user.id, 'private_resumes')
+    // Check download usage limits (daily + period) — skip for admins
+    // Uses 'downloads' feature (same counter as export-resume)
+    const userEmail = await getUserEmail(user.id)
+    const adminUser = isAdmin(userEmail)
 
-    if (!usageCheck.allowed) {
-      return NextResponse.json({
-        error: usageCheck.reason,
-        limitReached: true,
-        remaining: usageCheck.remaining,
-        used: usageCheck.used,
-        limit: usageCheck.limit,
-      }, { status: 403 })
+    if (!adminUser) {
+      const usageCheck = await canUseFeature(user.id, 'downloads')
+
+      if (!usageCheck.allowed) {
+        return NextResponse.json({
+          error: usageCheck.reason,
+          limitReached: true,
+          remaining: usageCheck.remaining,
+          used: usageCheck.used,
+          limit: usageCheck.limit,
+        }, { status: 403 })
+      }
     }
 
     // Filter out excluded and placeholder bullets before generating
@@ -110,23 +116,31 @@ export async function POST(request: NextRequest) {
       extension = 'docx'
     }
 
+    // Get daily remaining for response headers
+    const dailyCheck = await checkDailyLimit(user.id, 'downloads')
+
     // Return file to client first, then track usage
     const timestamp = new Date().toISOString().split('T')[0]
     const filename = `tailored-resume-${timestamp}.${extension}`
+
+    // Increment usage INLINE — after() callbacks don't fire for binary/ArrayBuffer responses
+    await incrementUsage(user.id, 'downloads')
+
+    const remainingAfter = Math.max(0, dailyCheck.remaining - 1)
 
     const fileResponse = new NextResponse(arrayBuffer, {
       headers: {
         'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${filename}"`,
+        'X-User-Tier': tierInfo.tier,
+        'X-Daily-Remaining': String(remainingAfter),
+        'X-Daily-Limit': String(dailyCheck.limit),
       },
     })
 
-    // Defer usage tracking to after response is sent
+    // Non-critical logging — safe in after() since it doesn't affect usage tracking
     after(async () => {
       try {
-        // Increment usage in usage_tracking + daily_usage (single source of truth)
-        await incrementUsage(user.id, 'private_resumes')
-
         await logApiUsage(user.id, 'export-tailored', 0, 'pdf-generation')
         await logActivity(user.id, 'resume_downloaded', {
           type: 'tailored',
@@ -136,7 +150,7 @@ export async function POST(request: NextRequest) {
           tier: tierInfo.tier,
         })
       } catch (err) {
-        console.error('Post-response usage tracking failed:', err)
+        console.error('Post-response activity logging failed:', err)
       }
     })
 
@@ -144,7 +158,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Tailored export error:', error)
     return NextResponse.json(
-      { error: `Failed to generate document: ${error.message || 'Unknown error'}` },
+      { error: 'Failed to generate document. Please try again.' },
       { status: 500 }
     )
   }

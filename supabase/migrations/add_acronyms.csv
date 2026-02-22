@@ -1,0 +1,1003 @@
+acronym,full_term,civilian_explanation,branch,category
+1SG,first sergeant,first sergeant,army,rank
+3M,maintenance program,maintenance program,navy,acronym
+3MA,Maintenance Program Manager,Maintenance Program Manager,navy,acronym
+3MC,Maintenance Coordinator,Maintenance Coordinator,navy,acronym
+A1C,airman first class,airman first class,usaf,rank
+AAFES,military retail,military retail,general,facility
+AAR,After Action Report,Post-event analysis and lessons learned,general,communication
+AB,airman basic,airman basic,usaf,rank
+ABCT,armored brigade combat team,armored brigade combat team,army,acronym
+ACC,Air Combat Command,Air Combat Command,usaf,organization
+ACE,aviation combat element,aviation combat element,usmc,acronym
+ACFT,combat fitness test,combat fitness test,army,training
+ACO,Airspace Control Order,Air traffic management directive,general,aviation
+ACSC,Air Command and Staff College,Air Command and Staff College,usaf,organization
+ADCON,Administrative Control,Administrative authority,general,operations
+ADLS,advanced distributed learning,advanced distributed learning,usaf,acronym
+ADMIN,administration,administration,navy,acronym
+AE,Architect-Engineer,Design professional / design firm,general,engineering
+AEF,Air Expeditionary Force,Air Expeditionary Force,usaf,acronym
+AEHF,Advanced Extremely High Frequency,Secure military satellite communications,general,space
+AETC,Air Education and Training Command,Air Education and Training Command,usaf,organization
+AEW,Air Expeditionary Wing,Air Expeditionary Wing,usaf,acronym
+AF,usaf,usaf,usaf,acronym
+AFCYBER,Air Forces Cyber,Air Force cybersecurity unit,usaf,cyber
+AFGSC,Air Force Global Strike Command,Air Force Global Strike Command,usaf,organization
+AFI,Air Force instruction,Air Force instruction,usaf,acronym
+AFIMS,information management system,information management system,usaf,system
+AFMAN,Air Force manual,Air Force manual,usaf,acronym
+AFMSA,Air Force Medical Support Agency,AF healthcare support organization,usaf,medical
+AFOSI,Air Force Office of Special Investigations,Air Force law enforcement and CI agency,usaf,intelligence
+AFPC,Air Force Personnel Center,AF human resources center,usaf,admin
+AFPD,Air Force policy directive,Air Force policy directive,usaf,acronym
+AFRC,Air Force Reserve Command,Air Force Reserve Command,usaf,organization
+AFRICOM,Africa Command,Africa Command,general,organization
+AFSC,career field specialty code,career field specialty code,general,acronym
+AFSOC,Air Force Special Operations Command,Air Force Special Operations Command,usaf,organization
+AFSPC,Air Force Space Command,Air Force Space Command,usaf,organization
+AGM,Air-to-Ground Missile,Aircraft-launched surface attack missile,general,aviation
+AHLTA,Armed Forces Health Longitudinal Technology Application,electronic health records system,general,medical
+AIM,Air Intercept Missile,Aircraft-launched air-to-air missile,general,aviation
+AIRDET,aviation detachment,aviation detachment,navy,acronym
+AIRLANT,air forces Atlantic,air forces Atlantic,navy,acronym
+Airman,team member,team member,general,acronym
+airmen,personnel,personnel,general,acronym
+AIRPAC,air forces Pacific,air forces Pacific,navy,acronym
+AKO,Army knowledge portal,Army knowledge portal,general,acronym
+ALC,Advanced Leader Course,Mid-level supervisor course,army,training
+ALCON,All Concerned,all stakeholders / all recipients,general,admin
+ALMAR,all Marines message,all Marines message,usmc,acronym
+ALMIS,asset logistics management,asset logistics management,uscg,acronym
+ALS,Airman Leadership School,Airman Leadership School,usaf,acronym
+AMC,Army Materiel Command,Army Materiel Command,army,organization
+AMEDD,Army Medical Department,Army healthcare organization,army,medical
+ammo,ammunition,ammunition,general,acronym
+AMN,airman,airman,usaf,rank
+AMRAAM,Advanced Medium-Range Air-to-Air Missile,advanced air defense system,general,aviation
+AMSCO,Army Management Structure Code,Army budget classification code,army,financial
+AMXS,aircraft maintenance squadron,aircraft maintenance squadron,usaf,acronym
+ANAM,Automated Neuropsychological Assessment Metrics,Cognitive baseline testing tool,general,medical
+ANG,Air National Guard,Air National Guard,usaf,acronym
+AO,Authorizing Official,Security certification decision authority,general,cyber
+AOPS,assistant operations officer,assistant operations officer,navy,acronym
+AOR,area of responsibility,area of responsibility,general,acronym
+APFT,Army Physical Fitness Test,Physical fitness assessment,army,training
+APL,Allowance Parts List,Authorized parts list per equipment,navy,technical
+APOD,Aerial Port of Debarkation,Military air cargo receiving terminal,general,logistics
+APOE,Aerial Port of Embarkation,Military air cargo departure terminal,general,logistics
+AR,Army regulation,Army regulation,army,acronym
+ARCYBER,Army Cyber Command,Army cybersecurity operations command,army,cyber
+ASEV,aircrew standardization evaluation,aircrew standardization evaluation,usaf,acronym
+ASG,Area Support Group,Regional logistics support unit,army,logistics
+ASP,Ammunition Supply Point,Ammunition storage and distribution facility,general,logistics
+ASR,alternate supply route,alternate supply route,army,acronym
+ASR,Alternate Supply Route,backup transportation route,general,operations
+ATC,training center,training center,uscg,training
+ATG,Afloat Training Group,External readiness assessment organization,navy,organization
+ATO,Authority to Operate,System security certification,general,technical
+AtoN,Aids to Navigation,Managed/maintained navigation aids and compliance processes to support safe maritime operations.,uscg,operations
+ATON,aids to navigation,aids to navigation,uscg,acronym
+ATTRS,training requirements system,training requirements system,army,system
+AUXO,auxiliaries officer,auxiliaries officer,navy,acronym
+AWC,Army War College,Senior officer strategic school,army,training
+AWC,Air War College,Air War College,usaf,acronym
+AWP,parts shortage,parts shortage,navy,acronym
+BA,Budget Activity,Budget sub-category,general,financial
+BAH,Basic Allowance for Housing,Housing stipend,general,admin
+barracks,residential quarters,residential quarters,general,facility
+BAS,Battalion Aid Station,Forward field medical clinic,army,medical
+BAS,Basic Allowance for Subsistence,Food allowance,general,admin
+BCA,fitness standards assessment,fitness standards assessment,navy,training
+BCD,Base Civil Development,Installation construction planning,general,engineering
+BCE,Base Civil Engineer,base facilities manager,usaf,engineering
+BCT,brigade combat team,brigade combat team,army,acronym
+BDA,Battle Damage Assessment,Post-event effectiveness evaluation,general,operations
+BDE,brigade,brigade,army,acronym
+BDE S1,Brigade S-1 (Personnel/HR Section),"Brigade-level human resources office responsible for personnel actions, records, and administrative support.",army,administration
+BDE S2,Brigade S-2 (Intelligence Section),"Brigade-level intelligence office responsible for threat analysis, briefings, and situational awareness.",army,intelligence
+BDE S3,Brigade S-3 (Operations Section),"Brigade-level operations office responsible for planning, coordinating, and tracking operational execution.",army,operations
+BDE S4,Brigade S-4 (Logistics Section),"Brigade-level logistics office responsible for supply, transportation, and sustainment planning.",army,logistics
+BEQ,enlisted lodging,enlisted lodging,general,facility
+berthing,crew quarters,crew quarters,general,facility
+BES,Budget Estimate Submission,Annual budget request package,general,financial
+billeting,lodging,lodging,general,facility
+BLC,Basic Leader Course,First-line supervisor course,army,training
+BLUF,Bottom Line Up Front,key takeaway first / executive summary first,general,admin
+BLUFOR,friendly force,friendly force,army,acronym
+BM,boatswain's mate,boatswain's mate,navy,rating
+BMOW,bridge watch supervisor,bridge watch supervisor,navy,acronym
+BN,battalion,battalion,army,acronym
+BN S1,Battalion S-1 (Personnel/HR Section),Battalion-level HR office handling personnel actions and administrative processing.,army,administration
+BN S2,Battalion S-2 (Intelligence Section),Battalion-level intelligence office providing threat updates and reporting.,army,intelligence
+BN S3,Battalion S-3 (Operations Section),"Battalion-level operations office coordinating plans, training schedules, and mission execution.",army,operations
+BN S4,Battalion S-4 (Logistics Section),"Battalion-level logistics office coordinating supply, maintenance support, and sustainment.",army,logistics
+BN S6,Battalion Communications/IT Section,"Unit communications/IT office responsible for networks, radios, and technical support at battalion level.",army,staff_section
+BOD,Basis of Design,Design requirements document,general,engineering
+BOL,BUPERS Online,Navy personnel self-service portal,navy,admin
+BOLC,Basic Officer Leader Course,New Army officer training,army,training
+BOQ,officer lodging,officer lodging,general,facility
+bridge,control center,control center,general,acronym
+BSA,Budget Sub-Activity,Detailed budget line,general,financial
+BSB,brigade support battalion,brigade support battalion,army,acronym
+bulkhead,wall,wall,general,facility
+BUMED,Bureau of Medicine and Surgery,Navy medical headquarters,navy,organization
+BUPERS,Bureau of Naval Personnel,Navy HR headquarters,navy,organization
+BX,retail store,retail store,general,facility
+C2,Command and Control,Centralized management and direction,general,cyber
+C4ISR,Command Control Communications Computers Intelligence Surveillance Reconnaissance,Integrated command and information systems,general,technical
+CAB,combat aviation brigade,combat aviation brigade,army,acronym
+CACO,casualty assistance officer,casualty assistance officer,navy,acronym
+CAFSC,control specialty code,control specialty code,usaf,acronym
+CAG,Commander Air Group,air wing commander,navy,aviation
+CAMS,maintenance system,maintenance system,usaf,system
+CANTRAC,training catalog,training catalog,navy,training
+CAS,Close Air Support,Direct air assistance to ground forces,general,operations
+CASEVAC,Casualty Evacuation,Emergency medical transport,general,operations
+CASREP,equipment casualty report,equipment casualty report,navy,acronym
+CBRN,chemical/biological/radiological/nuclear defense,chemical/biological/radiological/nuclear defense,general,acronym
+CBT,computer-based training,computer-based training,general,training
+CC,commander,commander,usaf,rank
+CCC,Captains Career Course,Mid-grade officer professional school,army,training
+CCC,command career counselor,command career counselor,navy,organization
+CCIP,commander's inspection program,commander's inspection program,usaf,organization
+CCIR,Commanders Critical Information Requirements,Priority information needs,general,planning
+CCRI,Command Cyber Readiness Inspection,Cybersecurity compliance audit,general,cyber
+CD,deputy commander,deputy commander,usaf,rank
+CDC,Combat Direction Center,Tactical command center,navy,operations
+CDM,Continuous Diagnostics and Mitigation,Ongoing security monitoring program,general,cyber
+CDO,Command Duty Officer,Senior on-site manager (after hours),navy,operations
+CDR,Commander,"Organizational leader accountable for operations, personnel performance, and mission outcomes.",army,leadership
+CE,command element,command element,usmc,organization
+CEFMS,Corps of Engineers Financial Management System,USACE accounting system,army,financial
+CELLEX,Cellphone Exploitation,Mobile device forensic analysis,general,intelligence
+CENTCOM,Central Command,Central Command,general,organization
+CES,civil engineering squadron,civil engineering squadron,usaf,acronym
+CFL,command fitness leader,command fitness leader,navy,organization
+CFSCC,Combined Force Space Component Command,Joint space operations command,general,space
+CFT,combat fitness test,combat fitness test,usmc,training
+CGC,Coast Guard Cutter,Coast Guard Cutter,uscg,acronym
+CGHQ,Coast Guard Headquarters,Coast Guard Headquarters,uscg,facility
+CGSC,Command and General Staff College,Army mid-career officer school,army,training
+CHENG,chief engineer,chief engineer,navy,acronym
+chit,request form,request form,general,acronym
+chow hall,dining facility,dining facility,general,facility
+CI,Counterintelligence,insider threat prevention and security investigation,general,intel
+CIC,Combat Information Center,Tactical operations center,navy,operations
+CID,Criminal Investigation Division,Army law enforcement agency,army,intelligence
+CJCS,Chairman of the Joint Chiefs of Staff,top military advisor to the President,general,operations
+CLB,Combat Logistics Battalion,Marine logistics unit,usmc,logistics
+CLS,Combat Lifesaver,basic emergency medical technician,general,medical
+CMC,senior enlisted advisor,senior enlisted advisor,navy,rank
+CMEO,equal opportunity manager,equal opportunity manager,navy,acronym
+CMSAF,Chief Master Sergeant of the Air Force,Senior enlisted Air Force advisor,usaf,organization
+CMSAF,Chief Master Sergeant of the Space Force,Chief Master Sergeant of the Space Force,ussf,rank
+CMSGT,chief master sergeant,chief master sergeant,usaf,rank
+CMT,Cyber Mission Team,Offensive/defensive cyber operations unit,general,cyber
+CNA,Computer Network Attack,Offensive cyber operations,general,cyber
+CNAF,Commander Naval Air Forces,naval aviation command,navy,aviation
+CNAL,Commander Naval Air Forces Atlantic,Commander Naval Air Forces Atlantic,navy,organization
+CNAP,"Commander, Naval Air Forces Pacific",West Coast naval aviation headquarters,navy,aviation
+CNATT,Center for Naval Aviation Technical Training,Navy aviation maintenance school,navy,training
+CND,Computer Network Defense,Network protection operations,general,cyber
+CNDSP,Computer Network Defense Service Provider,Managed cybersecurity service,general,cyber
+CNE,Computer Network Exploitation,Network intelligence gathering,general,cyber
+CNMF,Cyber National Mission Force,National-level cyber defense team,general,cyber
+CNO,Chief of Naval Operations,Highest ranking Navy officer,navy,organization
+CNSP,Commander Naval Surface Forces Pacific,Pacific surface fleet commander,navy,organization
+CO,director,director,navy,rank
+COA,Course of Action,Action plan/strategy option,general,planning
+Coastguardsman,team member,team member,general,acronym
+COCOM,combatant command,combatant command,general,organization
+COLA,Cost of Living Allowance,Cost of living adjustment,general,admin
+colors,flag ceremony,flag ceremony,general,acronym
+combat,operations,operations,general,acronym
+COMMEX,communications exercise,communications exercise,army,acronym
+commissary,grocery store,grocery store,general,facility
+COMMO,communications officer,communications officer,navy,acronym
+COMMS,communications,communications,navy,acronym
+COMSEC,communications security,communications security,general,security
+CONEX,Container Express,Shipping container / storage container,general,logistics
+CONOP,concept of operations,concept of operations,army,acronym
+CONOP,Concept of Operations,operational concept plan,general,operations
+CONPLAN,Contingency Plan,contingency response plan,general,operations
+CONUS,continental United States,continental United States,general,acronym
+COP,common operating picture,common operating picture,general,acronym
+COSAL,Coordinated Shipboard Allowance List,Authorized parts inventory list,navy,technical
+COSC,Combat Operational Stress Control,Operational mental health program,general,medical
+CP,command post,command post,general,organization
+CPL,corporal,corporal,army,rank
+CPT,Cyber Protection Team,Defensive cybersecurity unit,general,cyber
+CQC,Contractor Quality Control,Builder's quality management program,general,engineering
+CRM,crew resource management,crew resource management,general,acronym
+CS,communications squadron,communications squadron,usaf,acronym
+CSG,carrier strike group,carrier strike group,navy,acronym
+CSM,command sergeant major,command sergeant major,army,rank
+CSMP,Current Ships Maintenance Project,Maintenance backlog tracker,navy,technical
+CSO,Chief of Space Operations,Chief of Space Operations,ussf,acronym
+CSpOC,Combined Space Operations Center,Combined Space Operations Center,ussf,acronym
+CSSB,Combat Sustainment Support Battalion,Army logistics battalion,army,logistics
+CSSP,Cybersecurity Service Provider,Managed security operations provider,general,cyber
+CTC,combat training center,combat training center,army,training
+CTI,Cryptologic Technician Interpretive,Language-enabled signals intelligence analyst.,navy,rate
+CTN,cryptologic technician (networks),cryptologic technician (networks),navy,rating
+CTR,Cryptologic Technician Collection,Signals intelligence collector/analyst supporting threat detection.,navy,rate
+CUI,controlled unclassified information,controlled unclassified information,general,security
+CVW,Carrier Air Wing,Aircraft carrier aviation unit,navy,aviation
+CWO,Chief Warrant Officer,Technical expert/leader role bridging hands-on expertise and management responsibilities.,army,rank_title
+CYBERCOM,Cyber Command,Cyber Command,general,organization
+DA,Department of the Army,Department of the Army,army,acronym
+DAFSC,duty specialty code,duty specialty code,usaf,acronym
+DAI,Defense Agencies Initiative,Defense agency accounting system,general,financial
+DAPA,substance abuse prevention advisor,substance abuse prevention advisor,navy,acronym
+DATO,Denial of Authorization to Operate,Security certification failure,general,cyber
+DC,damage control,damage control,navy,acronym
+DCA,safety officer,safety officer,navy,acronym
+DCAG,"Deputy Commander, Air Group",Deputy air wing leader,navy,aviation
+DCCS,Damage Control Central Station,Emergency response command center,navy,operations
+DCFR,Defense Casualty and Fatality Report,personnel casualty tracking system,general,admin
+DCGS,Distributed Common Ground System,integrated intelligence analysis platform,general,intel
+DCIPS,Defense Civilian Intelligence Personnel System,Intelligence community civilian pay system,general,training
+DCIS,Defense Criminal Investigative Service,DoD inspector general investigative arm,general,intelligence
+DCMS,Deputy Commandant for Mission Support,Deputy Commandant for Mission Support,uscg,organization
+DCO,Defensive Cyber Operations,cybersecurity defense operations,general,cyber
+DCO,Deputy Commandant for Operations,Deputy Commandant for Operations,uscg,organization
+DCPO,maintenance supervisor,maintenance supervisor,navy,acronym
+DCTT,damage control training team,damage control training team,navy,training
+DD-214,Certificate of Release or Discharge,Military discharge certificate,general,admin
+DEERS,Defense Enrollment Eligibility Reporting System,Military benefits eligibility database,general,medical
+DEL,delta (unit),delta (unit),ussf,acronym
+DEOCS,organizational climate survey,organizational climate survey,general,acronym
+deployment,overseas assignment,overseas assignment,general,acronym
+DEPORD,Deployment Order,deployment directive,general,operations
+DEROS,scheduled rotation date,scheduled rotation date,general,acronym
+DES,Disability Evaluation System,Military disability processing system,general,medical
+DESRON,destroyer squadron,destroyer squadron,navy,acronym
+DFAC,dining facility,dining facility,general,facility
+DFAR,Defense Federal Acquisition Regulation,defense procurement regulations,general,financial
+DFAS,finance and accounting,finance and accounting,general,acronym
+DH,department head,department head,navy,acronym
+DHA,Defense Health Agency,DoD healthcare management agency,general,medical
+DIA,Defense Intelligence Agency,National defense analysis organization,general,intelligence
+DIACAP,DoD Information Assurance Certification,Legacy security compliance framework,general,cyber
+DIRNSA,"Director, National Security Agency",Head of NSA,general,intelligence
+DIS,Defense Investigative Service,Security clearance investigation agency,general,intelligence
+DISA,Defense Information Systems Agency,enterprise IT infrastructure agency,general,cyber
+DISS,Defense Information System for Security,Modern clearance management system,general,intelligence
+DITSCAP,DoD IT Security Certification,Older security compliance process,general,cyber
+DIVARTY,division artillery,division artillery,army,acronym
+DIVO,division officer,division officer,navy,acronym
+DMC,Distribution Management Center,Logistics coordination facility,general,logistics
+DMDC,Defense Manpower Data Center,DoD personnel data management,general,admin
+DMSP,Defense Meteorological Satellite Program,Military weather satellite,general,space
+DNI,Director of National Intelligence,Head of U.S. intelligence community,general,intelligence
+DO,director of operations,director of operations,usaf,acronym
+DOCEX,Document Exploitation,Analysis of captured documents,general,intelligence
+DoD,Department of Defense,Department of Defense,general,acronym
+DoDIN,Department of Defense Information Network,DoD enterprise network,general,cyber
+DOS,date of separation,date of separation,general,acronym
+DPAS,property accountability system,property accountability system,army,system
+DPAS,Defense Property Accountability System,Government property tracking system,general,technical
+drill,training exercise,training exercise,general,training
+DRMO,surplus property disposal,surplus property disposal,usaf,acronym
+DRRS,Defense Readiness Reporting System,Readiness tracking system,general,technical
+DRRS,readiness reporting,readiness reporting,navy,acronym
+DRRS-S,Defense Readiness Reporting System-Strategic,Strategic readiness reporting,general,compliance
+DTG,Date-Time Group,timestamp / date-time reference,general,admin
+DTMS,digital training management system,digital training management system,army,system
+DTS,travel management system,travel management system,army,system
+DUSTOFF,Dedicated Unhesitating Service to Our Fighting Forces,Army air ambulance,army,aviation
+duty section,on-call team,on-call team,general,acronym
+DZ,Drop Zone,Parachute delivery area,general,aviation
+EAD,Earliest Arrival Date,First acceptable delivery date,general,logistics
+EAOS,end of service obligation,end of service obligation,general,acronym
+EAS,end of active service,end of active service,general,acronym
+EBS,Environmental Baseline Survey,Site contamination assessment,general,engineering
+ECAT,Enterprise Compromise Assessment Tool,Malware detection platform,general,cyber
+ECP,entry control point,entry control point,army,acronym
+EDO,Engineering Duty Officer,Engineering on-call supervisor,navy,operations
+EDPO,Engineering Department Program Officer,Managed maintenance planning and personnel development to improve readiness outcomes.,navy,leadership
+EDR,Endpoint Detection and Response,Device-level security monitoring,general,cyber
+EEFI,Essential Elements of Friendly Information,critical internal information to protect,general,operations
+EEI,Essential Elements of Information,Critical intelligence requirements,general,intelligence
+EER,enlisted evaluation report,enlisted evaluation report,uscg,acronym
+EM,electrician's mate,electrician's mate,navy,rating
+eMILPO,personnel management system,personnel management system,army,system
+EMO,electronics material officer,electronics material officer,navy,acronym
+EMR,Electronic Medical Record,Digital patient health record,general,medical
+EN,engineman,engineman,navy,rating
+enlisted,staff,staff,general,acronym
+EO,equal opportunity,equal opportunity,general,acronym
+EOD,explosive ordnance disposal,explosive ordnance disposal,general,acronym
+EOF,Escalation of Force,Progressive response procedures,general,operations
+EOOW,Engineering Officer of the Watch,Engineering operations shift supervisor,navy,operations
+EOW,Engineering Officer of the Watch,"Shift supervisor accountable for equipment status, operational decisions, and team performance.",navy,operations
+EPME,Enlisted Professional Military Education,Enlisted development courses,general,training
+EPME,enlisted professional development,enlisted professional development,uscg,acronym
+EPR,performance evaluation,performance evaluation,usaf,acronym
+equipage,equipment,equipment,general,acronym
+ER09,Engineering casualty response (ER09),Led urgent corrective maintenance actions to restore equipment availability and reduce downtime.,navy,maintenance
+ERB,Enlisted Record Brief,Personnel summary record,army,admin
+ERB,personnel record,personnel record,general,acronym
+ERUL,Engineering urgent logistics (ERUL),Coordinated rapid-response logistics and maintenance actions to mitigate failures and restore capability.,navy,maintenance
+ESC,Expeditionary Sustainment Command,Army theater logistics command,army,logistics
+ESD,electronic systems division,electronic systems division,uscg,system
+ESG,expeditionary strike group,expeditionary strike group,navy,acronym
+ESO,educational services officer,educational services officer,navy,acronym
+ESS,Enterprise Security Stack,Centralized network security platform,general,cyber
+ESSAYONS,Army Engineer Motto (Let Us Try),Army Corps of Engineers motto,army,engineering
+ET,electronics technician,electronics technician,navy,rating
+ETS,end of service obligation,end of service obligation,general,acronym
+EUCOM,European Command,European Command,general,organization
+EVAL,performance evaluation,performance evaluation,navy,acronym
+evolution,planned operation,planned operation,general,acronym
+EXORD,execute order,execute order,army,acronym
+EXORD,Execute Order,execution directive,general,operations
+fantail,rear platform,rear platform,general,facility
+FAR,Federal Acquisition Regulation,government procurement regulations,general,financial
+FARP,Forward Arming and Refueling Point,Temporary aircraft service station,general,aviation
+FAS,Fueling at Sea,At-sea fuel transfer,navy,operations
+FC,fire controlman,fire controlman,navy,rating
+FCLP,Field Carrier Landing Practice,aircraft carrier landing training,navy,aviation
+FEAD,Facilities Engineering Activity Detail,Engineering project management team,general,engineering
+FEC,Facilities Engineering Command,Navy construction management command,navy,engineering
+FEP,Final Evaluation Problem,Final readiness certification exercise,navy,compliance
+FFIR,Friendly Force Information Requirements,internal status reporting requirements,general,operations
+FHP,Force Health Protection,occupational health and safety program,general,medical
+FIAR,Financial Improvement and Audit Remediation,Financial audit compliance program,general,financial
+field day,deep cleaning,deep cleaning,general,acronym
+FIS,Foreign Intelligence Service,Foreign nation's intelligence agency,general,intelligence
+FISC,fleet industrial supply center,fleet industrial supply center,navy,acronym
+FITREP,performance evaluation,performance evaluation,navy,acronym
+FLC,fleet logistics center,fleet logistics center,navy,acronym
+FLIR,Forward-Looking Infrared,Thermal imaging sensor,general,aviation
+FLT,flight,flight,usaf,acronym
+FLTCYBER,Fleet Cyber Command,Navy cybersecurity operations command,navy,cyber
+FLTMPS,Fleet Training Management and Planning System,Navy training database,navy,admin
+FM,field manual,field manual,army,acronym
+FMC,Fully Mission Capable,aircraft fully operational,general,aviation
+FMO,Financial Management Office,Finance and accounting department,general,financial
+FOB,forward operating base,forward operating base,army,acronym
+FORCECOM,Force Readiness Command,Force Readiness Command,uscg,organization
+formation,group assembly,group assembly,general,acronym
+FORSCOM,Forces Command,Forces Command,army,organization
+FOUO,for official use only,for official use only,general,acronym
+FPCON,Force Protection Condition,Security threat level,general,security
+FRAGO,Fragmentary Order,Operational update/amendment,general,communication
+FSC,forward support company,forward support company,army,acronym
+FSO,facility security officer,facility security officer,general,security
+FSRM,"Facilities Sustainment, Restoration, and Modernization",Building maintenance and upgrade program,general,engineering
+FSS,force support squadron,force support squadron,usaf,acronym
+FTX,field training exercise,field training exercise,army,training
+FYDP,Future Years Defense Program,Five-year budget projection,general,financial
+G-6,G-6 (Division/Corps Communications/IT),Senior-level communications/IT directorate responsible for enterprise connectivity and technical governance.,army,cyber
+G1,division/corps personnel,division/corps personnel,army,acronym
+G2,division/corps intelligence,division/corps intelligence,army,security
+G3,division/corps operations,division/corps operations,army,acronym
+G4,division/corps logistics,division/corps logistics,army,acronym
+G6,division/corps communications,division/corps communications,army,acronym
+galley,dining facility,dining facility,general,facility
+GARR,garrison,garrison,ussf,acronym
+GBU,Guided Bomb Unit,Precision-guided aerial weapon,general,aviation
+GCE,ground combat element,ground combat element,usmc,acronym
+GCM,general court-martial,general court-martial,general,acronym
+GCSS-A,Global Combat Support System - Army,enterprise logistics management system,army,logistics
+GCSS-Army,Global Combat Support System-Army,Army logistics/supply management system,army,technical
+GEOINT,Geospatial Intelligence,geographic information systems analysis,general,intel
+GFEBS,financial management system,financial management system,army,system
+GI party,deep cleaning,deep cleaning,general,acronym
+GMT,mandatory training,mandatory training,general,training
+GMT,General Military Training,Mandatory compliance training,navy,training
+GMTI,Ground Moving Target Indicator,Radar-based ground movement detection,general,space
+GO81,maintenance management system,maintenance management system,usaf,system
+GPC,Government Purchase Card,corporate purchasing card,general,financial
+GPS,Global Positioning System,Satellite navigation system,general,space
+GQ,General Quarters,Full emergency response activation,navy,operations
+GS,General Schedule,Federal civilian pay grade system,general,admin
+GSE,gas turbine systems electrician,gas turbine systems electrician,navy,rating
+GSM,gas turbine systems mechanic,gas turbine systems mechanic,navy,rating
+Guardian,team member,team member,general,acronym
+Guardians,personnel,personnel,general,acronym
+GWOT,Global War on Terrorism,Post-9/11 military operations era,general,admin
+GWOTEM,Global War on Terrorism Expeditionary Medal,Overseas deployment service medal,general,admin
+hatch,door,door,general,facility
+HAZMAT,hazardous materials,hazardous materials,general,acronym
+head,restroom,restroom,general,facility
+HHC,headquarters company,headquarters company,army,facility
+HLZ,Helicopter Landing Zone,Designated helicopter area,general,operations
+HM,hospital corpsman,hospital corpsman,navy,rating
+HMH,Marine Heavy Helicopter Squadron,Marine Heavy Helicopter Squadron,usmc,acronym
+HMLA,Marine Light Attack Helicopter Squadron,Marine Light Attack Helicopter Squadron,usmc,acronym
+HPCON,Health Protection Condition,Health threat level,general,operations
+HQ,headquarters,headquarters,general,facility
+HQMC,Headquarters Marine Corps,Headquarters Marine Corps,usmc,facility
+HRC,Human Resources Command,Army HR headquarters,army,admin
+HSC,Helicopter Sea Combat Squadron,Navy helicopter squadron,navy,aviation
+HSM,Helicopter Maritime Strike Squadron,Navy anti-submarine helicopter squadron,navy,aviation
+HT,hull maintenance technician,hull maintenance technician,navy,rating
+HUD,Heads-Up Display,Transparent flight data display,general,aviation
+HUMINT,Human Intelligence,Human-source intelligence,general,operations
+HVI,High-Value Individual,Key person of intelligence interest,general,intelligence
+HVT,High-Value Target,Priority person or asset of interest,general,intelligence
+IA,individual augmentee,individual augmentee,general,acronym
+IAM,Information Assurance Manager,information security manager,general,cyber
+IAO,Information Assurance Officer,"Cybersecurity compliance lead responsible for security controls, documentation, and risk management.",general,cyber
+IAO,Information Assurance Officer,IT security compliance officer,general,cyber
+IATT,Interim Authority to Test,Temporary security authorization,general,cyber
+IAVA,Information Assurance Vulnerability Alert,Critical security patch notification,general,technical
+IAVM,Information Assurance Vulnerability Management,Security patching program,general,cyber
+IBCT,infantry brigade combat team,infantry brigade combat team,army,acronym
+IC,Intelligence Community,All U.S. intelligence agencies collectively,general,intelligence
+IC,interior communications electrician,interior communications electrician,navy,rating
+IDES,Integrated Disability Evaluation System,Military disability determination process,general,medical
+IED,Improvised Explosive Device,Improvised explosive threat,general,operations
+IEM,equipment inspection,equipment inspection,navy,acronym
+IFB,Invitation for Bid,Competitive bidding solicitation,general,engineering
+IG,inspector general,inspector general,general,acronym
+IIR,Intelligence Information Report,Raw intelligence reporting format,general,intelligence
+ILE,Intermediate Level Education,Field grade officer school,army,training
+IMCOM,Installation Management Command,Installation Management Command,army,organization
+IMDS,maintenance data system,maintenance data system,usaf,system
+IMINT,Imagery Intelligence,satellite and aerial imagery analysis,general,intel
+IMR,Individual Medical Readiness,Personal medical compliance status,general,technical
+INDOPACOM,Indo-Pacific Command,Indo-Pacific Command,general,organization
+INFOSEC,information security,information security,general,security
+INSCOM,Intelligence and Security Command,Intelligence and Security Command,army,organization
+INSURV,regulatory compliance inspection,regulatory compliance inspection,navy,acronym
+INTREP,Intelligence Report,Finished intelligence product,general,intelligence
+INTSUM,Intelligence Summary,intelligence briefing summary,general,intel
+IOC,Infantry Officer Course,Infantry Officer Course,usmc,acronym
+IPAC,Installation Personnel Admin Center,Marine Corps HR office,usmc,admin
+IPB,Intelligence Preparation of the Battlefield,Operational environment analysis,army,planning
+IPB,Intelligence Preparation of the Battlefield,comprehensive environmental and threat analysis,general,intel
+iPERMS,Interactive Personnel Electronic Records Management System,Army digital personnel records,army,admin
+iPERMS,electronic personnel records,electronic personnel records,general,acronym
+IS,Intelligence Specialist,Analyst role producing intelligence products and briefings.,navy,rate
+ISG,first sergeant,first sergeant,army,rank
+ISIC,Immediate Superior in Command,Next higher headquarters,navy,organization
+ISO,International Organization for Standardization container,Standard shipping container,general,logistics
+ISR,Intelligence Surveillance Reconnaissance,Information gathering and monitoring,general,operations
+ISRD,Initial Space Resiliency Design,Survivable space system architecture,ussf,space
+ISSM,Information System Security Manager,information security manager,general,cyber
+ISSO,Information System Security Officer,information security officer,general,cyber
+IT,information technology,information technology,navy,rating
+ITS,information technology submariner,information technology submariner,navy,rating
+J-1,Joint Personnel,Joint HR staff,general,admin
+J-2,Joint Intelligence,Joint intelligence staff,general,admin
+J-3,Joint Operations,Joint operations staff,general,admin
+J-4,Joint Logistics,Joint logistics staff,general,admin
+J-6,J-6 (Joint Communications/IT),Joint-level communications/IT directorate responsible for enterprise services and interoperability.,general,cyber
+J-6,Joint Communications,Joint IT/communications staff,general,admin
+J1,joint personnel,joint personnel,army,acronym
+J2,Joint Intelligence (J-2),Joint intelligence section integrating multi-source intel for decision support.,general,intelligence
+J2,joint intelligence,joint intelligence,army,security
+J3,Joint Operations (J-3),Joint operations section coordinating planning and execution across services.,general,operations
+J3,joint operations,joint operations,army,acronym
+J4,Joint Logistics (J-4),Joint logistics section managing supply chain planning and sustainment across units.,general,logistics
+J4,joint logistics,joint logistics,army,acronym
+J6,Joint Communications/IT (J-6),Enterprise communications and IT section supporting service continuity and cybersecurity.,general,cyber
+J6,joint communications,joint communications,army,acronym
+JAG,legal affairs,legal affairs,general,acronym
+JCN,Job Control Number,Work order number,navy,technical
+JDAM,Joint Direct Attack Munition,GPS-guided precision weapon,general,aviation
+JIOC,Joint Intelligence Operations Center,Multi-service intel operations facility,general,intelligence
+JISE,Joint Intelligence Support Element,Multi-service intel analysis team,general,intelligence
+JOC,Job Order Contract,Quick-turnaround construction contract,general,engineering
+JOOD,Junior Officer of the Deck,Assistant operations shift supervisor,navy,operations
+JOPES,Joint Operation Planning and Execution System,enterprise operations planning system,general,operations
+JPAS,Joint Personnel Adjudication System,Security clearance tracking database,general,intelligence
+JPME,Joint Professional Military Education,Joint operations education,general,training
+JRSOI,Joint Reception Staging Onward Movement and Integration,arrival processing and integration operations,general,operations
+JRSS,Joint Regional Security Stack,Regional network security platform,general,cyber
+JRTC,Joint Readiness Training Center,Joint Readiness Training Center,army,training
+JSM,Joint Service Medal,Multi-service assignment recognition,general,admin
+JSpOC,Joint Space Operations Center,Joint Space Operations Center,ussf,acronym
+JSS,joint security station,joint security station,army,security
+JSTARS,Joint Surveillance Target Attack Radar System,airborne surveillance and targeting platform,general,intel
+JTAGS,Joint Tactical Ground Station,Transportable missile warning station,general,space
+JTF,joint task force,joint task force,general,acronym
+JWAC,Joint Warfare Analysis Center,Military targeting and analysis center,general,intelligence
+JWICS,Joint Worldwide Intelligence Communications System,top-secret network,general,cyber
+KIA,killed in action,killed in action,general,acronym
+LAD,Latest Arrival Date,Final acceptable delivery date,general,logistics
+ladder well,stairwell,stairwell,general,facility
+LANTFLT,Atlantic Fleet,Atlantic region naval forces,navy,organization
+LCE,logistics combat element,logistics combat element,usmc,acronym
+LCPO,senior team lead,senior team lead,navy,rank
+LES,Leave and Earnings Statement,Pay stub / earnings statement,general,admin
+LFX,live fire exercise,live fire exercise,army,acronym
+liberty,time off,time off,general,acronym
+LMET,Leadership and Management Education and Training,Leadership development course,navy,training
+LOA,letter of admonishment,letter of admonishment,general,acronym
+LOC,letter of counseling,letter of counseling,general,acronym
+LOD,Line of Duty,Work-related injury/illness determination,general,medical
+LOE,Line of Effort,Strategic objective focus area,general,planning
+LOE,Light-Off Examination,Propulsion system readiness test,navy,compliance
+LOGCAP,Logistics Civil Augmentation Program,Contracted logistics support program,army,logistics
+LOGPAC,Logistics Package,Supply delivery bundle,army,logistics
+LOGSTAT,Logistics Status Report,supply and logistics status report,general,logistics
+LOO,Line of Operation,Operational focus area,general,planning
+LOR,letter of reprimand,letter of reprimand,general,acronym
+LPO,team lead,team lead,navy,rank
+LRS,logistics readiness squadron,logistics readiness squadron,usaf,acronym
+LS,logistics specialist,logistics specialist,navy,rating
+LSO,Landing Signal Officer,aircraft landing safety supervisor,navy,aviation
+LZ,Landing Zone,Helicopter landing area,general,operations
+MA,master-at-arms,master-at-arms,navy,rating
+MACC,Multiple Award Construction Contract,Pre-competed construction contract vehicle,general,engineering
+MACOM,Major Command,Major Army headquarters,army,organization
+MAGTF,Marine Air-Ground Task Force,Marine Air-Ground Task Force,usmc,acronym
+maintenance lags,maintenance delays,maintenance delays,general,acronym
+MAJCOM,Major Command,Major Air Force headquarters,usaf,organization
+MALS,Marine Aviation Logistics Squadron,Marine Aviation Logistics Squadron,usmc,acronym
+MARADMIN,Marine administrative message,Marine administrative message,usmc,acronym
+MARCENT,Marine Forces Central Command,Marine Forces Central Command,usmc,organization
+MARDIV,Marine Division,Marine Division,usmc,acronym
+MARFORCOM,Marine Forces Command,Marine Forces Command,usmc,organization
+MARFORCYBER,Marine Forces Cyberspace Command,Marine Corps cyber operations,usmc,cyber
+MARFORPAC,Marine Forces Pacific,Marine Forces Pacific,usmc,acronym
+Marine,team member,team member,general,acronym
+marines,personnel,personnel,general,acronym
+MASINT,Measurement and Signature Intelligence,technical measurement and analysis,general,intel
+material readiness,equipment readiness,equipment readiness,general,acronym
+materiel,supplies and equipment,supplies and equipment,general,acronym
+MAW,Marine Aircraft Wing,Marine Aircraft Wing,usmc,acronym
+MC,Mission Capable,aircraft available for operations,general,aviation
+MCAS,Marine Corps Air Station,Marine Corps Air Station,usmc,acronym
+MCB,Marine Corps Base,Marine Corps Base,usmc,acronym
+MCCDC,Combat Development Command,Combat Development Command,usmc,organization
+MCIA,Marine Corps Intelligence Activity,Marine Corps intelligence center,usmc,intelligence
+MCLB,Marine Corps Logistics Base,Marine Corps Logistics Base,usmc,acronym
+MCMAP,martial arts program,martial arts program,usmc,acronym
+MCPON,Master Chief Petty Officer of the Navy,Senior enlisted Navy advisor,navy,organization
+MCRD,Marine Corps Recruit Depot,Marine Corps Recruit Depot,usmc,acronym
+MCSC,Marine Corps Systems Command,Marine Corps Systems Command,usmc,organization
+MCTFS,Marine Corps Total Force System,Marine Corps personnel database,usmc,admin
+MCWL,Marine Corps Warfighting Lab,Marine Corps Warfighting Lab,usmc,acronym
+MCX,retail store,retail store,general,facility
+MDG,medical group,medical group,usaf,acronym
+MDMP,Military Decision Making Process,Structured decision-making framework,army,planning
+MDR,Managed Detection and Response,Outsourced security monitoring service,general,cyber
+MEB,Medical Evaluation Board,Medical fitness-for-duty review,general,medical
+MEB,Marine Expeditionary Brigade,Marine Expeditionary Brigade,usmc,acronym
+MECEP,enlisted commissioning program,enlisted commissioning program,usmc,acronym
+MEDCOM,Medical Command,Medical Command,army,organization
+MEDEVAC,Medical Evacuation,Medical transport by helicopter,general,operations
+MEDEX,Media Exploitation,Digital media forensic analysis,general,intelligence
+MEDPROS,Medical Protection System,Medical readiness tracking,army,technical
+MEDPROS,Medical Protection System,medical readiness tracking system,general,medical
+MEF,Marine Expeditionary Force,Major Marine Corps operational force,usmc,organization
+MEO,military equal opportunity,military equal opportunity,general,acronym
+MEPS,Military Entrance Processing Station,Military recruitment medical screening facility,general,medical
+mess deck,dining facility,dining facility,general,facility
+METL,Mission Essential Task List,Core competency requirements,general,compliance
+METT-TC,Mission Enemy Terrain Troops Time Civilians,operational planning factors,army,operations
+MEU,Marine Expeditionary Unit,Marine Expeditionary Unit,usmc,acronym
+MFP,Major Force Program,Major budget category,general,financial
+MHE,Material Handling Equipment,Forklifts and cargo moving equipment,general,logistics
+MHS,Military Health System,DoD healthcare system,general,medical
+MIA,missing in action,missing in action,general,acronym
+MICT,management internal control toolset,management internal control toolset,usaf,acronym
+MILCON,Military Construction,capital construction budget,general,financial
+MILPDS,Military Personnel Data System,Air Force personnel database,usaf,admin
+MILVAN,Military Van,Military-standard shipping container,general,logistics
+MISLE,marine information system,marine information system,uscg,system
+MLC,Master Leader Course,executive management development course,army,training
+MLE,maritime law enforcement,maritime law enforcement,uscg,acronym
+MLG,Marine Logistics Group,Marine Logistics Group,usmc,acronym
+MM,machinist's mate,machinist's mate,navy,rating
+MOB,Man Overboard,Personnel recovery emergency,navy,operations
+MODS,Medical Operational Data System,Navy medical readiness tracker,navy,medical
+MOL,Marine Online portal,Marine Online portal,general,acronym
+MOL,Marine Online,Marine Corps self-service portal,usmc,admin
+MOPP,Mission Oriented Protective Posture,HAZMAT/CBRN protection level,general,operations
+MOS,military occupational specialty,military occupational specialty,general,acronym
+MPA,main propulsion assistant,main propulsion assistant,navy,acronym
+MPF,Military Personnel Flight,Air Force HR office,usaf,admin
+MRC,Maintenance Requirement Card,Maintenance work instruction,navy,technical
+MSC,Military Sealift Command,Navy cargo shipping organization,navy,logistics
+MSG,mission support group,mission support group,usaf,acronym
+MSGT,master sergeant,master sergeant,usaf,rank
+MSIC,Missile and Space Intelligence Center,Missile threat analysis center,army,intelligence
+MSR,main supply route,main supply route,army,acronym
+MSR,Main Supply Route,Primary logistics corridor,general,logistics
+MSRT,maritime security response team,maritime security response team,uscg,security
+MSST,maritime security team,maritime security team,uscg,security
+MTF,Medical Treatment Facility,healthcare facility,general,medical
+MTOE,personnel and equipment authorization,personnel and equipment authorization,army,acronym
+MUOS,Mobile User Objective System,Next-gen narrowband military satellite,general,space
+muster,accountability check,accountability check,general,acronym
+MWR,"morale, welfare and recreation","morale, welfare and recreation",general,acronym
+MX,maintenance,maintenance,usaf,acronym
+MXG,maintenance group,maintenance group,usaf,acronym
+MXS,maintenance squadron,maintenance squadron,usaf,acronym
+NAF,numbered air force,numbered air force,usaf,acronym
+NAI,Named Area of Interest,Geographic area designated for surveillance,general,intelligence
+NALCOMIS,Naval Aviation Logistics Command Management Information System,Aviation maintenance management system,navy,technical
+NAS,naval air station,naval air station,navy,acronym
+NASIC,National Air and Space Intelligence Center,Air/space threat analysis center,usaf,intelligence
+NATOPS,Naval Air Training and Operating Procedures Standardization,aviation standardization and safety procedures,navy,aviation
+NAV,navigator,navigator,navy,acronym
+NAVAIR,Naval Air Systems Command,Navy aviation systems command,navy,organization
+NAVFIT,performance evaluation system,performance evaluation system,navy,system
+NAVLEAD,Navy Leadership Development,Leadership course,navy,training
+NAVSEA,Naval Sea Systems Command,Navy shipbuilding and maintenance command,navy,organization
+NAVSTA,naval station,naval station,navy,acronym
+NAVSUP,supply command,supply command,navy,organization
+NAVWAR,naval information warfare systems,naval information warfare systems,navy,system
+NC,career counselor,career counselor,navy,acronym
+NCIS,Naval Criminal Investigative Service,Navy/Marine Corps law enforcement and CI agency,navy,intelligence
+NCO,non-commissioned officer,non-commissioned officer,army,rank
+NCOA,NCO Academy,NCO Academy,usaf,acronym
+NCOER,performance evaluation,performance evaluation,army,acronym
+NCOIC,non-commissioned officer in charge,non-commissioned officer in charge,army,rank
+NCTC,National Counterterrorism Center,Counterterrorism analysis and planning center,general,intelligence
+NDSM,National Defense Service Medal,Medal for service during conflict period,general,admin
+NDU,National Defense University,Senior military/civilian joint education,general,training
+NEC,specialty code,specialty code,general,acronym
+NEL,Navy e-Learning,Navy e-Learning,navy,acronym
+NEPA,National Environmental Policy Act,Environmental impact review law,general,engineering
+NETC,Naval Education and Training Command,Navy training organization,navy,organization
+NEX,retail store,retail store,general,facility
+NFAAS,Navy Family Accountability and Assessment System,Personnel accountability system,navy,technical
+NGA,National Geospatial-Intelligence Agency,Satellite and geographic analysis agency,general,intelligence
+NGIC,National Ground Intelligence Center,Army ground threat analysis center,army,intelligence
+NIOC,Navy Information Operations Command,Navy cyber and intel operations,navy,intelligence
+NIPR,Non-classified Internet Protocol Router,unclassified network,general,cyber
+NIST,National Institute of Standards and Technology,Federal technology standards body,general,technical
+NJP,Non-Judicial Punishment,Administrative disciplinary action,general,admin
+NKO,online training system,online training system,navy,system
+NMC,Non-Mission Capable,equipment out of service,general,logistics
+NMCI,Navy Marine Corps Intranet,Enterprise network infrastructure,navy,technical
+NMCM,Non-Mission Capable Maintenance,out of service due to maintenance,general,logistics
+NMCP,Naval Medical Center Portsmouth,Navy hospital,navy,medical
+NMCS,Non-Mission Capable Supply,out of service due to parts shortage,general,logistics
+NMEC,National Media Exploitation Center,Captured materials analysis center,general,intelligence
+NMP,Navy Manning Plan,Navy staffing document,navy,training
+NOFORN,not releasable to foreign nationals,not releasable to foreign nationals,general,acronym
+NORTHCOM,Northern Command,Northern Command,general,organization
+NPC,Navy Personnel Command,Navy HR operations,navy,admin
+NRO,National Reconnaissance Office,Satellite intelligence agency,general,intelligence
+NSA,National Security Agency,Signals intelligence and cybersecurity agency,general,intelligence
+NSA,naval support activity,naval support activity,navy,acronym
+NSDC,National Space Defense Center,Space threat monitoring facility,general,space
+NSG,Naval Security Group,Navy signals intelligence unit,navy,intelligence
+NSIPS,personnel management system,personnel management system,general,system
+NSIPS,Navy Standard Integrated Personnel System,Navy HR database,navy,admin
+NSpC,National Space Council,White House space policy coordination,general,space
+NSTC,Naval Service Training Command,Navy recruit and officer training,navy,training
+NTC,National Training Center,National Training Center,army,training
+NVG,Night Vision Goggles,Low-light vision enhancement device,general,aviation
+NWC,Naval War College,Senior officer strategic school,navy,training
+OAAS,officer and enlisted performance,officer and enlisted performance,uscg,acronym
+OAR,officer assignment record,officer assignment record,uscg,acronym
+OCO,Offensive Cyber Operations,penetration testing and red team operations,general,cyber
+OCONUS,overseas,overseas,general,acronym
+OCS,Officer Candidate School,Officer commissioning program,general,training
+OCX,GPS Next Generation Operational Control System,GPS ground control upgrade,general,space
+ODNI,Office of the Director of National Intelligence,IC coordination and oversight office,general,intelligence
+OER,officer performance evaluation,officer performance evaluation,army,acronym
+OG,operations group,operations group,usaf,acronym
+OIC,officer in charge,officer in charge,army,rank
+OICC,Officer in Charge of Construction,Senior construction oversight officer,navy,engineering
+OJT,on-the-job training,on-the-job training,general,training
+OMA,Operation and Maintenance Army,Army operating budget,army,financial
+OMMS-NG,Organizational Maintenance Management System-Next Generation,Maintenance management software,navy,technical
+OMN,Operation and Maintenance Navy,Navy operating budget,navy,financial
+OMPF,official personnel file,official personnel file,general,acronym
+ONI,Office of Naval Intelligence,Navy intelligence headquarters,navy,intelligence
+OOD,Officer of the Deck,Ship operations shift supervisor,navy,operations
+op tempo,operational pace,operational pace,general,acronym
+OPCON,Operational Control,Full operational authority,general,operations
+OPFOR,opposing force,opposing force,army,acronym
+OPIR,Overhead Persistent Infrared,Satellite missile detection system,general,space
+OPLAN,Operations Plan,comprehensive operations plan,general,operations
+OPNAV,headquarters staff,headquarters staff,navy,facility
+OPORD,Operations Order,Operational execution plan,general,communication
+OPPE,Operational Propulsion Plant Examination,Engineering readiness assessment,navy,compliance
+OPR,officer performance report,officer performance report,usaf,acronym
+OPREP,operational report,operational report,navy,acronym
+OPS,operations,operations,navy,acronym
+OPSEC,operations security,operations security,general,security
+OPSUM,Operations Summary,operational activity summary,general,operations
+ORB,Officer Record Brief,Officer personnel summary,army,admin
+ordnance,weapons/ammunition,weapons/ammunition,general,acronym
+ORE,Operational Readiness Examination,Readiness evaluation,general,compliance
+ORI,Operational Readiness Inspection,Formal readiness inspection,usaf,compliance
+ORM,operational risk management,operational risk management,general,acronym
+OS,operations specialist,operations specialist,navy,rating
+OSA,Overseas Service Award,Recognition for overseas assignment,general,admin
+OSINT,Open Source Intelligence,Publicly available information analysis,general,operations
+OSS,operations support squadron,operations support squadron,usaf,acronym
+OTS,Officer Training School,Air Force commissioning program,usaf,training
+overhead,ceiling,ceiling,general,facility
+PACAF,Pacific Air Forces,Pacific Air Forces,usaf,acronym
+PACFLT,Pacific Fleet,Pacific region naval forces,navy,organization
+PACOM,Pacific Command,Pacific Command,general,organization
+PAFSC,primary specialty code,primary specialty code,usaf,acronym
+PAO,public affairs,public affairs,general,acronym
+passageway,hallway,hallway,general,facility
+PATFORSWA,patrol forces Southwest Asia,patrol forces Southwest Asia,uscg,acronym
+PB,patrol base,patrol base,army,acronym
+PBAC,Program and Budget Advisory Committee,Budget review committee,general,financial
+PBD,Program Budget Decision,Senior budget allocation decision,general,financial
+PBO,property book officer,property book officer,army,acronym
+PBUSE,property management system,property management system,army,system
+PCC,Pre-Command Course,Commander preparation training,general,training
+PCS,Permanent Change of Station,Organizational relocation/transfer,general,admin
+PDHA,Post-Deployment Health Assessment,Return-from-deployment medical screening,general,medical
+PDHRA,Post-Deployment Health Reassessment,Follow-up deployment health check,general,medical
+PEB,Physical Evaluation Board,Disability rating determination panel,general,medical
+PEC,Program Element Code,Budget tracking identifier,general,financial
+PEO,program executive office,program executive office,navy,acronym
+PERSEC,personnel security,personnel security,general,security
+PERSTAT,Personnel Status Report,headcount and personnel status report,general,admin
+PFC,private first class,private first class,army,rank
+PFT,physical fitness test,physical fitness test,usmc,training
+PIR,Priority Intelligence Requirements,Intelligence collection priorities,general,planning
+PKI,Public Key Infrastructure,digital certificate management system,general,cyber
+PLANORD,Planning Order,planning directive,general,operations
+PLT,platoon,platoon,army,acronym
+PMC,Partially Mission Capable,equipment operating with reduced capability,general,logistics
+PMCS,preventive maintenance checks,preventive maintenance checks,army,acronym
+PME,professional military education,professional military education,general,acronym
+PMO,provost marshal office,provost marshal office,usmc,acronym
+PMS,preventive maintenance,preventive maintenance,navy,acronym
+POAM,Plan of Action and Milestones,Security remediation plan,general,cyber
+POC,Point of Contact,Primary contact person,general,communication
+POD,Port of Debarkation,Arrival port,general,logistics
+POE,Port of Embarkation,Departure port,general,logistics
+POM,Program Objective Memorandum,multi-year budget planning document,general,financial
+port and starboard,rotating shift schedule,rotating shift schedule,general,acronym
+POW,prisoner of war,prisoner of war,general,acronym
+PPBE,"Planning, Programming, Budgeting, and Execution",DoD budget lifecycle process,general,financial
+PPE,personal protective equipment,personal protective equipment,general,acronym
+PPO,Personnel Processing Office,In/out-processing office,general,admin
+PPWO,Propulsion Plant Watch Officer,"Led propulsion plant operations, coordinating personnel and equipment to maintain compliance and availability.",navy,maintenance
+PQS,personnel qualification standards,personnel qualification standards,navy,acronym
+PRD,planned rotation date,planned rotation date,general,acronym
+PRDA,Personnel Records Display Application,Air Force digital personnel file,usaf,admin
+PRIME BEEF,Prime Base Engineer Emergency Force,base engineering emergency response team,usaf,engineering
+PROFIS,Professional Officer Filler Information System,Medical officer deployment assignment system,army,medical
+PRT,Physical Readiness Test,Physical fitness assessment,navy,training
+PS,personnel specialist,personnel specialist,navy,rating
+PSD,Personnel Support Detachment,HR service center,navy,admin
+PSG,platoon sergeant,platoon sergeant,army,rank
+PSR,Personnel Status Report,Manning/staffing report,general,admin
+PSU,port security unit,port security unit,uscg,security
+PT,Physical Training,Physical fitness program,general,training
+PV2,private,private,army,rank
+PVT,private,private,army,rank
+PWD,Public Works Department,Base facilities management office,navy,engineering
+PX,retail store,retail store,general,facility
+PZ,Pickup Zone,Personnel/cargo collection point,general,aviation
+QA,quality assurance,quality assurance,army,acronym
+QAE,Quality Assurance Evaluator,Construction quality inspector,general,engineering
+QC,quality control,quality control,army,acronym
+QM,quartermaster,quartermaster,navy,rating
+QRF,Quick Reaction Force,Rapid response team,general,operations
+quarterdeck,reception area,reception area,general,facility
+rack,bed,bed,general,acronym
+RAPIDS,Real-time Automated Personnel Identification System,Military ID card system,general,admin
+RAS,replenishment at sea,replenishment at sea,navy,acronym
+RDD,Required Delivery Date,Shipment deadline,general,logistics
+readiness,operational preparedness,operational preparedness,general,acronym
+RED HORSE,Rapid Engineer Deployable Heavy Operational Repair Squadron Engineers,rapid construction and repair unit,usaf,engineering
+reveille,morning wake-up,morning wake-up,general,acronym
+RFI,Request for Information,Information request,general,communication
+RFP,Request for Proposal,Solicitation for contractor bids,general,engineering
+RMF,Risk Management Framework,Cybersecurity compliance framework,general,technical
+RO,Reactor Operator,Monitored and controlled reactor systems to maintain safe operating parameters.,navy,maintenance
+ROC drill,Rehearsal of Concept drill,operational concept rehearsal,general,operations
+ROE,Rules of Engagement,Operational conduct guidelines,general,operations
+ROICC,Resident Officer in Charge of Construction,Government construction manager,navy,engineering
+ROTC,Reserve Officers Training Corps,College officer program,general,training
+RTB,Return to Base,Return to home location,general,operations
+S-1,Personnel/Administration Section,HR department,army,admin
+S-2,Intelligence Section,Intelligence department,army,admin
+S-3,Operations Section,Operations department,army,admin
+S-4,Logistics Section,Logistics/supply department,army,admin
+S-6,Communications/IT Section,IT department,army,admin
+S1,human resources/personnel,human resources/personnel,army,acronym
+S2,intelligence/security,intelligence/security,army,security
+S3,operations/training,operations/training,army,training
+S4,logistics/supply,logistics/supply,army,acronym
+S6,communications/IT,communications/IT,army,acronym
+S6 SHOP,Communications/IT Section,"In-house IT/communications team responsible for network support, troubleshooting, and service restoration.",army,staff_section
+SABRS,"Standard Accounting, Budgeting, and Reporting System",Marine Corps accounting system,usmc,financial
+SAEDA,Subversion and Espionage Directed Against the Army,Insider threat reporting program,army,intelligence
+SAG,Sub-Activity Group,Detailed budget grouping,general,financial
+Sailors,personnel,personnel,general,acronym
+SALUTE,threat report format,threat report format,general,acronym
+SAP,special access program,special access program,general,acronym
+SAPR,sexual assault prevention,sexual assault prevention,general,acronym
+SAR,Search and Rescue,Coordinated time-critical emergency response operations to safeguard personnel and property.,uscg,operations
+SAR,search and rescue,search and rescue,uscg,acronym
+SARC,sexual assault response coordinator,sexual assault response coordinator,navy,acronym
+SAROPS,search and rescue planning system,search and rescue planning system,uscg,system
+SARSS,Standard Army Retail Supply System,retail supply management system,army,logistics
+SAV,staff assistance visit,staff assistance visit,usaf,acronym
+SBCT,Stryker brigade combat team,Stryker brigade combat team,army,acronym
+SBIRS,Space-Based Infrared System,Missile warning satellite constellation,general,space
+SCA,Security Control Assessor,Independent security auditor,general,cyber
+SCI,sensitive compartmented information,sensitive compartmented information,general,acronym
+SCLSIS,Ships Configuration and Logistics Support Information System,Configuration management system,navy,technical
+SCM,summary court-martial,summary court-martial,general,acronym
+SCO,security control officer,security control officer,general,security
+scuttlebutt,water fountain,water fountain,general,acronym
+SDA,Space Development Agency,Space technology development organization,ussf,space
+SDDC,Surface Deployment and Distribution Command,Military land/sea shipping command,army,logistics
+SEAVAN,Sea Van,Ocean shipping container,general,logistics
+SECDEF,Secretary of Defense,Civilian leader of Department of Defense,general,organization
+SECNAV,Secretary of the Navy,Civilian leader of Navy and Marine Corps,navy,organization
+SES,Senior Executive Service,Federal civilian senior leadership tier,general,admin
+SF,security forces,security forces,usaf,security
+SFA,Security Force Assistance,Partner nation security capacity building,general,intelligence
+SFC,sergeant first class,sergeant first class,army,rank
+SFS,security forces squadron,security forces squadron,usaf,security
+SGLI,Servicemembers Group Life Insurance,Military life insurance,general,admin
+SGM,sergeant major,sergeant major,army,rank
+SGT,sergeant,sergeant,army,rank
+SHARP,sexual harassment/assault prevention,sexual harassment/assault prevention,general,acronym
+SIGACT,Significant Activity,noteworthy event or incident,general,operations
+SIGINT,Signals Intelligence,Communications intelligence analysis,general,operations
+SIPR,Secret Internet Protocol Router,classified network,general,cyber
+SITREP,Situation Report,Status update/report,general,communication
+SJA,staff judge advocate,staff judge advocate,general,acronym
+SK,storekeeper,storekeeper,navy,rating
+SKED,Scheduling,Maintenance scheduling system,navy,technical
+SL,squad leader,squad leader,army,acronym
+SLC,Senior Leader Course,Senior supervisor course,army,training
+SLD,Space Launch Delta,Space Launch Delta,ussf,acronym
+SMA,Sergeant Major of the Army,Senior enlisted Army advisor,army,organization
+SMMC,Sergeant Major of the Marine Corps,Senior enlisted Marine advisor,usmc,organization
+SMP,squadron maintenance program,squadron maintenance program,usmc,acronym
+SMSGT,senior master sergeant,senior master sergeant,usaf,rank
+SNCO,senior non-commissioned officer,senior non-commissioned officer,army,rank
+SNCOA,Senior NCO Academy,Senior enlisted professional school,usaf,training
+SNCOIC,senior NCO in charge,senior NCO in charge,usmc,acronym
+SNEC,Senior NCO Education Course,Senior leadership course,general,training
+SOAP,"Subjective, Objective, Assessment, Plan",Standard medical documentation format,general,medical
+SOCOM,Special Operations Command,Special Operations Command,general,organization
+SOFA,Status of Forces Agreement,Legal framework for troops in foreign countries,general,intelligence
+SOI,School of Infantry,School of Infantry,usmc,acronym
+Soldier,team member,team member,general,acronym
+Soldiers,personnel,personnel,general,acronym
+SOP,standard operating procedure,standard operating procedure,general,acronym
+SOPS,Space Operations Squadron,Space Operations Squadron,ussf,acronym
+SOQ,Statement of Qualifications,Contractor experience submittal,general,engineering
+sortie,mission flight,mission flight,general,acronym
+SORTS,Status of Resources and Training System,Readiness reporting system,general,compliance
+SORTS,readiness reporting,readiness reporting,navy,acronym
+SOS,Squadron Officer School,Squadron Officer School,usaf,acronym
+SOUTHCOM,Southern Command,Southern Command,general,organization
+SPACECOM,U.S. Space Command,Military space operations command,general,space
+SPAWAR,naval systems command,naval systems command,navy,organization
+SPC,specialist,specialist,army,rank
+SPCM,special court-martial,special court-martial,general,acronym
+SPOC,Space Operations Command,Space Operations Command,ussf,organization
+SPOD,Seaport of Debarkation,Military sea cargo receiving terminal,general,logistics
+SPOE,Seaport of Embarkation,Military sea cargo departure terminal,general,logistics
+spot checks,quality inspections,quality inspections,general,acronym
+SPOTREP,incident report,incident report,general,acronym
+SQ,squadron,squadron,usaf,acronym
+SQD,squad,squad,army,acronym
+SRA,senior airman,senior airman,usaf,rank
+SRB,selective reenlistment bonus,selective reenlistment bonus,general,acronym
+SRB,Service Record Book,Personnel file,navy,admin
+SRO,Senior Reactor Operator,"Oversaw reactor operations and compliance activities to ensure safe, efficient plant performance.",navy,maintenance
+SRTS,Sailor Readiness Tracking System,Navy individual readiness database,navy,medical
+SSA,Supply Support Activity,Supply distribution point,army,logistics
+SSC,Space Systems Command,Space Systems Command,ussf,organization
+SSE,Senior Service Education,executive leadership development program,general,training
+SSG,staff sergeant,staff sergeant,army,rank
+SSGT,staff sergeant,staff sergeant,usaf,rank
+SSO,special security officer,special security officer,general,security
+STAMIS,Standard Army Management Information System,enterprise management information system,army,logistics
+STANFINS,Standard Finance System,Army accounting system,army,financial
+STARCOM,Space Training and Readiness Command,Space Training and Readiness Command,ussf,organization
+STIG,Security Technical Implementation Guide,Security configuration standard,general,technical
+STRATCOM,Strategic Command,Strategic Command,general,organization
+STX,situational training exercise,situational training exercise,army,training
+SUBLANT,submarine forces Atlantic,submarine forces Atlantic,navy,acronym
+SUBPAC,submarine forces Pacific,submarine forces Pacific,navy,acronym
+SUPPO,supply officer,supply officer,navy,acronym
+SURFLANT,Commander Naval Surface Forces Atlantic,Atlantic surface fleet commander,navy,organization
+SURFPAC,surface forces Pacific,surface forces Pacific,navy,acronym
+SWPPP,Stormwater Pollution Prevention Plan,Environmental runoff management plan,general,engineering
+TACLET,Tactical Law Enforcement Team,Supported specialized maritime security operations in joint/multi-agency environments.,uscg,operations
+TACLET,tactical law enforcement team,tactical law enforcement team,uscg,acronym
+TACON,Tactical Control,Temporary operational authority,general,operations
+TAD,temporary assignment,temporary assignment,general,acronym
+TAD,Temporary Additional Duty,Temporary assignment to another location,navy,admin
+TADSS,training aids and devices,training aids and devices,army,training
+TAI,Target Area of Interest,Specific location for collection focus,general,intelligence
+TAP,transition assistance program,transition assistance program,general,acronym
+TAPS,transition assistance program,transition assistance program,general,acronym
+TAREX,Target Exploitation,Target analysis and development,general,intelligence
+TBS,The Basic School,The Basic School,usmc,acronym
+TCCC,Tactical Combat Casualty Care,field emergency trauma care,general,medical
+TCN,Transportation Control Number,Shipment tracking number,general,logistics
+TCP,traffic control point,traffic control point,army,acronym
+TDA,organizational structure document,organizational structure document,army,acronym
+TDY,temporary duty assignment,temporary duty assignment,general,acronym
+TDY,Temporary Duty,Temporary assignment to another location,usaf,admin
+TECHEX,Technical Exploitation,Technical equipment forensic analysis,general,intelligence
+TECOM,Training and Education Command,Training and Education Command,usmc,organization
+TEMADD,Temporary Additional Duty,Short-term training assignment,navy,training
+TI,technical inspection,technical inspection,army,acronym
+TIC,Troops in Contact,active engagement / critical incident,general,operations
+TIG,time in grade,time in grade,usaf,acronym
+TIS,time in service,time in service,usaf,acronym
+TL,team leader,team leader,army,acronym
+TLP,Troop Leading Procedures,team planning and execution steps,army,operations
+TM,team,team,army,acronym
+TOC,tactical operations center,tactical operations center,general,acronym
+TOPMIS,Total Officer Personnel Management Information System,Army officer management system,army,admin
+TPFDD,Time-Phased Force and Deployment Data,deployment scheduling and resource plan,general,operations
+TPT,Tactical PSYOP Team,Small psychological operations unit,general,intelligence
+TQL,total quality leadership,total quality leadership,navy,acronym
+TRACEN,training center,training center,uscg,training
+TRADOC,Training and Doctrine Command,Training and Doctrine Command,army,organization
+TRANSCOM,Transportation Command,Transportation Command,general,organization
+TRICARE,military health insurance,military health insurance,general,acronym
+TSC,Theater Sustainment Command,Army regional logistics headquarters,army,logistics
+TSCM,Technical Surveillance Countermeasures,Electronic bug sweep and detection,general,intelligence
+TSGT,technical sergeant,technical sergeant,usaf,rank
+TSP,Thrift Savings Plan,Government 401(k) retirement plan,general,admin
+TSTA,Tailored Ships Training Availability,Integrated training assessment,navy,compliance
+TWMS,Total Workforce Management Services,Navy training tracking system,navy,admin
+TYCOM,Type Commander,Fleet type headquarters,navy,organization
+UCI,Unit Compliance Inspection,Air Force compliance audit,usaf,compliance
+UCMJ,Uniform Code of Military Justice,Military legal code,general,admin
+UDM,unit deployment manager,unit deployment manager,usaf,acronym
+UFR,Unfunded Requirements,supplemental budget requests,general,financial
+UGT,upgrade training,upgrade training,usaf,training
+ULLS,Unit Level Logistics System,unit-level inventory tracking system,army,logistics
+ULTRA-C,Unit Level Training Readiness Assessment-Command,Command-level readiness assessment,navy,compliance
+UMR,unit manning report,unit manning report,army,acronym
+underway,at sea operations,at sea operations,general,acronym
+UNREP,Underway Replenishment,At-sea supply transfer operation,navy,operations
+USACE,Army Corps of Engineers,Army Corps of Engineers,army,acronym
+USAF,United States Air Force,United States Air Force,usaf,acronym
+USAFE,US Air Forces in Europe,US Air Forces in Europe,usaf,acronym
+USAREC,Army Recruiting Command,Army Recruiting Command,army,organization
+USCG,United States Coast Guard,United States Coast Guard,uscg,acronym
+USMA,United States Military Academy,West Point,army,training
+usmc,personnel,personnel,general,acronym
+USMC,United States Marine Corps,United States Marine Corps,usmc,acronym
+USO,United Service Organizations,United Service Organizations,general,acronym
+USR,unit status report,unit status report,army,acronym
+USSF,United States Space Force,United States Space Force,ussf,acronym
+USTRANSCOM,U.S. Transportation Command,Joint military transportation headquarters,general,logistics
+UTC,unit type code,unit type code,usaf,acronym
+UTM,unit training manager,unit training manager,usaf,training
+UXO,unexploded ordnance,unexploded ordnance,general,acronym
+VA,Veterans Affairs,Veterans Affairs,general,acronym
+VAW,Carrier Airborne Early Warning Squadron,Navy E-2 Hawkeye squadron,navy,aviation
+VDP,Vulnerability Disclosure Program,Bug bounty and reporting program,general,cyber
+VERTREP,Vertical Replenishment,Helicopter supply transfer,navy,operations
+VFA,Strike Fighter Squadron,Navy F/A-18 squadron,navy,aviation
+VMFA,Marine Fighter Attack Squadron,Marine Fighter Attack Squadron,usmc,acronym
+VMM,Marine Medium Tiltrotor Squadron,Marine Medium Tiltrotor Squadron,usmc,acronym
+vMPF,virtual personnel center,virtual personnel center,general,acronym
+vMPF,Virtual Military Personnel Flight,Air Force online HR portal,usaf,admin
+VP,Patrol Squadron,Navy maritime patrol aircraft squadron,navy,aviation
+VQ,Fleet Air Reconnaissance Squadron,Navy signals collection squadron,navy,aviation
+WAPS,weighted airman promotion system,weighted airman promotion system,usaf,system
+WARNO,Warning Order,Advance notification of upcoming operations,general,communication
+watch,shift duty,shift duty,general,acronym
+WCS,Maintenance Team Lead,Maintenance Team Lead,navy,acronym
+WEPS,weapons officer,weapons officer,navy,acronym
+WGS,Wideband Global SATCOM,High-bandwidth military satellite network,general,space
+WHEC,high endurance cutter,high endurance cutter,uscg,acronym
+WIA,wounded in action,wounded in action,general,acronym
+WLB,buoy tender,buoy tender,uscg,acronym
+WLC,Warrior Leader Course,junior leadership development course,army,training
+WMEC,medium endurance cutter,medium endurance cutter,uscg,acronym
+WOAC,Warrant Officer Advanced Course,Senior warrant officer training,army,training
+WOBC,Warrant Officer Basic Course,Initial warrant officer training,army,training
+WPB,patrol boat,patrol boat,uscg,acronym
+XO,Executive Officer,"Deputy operations manager coordinating planning, resources, and execution.",army,leadership
+XO,deputy director,deputy director,navy,rank
+YN,yeoman,yeoman,navy,rating

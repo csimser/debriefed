@@ -3,8 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, logActivity } from '@/lib/usage-tracking'
-import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
-import { canUseFeature, incrementUsage } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { callWithEscalation, getModelString, type ModelUsed } from '@/lib/ai-model'
 import { captureFullTextOutput, type CaptureContext } from '@/lib/ai-translation-capture'
@@ -109,15 +108,7 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .single()
 
-    // Check usage limit (checks both headline and summary - use headline as the gate)
-    const usageCheck = await canUseFeature(user.id, 'linkedin_headline')
-    if (!usageCheck.allowed) {
-      return NextResponse.json({
-        error: usageCheck.reason || 'LinkedIn generation limit reached. Upgrade your plan for more.',
-        limitReached: true,
-      }, { status: 403 })
-    }
-
+    const body = await request.json()
     const {
       targetRole,
       userProfile,
@@ -130,7 +121,21 @@ export async function POST(request: NextRequest) {
       aboutLength = 'standard',
       emphasis = [],
       regenerateOnly,
-    } = await request.json()
+    } = body
+
+    // Check usage limit (skip for admins)
+    const userEmail = await getUserEmail(user.id)
+    if (!isAdmin(userEmail)) {
+      // Gate on the specific feature being generated
+      const gateFeature: 'linkedin_summary' | 'linkedin_headline' = regenerateOnly === 'about' ? 'linkedin_summary' : 'linkedin_headline'
+      const usageCheck = await canUseFeature(user.id, gateFeature)
+      if (!usageCheck.allowed) {
+        return NextResponse.json({
+          error: usageCheck.reason || 'LinkedIn generation limit reached. Upgrade your plan for more.',
+          limitReached: true,
+        }, { status: 403 })
+      }
+    }
 
     const rank = userProfile?.rank || 'Senior military leader'
     const years = userProfile?.years_of_service || '20'

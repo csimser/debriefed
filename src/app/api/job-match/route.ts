@@ -5,8 +5,8 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logActivity } from '@/lib/usage-tracking'
 import { withAISecurity, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
-import { callWithEscalation, getModelString } from '@/lib/ai-model'
-import { captureFullTextOutput, captureTermPairs, type CaptureContext, type TermPair } from '@/lib/ai-translation-capture'
+import { PRIMARY_MODEL } from '@/lib/ai-model'
+import { captureFullTextOutput, type CaptureContext } from '@/lib/ai-translation-capture'
 import crypto from 'crypto'
 
 const anthropic = new Anthropic({
@@ -310,23 +310,6 @@ Return ONLY valid JSON with this exact structure:
       "missing": ["not in resume"]
     }
   },
-  "bulletSuggestions": [
-    {
-      "experienceIndex": 0,
-      "bulletIndex": 0,
-      "original": "original bullet text",
-      "suggested": "improved bullet - MUST preserve original meaning, only add keywords",
-      "keywordsAdded": ["keyword1"],
-      "action": "rewrite",
-      "priority": "high",
-      "estimatedImpact": "+1-2%"
-    }
-  ],
-  "skillChanges": {
-    "add": ["skill to add - only if candidate actually has it"],
-    "highlight": ["existing skill to emphasize"],
-    "remove": ["irrelevant skill"]
-  },
   "gaps": [
     {
       "category": "certifications",
@@ -366,6 +349,13 @@ Return ONLY valid JSON with this exact structure:
   "competitivePosition": "Where this candidate likely stands: 'Would likely pass initial screening' OR 'May be filtered out due to missing requirements' OR 'Strong candidate for interviews'"
 }
 
+HARD LIMITS ON OUTPUT SIZE (MANDATORY):
+- Maximum 5 gaps
+- Maximum 3 priorityActions
+- Maximum 5 strengths
+- Be concise in all text fields — use short phrases, not full sentences
+- Do NOT include bulletSuggestions or skillChanges — those are handled separately
+
 CRITICAL REMINDERS:
 1. Be HARSH but FAIR. Don't give 80%+ unless candidate truly matches most requirements.
 2. Missing REQUIRED items = major penalties. This is not negotiable.
@@ -380,39 +370,38 @@ SCORING CONSISTENCY RULES (MANDATORY):
 - Category scores MUST mathematically align with matched/missing counts
 - Do NOT give low scores if there are no missing required items
 
-BULLET REWRITE RULES (ABSOLUTELY MANDATORY - DO NOT VIOLATE):
-- NEVER fabricate, invent, or add experience the candidate doesn't have
-- NEVER change the nature or scope of work (e.g., "maintenance" cannot become "cybersecurity")
-- NEVER add responsibilities, achievements, skills, or technologies not in the original
-- ONLY reframe existing experience with better keywords and action verbs
-- The rewritten bullet must be a TRUE statement about what the candidate actually did
-- If the original says "managed maintenance schedules", you can say "coordinated maintenance operations" but NOT "led cybersecurity vulnerability assessments"
-- When in doubt, keep the original meaning intact and only improve phrasing
-- Lying on a resume is fraud - your rewrites must be HONEST
+`
 
-JOB-SPECIFIC TAILORING:
-- Frame bullet rewrites toward the specific job posting, not generic improvements
-- Use keywords from THIS job description, not generic industry terms
-- Consider the candidate's stated target role when suggesting improvements
-- Same experience should be framed differently for different role types:
-  * For admin roles: emphasize organization, coordination, documentation
-  * For operations roles: emphasize efficiency, process improvement, cost savings
-  * For management roles: emphasize leadership, budgets, team development
-  * For technical roles: emphasize technical skills, systems, problem-solving`
+    // Haiku only — no Sonnet escalation (speed + cost priority)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30_000)
 
-    const { response, model_used } = await callWithEscalation(
-      anthropic,
-      {
-        max_tokens: 4000,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: prompt }],
-      },
-      { expectsJson: true }
-    )
+    let response: Anthropic.Message
+    try {
+      response = await anthropic.messages.create(
+        {
+          model: PRIMARY_MODEL,
+          max_tokens: 4096,
+          system: SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: prompt }],
+        },
+        { signal: controller.signal }
+      )
+    } catch (err: any) {
+      if (err.name === 'AbortError' || err.message?.includes('abort')) {
+        return NextResponse.json(
+          { error: 'Analysis timed out. Try a shorter job description or resume.' },
+          { status: 504 }
+        )
+      }
+      throw err
+    } finally {
+      clearTimeout(timeout)
+    }
 
     const text = (response.content[0] as { text: string }).text.trim()
 
-    // Parse JSON from response
+    // Parse JSON from response, with repair for truncated output
     let analysis
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/)
@@ -422,19 +411,38 @@ JOB-SPECIFIC TAILORING:
         throw new Error('No JSON found in response')
       }
     } catch (parseError) {
-      console.error('JSON parse error:', parseError)
-      console.error('Raw response:', text)
-      return NextResponse.json({ error: 'Failed to parse analysis' }, { status: 500 })
+      // JSON repair: truncate at last complete closing brace and retry
+      try {
+        const lastBrace = text.lastIndexOf('}')
+        if (lastBrace > 0) {
+          const truncated = text.substring(0, lastBrace + 1)
+          const jsonMatch = truncated.match(/\{[\s\S]*\}/)
+          if (jsonMatch) {
+            analysis = JSON.parse(jsonMatch[0])
+            console.warn('[job-match] Used JSON repair fallback — response was truncated')
+          }
+        }
+      } catch { /* repair failed too */ }
+
+      if (!analysis) {
+        console.error('JSON parse error:', parseError)
+        console.error('Raw response (last 500 chars):', text.slice(-500))
+        return NextResponse.json({ error: 'Failed to parse analysis' }, { status: 500 })
+      }
     }
 
     // Post-process to enforce scoring rules
     analysis = enforceScoring(analysis)
 
+    // Ensure empty defaults for fields handled by /api/job-match/suggestions
+    if (!analysis.bulletSuggestions) analysis.bulletSuggestions = []
+    if (!analysis.skillChanges) analysis.skillChanges = { add: [], highlight: [], remove: [] }
+
     // Track token usage (feature count handled by withAISecurity wrapper)
     const inputTokens = response.usage?.input_tokens || 0
     const outputTokens = response.usage?.output_tokens || 0
     const tokensUsed = inputTokens + outputTokens
-    await logAPIUsage(ctx.userId, 'job-match', tokensUsed, getModelString(model_used))
+    await logAPIUsage(ctx.userId, 'job-match', tokensUsed, PRIMARY_MODEL)
 
     // Log activity
     await logActivity(ctx.userId, 'job_analysis_run', {
@@ -449,27 +457,19 @@ JOB-SPECIFIC TAILORING:
       expires: Date.now() + CACHE_TTL,
     })
 
-    // Non-blocking: capture skill mappings for dictionary pipeline
+    // Non-blocking: capture overall assessment for dictionary pipeline
     const captureCtx: CaptureContext = {
       userId: ctx.userId,
       branch: profile?.branch || undefined,
       targetIndustry: targetIndustry || undefined,
       targetRole: targetRole || undefined,
-      modelUsed: model_used,
+      modelUsed: 'haiku',
     }
-    // Capture bullet suggestions as term-level translations
-    const bulletPairs: TermPair[] = (analysis.bulletSuggestions || [])
-      .filter((s: any) => s.original && s.suggested && s.original !== s.suggested)
-      .map((s: any) => ({ military: s.original, civilian: s.suggested }))
-    if (bulletPairs.length > 0) {
-      captureTermPairs('job_match', bulletPairs, `Job match for ${jobPosting.title || 'unknown'}`, captureCtx)
-    }
-    // Capture overall assessment as full text
     if (analysis.assessment) {
       captureFullTextOutput('job_match', `Analysis for ${jobPosting.title || 'role'} at ${jobPosting.company || 'company'}`, analysis.assessment, captureCtx)
     }
 
-    return NextResponse.json({ analysis, model_used })
+    return NextResponse.json({ analysis, model_used: 'haiku' })
   }
 )
 

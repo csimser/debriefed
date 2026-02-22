@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
-import { CoverLetterTool } from './CoverLetterTool'
 import { DictCoverLetterBuilder } from './DictCoverLetterBuilder'
 import { LinkedInTool } from './LinkedInTool'
 
@@ -46,17 +45,16 @@ export function CareerToolsHub({
   evalUploads = [],
 }: CareerToolsHubProps) {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const toolFromUrl = searchParams.get('tool')
 
-  // Use URL param as the source of truth
+  // Use URL param as the source of truth for initial load only
   const [activeTool, setActiveToolState] = useState<string | null>(toolFromUrl)
-  const [coverLetterMode, setCoverLetterMode] = useState<'dict' | 'ai'>('dict')
   const [bannerStats, setBannerStats] = useState<DictionaryStats | null>(null)
+  const [coverLetterUsageLocal, setCoverLetterUsageLocal] = useState(coverLetterUsage)
   const userTier = getUserTier({ tier: userPlan })
   const hasPaidAccess = isPaidTier(userTier)
 
-  // Sync state with URL param changes
+  // Sync state with URL param changes (handles browser back/forward)
   useEffect(() => {
     setActiveToolState(toolFromUrl)
   }, [toolFromUrl])
@@ -66,15 +64,12 @@ export function CareerToolsHub({
     getDictionaryStats().then(setBannerStats).catch(() => {})
   }, [])
 
-  // Update URL when changing tool
-  const setActiveTool = (toolId: string | null) => {
-    if (toolId) {
-      router.push(`/career-tools?tool=${toolId}`)
-    } else {
-      router.push('/career-tools')
-    }
+  // Update URL shallowly (no server component refetch) when changing tool
+  const setActiveTool = useCallback((toolId: string | null) => {
     setActiveToolState(toolId)
-  }
+    const url = toolId ? `/career-tools?tool=${toolId}` : '/career-tools'
+    window.history.pushState(null, '', url)
+  }, [])
 
   return (
     <div className="pb-4">
@@ -246,30 +241,19 @@ export function CareerToolsHub({
       )}
 
       {/* Active Tool — Cover Letter */}
-      {activeTool === 'cover-letter' && coverLetterMode === 'dict' && (
+      {activeTool === 'cover-letter' && (
         <DictCoverLetterBuilder
           userProfile={userProfile}
           experiences={experiences}
           skills={skills}
           certifications={certifications}
           education={education}
-          onBack={() => { setActiveTool(null); setCoverLetterMode('dict') }}
-          onSwitchToAI={() => setCoverLetterMode('ai')}
-          aiRemaining={coverLetterLimit - coverLetterUsage}
-          userPlan={userPlan}
-        />
-      )}
-
-      {activeTool === 'cover-letter' && coverLetterMode === 'ai' && (
-        <CoverLetterTool
+          onBack={() => setActiveTool(null)}
           userId={userId}
-          userPlan={userPlan}
-          userProfile={userProfile}
-          experiences={experiences}
-          skills={skills}
-          currentUsage={coverLetterUsage}
+          currentUsage={coverLetterUsageLocal}
           usageLimit={coverLetterLimit}
-          onBack={() => setCoverLetterMode('dict')}
+          userPlan={userPlan}
+          onAIGenerated={() => setCoverLetterUsageLocal(prev => prev + 1)}
         />
       )}
 
@@ -280,7 +264,7 @@ export function CareerToolsHub({
           skills={skills}
           certifications={certifications}
           education={education}
-          isPro={hasPaidAccess}
+          hasPaidAccess={hasPaidAccess}
           userTier={userTier}
           currentUsage={linkedinUsage}
           usageLimit={linkedinLimit}

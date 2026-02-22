@@ -130,7 +130,7 @@ interface RefineCoverLetterInput {
 }
 
 export const POST = withAISecurity<RefineCoverLetterInput>(
-  { feature: 'cover_letters', inputType: 'cover_letter_context' },
+  { feature: 'cover_letters', inputType: 'cover_letter_context', requiredTier: 'core' },
   async (request, input, ctx) => {
     // Check API key first
     if (!process.env.ANTHROPIC_API_KEY) {

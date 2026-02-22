@@ -49,26 +49,29 @@ export function UpgradeLink({
 /* ──────────────────────── Modal content ────────────────────────── */
 
 const CORE_FEATURES = [
-  '10 Resumes',
-  '5 Federal Resumes',
-  '5 AI Cover Letters',
+  '10 Resumes / 30 days',
+  '5 Federal Resumes / 30 days',
+  '10 AI Cover Letters / 30 days',
+  '10 AI Job Match Analyses / 30 days',
   'AI Summary Generation',
-  'AI Job Match Analysis',
-  'AI LinkedIn Tools',
-  '5 Eval Uploads',
+  'AI LinkedIn Headlines & Summaries',
+  '10 Downloads / 30 days',
+  '10 Eval Uploads / 30 days',
+  '10 Cover Letter Exports / 30 days',
   'Unlimited Imports',
   'All 6 Templates',
 ]
 
 const FULL_FEATURES = [
-  'Unlimited Resumes',
-  'Unlimited Federal Resumes',
-  'Unlimited AI Cover Letters',
+  'Unlimited Resumes (7/day)',
+  'Unlimited Federal Resumes (7/day)',
+  '200 AI Cover Letters / 90 days (15/day)',
+  '200 AI Job Match / 90 days (15/day)',
   'Unlimited AI Summaries',
-  'Unlimited AI Job Match',
   'Unlimited LinkedIn Tools',
-  'LinkedIn Profile Analysis',
-  '20 Eval Uploads',
+  'LinkedIn Profile Analysis & Recommendations',
+  'Unlimited Downloads (10/day)',
+  '30 Eval Uploads / 90 days (10/day)',
   'All 6 Templates',
 ]
 
@@ -148,7 +151,7 @@ function UpgradeModalContent({ onClose }: { onClose: () => void }) {
           <div className="border border-gold rounded-lg p-5 flex flex-col">
             <div className="font-heading text-lg font-bold uppercase mb-0.5">Core</div>
             <div className="mb-3">
-              <span className="font-heading text-2xl font-bold text-gold">$15</span>
+              <span className="font-heading text-2xl font-bold text-gold">$25</span>
               <span className="text-sm text-text-muted ml-1">/ 30 days</span>
             </div>
             <p className="text-xs text-text-muted mb-4">AI-powered tools to land the job</p>
@@ -176,7 +179,7 @@ function UpgradeModalContent({ onClose }: { onClose: () => void }) {
             </div>
             <div className="font-heading text-lg font-bold uppercase mb-0.5">Full</div>
             <div className="mb-3">
-              <span className="font-heading text-2xl font-bold text-gold">$30</span>
+              <span className="font-heading text-2xl font-bold text-gold">$50</span>
               <span className="text-sm text-text-muted ml-1">/ 90 days</span>
             </div>
             <p className="text-xs text-text-muted mb-4">Unlimited AI for serious job searches</p>

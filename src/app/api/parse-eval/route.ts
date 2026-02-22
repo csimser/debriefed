@@ -393,15 +393,58 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
     }
 
     // Post-process bullets with our dictionary for any terms Claude missed
+    const cleanText = (text: string) => {
+      // Remove SSN patterns (XXX-XX-XXXX)
+      text = text.replace(/\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g, '[REDACTED]')
+      // Remove DOD ID patterns (10 digits)
+      text = text.replace(/\b\d{10}\b/g, '[REDACTED]')
+      // Remove DOB patterns preceded by keywords
+      text = text.replace(/\b(born|DOB|dob|Date of Birth|D\.O\.B)[:\s]*\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\b/gi, '')
+      // Remove phone numbers
+      text = text.replace(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, '')
+      // Remove excessive asterisks
+      text = text.replace(/\*{2,}/g, '')
+      // Fix OCR concatenation: insert space between letter→digit and digit→letter boundaries
+      text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2')
+      text = text.replace(/(\d)([a-zA-Z])/g, (match, digit, letter) => {
+        if (/^[MBKk%]$/.test(letter)) return match
+        if (/^(st|nd|rd|th)/.test(text.slice(text.indexOf(match) + match.length - 1))) return match
+        return `${digit} ${letter}`
+      })
+      // Remove duplicate consecutive phrases (OCR artifact)
+      text = text.replace(/\b((?:\S+\s+){2,}\S+)\s+\1\b/gi, '$1')
+      text = text.replace(/\b(\S+\s+\S+)\s+\1\b/gi, '$1')
+      // Clean up multiple spaces
+      text = text.replace(/\s{2,}/g, ' ')
+      return text.trim()
+    }
+
+    const cleanMetrics = (metrics: string[]): string[] => {
+      if (!metrics || !Array.isArray(metrics)) return []
+      const cleaned: string[] = []
+      for (const m of metrics) {
+        const parts = m.split(/(?<=[a-zA-Z])\s*(?=\d+\s+[a-zA-Z])/).map(s => s.trim()).filter(Boolean)
+        if (parts.length > 1) {
+          cleaned.push(...parts)
+        } else {
+          cleaned.push(m.replace(/([a-zA-Z])(\d)/g, '$1 $2').replace(/(\d)([a-zA-Z])/g, '$1 $2').trim())
+        }
+      }
+      return cleaned
+    }
+
     const processedBullets = bullets.map(bullet => {
-      const { translated: processedOriginal, unflaggedTerms: originalUnflagged } = translateMilitaryToCivilian(bullet.original || '')
-      const { translated: processedTranslated, unflaggedTerms: translatedUnflagged } = translateMilitaryToCivilian(bullet.translated || bullet.original || '')
+      const cleanedOriginal = cleanText(bullet.original || '')
+      const cleanedTranslated = cleanText(bullet.translated || bullet.original || '')
+
+      const { translated: processedOriginal, unflaggedTerms: originalUnflagged } = translateMilitaryToCivilian(cleanedOriginal)
+      const { translated: processedTranslated, unflaggedTerms: translatedUnflagged } = translateMilitaryToCivilian(cleanedTranslated)
 
       return {
         ...bullet,
         original: processedOriginal,
         translated: processedTranslated,
-        metrics: bullet.metrics || [],
+        metrics: cleanMetrics(bullet.metrics),
         skills: bullet.skills || [],
         unflaggedTerms: [...new Set([...originalUnflagged, ...translatedUnflagged])],
       }

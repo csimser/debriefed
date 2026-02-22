@@ -102,8 +102,8 @@ interface UsageStats {
 
 const TIER_OPTIONS = [
   { value: 'free', label: 'Free' },
-  { value: 'core', label: 'Core ($35/30 days)' },
-  { value: 'full', label: 'Full ($75/90 days)' },
+  { value: 'core', label: 'Core ($25/30 days)' },
+  { value: 'full', label: 'Full ($50/90 days)' },
 ]
 
 export default function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {

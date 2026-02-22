@@ -1,0 +1,15 @@
+acronym,full_term,civilian_explanation,branch,category
+CWO,Chief Warrant Officer,Technical expert/leader role bridging hands-on expertise and management responsibilities.,Army,rank_title
+BDE S1,Brigade Personnel/HR Section,"Human resources office responsible for personnel actions, records, and administrative support at brigade level.",Army,staff_section
+BDE S2,Brigade Intelligence Section,"Intelligence office responsible for threat assessment, reporting, and information support at brigade level.",Army,staff_section
+BDE S3,Brigade Operations Section,"Operations/plans office responsible for coordinating training, schedules, and mission execution at brigade level.",Army,staff_section
+BDE S4,Brigade Logistics Section,"Logistics/supply office responsible for supply, transportation, and sustainment at brigade level.",Army,staff_section
+BN S1,Battalion Personnel/HR Section,Human resources office supporting personnel actions and administrative processes at battalion level.,Army,staff_section
+BN S2,Battalion Intelligence Section,Unit intelligence office supporting threat reporting and situational awareness at battalion level.,Army,staff_section
+BN S3,Battalion Operations Section,"Unit operations office coordinating training, schedules, and mission execution at battalion level.",Army,staff_section
+BN S4,Battalion Logistics Section,Unit logistics office managing supply and sustainment at battalion level.,Army,staff_section
+BN S6,Battalion Communications/IT Section,"Unit communications/IT office responsible for networks, radios, and technical support at battalion level.",Army,staff_section
+S6 SHOP,Communications/IT Section,"In-house IT/communications team responsible for network support, troubleshooting, and service restoration.",Army,staff_section
+IS,Intelligence Specialist,Analyst role producing intelligence products and briefings.,Navy,rate
+CTI,Cryptologic Technician Interpretive,Language-enabled signals intelligence analyst.,Navy,rate
+CTR,Cryptologic Technician Collection,Signals intelligence collector/analyst supporting threat detection.,Navy,rate

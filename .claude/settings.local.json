@@ -48,7 +48,16 @@
       "Bash(bash supabase/seed-data/validate-branch-values.sh supabase/seed-data/*.sql)",
       "Bash(chmod:*)",
       "Bash(bash /home/fiveftslim/projects/debriefedfinal/debriefed/supabase/seed-data/validate-branch-values.sh /home/fiveftslim/projects/debriefedfinal/debriefed/supabase/seed-data/*.sql)",
-      "Bash(pgrep:*)"
+      "Bash(pgrep:*)",
+      "Bash(npm audit 2>&1)",
+      "Bash(git -C /home/fiveftslim/projects/debriefedfinal/debriefed ls-files '*.env*')",
+      "Bash(npm audit --json 2>&1)",
+      "Bash(git -C /home/fiveftslim/projects/debriefedfinal/debriefed ls-files | grep -E \"\\\\.env|secret|password|key\" | head -20)",
+      "Bash(git -C /home/fiveftslim/projects/debriefedfinal/debriefed log --oneline --all | head -10)",
+      "Bash(git ls-files .env* 2>&1)",
+      "Bash(npx next dev --port 3000 2>&1)",
+      "Bash(lsof -ti:3000 | xargs kill -9 2>/dev/null; sleep 1 && npx next dev --port 3000 2>&1)",
+      "Bash(ss -tlnp | grep 3000)"
     ]
   }
 }

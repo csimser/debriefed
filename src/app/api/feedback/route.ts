@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    const { userId, email, category, message, pageUrl } = await request.json()
+    const { category, message, pageUrl } = await request.json()
 
     if (!message || !category) {
       return NextResponse.json({ error: 'Message and category required' }, { status: 400 })
@@ -43,11 +43,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
     }
 
+    // Derive userId/email from auth session if available (never trust client-supplied values)
+    let authUserId: string | null = null
+    let authEmail: string | null = null
+    try {
+      const { createClient: createAuthClient } = await import('@/lib/supabase/server')
+      const authSupabase = await createAuthClient()
+      const { data: { user } } = await authSupabase.auth.getUser()
+      if (user) {
+        authUserId = user.id
+        authEmail = user.email || null
+      }
+    } catch {
+      // Anonymous feedback allowed — user fields stay null
+    }
+
     const { data, error } = await supabase
       .from('user_feedback')
       .insert({
-        user_id: userId || null,
-        email: email || null,
+        user_id: authUserId,
+        email: authEmail,
         category,
         message: message.trim(),
         page_url: pageUrl || null,

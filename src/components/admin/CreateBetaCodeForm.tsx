@@ -74,8 +74,8 @@ export function CreateBetaCodeForm() {
           className="w-full bg-bg-secondary border border-border rounded-md px-4 py-2.5 text-text focus:outline-none focus:border-gold"
           autoComplete="off"
         >
-          <option value="core">Core ($35, 30 days)</option>
-          <option value="full">Full ($75, 90 days)</option>
+          <option value="core">Core ($25, 30 days)</option>
+          <option value="full">Full ($50, 90 days)</option>
         </select>
       </div>
 

@@ -9,37 +9,14 @@ interface DeleteResumeModalProps {
   resume: {
     id: string
     name: string
-    resume_type?: 'private' | 'federal'
-    has_been_downloaded?: boolean
-  }
-  userPlan: string
-  usage?: {
-    private_downloads: number
-    federal_downloads: number
-  }
-  limits?: {
-    private_downloads: number
-    federal_downloads: number
   }
   onDeleted?: () => void
-}
-
-// Default limits by tier
-const TIER_LIMITS: Record<string, { private_downloads: number; federal_downloads: number }> = {
-  free: { private_downloads: 1, federal_downloads: 1 },
-  basic: { private_downloads: 999999, federal_downloads: 999999 },
-  core: { private_downloads: 999999, federal_downloads: 999999 },
-  pro: { private_downloads: 999999, federal_downloads: 999999 },
-  full: { private_downloads: 999999, federal_downloads: 999999 },
 }
 
 export function DeleteResumeModal({
   isOpen,
   onClose,
   resume,
-  userPlan,
-  usage = { private_downloads: 0, federal_downloads: 0 },
-  limits,
   onDeleted
 }: DeleteResumeModalProps) {
   const supabase = createClient()
@@ -48,20 +25,8 @@ export function DeleteResumeModal({
 
   if (!isOpen) return null
 
-  // Use provided limits or default based on tier
-  const effectiveLimits = limits || TIER_LIMITS[userPlan] || TIER_LIMITS.free
-
-  const isFree = userPlan === 'free'
-  const isPrivate = resume.resume_type !== 'federal'
-  const currentUsage = isPrivate ? usage.private_downloads : usage.federal_downloads
-  const limit = isPrivate ? effectiveLimits.private_downloads : effectiveLimits.federal_downloads
-  const isAtLimit = currentUsage >= limit && limit < 999999
-  const resumeType = isPrivate ? 'private' : 'federal'
-
-  const requiresConfirmText = isFree
-
   const handleDelete = async () => {
-    if (requiresConfirmText && confirmText !== 'DELETE') {
+    if (confirmText !== 'DELETE') {
       return
     }
 
@@ -121,34 +86,8 @@ export function DeleteResumeModal({
         {/* Body */}
         <div className="p-4 md:p-6 max-h-[60vh] overflow-auto mobile-scroll">
           <p className="text-text mb-4">
-            Are you sure you want to delete <strong className="text-gold">"{resume.name}"</strong>?
+            Are you sure you want to delete <strong className="text-gold">&quot;{resume.name}&quot;</strong>?
           </p>
-
-          {/* Usage Warning */}
-          <div className="p-4 bg-status-amber-dim border border-status-amber/30 rounded-lg mb-4">
-            <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-status-amber flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-              <div>
-                <p className="text-status-amber text-sm">
-                  <strong>Current usage:</strong> {currentUsage} of {limit >= 999999 ? '∞' : limit} {resumeType} resume downloads used.
-                </p>
-                {isAtLimit && resume.has_been_downloaded && (
-                  <p className="text-status-amber text-sm mt-2">
-                    You've reached your download limit. Deleting this resume means you won't be able to create and download another {resumeType} resume without upgrading.
-                  </p>
-                )}
-                {isFree && !isAtLimit && (
-                  <p className="text-status-amber/80 text-sm mt-2">
-                    You have <strong>{limit - currentUsage}</strong> {resumeType} download{limit - currentUsage !== 1 ? 's' : ''} remaining on your free plan.
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
 
           {/* Permanent warning */}
           <div className="p-4 bg-status-red-dim border border-status-red/30 rounded-lg mb-4">
@@ -160,22 +99,20 @@ export function DeleteResumeModal({
             </p>
           </div>
 
-          {/* Type DELETE confirmation for free users */}
-          {requiresConfirmText && (
-            <div className="mb-4">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                Type DELETE to confirm
-              </label>
-              <input
-                type="text"
-                value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
-                placeholder="DELETE"
-                autoComplete="off"
-                className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-status-red focus:ring-1 focus:ring-status-red/25 font-mono"
-              />
-            </div>
-          )}
+          {/* Type DELETE confirmation */}
+          <div className="mb-4">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+              Type DELETE to confirm
+            </label>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+              placeholder="DELETE"
+              autoComplete="off"
+              className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-status-red focus:ring-1 focus:ring-status-red/25 font-mono"
+            />
+          </div>
         </div>
 
         {/* Footer - stack buttons on mobile */}
@@ -188,7 +125,7 @@ export function DeleteResumeModal({
           </button>
           <button
             onClick={handleDelete}
-            disabled={deleting || (requiresConfirmText && confirmText !== 'DELETE')}
+            disabled={deleting || confirmText !== 'DELETE'}
             className="flex-1 px-4 py-3.5 md:py-3 bg-status-red text-white rounded-lg md:rounded font-heading font-bold uppercase tracking-wider hover:bg-status-red/90 active:bg-status-red/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[48px]"
           >
             {deleting ? 'Deleting...' : 'Delete'}

@@ -3,17 +3,10 @@ export const runtime = 'nodejs'
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
-import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
-import { canUseFeature } from '@/lib/usage-service'
+import { canUseFeature, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { callWithEscalation, getModelString } from '@/lib/ai-model'
 
 const anthropic = new Anthropic()
-
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,16 +40,14 @@ export async function POST(request: NextRequest) {
 
     let text = ''
 
+    // Centralized admin check (handles case normalization)
+    const userEmail = await getUserEmail(user.id)
+    const adminUser = isAdmin(userEmail)
+
     if (isPDF) {
       // PDF: use Haiku vision — handles scanned, image-based, and standard PDFs
       // This counts against resume_imports limit since it's an AI call
-      const { data: profile } = await supabaseAdmin
-        .from('profiles')
-        .select('email')
-        .eq('user_id', user.id)
-        .single()
-
-      if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
+      if (!adminUser) {
         const usageCheck = await canUseFeature(user.id, 'resume_imports')
         if (!usageCheck.allowed) {
           return NextResponse.json({
@@ -115,6 +106,17 @@ export async function POST(request: NextRequest) {
       }
     } else if (isDOCX) {
       // DOCX: mammoth — free, local, works great
+      // Check resume_imports limit (matches PDF path enforcement)
+      if (!adminUser) {
+        const usageCheck = await canUseFeature(user.id, 'resume_imports')
+        if (!usageCheck.allowed) {
+          return NextResponse.json({
+            error: "You've used all your free imports. Paste your resume text directly, or upgrade to Core for unlimited imports.",
+            limitReached: true,
+          }, { status: 403 })
+        }
+      }
+
       try {
         const mammoth = require('mammoth')
         const buffer = Buffer.from(await file.arrayBuffer())

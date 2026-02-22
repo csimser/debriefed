@@ -1,0 +1,1056 @@
+id,military_term,civilian_equivalent,context,category,example_military,example_civilian,created_at,job_family
+,personnel,staff / employees / HR,general,Term,,,,operations
+,reorder point,minimum stock trigger / replenishment threshold,logistics,Logistics,,,,logistics
+,MASINT,measurement and signatures intelligence / technical data collection,intelligence,Intelligence,,,,intelligence
+,COLA,cost of living allowance / location-based pay supplement,financial,Financial,,,,finance
+,billet,authorized position / funded role,personnel,Personnel,,,,operations
+,GPC,government purchase card / corporate credit card,logistics,Acquisition,,,,operations
+,passdown,shift handover / status briefing,general,Term,,,,operations
+,fragmentary order,change order / updated directive,general,Term,,,,operations
+,fire team leader,small team lead,general,leadership,,,,leadership
+,labor hour,hourly billing arrangement,logistics,Acquisition,,,,operations
+,report,arrive / check in / start,general,Term,,,,operations
+,J&A,justification and approval / sole-source rationale document,logistics,Acquisition,,,,operations
+,SMSgt (Senior Master Sergeant),Senior Manager,usaf,Rank,,,,operations
+,tactical vehicles,fleet vehicles / field vehicles,general,Equipment,,,,operations
+,backstop,verification support for cover identity,intelligence,Intelligence,,,,intelligence
+,contingency,emergency response / backup plan,general,Term,,,,operations
+,option year,contract renewal period,logistics,Acquisition,,,,operations
+,embarked,deployed / traveling for work,general,Term,,,,operations
+,division officer,department manager,general,Term,,,,operations
+,PO1 (Petty Officer First Class),Supervisor / Senior Team Lead,navy,Rank,,,,operations
+,gripe,maintenance discrepancy / deficiency report,aviation,Aviation,,,,operations
+,squared away,organized / well-prepared / professional,general,Term,,,,operations
+,joint duty,inter-agency assignment,general,Term,,,,operations
+,sick bay,medical clinic / health services,general,Term,,,,operations
+,leave,paid time off / vacation,general,Term,,,,operations
+,UA,unauthorized absence / no-call no-show,general,Acronym,,,,operations
+,operational,active / functioning / deployed,general,Term,,,,operations
+,MWR,"Morale, Welfare and Recreation / employee services",general,Acronym,,,,operations
+,tour of duty,assignment length / contract period,general,Term,,,,operations
+,legend,cover story / assumed identity background,intelligence,Intelligence,,,,intelligence
+,LTC (Lieutenant Colonel),Senior Director,army,Rank,,,,operations
+,UNODIR,unless otherwise directed,general,Acronym,,,,operations
+,military bearing,professional demeanor / composure,general,Term,,,,operations
+,SATCOM,satellite communications,general,Equipment,,,,operations
+,LES,leave and earnings statement / pay stub,financial,Financial,,,,finance
+,hand receipt,property accountability document,logistics,Logistics,,,,logistics
+,Lt Col (Lieutenant Colonel),Senior Director,usaf,Rank,,,,operations
+,squadron,operational unit of 100-300 employees,general,Unit Type,,,,operations
+,TBS,The Basic School / officer training,general,Acronym,,,,operations
+,SA (Seaman Apprentice),Junior Staff Member,uscg,Rank,,,,operations
+,voucher,payment authorization / reimbursement document,financial,Financial,,,,finance
+,PPBE,"planning, programming, budgeting, and execution / budget lifecycle process",financial,Financial,,,,finance
+,overseas,international / foreign location,general,Term,,,,operations
+,DANTES,Defense Activity for Non-Traditional Education Support,general,Acronym,,,,operations
+,division,department / team / work group,general,Term,,,,operations
+,SDO,Staff Duty Officer / on-call manager,general,Acronym,,,,operations
+,PACE plan,primary alternate contingency emergency communication plan,general,planning,,,,operations
+,counseled,provided performance guidance to,general,leadership,,,,leadership
+,ETS,Expiration Term of Service / end of contract,general,Acronym,,,,operations
+,recall,emergency callback / urgent summons,general,Term,,,,operations
+,PWS,performance work statement / deliverables specification,logistics,Acquisition,,,,operations
+,NCOIC,Non-Commissioned Officer in Charge / shift supervisor,general,Acronym,,,,operations
+,PMO,Provost Marshal Office / military police HQ,general,Acronym,,,,operations
+,UIC,Unit Identification Code,general,Acronym,,,,operations
+,discharge review,employment separation appeal,legal,Legal,,,,legal
+,1LT (First Lieutenant),Manager,army,Rank,,,,operations
+,NMC,not mission capable / non-operational / down for maintenance,aviation,Aviation,,,,operations
+,LCDR (Lieutenant Commander),Director / Senior Department Head,navy,Rank,,,,operations
+,LPO,team lead,navy,leadership,Served as LPO for 15 personnel,Served as team lead for 15 personnel,,leadership
+,EP,Top Performer / Early Promote,navy,evaluation,,,,operations
+,dental readiness,dental fitness status / oral health compliance,medical,Medical,,,,medical
+,in the fleet,in field operations / working,general,Term,,,,operations
+,A school,initial technical training,navy,training,,,,leadership
+,orders,assignment notification / transfer paperwork,general,Term,,,,operations
+,NKO,Navy Knowledge Online / e-learning platform,general,Acronym,,,,operations
+,page 2,emergency contact and dependency record,personnel,Personnel,,,,operations
+,combat medic,emergency medical technician / field paramedic,medical,Medical,,,,medical
+,FOC,full operating capability / fully operational status,cyber,Cyber,,,,cyber
+,administrative remarks,official personnel notes / employee file entries,personnel,Personnel,,,,operations
+,kit,equipment / tools / supplies,general,Term,,,,operations
+,stand down,pause operations / rest period,general,Term,,,,operations
+,VA,Veterans Affairs / veterans services,general,Acronym,,,,operations
+,USERRA,Uniformed Services Employment and Reemployment Rights Act,general,Acronym,,,,operations
+,SN (Seaman),Staff Member,uscg,Rank,,,,operations
+,2d Lt (Second Lieutenant),Junior Manager,usaf,Rank,,,,operations
+,assigned strength,current headcount / actual staffing,personnel,Personnel,,,,operations
+,combat ready,fully operational,general,operations,,,,operations
+,MISO,military information support operations / strategic messaging,general,Special Operations,,,,operations
+,deployment health,occupational health screening / fitness-for-duty assessment,medical,Medical,,,,medical
+,detailing,assignment management / personnel placement,personnel,Personnel,,,,operations
+,CINC,Commander in Chief,general,Acronym,,,,operations
+,ship,vessel / facility / organization,general,Term,,,,operations
+,promotion,advancement / career progression,general,Term,,,,operations
+,detail,temporary assignment / special project,general,Term,,,,operations
+,IRR,Individual Ready Reserve,general,Acronym,,,,operations
+,CONUS,domestic operations,general,operations,,,,operations
+,RDC,Recruit Division Commander / drill instructor,general,Acronym,,,,operations
+,FRG,Family Readiness Group,general,Acronym,,,,operations
+,UW,unconventional warfare / irregular warfare,general,Special Operations,,,,operations
+,forward deployed,on-site at client location / field office,general,Term,,,,operations
+,galley,dining facility / cafeteria,navy,general,,,,operations
+,BAH,Basic Allowance for Housing / housing stipend,general,Acronym,,,,operations
+,COR,Contracting Officer Representative,general,Acronym,,,,operations
+,dead drop,concealed exchange point,intelligence,Intelligence,,,,intelligence
+,CMR,Consolidated Memorandum Receipt / inventory document,general,Acronym,,,,operations
+,open source,publicly available information,intelligence,Intelligence,,,,intelligence
+,command climate,organizational culture / work environment,general,Term,,,,operations
+,hot wash,immediate after-action discussion / quick debrief,general,Term,,,,operations
+,secure,finish / complete / lock up,general,Term,,,,operations
+,S1,Personnel/Admin section / HR department,general,Acronym,,,,operations
+,FORSCOM,Forces Command,general,Acronym,,,,operations
+,MSgt (Master Sergeant),Manager,usaf,Rank,,,,operations
+,Role 1,first responder care / point-of-injury treatment,medical,Medical,,,,medical
+,JPAS,Joint Personnel Adjudication System,general,Acronym,,,,operations
+,AIT,Advanced Individual Training / technical certification program,general,Acronym,,,,operations
+,SECDEF,Secretary of Defense,general,Acronym,,,,operations
+,MAJ (Major),Director,army,Rank,,,,operations
+,NATO,North Atlantic Treaty Organization,general,Acronym,,,,operations
+,DTS,travel management system,general,logistics,,,,logistics
+,inspector general,internal auditor / compliance officer,general,Term,,,,operations
+,shipmate,colleague / coworker,navy,general,,,,operations
+,overhead,ceiling,navy,general,,,,operations
+,vulnerability assessment,security testing / penetration testing,cyber,Cyber,,,,cyber
+,SNCO,Staff Non-Commissioned Officer / senior supervisor,general,Acronym,,,,operations
+,relieved,removed from position / terminated,general,Term,,,,operations
+,advancement,promotion,general,Term,,,,operations
+,rating,job specialty / technical field,general,Term,,,,operations
+,TDY,Temporary Duty / business travel,general,Acronym,,,,operations
+,smoking lamp,break time / authorized break,general,Term,,,,operations
+,GSA,General Services Administration,general,Acronym,,,,operations
+,HF/UHF/VHF radio,radio communications systems,general,Equipment,,,,operations
+,cadre,training staff / leadership team,general,Term,,,,operations
+,fund cite,budget account number / appropriation reference,financial,Financial,,,,finance
+,staff,support personnel / administrative team,general,Term,,,,operations
+,SECNAV,Secretary of the Navy,general,Acronym,,,,operations
+,medic,emergency medical technician / field healthcare provider,medical,Medical,,,,medical
+,SgtMaj (Sergeant Major),Senior Director,usmc,Rank,,,,operations
+,obstacle construction,barrier installation,engineering,Engineering,,,,operations
+,station,assigned location / work position,general,Term,,,,operations
+,cost center,budget unit / organizational spending account,financial,Financial,,,,finance
+,S2,Intelligence section / analysis department,general,Acronym,,,,operations
+,veteran,former military employee,general,Term,,,,operations
+,CSM (Command Sergeant Major),Senior Director,army,Rank,,,,operations
+,platoon,team of 30-50 / large work group,general,Term,,,,operations
+,POA&M,Plan of Action and Milestones / project timeline,general,Acronym,,,,operations
+,sweepers,routine cleaning,navy,operations,,,,operations
+,DRMO,surplus property disposal,general,technical,,,,operations
+,sortie,mission,general,operations,,,,operations
+,FTX,field training exercise / hands-on training event,general,Acronym,,,,operations
+,NAVFAC,Naval Facilities Engineering Systems Command / Navy construction agency,engineering,Engineering,,,,operations
+,POC,point of contact,general,Acronym,,,,operations
+,headquarters,corporate office / main office,general,Term,,,,operations
+,LZ,landing zone,general,Acronym,,,,operations
+,FOIA,Freedom of Information Act request / public records request,legal,Legal,,,,legal
+,bandwidth,capacity / available resources,general,Term,,,,operations
+,compartmented,restricted access / segmented information,intelligence,Intelligence,,,,intelligence
+,AOR,area of responsibility / managed territory,general,Acronym,,,,operations
+,mission essential,critical function / required capability,general,Term,,,,operations
+,TEMPEST,emissions security / electronic emanations protection,intelligence,Intelligence,,,,intelligence
+,lifer,career employee / long-term staff,general,Term,,,,operations
+,standing watch,on-call duty / shift coverage,general,Term,,,,operations
+,case officer,operations manager / field coordinator,intelligence,Intelligence,,,,intelligence
+,claims,damage or injury compensation requests,legal,Legal,,,,legal
+,GySgt (Gunnery Sergeant),Manager,usmc,Rank,,,,operations
+,NCO,Non-Commissioned Officer / supervisor,general,Acronym,,,,operations
+,NVG,night vision equipment / low-light optics,general,Equipment,,,,operations
+,at sea,deployed / offshore operations,general,Term,,,,operations
+,battle rhythm,recurring meeting schedule / operational cadence,general,operations,,,,operations
+,NEC,specialty qualification,navy,admin,,,,admin
+,BAS,Basic Allowance for Subsistence / meal allowance,general,Acronym,,,,operations
+,good to go,ready / approved / cleared to proceed,general,Term,,,,operations
+,surplus,excess property / items beyond requirements,logistics,Logistics,,,,logistics
+,ATO,authority to operate / security certification to deploy,cyber,Cyber,,,,cyber
+,TACP,tactical air control party / close air support coordinator,general,Special Operations,,,,operations
+,theater hospital,forward surgical hospital / field hospital,medical,Medical,,,,medical
+,hot refuel,refueling with engines running,aviation,Aviation,,,,operations
+,AFSC,Air Force Specialty Code / job classification,general,Acronym,,,,operations
+,QUAL,qualification / certification,general,Acronym,,,,operations
+,ISIC,Immediate Superior in Command,general,Acronym,,,,operations
+,hazmat,hazardous materials / dangerous goods,safety,Engineering,,,,operations
+,HVAC,"heating, ventilation, and air conditioning",engineering,Engineering,,,,operations
+,bench stock,consumable supplies / expendable items on hand,logistics,Logistics,,,,logistics
+,hangar queen,chronically non-operational equipment,aviation,Aviation,,,,operations
+,non-rate,entry-level / undesignated,general,Term,,,,operations
+,hump,march / endurance exercise,general,Term,,,,operations
+,HQ,headquarters / corporate office,general,Acronym,,,,operations
+,IPR,in-progress review / status update meeting,general,Acronym,,,,operations
+,APFT,Army Physical Fitness Test / physical readiness assessment,general,Acronym,,,,operations
+,ADCON,administrative control,general,Acronym,,,,operations
+,duty station,work location / assigned office,general,Term,,,,operations
+,SAP,special access program / restricted-access initiative,intelligence,Intelligence,,,,intelligence
+,C school,advanced technical training,navy,training,,,,leadership
+,NSW,Naval Special Warfare / Navy special operations,general,Special Operations,,,,operations
+,plan of the day,daily schedule / agenda,general,Term,,,,operations
+,reserve,part-time / on-call,general,Term,,,,operations
+,MOU,Memorandum of Understanding / formal agreement,general,Acronym,,,,operations
+,patrol,monitoring / surveillance / rounds,general,Term,,,,operations
+,SRB,Selective Reenlistment Bonus,general,Acronym,,,,operations
+,CASREP,critical equipment failure report,navy,technical,,,,operations
+,Col (Colonel),Executive Director / VP,usmc,Rank,,,,operations
+,field grade,senior management,general,Term,,,,operations
+,summary court martial,minor judicial proceeding / abbreviated military trial,legal,Legal,,,,legal
+,pier,dock / facility entrance,general,Term,,,,operations
+,detailer,career counselor / HR placement specialist,general,Term,,,,operations
+,NMCI,Navy Marine Corps Intranet,general,Acronym,,,,operations
+,TAD,Temporary Additional Duty / temporary assignment,general,Acronym,,,,operations
+,line,operational / revenue-generating,general,Term,,,,operations
+,Cpl (Corporal),Team Leader,usmc,Rank,,,,operations
+,reenlistment,contract renewal / retention,general,Term,,,,operations
+,SARC,Sexual Assault Response Coordinator,general,Acronym,,,,operations
+,COMSEC,communications security,general,technical,,,,operations
+,source handling,confidential informant management,intelligence,Intelligence,,,,intelligence
+,FAP,Family Advocacy Program,general,Acronym,,,,operations
+,CAPT (Captain),Executive Director / VP,navy,Rank,,,,operations
+,in port,at home office / not traveling,general,Term,,,,operations
+,collateral duty,additional responsibility / secondary assignment,general,Term,,,,operations
+,AO,area of operations / assigned region,general,Acronym,,,,operations
+,messing,dining,navy,general,,,,operations
+,scuttlebutt,informal information / water cooler talk,navy,general,,,,operations
+,LTJG (Lieutenant Junior Grade),Manager / Project Lead,navy,Rank,,,,operations
+,unit,team / department / organizational element,general,Term,,,,operations
+,blue jacket,junior enlisted / entry-level employee,general,Term,,,,operations
+,QC,Quality Control,general,Acronym,,,,operations
+,fleet,enterprise operations unit,general,Unit Type,,,,operations
+,BOS,base operating support / facility operations,engineering,Engineering,,,,operations
+,POV,privately owned vehicle,general,Acronym,,,,operations
+,CDC,Career Development Course / professional development program,general,Acronym,,,,operations
+,cat shot,catapult launch / assisted takeoff,aviation,Aviation,,,,operations
+,CMC,Senior Enlisted Advisor,navy,leadership,,,,leadership
+,CPO,Chief Petty Officer,general,Acronym,,,,operations
+,arms room,secure storage facility,army,technical,,,,operations
+,COTR,contracting officer technical representative / contract monitor,logistics,Acquisition,,,,operations
+,ESR,enlisted service record / employment history file,personnel,Personnel,,,,operations
+,squad leader,team supervisor,general,leadership,,,,leadership
+,rear detachment,home office support / HQ staff,general,Term,,,,operations
+,custody,possession and accountability,logistics,Logistics,,,,logistics
+,UCMJ,Uniform Code of Military Justice / military legal code,legal,Legal,,,,legal
+,end strength,headcount / staffing level,general,Term,,,,operations
+,left seat/right seat,job shadowing / transition ride-along,general,Term,,,,operations
+,PT,physical training / fitness program,general,Acronym,,,,operations
+,effective date,start date,general,Term,,,,operations
+,dependents,family members,general,Term,,,,operations
+,TMO,Traffic Management Office / shipping coordinator,general,Acronym,,,,operations
+,ORM,operational risk management,general,technical,,,,operations
+,chow,meals / cafeteria,general,Term,,,,operations
+,fill rate,staffing percentage / position occupancy rate,personnel,Personnel,,,,operations
+,CASEVAC,casualty evacuation / emergency patient transport,medical,Medical,,,,medical
+,ENS (Ensign),Junior Manager / Associate,navy,Rank,,,,operations
+,OCONUS,outside continental United States / overseas,general,Acronym,,,,operations
+,qualification,certification / credential,general,Term,,,,operations
+,on station,at assigned location / on post,general,Term,,,,operations
+,latrine,restroom,general,Term,,,,operations
+,naval message,official communication / formal memo,general,Term,,,,operations
+,rated,qualified / certified,general,training,,,,leadership
+,CAGE code,commercial and government entity code / vendor identification number,logistics,Logistics,,,,logistics
+,CSMP,maintenance backlog tracking,navy,technical,,,,operations
+,OPSEC,operational security / information security,general,Acronym,,,,operations
+,IG,Inspector General / compliance auditor,general,Acronym,,,,operations
+,watchstander,shift worker / on-call personnel,general,Term,,,,operations
+,pay grade,compensation level / salary band,general,Term,,,,operations
+,A1C (Airman First Class),Staff Member,usaf,Rank,,,,operations
+,MOS qualified,professionally certified in specialty,army,training,,,,leadership
+,2LT (Second Lieutenant),Junior Manager,army,Rank,,,,operations
+,regiment,"business unit of 1,000-3,000 employees",general,Unit Type,,,,operations
+,SSG (Staff Sergeant),Senior Supervisor,army,Rank,,,,operations
+,primary duties,core responsibilities,general,Term,,,,operations
+,cross-deck,inter-departmental transfer / rotation,general,Term,,,,operations
+,field radio,portable communications equipment,general,Equipment,,,,operations
+,FAR,Federal Acquisition Regulation / government procurement rules,logistics,Acquisition,,,,operations
+,onboard strength,current staffing level,general,admin,,,,admin
+,inter-service,cross-functional / inter-departmental,general,Term,,,,operations
+,civil affairs,community engagement / civil-military liaison,general,Special Operations,,,,operations
+,precept,board guidance letter / selection criteria directive,personnel,Personnel,,,,operations
+,INFOSEC,information security,general,technical,,,,operations
+,bridging,cross-training / transitional training,general,Term,,,,operations
+,near miss,close call / near-accident incident,safety,Safety,,,,operations
+,ladder,stairs / career progression path,general,Term,,,,operations
+,barracks,company housing / dormitory,general,Term,,,,operations
+,SOC,security operations center / cybersecurity monitoring center,cyber,Cyber,,,,cyber
+,page 4,service history and qualifications record,personnel,Personnel,,,,operations
+,EOD,Explosive Ordnance Disposal / bomb disposal,general,Acronym,,,,operations
+,blue team,defensive security team,cyber,Cyber,,,,cyber
+,LT (Lieutenant),Senior Manager / Department Head,navy,Rank,,,,operations
+,head,restroom,general,Term,,,,operations
+,firm fixed price,set-price contract / non-adjustable cost agreement,logistics,Acquisition,,,,operations
+,homeport,home office / primary work location,general,Term,,,,operations
+,preventive maintenance,scheduled maintenance / proactive equipment care,engineering,Engineering,,,,operations
+,deploy,travel for work / field assignment,general,Term,,,,operations
+,garrison,permanent facility / home office,general,Term,,,,operations
+,uniform,dress code / professional attire,general,Term,,,,operations
+,SGT (Sergeant),Team Lead / Supervisor,army,Rank,,,,operations
+,superior,supervisor / manager,general,Term,,,,operations
+,IDIQ,"indefinite delivery, indefinite quantity / flexible-scope contract",logistics,Acquisition,,,,operations
+,maintenance,equipment upkeep / preventive care,general,Term,,,,operations
+,organizational level maintenance,unit-level routine maintenance,aviation,Aviation,,,,operations
+,service record,personnel file / employee record,general,Term,,,,operations
+,SIEM,security information and event management / security log analysis platform,cyber,Cyber,,,,cyber
+,DMZ,demilitarized zone / network buffer zone,cyber,Cyber,,,,cyber
+,milestone,project checkpoint / achievement marker,logistics,Acquisition,,,,operations
+,retention,employee retention / reenlistment,general,Term,,,,operations
+,HM,Hospital Corpsman / medical technician,general,Acronym,,,,operations
+,CMDCM,Senior Enlisted Advisor,navy,leadership,,,,leadership
+,CDRL,contract data requirements list / required deliverables schedule,logistics,Acquisition,,,,operations
+,ELINT,electronic intelligence / radar and signal analysis,intelligence,Intelligence,,,,intelligence
+,manning,staffing / headcount,general,Term,,,,operations
+,formation,coordinated group movement,aviation,Aviation,,,,operations
+,1stLt (First Lieutenant),Manager,usmc,Rank,,,,operations
+,say again,please repeat,general,communication,,,,operations
+,ROE,Rules of Engagement / operational guidelines,general,Acronym,,,,operations
+,GCPC,government purchase card,general,logistics,,,,logistics
+,junior enlisted,entry-level staff,general,Term,,,,operations
+,1stSgt (First Sergeant),Operations Manager,usmc,Rank,,,,operations
+,DCO,defensive cyber operations / network defense operations,cyber,Cyber,,,,cyber
+,NSN,National Stock Number / part number,general,Acronym,,,,operations
+,seniority,time in position / tenure,general,Term,,,,operations
+,DFARS,Defense Federal Acquisition Regulation Supplement,logistics,Acquisition,,,,operations
+,NCOES,NCO professional development education,army,training,,,,leadership
+,order,directive / instruction / policy,general,Term,,,,operations
+,MOS,job specialty code,army,admin,,,,admin
+,watch floor,24/7 operations center / monitoring center,intelligence,Intelligence,,,,intelligence
+,horizontal construction,road and earthwork construction,engineering,Engineering,,,,operations
+,deployment,extended business travel / overseas assignment,general,Term,,,,operations
+,ACAS,automated compliance and security scanning tool,cyber,Cyber,,,,cyber
+,PO3 (Petty Officer Third Class),Team Member / Technician,navy,Rank,,,,operations
+,grounding,equipment removed from service / operational suspension,aviation,Aviation,,,,operations
+,billets authorized,headcount / FTE positions,general,admin,,,,admin
+,flag officer,executive / C-suite,general,Term,,,,operations
+,DLA,Defense Logistics Agency,general,Acronym,,,,operations
+,purple team,integrated security assessment team,cyber,Cyber,,,,cyber
+,HUMINT,human intelligence / interpersonal information gathering,intelligence,Intelligence,,,,intelligence
+,high speed,high performer / top talent,general,Term,,,,operations
+,SMSgt,senior master sergeant / director,usaf,leadership,,,,leadership
+,travel claim,expense report / travel reimbursement request,financial,Financial,,,,finance
+,COB,close of business,general,Acronym,,,,operations
+,trained,developed and instructed,general,leadership,,,,leadership
+,EW systems,electronic warfare / signals systems,general,Equipment,,,,operations
+,PO2 (Petty Officer Second Class),Senior Technician / Team Lead,navy,Rank,,,,operations
+,separation,termination / end of employment,general,Term,,,,operations
+,JTR,Joint Travel Regulations,general,Acronym,,,,operations
+,boots on ground,on-site personnel / field staff,general,Term,,,,operations
+,Amn (Airman),Junior Staff Member,usaf,Rank,,,,operations
+,stovepipe,siloed / working independently without coordination,general,Term,,,,operations
+,PFT,Physical Fitness Test,general,Acronym,,,,operations
+,CSEL,Senior Enlisted Leader Program,navy,leadership,,,,leadership
+,SOP,standard operating procedure,general,admin,,,,admin
+,FOD,foreign object debris / workplace debris hazard,aviation,Aviation,,,,operations
+,broadening assignment,rotational assignment / developmental role,general,Term,,,,operations
+,DUSTWUN,duty status whereabouts unknown,general,Acronym,,,,operations
+,INSURV,Board of Inspection and Survey,general,Acronym,,,,operations
+,sub-hand receipt,delegated property accountability,logistics,Logistics,,,,logistics
+,THA,traffic hazard analysis / workplace hazard assessment,safety,Safety,,,,operations
+,walk-in,unsolicited source / volunteer informant,intelligence,Intelligence,,,,intelligence
+,corps,"enterprise division of 20,000-45,000 employees",general,Unit Type,,,,operations
+,damage control equipment,emergency response equipment / fire suppression systems,general,Equipment,,,,operations
+,NAVADMIN,organizational directive,navy,admin,,,,admin
+,target development,subject research and prioritization,intelligence,Intelligence,,,,intelligence
+,GMT,mandatory compliance training,navy,training,,,,leadership
+,space,room / area / workspace,general,Term,,,,operations
+,line of duty,work-related determination / on-duty status finding,legal,Legal,,,,legal
+,expendable,single-use / consumable,logistics,Logistics,,,,logistics
+,CAC,Common Access Card / security credential,general,Acronym,,,,operations
+,JAG,Judge Advocate General / legal department,general,Acronym,,,,operations
+,DCA,damage control assistant / safety manager,navy,leadership,,,,leadership
+,permanent party,permanent staff,general,admin,,,,admin
+,Pvt (Private),Entry-Level Staff,usmc,Rank,,,,operations
+,SCIF,Sensitive Compartmented Information Facility / secure facility,general,Acronym,,,,operations
+,hatch,door,navy,general,,,,operations
+,component,division / branch / department,general,Term,,,,operations
+,WIA,wounded in action,general,Acronym,,,,operations
+,WO,Warrant Officer / technical expert,general,Acronym,,,,operations
+,COMINT,communications intelligence / intercepted communications analysis,intelligence,Intelligence,,,,intelligence
+,HAYSTACK,logistics information system / parts identification database,logistics,Logistics,,,,logistics
+,rack,bed / bunk,general,Term,,,,operations
+,independent government estimate,internal cost projection,logistics,Acquisition,,,,operations
+,TS/SCI,Top Secret/SCI security clearance,general,technical,,,,operations
+,threat hunting,proactive threat detection / advanced threat search,cyber,Cyber,,,,cyber
+,SERE,"survival, evasion, resistance, escape / captivity survival training",general,Special Operations,,,,operations
+,BRAC,Base Realignment and Closure,general,Acronym,,,,operations
+,pre-brief,pre-event planning meeting,general,communication,,,,operations
+,quarters,housing / living space,general,Term,,,,operations
+,muster report,attendance report,navy,admin,,,,admin
+,ROTC,Reserve Officers' Training Corps,general,Acronym,,,,operations
+,SSgt (Staff Sergeant),Senior Supervisor,usmc,Rank,,,,operations
+,red team,offensive security testing team,cyber,Cyber,,,,cyber
+,CBRN equipment,hazardous materials handling equipment,general,Equipment,,,,operations
+,gear adrift,unsecured/disorganized equipment,navy,operations,,,,operations
+,tradecraft,operational techniques / professional methodology,intelligence,Intelligence,,,,intelligence
+,COP,combat outpost / remote site,army,operations,,,,operations
+,SEAL,"Sea, Air, and Land operator / Navy special operator",general,Special Operations,,,,operations
+,ASL,authorized stockage list / approved inventory catalog,logistics,Logistics,,,,logistics
+,PV2 (Private Second Class),Junior Staff Member,army,Rank,,,,operations
+,S6,Communications section / IT department,general,Acronym,,,,operations
+,intrusion detection,unauthorized access monitoring,cyber,Cyber,,,,cyber
+,TPOC,technical point of contact / subject matter liaison,logistics,Acquisition,,,,operations
+,personnel recovery,search and rescue / missing person recovery,general,Special Operations,,,,operations
+,proficiency,skill level / competency,general,Term,,,,operations
+,fit for duty,medically cleared for work,medical,Medical,,,,medical
+,field fortification,defensive structure construction,engineering,Engineering,,,,operations
+,SFC (Sergeant First Class),Manager / Operations Supervisor,army,Rank,,,,operations
+,SOCOM,Special Operations Command / elite forces headquarters,general,Special Operations,,,,operations
+,flight chief,section manager,usaf,leadership,,,,leadership
+,duty,shift / on-call responsibility,general,Term,,,,operations
+,forensics,digital investigation / evidence analysis,cyber,Cyber,,,,cyber
+,TECHINT,technical intelligence / technology assessment,intelligence,Intelligence,,,,intelligence
+,JTAC,joint terminal attack controller / air strike director,general,Special Operations,,,,operations
+,information operations,information warfare / influence campaign management,general,Special Operations,,,,operations
+,theater,region / operational area,general,Term,,,,operations
+,JQR,Job Qualification Requirements,general,Acronym,,,,operations
+,shelf life,expiration period / usable lifespan,logistics,Logistics,,,,logistics
+,PCS,organizational transfer,general,operations,,,,operations
+,MIA,missing in action,general,Acronym,,,,operations
+,XO,Executive Officer / deputy director / second-in-command,general,Acronym,,,,operations
+,LCPO,Lead Chief Petty Officer / department supervisor,general,Acronym,,,,operations
+,medical hold,extended medical observation / medical administrative hold,medical,Medical,,,,medical
+,SCPO (Senior Chief Petty Officer),Senior Manager,uscg,Rank,,,,operations
+,FITREP,fitness report / officer performance review,general,Acronym,,,,operations
+,high-speed,high performer / exceptional employee,general,Term,,,,operations
+,FID,foreign internal defense / partner nation military advising,general,Special Operations,,,,operations
+,tech school,technical training school,usaf,training,,,,leadership
+,shore duty,office-based assignment / non-deployable role,general,Term,,,,operations
+,AT,annual training,general,Acronym,,,,operations
+,MARSOC,Marine Forces Special Operations Command,general,Special Operations,,,,operations
+,MCO,Marine Corps Order / policy directive,general,Acronym,,,,operations
+,starboard,right side,navy,general,,,,operations
+,inport,at home location,navy,operations,,,,operations
+,power of attorney,legal authorization document,legal,Legal,,,,legal
+,AFI,policy instruction,usaf,admin,,,,admin
+,bolter,missed approach / failed landing attempt,aviation,Aviation,,,,operations
+,force protection,facility security / workplace safety,general,Term,,,,operations
+,branch manager,career assignment officer,army,admin,,,,admin
+,tracking,understood / following along,general,Term,,,,operations
+,material condition,equipment status / asset readiness,general,Term,,,,operations
+,CMEO,equal opportunity program manager,navy,admin,,,,admin
+,3M,Maintenance Management Program,navy,technical,Managed 3M program for 200+ equipment items,Managed preventive maintenance program for 200+ equipment items valued at $5M,,operations
+,strike group,combined operations task force,general,Unit Type,,,,operations
+,PQS,Personnel Qualification Standards / certification requirements,general,Acronym,,,,operations
+,workup,preparation / training cycle,general,Term,,,,operations
+,TTPs,tactics techniques and procedures / best practices,general,operations,,,,operations
+,non-expendable,accountable property / tracked assets,logistics,Logistics,,,,logistics
+,NAF,Non-Appropriated Fund,general,Acronym,,,,operations
+,ashore,land-based / office environment,general,Term,,,,operations
+,endstate,desired outcome / final objective,general,Term,,,,operations
+,taps,end of day / lights out,general,Term,,,,operations
+,moored,docked / stationary,navy,operations,,,,operations
+,GCSS,Global Combat Support System,general,Acronym,,,,operations
+,post,position / station / assignment,general,Term,,,,operations
+,SIQ,Sick in Quarters / medical leave,general,Acronym,,,,operations
+,rifle range,training facility / shooting range,general,Term,,,,operations
+,JIOC,joint intelligence operations center / combined analysis facility,intelligence,Intelligence,,,,intelligence
+,SOY,Employee of the Year,navy,awards,,,,operations
+,port call,scheduled stop / client visit,general,Term,,,,operations
+,debrief,post-event review / lessons learned,general,communication,,,,operations
+,cover down,take responsibility for / fill the gap,general,Term,,,,operations
+,MCPO (Master Chief Petty Officer),Director / Senior Director,navy,Rank,,,,operations
+,surge,temporary increase in effort / rapid scale-up,general,Term,,,,operations
+,retrograde,return shipment / reverse logistics,logistics,Logistics,,,,logistics
+,DCAS,Defense Contract Audit Services,general,Acronym,,,,operations
+,SME,subject matter expert,general,Acronym,,,,operations
+,NCOER,NCO Evaluation Report / performance review,general,Acronym,,,,operations
+,gapped billet,vacant position,general,admin,,,,admin
+,sand table,tabletop exercise / scenario walkthrough,general,Term,,,,operations
+,task order,project-specific work authorization,logistics,Acquisition,,,,operations
+,terminal guidance,precision targeting direction,general,Special Operations,,,,operations
+,EVAL,performance evaluation / annual review,general,Acronym,,,,operations
+,statutory board,legally mandated review panel,personnel,Personnel,,,,operations
+,SSE,sensitive site exploitation / evidence collection at target site,general,Special Operations,,,,operations
+,sentencing,penalty determination / punishment assignment,legal,Legal,,,,legal
+,2ndLt (Second Lieutenant),Junior Manager,usmc,Rank,,,,operations
+,award fee,performance incentive payment,logistics,Acquisition,,,,operations
+,squad,team of 8-13 employees,general,Unit Type,,,,operations
+,OOD,Officer of the Deck / watch supervisor,general,Acronym,,,,operations
+,requisition,procurement request,general,logistics,,,,logistics
+,litter bearer,patient stretcher carrier / patient transport assistant,medical,Medical,,,,medical
+,CHENG,chief engineer / director of engineering,navy,leadership,,,,leadership
+,mid-watch,overnight shift / graveyard shift,general,Term,,,,operations
+,DD254,security classification specification,logistics,Acquisition,,,,operations
+,tour,assignment period / rotation,general,Term,,,,operations
+,PTA,practical training assessment,general,Acronym,,,,operations
+,TRICARE,military healthcare system,general,Acronym,,,,operations
+,cross-domain solution,secure data transfer between networks,cyber,Cyber,,,,cyber
+,cross-rate,career change / job reclassification,general,Term,,,,operations
+,route clearance,road hazard removal / path clearing operations,engineering,Engineering,,,,operations
+,supervised,managed,general,leadership,,,,leadership
+,kinetic,direct action / hands-on,general,Term,,,,operations
+,work order,maintenance request / service ticket,engineering,Engineering,,,,operations
+,COMMS,communications officer / IT director,navy,leadership,,,,leadership
+,knock it off,stop immediately / cease activity,general,Term,,,,operations
+,chop,transfer of authority / reassignment,general,Term,,,,operations
+,S3,Operations section / operations department,general,Acronym,,,,operations
+,DC,emergency response,navy,technical,,,,operations
+,HHG,household goods / personal property,general,Acronym,,,,operations
+,roger,understood / acknowledged,general,communication,,,,operations
+,TSP,Thrift Savings Plan / retirement plan,general,Acronym,,,,operations
+,SL,skill level,general,Acronym,,,,operations
+,NIPRNET,unclassified government network,cyber,Cyber,,,,cyber
+,chain of command,organizational hierarchy / reporting structure,general,Term,,,,operations
+,APS,army prepositioned stocks / strategic forward inventory,logistics,Logistics,,,,logistics
+,inspection,audit / compliance review,general,Term,,,,operations
+,logistics,supply chain / operations support,general,Term,,,,operations
+,OCO,offensive cyber operations / proactive cyber engagement,cyber,Cyber,,,,cyber
+,copy,received and understood,general,communication,,,,operations
+,cybersecurity service provider,managed security services,cyber,Cyber,,,,cyber
+,deck plate,frontline / shop floor / ground level,general,Term,,,,operations
+,passageway,hallway,navy,general,,,,operations
+,rate,job specialty,navy,admin,,,,admin
+,QA,Quality Assurance,general,Acronym,,,,operations
+,commissary,grocery store / employee store,general,Term,,,,operations
+,SAPR,Sexual Assault Prevention and Response,general,Acronym,,,,operations
+,training command,learning & development / training department,general,Term,,,,operations
+,DRB,Disciplinary Review Board,navy,administration,,,,admin
+,combat stress,occupational stress / critical incident stress,medical,Medical,,,,medical
+,trigger,decision point / activation criteria,general,Term,,,,operations
+,CPO (Chief Petty Officer),Department Supervisor / Manager,navy,Rank,,,,operations
+,IDC,independent duty corpsman / autonomous healthcare provider,medical,Medical,,,,medical
+,weapons qual,certification / proficiency test,general,Term,,,,operations
+,topside,external/outdoor areas,navy,operations,,,,operations
+,TO,technical order,usaf,technical,,,,operations
+,letter of instruction,written directive / formal guidance memo,personnel,Personnel,,,,operations
+,TOC,Tactical Operations Center / operations center,general,Acronym,,,,operations
+,RPO,Recruit Petty Officer,general,Acronym,,,,operations
+,sailor,Navy employee / naval staff,general,Term,,,,operations
+,joint,multi-organizational / cross-functional,general,Term,,,,operations
+,1st Lt (First Lieutenant),Manager,usaf,Rank,,,,operations
+,facilities management,building and infrastructure operations,engineering,Engineering,,,,operations
+,independent duty,solo practitioner / autonomous medical provider,medical,Medical,,,,medical
+,AB (Airman Basic),Entry-Level Staff,usaf,Rank,,,,operations
+,TIG,Time in Grade / time at current level,general,Acronym,,,,operations
+,T&M,time and materials / hourly-rate contract,logistics,Acquisition,,,,operations
+,turn-in,return to supply / equipment return,logistics,Logistics,,,,logistics
+,stockage objective,target inventory level,logistics,Logistics,,,,logistics
+,SEABEE,Naval Construction Battalion / military construction worker,engineering,Engineering,,,,operations
+,TSCM,technical surveillance countermeasures / electronic sweep,intelligence,Intelligence,,,,intelligence
+,liberty,scheduled time off,navy,admin,,,,admin
+,serviceable,operational / in working condition,logistics,Logistics,,,,logistics
+,hard deck,absolute deadline / non-negotiable limit,general,Term,,,,operations
+,manifest,roster / inventory list,general,Term,,,,operations
+,network monitoring,IT infrastructure surveillance,cyber,Cyber,,,,cyber
+,sea and anchor detail,departure/arrival team,navy,operations,,,,operations
+,arrested landing,cable-assisted stop / controlled deceleration landing,aviation,Aviation,,,,operations
+,PMCS,preventive maintenance checks,army,technical,,,,operations
+,BN,battalion / large organizational unit,general,Acronym,,,,operations
+,BCT,Basic Combat Training / initial training program,general,Acronym,,,,operations
+,WEPS,weapons officer / tactical systems director,navy,leadership,,,,leadership
+,muster,attendance/accountability check,navy,admin,,,,admin
+,IMINT,imagery intelligence / satellite and aerial image analysis,intelligence,Intelligence,,,,intelligence
+,OPTEMPO,operational pace,general,operations,,,,operations
+,vessel,ship / facility,general,Term,,,,operations
+,Raider,Marine special operator,general,Special Operations,,,,operations
+,direct report,subordinate / team member,general,Term,,,,operations
+,yellow deck,limited operations / caution conditions,aviation,Aviation,,,,operations
+,target package,mission briefing documents / operation plan,general,Special Operations,,,,operations
+,colors,flag ceremony / opening/closing procedures,general,Term,,,,operations
+,sick call,walk-in clinic / daily medical appointment,medical,Medical,,,,medical
+,led,directed,general,leadership,,,,leadership
+,PTAD,permissive temporary additional duty,general,Acronym,,,,operations
+,delayed,stable but requiring eventual treatment,medical,Medical,,,,medical
+,port,left side / destination,general,Term,,,,operations
+,Role 2,advanced trauma care / emergency stabilization,medical,Medical,,,,medical
+,immediate,requiring urgent surgical intervention,medical,Medical,,,,medical
+,deliverable,required output / contractual product,logistics,Acquisition,,,,operations
+,FSA,Family Separation Allowance,general,Acronym,,,,operations
+,readiness,preparedness / operational capability,general,Term,,,,operations
+,DA,Department of the Army,general,Acronym,,,,operations
+,threat assessment,risk evaluation / threat analysis,intelligence,Intelligence,,,,intelligence
+,EFMP,Exceptional Family Member Program,general,Acronym,,,,operations
+,POM,program objective memorandum / multi-year budget proposal,financial,Financial,,,,finance
+,TYCOM,Fleet Regional Command,navy,organization,,,,operations
+,collection management,intelligence requirements coordination / data collection planning,intelligence,Intelligence,,,,intelligence
+,SITREP,situation report / status update,general,Acronym,,,,operations
+,SELRES,Selected Reserve,general,Acronym,,,,operations
+,appellate,appeals process / higher court review,legal,Legal,,,,legal
+,non-kinetic,indirect / influence-based / diplomatic,general,Term,,,,operations
+,minimal,minor injuries / walking wounded,medical,Medical,,,,medical
+,RMF,risk management framework / cybersecurity compliance framework,cyber,Cyber,,,,cyber
+,1SG,first sergeant / senior operations manager,army,leadership,,,,leadership
+,hip pocket training,informal on-the-spot training,general,Term,,,,operations
+,defense counsel,defense attorney / legal representative,legal,Legal,,,,legal
+,lockdown,facility security restriction,general,operations,,,,operations
+,rotation,assignment cycle / tour schedule,general,Term,,,,operations
+,relief,replacement / successor,general,Term,,,,operations
+,OER,Officer Evaluation Report / performance review,general,Acronym,,,,operations
+,combat zone tax exclusion,tax-free income for deployed personnel,financial,Financial,,,,finance
+,allotment,automatic payroll deduction / directed payment,financial,Financial,,,,finance
+,TM,technical manual,army,technical,,,,operations
+,S4,Logistics section / supply chain department,general,Acronym,,,,operations
+,CSG,Carrier Strike Group,navy,organization,,,,operations
+,OTS,Officer Training School,general,Acronym,,,,operations
+,contingency plan,backup plan / business continuity plan,general,planning,,,,operations
+,echelon,organizational level / tier,general,Term,,,,operations
+,CI,counterintelligence / insider threat detection,intelligence,Intelligence,,,,intelligence
+,national intelligence,strategic-level analysis,intelligence,Intelligence,,,,intelligence
+,RADAR,radar systems / detection equipment,general,Equipment,,,,operations
+,HBSS,host-based security system / endpoint protection platform,cyber,Cyber,,,,cyber
+,OSINT,open-source intelligence / publicly available information analysis,intelligence,Intelligence,,,,intelligence
+,expeditionary,mobile / rapid deployment capable,general,Term,,,,operations
+,gouge,study guide / insider information,general,Term,,,,operations
+,battle buddy,accountability partner / work partner,general,Term,,,,operations
+,SrA (Senior Airman),Technician / Specialist,usaf,Rank,,,,operations
+,VHA,Variable Housing Allowance,general,Acronym,,,,operations
+,tacon,tactical control / field-level authority,general,Term,,,,operations
+,budget execution,spending management / fiscal plan implementation,financial,Financial,,,,finance
+,mess,dining facility / cafeteria,general,Term,,,,operations
+,SOW,statement of work / project scope document,logistics,Acquisition,,,,operations
+,MSgt,master sergeant / senior manager,usaf,leadership,,,,leadership
+,SCI,Sensitive Compartmented Information,general,Acronym,,,,operations
+,GPS equipment,navigation systems / location tracking,general,Equipment,,,,operations
+,enlisted,non-management / technical staff,general,Term,,,,operations
+,ops,operations,general,Term,,,,operations
+,brigade,division of 3000-5000 employees,general,Unit Type,,,,operations
+,exchange,retail store / company store,general,Term,,,,operations
+,SF,Standard Form,general,Acronym,,,,operations
+,SM,service member / employee,general,Acronym,,,,operations
+,evaluation,performance review / employee appraisal,personnel,Personnel,,,,operations
+,movement order,travel directive / relocation order,general,Term,,,,operations
+,PPE,personal protective equipment,general,Acronym,,,,operations
+,3MC,Maintenance Management Coordinator,navy,maintenance,,,,maintenance
+,expectant,beyond immediate medical capability,medical,Medical,,,,medical
+,SSO,security officer,general,technical,,,,operations
+,asset,confidential source / information provider,intelligence,Intelligence,,,,intelligence
+,indoctrination,security orientation and access briefing,intelligence,Intelligence,,,,intelligence
+,DOD,Department of Defense,general,Acronym,,,,operations
+,taxi,ground movement of aircraft,aviation,Aviation,,,,operations
+,NJP,Non-Judicial Punishment / disciplinary action,general,Acronym,,,,operations
+,PME,Professional Military Education / professional development,general,Acronym,,,,operations
+,DCTT,emergency response training team,navy,technical,,,,operations
+,execute order,go-ahead directive / implementation order,general,Term,,,,operations
+,AR,policy regulation,army,admin,,,,admin
+,clemency,sentence reduction / penalty mitigation,legal,Legal,,,,legal
+,COIN,counterinsurgency / population-centric stability operations,general,Special Operations,,,,operations
+,OIC,Officer in Charge / department head,general,Acronym,,,,operations
+,organic,internally owned / in-house,general,Term,,,,operations
+,spin up,prepare rapidly / get up to speed,general,Term,,,,operations
+,PMS,preventive maintenance,navy,technical,,,,operations
+,consumption rate,usage rate / burn rate,logistics,Logistics,,,,logistics
+,PMC,partially mission capable / partially operational,aviation,Aviation,,,,operations
+,DLR,repairable component,navy,technical,,,,operations
+,PFA,Physical Fitness Assessment,general,Acronym,,,,operations
+,pre-deployment,pre-project / preparation phase,general,Term,,,,operations
+,fireteam,small team / work group of 4,general,Term,,,,operations
+,KO,contracting officer / procurement authority,logistics,Acquisition,,,,operations
+,troop,soldier / staff member,general,Term,,,,operations
+,MRE,Meal Ready to Eat / field rations,general,Acronym,,,,operations
+,medevac,medical evacuation / emergency transport,general,Term,,,,operations
+,war reserve,emergency stockpile / strategic reserve,logistics,Logistics,,,,logistics
+,JFTR,Joint Federal Travel Regulation,general,Acronym,,,,operations
+,sea duty,deployable assignment / field position,general,Term,,,,operations
+,military judge,presiding judicial officer,legal,Legal,,,,legal
+,privacy act,personal data protection regulation,legal,Legal,,,,legal
+,COTS,commercial off-the-shelf,general,Acronym,,,,operations
+,market research,vendor and industry analysis,logistics,Acquisition,,,,operations
+,mine clearance,explosive ordnance removal / minefield remediation,engineering,Engineering,,,,operations
+,SQ,Employee of the Quarter,navy,awards,,,,operations
+,transfer,relocation / reassignment,general,admin,,,,admin
+,operational tempo,work pace / activity level,general,Term,,,,operations
+,1SG (First Sergeant),Operations Manager,army,Rank,,,,operations
+,chit,request form / approval document,general,Term,,,,operations
+,demand history,usage trend / historical consumption data,logistics,Logistics,,,,logistics
+,EEO,Equal Employment Opportunity,general,Acronym,,,,operations
+,TSgt (Technical Sergeant),Senior Supervisor,usaf,Rank,,,,operations
+,MILPERSMAN,personnel policy manual,navy,admin,,,,admin
+,LtCol (Lieutenant Colonel),Senior Director,usmc,Rank,,,,operations
+,issue,distribute / provide from stock,logistics,Logistics,,,,logistics
+,general quarters,emergency response / all-hands situation,general,Term,,,,operations
+,source selection,vendor evaluation and selection process,logistics,Acquisition,,,,operations
+,technical evaluation,capability assessment,logistics,Acquisition,,,,operations
+,all hands,all employees / full staff,navy,general,,,,operations
+,battle stations,emergency response protocol,general,operations,,,,operations
+,bulkhead,wall,navy,general,,,,operations
+,DPW,director of public works / facilities management director,engineering,Engineering,,,,operations
+,IDES,integrated disability evaluation system / medical disability review process,medical,Medical,,,,medical
+,will preparation,estate planning document / legal testament drafting,legal,Legal,,,,legal
+,RIMPAC,Rim of the Pacific Exercise,general,Acronym,,,,operations
+,walking wounded,ambulatory injured / self-mobile patient,medical,Medical,,,,medical
+,warrant officer,technical expert / senior specialist,general,Term,,,,operations
+,CYBERSEC,cybersecurity,general,technical,,,,operations
+,OPNAV,Office of the Chief of Naval Operations,general,Acronym,,,,operations
+,MARADMIN,Marine Administrative Message,general,Acronym,,,,operations
+,redline,critical threshold / do-not-exceed limit,general,Term,,,,operations
+,legal assistance,pro bono legal services / employee legal aid,legal,Legal,,,,legal
+,LOR,letter of reprimand / written disciplinary warning,personnel,Personnel,,,,operations
+,JKO,online learning platform,general,training,,,,leadership
+,UAV,unmanned aerial vehicle / drone,general,Acronym,,,,operations
+,marshalling,aircraft ground guidance / directing vehicle movement,aviation,Aviation,,,,operations
+,TCCC,tactical combat casualty care / battlefield emergency medicine,medical,Medical,,,,medical
+,small business set-aside,reserved competition for small businesses,logistics,Acquisition,,,,operations
+,FLIR,thermal imaging / infrared camera,general,Equipment,,,,operations
+,cost analysis,pricing review / financial evaluation,logistics,Acquisition,,,,operations
+,AFB,Air Force Base / facility,general,Acronym,,,,operations
+,mission ready,prepared / operational / qualified,general,Term,,,,operations
+,jury panel,deliberation panel / jury members,legal,Legal,,,,legal
+,ACDU,active duty,general,Acronym,,,,operations
+,BASH,bird/wildlife aircraft strike hazard / wildlife collision prevention,aviation,Aviation,,,,operations
+,deck,floor,navy,general,,,,operations
+,need-to-know,access restricted to relevant personnel,intelligence,Intelligence,,,,intelligence
+,NCOER support form,performance planning document,army,admin,,,,admin
+,security classification guide,information protection policy document,logistics,Acquisition,,,,operations
+,OSI,Office of Special Investigations,general,Acronym,,,,operations
+,fraternization,inappropriate workplace relationship,general,Term,,,,operations
+,underway,in progress / actively operating,general,Term,,,,operations
+,platoon sergeant,operations supervisor,army,leadership,,,,leadership
+,SONAR,underwater detection systems / acoustic sensors,general,Equipment,,,,operations
+,COSAL,parts inventory system,navy,technical,,,,operations
+,MILPER,military personnel,general,Acronym,,,,operations
+,augmentee,temporary additional staff,general,admin,,,,admin
+,warning order,advance notice / heads-up notification,general,Term,,,,operations
+,family separation allowance,deployment family supplement,financial,Financial,,,,finance
+,Green Beret,Army Special Forces soldier,general,Special Operations,,,,operations
+,CQ,charge of quarters / after-hours supervisor,army,operations,,,,operations
+,restriction,limited privileges / probation,general,Term,,,,operations
+,confinement,imprisonment / incarceration,legal,Legal,,,,legal
+,staff duty,after-hours duty officer,army,operations,,,,operations
+,HQDA,Headquarters Department of the Army,general,Acronym,,,,operations
+,incident response,cybersecurity event management / breach response,cyber,Cyber,,,,cyber
+,officer,manager / executive,general,Term,,,,operations
+,range qualified,certified in weapons safety,general,training,,,,leadership
+,touchpoint,check-in meeting / coordination point,general,Term,,,,operations
+,FST,forward surgical team / mobile surgical unit,medical,Medical,,,,medical
+,tactical intelligence,operational-level analysis,intelligence,Intelligence,,,,intelligence
+,flight lead,team leader / mission commander,aviation,Aviation,,,,operations
+,AFLOAT,Shipboard / Maritime Operations,navy,operations,,,,operations
+,lane,area of responsibility / designated role,general,Term,,,,operations
+,enabler,support resource / capability multiplier,general,Term,,,,operations
+,CONOPS,concept of operations / operational plan,general,planning,,,,operations
+,mishap,workplace accident / safety incident,safety,Safety,,,,operations
+,JCS,Joint Chiefs of Staff,general,Acronym,,,,operations
+,POW,prisoner of war,general,Acronym,,,,operations
+,CO,Commanding Officer / director / executive,general,Acronym,,,,operations
+,FEDLOG,federal logistics data / government supply catalog,logistics,Logistics,,,,logistics
+,wellness check,employee welfare check / mental health screening,medical,Medical,,,,medical
+,PT formation,mandatory fitness session,army,training,,,,leadership
+,corpsman,combat medic / field medical technician,medical,Medical,,,,medical
+,ground truth,verified information / confirmed data,general,Term,,,,operations
+,slate,assignment recommendations / position matching list,personnel,Personnel,,,,operations
+,dry hole,empty target / unsuccessful operation,general,Special Operations,,,,operations
+,ASI,additional skill identifier,army,admin,,,,admin
+,turn time,aircraft servicing interval / turnaround time,aviation,Aviation,,,,operations
+,radio check,communications test / signal verification,communications,Communications,,,,operations
+,courts martial,military trial / judicial proceeding,legal,Legal,,,,legal
+,psychological operations,influence operations / strategic communications,general,Special Operations,,,,operations
+,contract modification,contract amendment / change order,logistics,Acquisition,,,,operations
+,command,organization / business unit / department,general,Term,,,,operations
+,SJA,Staff Judge Advocate / legal counsel,general,Acronym,,,,operations
+,ready for issue,available for distribution / in serviceable condition,logistics,Logistics,,,,logistics
+,professional development,training / career growth,general,Term,,,,operations
+,counseling statement,documented performance feedback,army,admin,,,,admin
+,reveille,wake up call / start of day,general,Term,,,,operations
+,trial counsel,prosecutor / government attorney,legal,Legal,,,,legal
+,space management,facility allocation / workspace planning,engineering,Engineering,,,,operations
+,CDR (Commander),Senior Director / Division Head,navy,Rank,,,,operations
+,SEJPME,senior enlisted joint professional education,general,training,,,,leadership
+,ESWS,organizational qualification program,navy,training,,,,leadership
+,environmental compliance,EPA/regulatory adherence,engineering,Engineering,,,,operations
+,real property,government-owned buildings and land / physical assets,engineering,Engineering,,,,operations
+,receipt,delivery acceptance / receiving confirmation,logistics,Logistics,,,,logistics
+,redistribution,reallocation / inventory redistribution,logistics,Logistics,,,,logistics
+,UST,underground storage tank management,engineering,Engineering,,,,operations
+,LCpl (Lance Corporal),Staff Member,usmc,Rank,,,,operations
+,PFC (Private First Class),Junior Staff Member,usmc,Rank,,,,operations
+,YN,Yeoman / administrative specialist,general,Acronym,,,,operations
+,SUPPO,supply officer / logistics director,navy,leadership,,,,leadership
+,selection board,senior promotion panel / executive review committee,personnel,Personnel,,,,operations
+,SgtMaj,sergeant major / senior enlisted leader,usmc,leadership,,,,leadership
+,mass casualty,multiple-victim incident / mass injury event,medical,Medical,,,,medical
+,wilco,will comply,general,communication,,,,operations
+,contracting officer,procurement manager / purchasing authority,logistics,Acquisition,,,,operations
+,LOD,line of duty,general,Acronym,,,,operations
+,ROM,restriction of movement,general,Acronym,,,,operations
+,ISR,"intelligence, surveillance, and reconnaissance / monitoring and data collection",intelligence,Intelligence,,,,intelligence
+,watch,shift / duty period,general,Term,,,,operations
+,NOC,network operations center / IT monitoring facility,cyber,Cyber,,,,cyber
+,skipper,commanding officer / CEO / president,general,Term,,,,operations
+,warfare,operational specialty,general,Term,,,,operations
+,EOOW,Engineering Officer of the Watch / shift supervisor,general,Acronym,,,,operations
+,cold start,engine start from powered-down state,aviation,Aviation,,,,operations
+,promotion board,promotion review panel,army,admin,,,,admin
+,AFSOC,Air Force Special Operations Command,general,Special Operations,,,,operations
+,IATT,interim authority to test / temporary security authorization,cyber,Cyber,,,,cyber
+,prepositioned stock,forward-deployed inventory / pre-staged supplies,logistics,Logistics,,,,logistics
+,burn bag,classified material destruction container,intelligence,Intelligence,,,,intelligence
+,JSOC,Joint Special Operations Command / tier-one operations authority,general,Special Operations,,,,operations
+,watch bill,shift schedule / duty roster,general,Term,,,,operations
+,competency,skill / qualification,general,Term,,,,operations
+,MCPON,Master Chief Petty Officer of the Navy,general,Acronym,,,,operations
+,IED,improvised explosive device,general,Acronym,,,,operations
+,dog watch,split shift / evening shift,general,Term,,,,operations
+,khaki,supervisor / management,general,Term,,,,operations
+,phase inspection,scheduled comprehensive maintenance,aviation,Aviation,,,,operations
+,LIMDU,limited duty / restricted work assignment,medical,Medical,,,,medical
+,ODB,operational detachment bravo / special forces B-team,general,Special Operations,,,,operations
+,NMCRS,Navy-Marine Corps Relief Society,general,Acronym,,,,operations
+,strike,rate selection / career choice,general,Term,,,,operations
+,MDEP,management decision package / budget line item,financial,Financial,,,,finance
+,CAS,close air support / tactical air strike coordination,general,Special Operations,,,,operations
+,unserviceable,non-functional / requiring repair,logistics,Logistics,,,,logistics
+,EPR,annual performance evaluation,usaf,admin,,,,admin
+,task force,project team / special initiative group,general,Term,,,,operations
+,general court martial,major judicial proceeding / felony-level military trial,legal,Legal,,,,legal
+,PRT,physical fitness assessment,navy,training,,,,leadership
+,FMC,fully mission capable / operational ready,general,Acronym,,,,operations
+,MCPO,Master Chief / Senior Executive,navy,rank,,,,operations
+,AAR,after-action review / post-project analysis,general,Acronym,,,,operations
+,PED,"processing, exploitation, and dissemination / data processing and distribution",intelligence,Intelligence,,,,intelligence
+,crypto,encryption / security systems,general,Equipment,,,,operations
+,DFAS,Defense Finance and Accounting Service,general,Acronym,,,,operations
+,fitness report,performance evaluation / review,general,Term,,,,operations
+,FYDP,future years defense program / long-range spending plan,financial,Financial,,,,finance
+,turned over,transferred responsibilities,general,operations,,,,operations
+,CPT (Captain),Senior Manager,army,Rank,,,,operations
+,LOE,readiness assessment,navy,technical,,,,operations
+,deconflict,resolve scheduling conflicts / coordinate,general,Term,,,,operations
+,E&E,escape and evasion / emergency extraction,general,Special Operations,,,,operations
+,property book,official asset register / inventory of record,logistics,Logistics,,,,logistics
+,MILCON,military construction / government construction project,engineering,Engineering,,,,operations
+,standby,wait / hold / pending further direction,general,Term,,,,operations
+,cyber key terrain,critical digital infrastructure,cyber,Cyber,,,,cyber
+,board of inquiry,review panel / adjudication board,legal,Legal,,,,legal
+,depot level maintenance,factory-level overhaul / major repair facility,aviation,Aviation,,,,operations
+,Role 3,hospital-level care / definitive medical treatment,medical,Medical,,,,medical
+,Article 15,formal disciplinary action,army,admin,,,,admin
+,EAS,End of Active Service / contract completion date,general,Acronym,,,,operations
+,PHA,periodic health assessment / annual physical examination,medical,Medical,,,,medical
+,ATG,Training and Readiness Organization,navy,organization,,,,operations
+,indoc,orientation / onboarding,general,Term,,,,operations
+,float up,submit for review,navy,admin,,,,admin
+,white space,unscheduled time / available capacity,general,Term,,,,operations
+,NLT,no later than / deadline,general,Acronym,,,,operations
+,petty officer,supervisor / team lead,general,Term,,,,operations
+,yeoman,administrative assistant / office manager,general,Term,,,,operations
+,base year,initial contract period,logistics,Acquisition,,,,operations
+,DFAC,dining facility,army,general,,,,operations
+,company,department of 100-200 employees,general,Unit Type,,,,operations
+,berthing,living quarters,navy,general,,,,operations
+,safety stand-down,safety awareness pause / mandatory safety training day,safety,Safety,,,,operations
+,OPORD,operations order / project plan,general,Acronym,,,,operations
+,IA,Individual Augmentee / temporary assignment,general,Acronym,,,,operations
+,affirmative,yes / confirmed,general,communication,,,,operations
+,PAO,Public Affairs Officer / communications manager,general,Acronym,,,,operations
+,enclave,isolated network segment,cyber,Cyber,,,,cyber
+,command deck,executive level / senior leadership,general,Term,,,,operations
+,back brief,confirmation briefing / task acknowledgment,general,communication,,,,operations
+,IFF systems,identification systems,general,Equipment,,,,operations
+,anchored,parked at remote location,navy,operations,,,,operations
+,MOC,Military Occupational Code,general,Acronym,,,,operations
+,SAEDA,subversion and espionage directed against the Army / insider threat awareness,intelligence,Intelligence,,,,intelligence
+,green deck,full operations authorized / all-clear status,aviation,Aviation,,,,operations
+,active duty,full-time employment,general,Term,,,,operations
+,striker,apprentice / trainee in specialty,navy,training,,,,leadership
+,non-rated,unqualified / not yet certified,general,training,,,,leadership
+,penetration testing,authorized security testing / ethical hacking,cyber,Cyber,,,,cyber
+,OCS,Officer Candidate School,general,Acronym,,,,operations
+,peacetime,non-deployed / normal operations,general,Term,,,,operations
+,net call,network roll call / communications check-in,communications,Communications,,,,operations
+,cold iron,all systems shut down / fully powered off,aviation,Aviation,,,,operations
+,CMSgt (Chief Master Sergeant),Director,usaf,Rank,,,,operations
+,negative,no / denied,general,communication,,,,operations
+,opcon,operational control / day-to-day authority,general,Term,,,,operations
+,OJT,on-the-job training,general,Acronym,,,,operations
+,AWOL,absent without leave / unauthorized absence,general,Acronym,,,,operations
+,below decks,internal/interior areas,navy,operations,,,,operations
+,crew rest,mandatory rest period / regulated downtime,aviation,Aviation,,,,operations
+,SIGINT,signals intelligence / electronic communications analysis,intelligence,Intelligence,,,,intelligence
+,COMPTUEX,Multi-Unit Training Exercise,navy,training,,,,leadership
+,CMSgt,chief master sergeant / executive leader,usaf,leadership,,,,leadership
+,downrange,in the field / at project site,general,Term,,,,operations
+,classification authority,information security decision-maker,intelligence,Intelligence,,,,intelligence
+,mission,objective / goal / project,general,Term,,,,operations
+,administrative board,organizational review panel,personnel,Personnel,,,,operations
+,EDIPI,Electronic Data Interchange Personal Identifier,general,Acronym,,,,operations
+,AR 15-6,Army investigation regulation / formal inquiry procedure,legal,Legal,,,,legal
+,APT,advanced persistent threat / sophisticated cyber adversary,cyber,Cyber,,,,cyber
+,CCT,combat controller / special operations air traffic controller,general,Special Operations,,,,operations
+,JO,Junior Manager,navy,rank,,,,operations
+,incentive fee,bonus for exceeding targets,logistics,Acquisition,,,,operations
+,best value,optimal quality-to-cost evaluation,logistics,Acquisition,,,,operations
+,MEDINT,medical intelligence / health threat analysis,intelligence,Intelligence,,,,intelligence
+,bow,front,navy,general,,,,operations
+,compound,secure facility / target location,general,Special Operations,,,,operations
+,OMPF,official military personnel file / employee personnel record,personnel,Personnel,,,,operations
+,belay,stop / cancel previous order,navy,operations,,,,operations
+,CSM,command sergeant major / senior enlisted leader,army,leadership,,,,leadership
+,fusion center,multi-agency coordination center / integrated analysis center,intelligence,Intelligence,,,,intelligence
+,wargame,scenario planning / simulation exercise,general,Term,,,,operations
+,medical readiness,workforce health compliance / medical fitness status,medical,Medical,,,,medical
+,DD214,separation document / discharge paperwork,general,Acronym,,,,operations
+,mission capable,operationally ready / available for tasking,aviation,Aviation,,,,operations
+,intermediate level maintenance,regional repair facility maintenance,aviation,Aviation,,,,operations
+,WTI,Weapons and Tactics Instructor,general,Acronym,,,,operations
+,FOB,forward operating base,army,operations,,,,operations
+,hot pit refueling,rapid refueling without engine shutdown,aviation,Aviation,,,,operations
+,wingman,trusted partner / backup support person,general,Term,,,,operations
+,DIACAP,DoD information assurance certification / legacy security certification,cyber,Cyber,,,,cyber
+,cockpit resource management,crew coordination / team communication in operations,aviation,Aviation,,,,operations
+,trap,arrested landing / successful carrier landing,aviation,Aviation,,,,operations
+,postflight,post-operation inspection / post-use assessment,aviation,Aviation,,,,operations
+,short timer,employee near end of contract,general,Term,,,,operations
+,footprint,organizational presence / resource usage,general,Term,,,,operations
+,lead paint,lead-based paint remediation,safety,Engineering,,,,operations
+,carry on,continue / resume normal operations,general,operations,,,,operations
+,bigot list,restricted access roster,intelligence,Intelligence,,,,intelligence
+,log,record / documentation,general,Term,,,,operations
+,TSTA,integrated training assessment,navy,technical,,,,operations
+,OPPE,operational readiness evaluation,navy,technical,,,,operations
+,page 13,administrative counseling record,navy,admin,,,,admin
+,CLIN,contract line item number / billable item identifier,logistics,Acquisition,,,,operations
+,DTS claim,electronic travel voucher / online expense report,financial,Financial,,,,finance
+,compartmentalized,need-to-know basis / restricted access,general,Term,,,,operations
+,CSAR,combat search and rescue / hostile area personnel recovery,general,Special Operations,,,,operations
+,all-source analysis,comprehensive data analysis / multi-source research,intelligence,Intelligence,,,,intelligence
+,CPARS,contractor performance assessment reporting system / vendor rating system,logistics,Acquisition,,,,operations
+,accountability,asset/personnel tracking,general,admin,,,,admin
+,mentored,coached and developed,general,leadership,,,,leadership
+,unit basic load,minimum required supplies / baseline inventory level,logistics,Logistics,,,,logistics
+,SR (Seaman Recruit),Entry-Level Staff,navy,Rank,,,,operations
+,period of performance,contract duration / project timeline,logistics,Acquisition,,,,operations
+,per diem,daily expense allowance / travel reimbursement rate,financial,Financial,,,,finance
+,JOs,Junior Managers,navy,rank,,,,operations
+,field,field operations / off-site deployment,army,operations,,,,operations
+,excess,surplus inventory / overstocked items,logistics,Logistics,,,,logistics
+,expenditure,actual spending / disbursement,financial,Financial,,,,finance
+,CSS,combat service support / operational support,general,Acronym,,,,operations
+,mission critical,essential / high priority,general,Term,,,,operations
+,durable,reusable / long-lasting equipment,logistics,Logistics,,,,logistics
+,fantail,rear exterior area,navy,general,,,,operations
+,SIPRNET,classified network / secure government network,cyber,Cyber,,,,cyber
+,POD,Plan of the Day / daily schedule,general,Acronym,,,,operations
+,special court martial,intermediate judicial proceeding,legal,Legal,,,,legal
+,LOC,letter of counseling / formal verbal warning documentation,personnel,Personnel,,,,operations
+,quarterdeck,main entrance / reception area,navy,general,,,,operations
+,PLL,prescribed load list / required parts inventory,logistics,Logistics,,,,logistics
+,GySgt,gunnery sergeant / department lead,usmc,leadership,,,,leadership
+,drawdown,reduction in force / scaling back,general,Term,,,,operations
+,chapter,administrative separation / termination,army,admin,,,,admin
+,CDI,command directed investigation / internal investigation,legal,Legal,,,,legal
+,FEP,final readiness evaluation,navy,technical,,,,operations
+,TIS,Time in Service / tenure,general,Acronym,,,,operations
+,analyst,intelligence analyst / research analyst,intelligence,Intelligence,,,,intelligence
+,aid station,field medical clinic / first-response medical facility,medical,Medical,,,,medical
+,obligation,committed funds / encumbered budget,financial,Financial,,,,finance
+,command investigation,organizational inquiry / management-directed review,legal,Legal,,,,legal
+,economic order quantity,optimal purchase quantity,logistics,Logistics,,,,logistics
+,supply chain,supply chain,general,logistics,,,,logistics
+,company commander,operations director,army,leadership,,,,leadership
+,red deck,operations suspended due to weather/safety,aviation,Aviation,,,,operations
+,sole source,single-vendor procurement / non-competitive award,logistics,Acquisition,,,,operations
+,cost plus,cost-reimbursement contract / variable-cost agreement,logistics,Acquisition,,,,operations
+,SRM,"sustainment, restoration, and modernization / facility maintenance and upgrade",engineering,Engineering,,,,operations
+,green team,support team / training team,general,Term,,,,operations
+,GEOINT,geospatial intelligence / geographic data analysis,intelligence,Intelligence,,,,intelligence
+,OPTAR,operating budget,navy,logistics,Managed $2.5M OPTAR,Managed $2.5M annual operating budget,,logistics
+,utilities,"building systems (power, water, HVAC)",engineering,Engineering,,,,operations
+,flight surgeon,aviation medical examiner / aerospace physician,medical,Medical,,,,medical
+,boundary defense,network perimeter protection,cyber,Cyber,,,,cyber
+,JWICS,top secret network / highest classification network,cyber,Cyber,,,,cyber
+,service order,facility support request,engineering,Engineering,,,,operations
+,brig,military prison / detention facility,legal,Legal,,,,legal
+,immunization,vaccination / preventive medicine,medical,Medical,,,,medical
+,midships,center section,navy,general,,,,operations
+,NAV,navigator / operations planner,navy,leadership,,,,leadership
+,pocket litter,supporting documentation for cover identity,intelligence,Intelligence,,,,intelligence
+,direct action,targeted operation / precision strike mission,general,Special Operations,,,,operations
+,wing,"organization of 1,000-5,000 employees",general,Unit Type,,,,operations
+,chopped to,transferred authority to,navy,operations,,,,operations
+,handler,source manager / relationship coordinator,intelligence,Intelligence,,,,intelligence
+,DODIN,Department of Defense information network / enterprise network,cyber,Cyber,,,,cyber
+,EAWS,aviation qualification program,navy,training,,,,leadership
+,network defense,cybersecurity operations / network protection,cyber,Cyber,,,,cyber
+,ROI,return on investment,general,financial,,,,finance
+,garnishment,court-ordered payroll deduction,financial,Financial,,,,finance
+,PKI,public key infrastructure / digital certificate management,cyber,Cyber,,,,cyber
+,MCA,"military construction, Army / capital construction project",engineering,Engineering,,,,operations
+,evolution,operation,navy,operations,Led 15 evolutions,Led 15 operational procedures,,operations
+,watch station,duty station,navy,operations,,,,operations
+,JISE,joint intelligence support element / integrated analysis team,intelligence,Intelligence,,,,intelligence
+,flight hours,operating hours / airtime logged,aviation,Aviation,,,,operations
+,mission assurance,continuity of operations / business continuity,cyber,Cyber,,,,cyber
+,manning document,staffing table / organizational chart,personnel,Personnel,,,,operations
+,tasker,assignment / action item / work request,general,Term,,,,operations
+,exploitation,data extraction and analysis,intelligence,Intelligence,,,,intelligence
+,fleet surgeon,senior medical officer / chief medical advisor,medical,Medical,,,,medical
+,TAD/TDY assignment,temporary assignment / detail,general,admin,,,,admin
+,CBR,hazardous material response,navy,technical,,,,operations
+,legal hold,litigation preservation / document retention order,legal,Legal,,,,legal
+,bridge,operations command center,navy,operations,,,,operations
+,counseling chit,counseling documentation / performance feedback form,personnel,Personnel,,,,operations
+,triage,patient prioritization / emergency severity assessment,medical,Medical,,,,medical
+,backbrief,summary briefing / confirmation briefing,general,Term,,,,operations
+,pivot,change direction / shift focus,general,Term,,,,operations
+,DLCPO,Division Senior Supervisor,navy,leadership,,,,leadership
+,jackpot,successful target capture / mission success,general,Special Operations,,,,operations
+,corrosion control,preventive surface treatment / anti-corrosion maintenance,aviation,Aviation,,,,operations
+,synch,synchronize / coordinate timing,general,Term,,,,operations
+,patient administration,medical records management / healthcare administration,medical,Medical,,,,medical
+,field day,deep cleaning / facility maintenance,navy,operations,,,,operations
+,administrative separation,involuntary termination / employment separation,legal,Legal,,,,legal
+,clandestine,covert / secret,intelligence,Intelligence,,,,intelligence
+,battalion,business unit of 300-1000 employees,general,Unit Type,,,,operations
+,proposal evaluation,bid assessment / vendor proposal review,logistics,Acquisition,,,,operations
+,MTF,military treatment facility / government healthcare facility,medical,Medical,,,,medical
+,OPR,officer performance evaluation,usaf,admin,,,,admin
+,special reconnaissance,covert observation / clandestine surveillance,general,Special Operations,,,,operations
+,stay in your lane,focus on your responsibilities / stay within scope,general,Term,,,,operations
+,pretrial,pre-hearing phase / preliminary proceedings,legal,Legal,,,,legal
+,BPA,blanket purchase agreement / pre-approved vendor arrangement,logistics,Acquisition,,,,operations
+,AOIC,assistant department head,general,leadership,,,,leadership
+,stern,rear,navy,general,,,,operations
+,preflight,pre-departure inspection / equipment readiness check,aviation,Aviation,,,,operations
+,PJ,pararescue jumper / combat search and rescue specialist,general,Special Operations,,,,operations
+,USACE,U.S. Army Corps of Engineers / federal engineering agency,engineering,Engineering,,,,operations
+,75th Ranger,Army elite light infantry regiment,general,Special Operations,,,,operations
+,line shack,maintenance coordination office,aviation,Aviation,,,,operations
+,ODA,operational detachment alpha / special forces A-team,general,Special Operations,,,,operations
+,motor pool,vehicle fleet maintenance facility,army,technical,,,,operations
+,CBRN,hazardous material response,general,technical,,,,operations
+,working party,work detail / project team,navy,operations,,,,operations
+,asbestos abatement,asbestos removal and containment,safety,Engineering,,,,operations
+,cyber range,cybersecurity training environment,cyber,Cyber,,,,cyber
+,flight line,aircraft parking and operations area / active work area,aviation,Aviation,,,,operations
+,posture,strategic position / readiness stance,general,Term,,,,operations
+,unfunded requirement,budget shortfall / unbudgeted need,financial,Financial,,,,finance
+,dissemination,information distribution / report distribution,intelligence,Intelligence,,,,intelligence
+,NATOPS,naval air training and operating procedures / aircraft operating manual,aviation,Aviation,,,,operations
+,vertical construction,building construction,engineering,Engineering,,,,operations
+,subordinate,direct report / team member,general,Term,,,,operations
+,STIGs,security technical implementation guides / security configuration standards,cyber,Cyber,,,,cyber
+,MAF,maintenance action form / work order,aviation,Aviation,,,,operations
+,KIA,killed in action,general,Acronym,,,,operations
+,phase line,project milestone / progress marker,general,Term,,,,operations
+,read-in,security briefing and access authorization,intelligence,Intelligence,,,,intelligence
+,hostile fire pay,hazard duty pay / danger zone compensation,financial,Financial,,,,finance
+,demolition,controlled structure removal / explosive demolition,engineering,Engineering,,,,operations
+,authorized strength,approved headcount / budgeted positions,personnel,Personnel,,,,operations
+,LPTA,lowest price technically acceptable / cost-based selection,logistics,Acquisition,,,,operations
+,malware analysis,malicious software investigation,cyber,Cyber,,,,cyber
+,imminent danger pay,threat area compensation,financial,Financial,,,,finance
+,IOC,initial operating capability / minimum viable deployment,cyber,Cyber,,,,cyber
+,field sanitation,environmental health / hygiene management,medical,Medical,,,,medical
+,DCPO,safety compliance officer,navy,technical,,,,operations
+,MPA,main propulsion assistant / propulsion engineer,navy,leadership,,,,leadership
+,HAZWOPER,hazardous waste operations and emergency response certification,safety,Engineering,,,,operations
+,S-1,HR / Personnel Office,Unit staff section handling personnel actions and administrative processing.,administration,Worked with S-1 to process awards and PCS paperwork.,Partnered with HR to process personnel actions and documentation.,,admin
+,S-2,Intelligence Office,Unit staff section responsible for threat analysis and intelligence reporting.,intelligence,Coordinated with S-2 for daily threat briefs.,Coordinated with intelligence staff for daily threat updates and briefings.,,intelligence
+,S-3,Operations Office,"Unit staff section responsible for operations planning, scheduling, and execution tracking.",operations,Submitted training plan updates to S-3.,Provided operations team updates to support scheduling and execution tracking.,,operations
+,S-4,Logistics Office,"Unit staff section responsible for supply, transportation, and sustainment planning.",logistics,Worked with S-4 to requisition parts.,Coordinated with logistics to requisition parts and track fulfillment.,,logistics
+,S-6,IT / Communications Office,"Unit staff section responsible for communications, networks, and user support.",cyber,Coordinated with S-6 to troubleshoot network outages.,Worked with IT to troubleshoot outages and restore service.,,cyber
+,BDE S1,Brigade HR Office,Brigade-level HR section handling personnel actions and policy execution.,administration,Sent the packet to BDE S1 for processing.,Submitted the packet to the brigade HR office for processing.,,admin
+,BDE S4,Brigade Logistics Office,Brigade-level logistics section coordinating sustainment and supply chain support.,logistics,BDE S4 pushed the distribution plan.,Brigade logistics issued the distribution plan for execution.,,logistics
+,COMSEC custodian,Communications Security Custodian,Role responsible for safeguarding encryption/keying material and compliance documentation.,cyber,Served as COMSEC custodian for the battalion.,Managed communications security materials and compliance for the organization.,,cyber
+,IAO,Cybersecurity Compliance Lead,"Role responsible for information assurance controls, documentation, and audits.",cyber,Acted as the unit IAO during inspections.,Led cybersecurity compliance documentation and audit readiness for inspections.,,cyber
+,G-6,Enterprise IT Directorate,Senior-level communications/IT directorate overseeing enterprise services.,cyber,Coordinated with G-6 for network approvals.,Coordinated with enterprise IT leadership for network approvals and governance.,,cyber
+,J-6,Joint IT Directorate,Joint-level communications/IT directorate coordinating interoperability and enterprise services.,cyber,Reported status to J-6 during the exercise.,Provided status updates to joint IT leadership during the exercise.,,cyber
+,BDE S2,Brigade-level intelligence office,Used for intelligence reporting/briefing support.,intelligence,Submitted reports to BDE S2,Submitted reports to the brigade intelligence office,,intelligence
+,BDE S3,Brigade-level operations office,"Used for training schedules, ops planning, tasking.",operations,Synced training calendar with BDE S3,Aligned training schedule with the operations office,,operations
+,BN S6,Battalion communications/IT office,Shorthand for unit IT/comms section.,cyber,Worked with BN S6 to restore SIPR,Partnered with the unit IT team to restore secure network services,,cyber
+,S6 shop,Unit IT/communications team,Informal way people refer to the comms/IT section.,cyber,Submitted ticket to the S6 shop,Submitted a service request to the IT support team,,cyber
+,G6,Senior-level communications/IT office (division/corps),Staff section responsible for communications and IT at higher headquarters.,cyber,Coordinated outage response with G6,Coordinated outage response with enterprise IT leadership,,cyber
+,J6,Joint communications/IT office,Joint staff section responsible for communications and IT.,cyber,Coordinated requirements with J6,Coordinated requirements with joint IT leadership,,cyber
+,cutter,operational ship / vessel,Coast Guard term for ships; shows up in bullets.,operations,Supported cutter maintenance availability,Supported vessel maintenance availability,,operations
+,boat crew,small boat operations team,Coast Guard small boat ops term.,operations,Qualified as boat crew,Qualified as small boat operations team member,,operations
+,boarding team,maritime law enforcement team,Common Coast Guard/ME term.,security,Led boarding team brief,Led law enforcement inspection team brief,,operations
+,AtoN,Aids to Navigation,Coast Guard buoy/marker/navigation support mission.,operations,Supported AtoN mission planning,Supported navigation aids mission planning,,operations
+,EOW,Engineering shift supervisor,Watchstanding shorthand for supervising technical operations during assigned shifts.,operations,Stood EOW during high-tempo operations.,Supervised shift operations ensuring continuity.,,operations
+,EDPO,Maintenance program manager,"Indicates ownership of maintenance planning, tracking, and readiness reporting.",leadership,Managed EDPO for department.,Managed maintenance program planning and readiness reporting.,,leadership
+,ER09,Urgent corrective maintenance event,Shorthand for engineering casualty/repair event requiring immediate response.,maintenance,Responded to ER09 casualty.,Led urgent corrective maintenance to restore availability.,,maintenance
+,ERUL,Urgent logistics/repair support,Shorthand for expedited parts/repair coordination during casualties.,maintenance,Submitted ERUL for critical part.,Coordinated urgent logistics to restore operations.,,maintenance
+,S-6 shop,IT/communications office,Common shorthand for unit communications/IT section.,cyber,Worked in the S-6 shop.,Supported IT/communications operations restoring network services.,,cyber

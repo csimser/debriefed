@@ -19,7 +19,8 @@ export type FeatureName =
   | 'linkedin_summary'
   | 'linkedin_profile_analysis'
   | 'linkedin_recommendations'
-  | 'downloads';
+  | 'downloads'
+  | 'cover_letter_exports';
 
 export type TemplateName = 'executive' | 'classic_professional' | 'federal' | 'modern' | 'minimal' | 'twocol';
 
@@ -37,6 +38,7 @@ export interface TierLimits {
   linkedin_profile_analysis: number;
   linkedin_recommendations: number;
   downloads: number;
+  cover_letter_exports: number;
 }
 
 export interface TierFeatures {
@@ -64,20 +66,21 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
     duration: null,
     limits: {
       private_resumes: 5,
-      federal_resumes: 5,
+      federal_resumes: 2,
       resume_imports: 3,
       eval_uploads: 1,
       bullet_translations: 999,
-      job_match_analysis: 999,
-      cover_letters: 999,
+      job_match_analysis: 3,
+      cover_letters: 3,
       ai_summaries: 0,
       linkedin_headline: 0,
       linkedin_summary: 0,
       linkedin_profile_analysis: 0,
       linkedin_recommendations: 0,
-      downloads: 999,
+      downloads: 5,
+      cover_letter_exports: 5,
     },
-    templates: ['classic_professional', 'federal', 'modern', 'minimal', 'twocol'],
+    templates: ['executive', 'classic_professional', 'federal', 'modern', 'minimal', 'twocol'],
     features: {
       smart_apply_skills: true,
       linkedin_profile_analysis: false,
@@ -87,23 +90,24 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
   core: {
     id: 'core',
     name: 'Core',
-    price: 15,
+    price: 25,
     duration: 30,
     stripePriceId: process.env.STRIPE_CORE_PRICE_ID || 'price_1SrKywC8kNeYMuJLssBl9sDb',
     limits: {
       private_resumes: 10,
       federal_resumes: 5,
       resume_imports: 999,
-      eval_uploads: 5,
-      bullet_translations: 999,
-      job_match_analysis: 999,
-      cover_letters: 5,
+      eval_uploads: 10,
+      bullet_translations: 50,
+      job_match_analysis: 10,
+      cover_letters: 10,
       ai_summaries: 999,
       linkedin_headline: 999,
       linkedin_summary: 999,
       linkedin_profile_analysis: 0,
       linkedin_recommendations: 0,
-      downloads: 999,
+      downloads: 10,
+      cover_letter_exports: 10,
     },
     templates: ['executive', 'classic_professional', 'federal', 'modern', 'minimal', 'twocol'],
     features: {
@@ -115,23 +119,24 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
   full: {
     id: 'full',
     name: 'Full',
-    price: 30,
+    price: 50,
     duration: 90,
     stripePriceId: process.env.STRIPE_FULL_PRICE_ID || 'price_1SrKzfC8kNeYMuJLpH0KdkhJ',
     limits: {
       private_resumes: 999,
       federal_resumes: 999,
       resume_imports: 999,
-      eval_uploads: 20,
-      bullet_translations: 999,
-      job_match_analysis: 999,
-      cover_letters: 999,
+      eval_uploads: 30,
+      bullet_translations: 150,
+      job_match_analysis: 200,
+      cover_letters: 200,
       ai_summaries: 999,
       linkedin_headline: 999,
       linkedin_summary: 999,
       linkedin_profile_analysis: 999,
       linkedin_recommendations: 999,
       downloads: 999,
+      cover_letter_exports: 999,
     },
     templates: ['executive', 'classic_professional', 'federal', 'modern', 'minimal', 'twocol'],
     features: {
@@ -159,6 +164,7 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
       linkedin_profile_analysis: 0,
       linkedin_recommendations: 0,
       downloads: 999,
+      cover_letter_exports: 999,
     },
     templates: ['executive', 'classic_professional', 'federal', 'modern', 'minimal', 'twocol'],
     features: {
@@ -173,41 +179,59 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
 export const EVAL_PACK = {
   name: 'Eval Credit Pack',
   price: 5,
-  credits: 10,
+  credits: 5,
   stripePriceId: process.env.STRIPE_EVAL_PACK_PRICE_ID || '',
 };
 
-// Daily rate limits (applies to Core and Full tiers to prevent abuse)
-export const DAILY_RATE_LIMITS: Record<'core' | 'full', TierLimits> = {
+// Daily rate limits (applies to all tiers to prevent abuse)
+export const DAILY_RATE_LIMITS: Record<'free' | 'core' | 'full', TierLimits> = {
+  free: {
+    private_resumes: 2,
+    federal_resumes: 1,
+    resume_imports: 3,
+    eval_uploads: 1,
+    bullet_translations: 20,
+    job_match_analysis: 3,
+    cover_letters: 3,
+    ai_summaries: 0,
+    linkedin_headline: 0,
+    linkedin_summary: 0,
+    linkedin_profile_analysis: 0,
+    linkedin_recommendations: 0,
+    downloads: 5,
+    cover_letter_exports: 5,
+  },
   core: {
     private_resumes: 5,
     federal_resumes: 3,
     resume_imports: 5,
-    eval_uploads: 3,
-    bullet_translations: 999,
-    job_match_analysis: 999,
-    cover_letters: 3,
+    eval_uploads: 5,
+    bullet_translations: 50,
+    job_match_analysis: 10,
+    cover_letters: 10,
     ai_summaries: 10,
     linkedin_headline: 10,
     linkedin_summary: 10,
     linkedin_profile_analysis: 0,
     linkedin_recommendations: 0,
-    downloads: 999,
+    downloads: 5,
+    cover_letter_exports: 999,
   },
   full: {
-    private_resumes: 15,
-    federal_resumes: 15,
+    private_resumes: 7,
+    federal_resumes: 7,
     resume_imports: 10,
     eval_uploads: 10,
-    bullet_translations: 999,
-    job_match_analysis: 999,
-    cover_letters: 10,
+    bullet_translations: 75,
+    job_match_analysis: 15,
+    cover_letters: 15,
     ai_summaries: 20,
     linkedin_headline: 20,
     linkedin_summary: 20,
     linkedin_profile_analysis: 10,
     linkedin_recommendations: 10,
-    downloads: 999,
+    downloads: 10,
+    cover_letter_exports: 999,
   },
 };
 
@@ -232,6 +256,7 @@ export const FEATURE_DISPLAY_NAMES: Record<FeatureName, string> = {
   linkedin_profile_analysis: 'LinkedIn Profile Score',
   linkedin_recommendations: 'LinkedIn Recommendations',
   downloads: 'Downloads',
+  cover_letter_exports: 'Cover Letter Exports',
 };
 
 // Helper function to get tier by stripe price ID
@@ -258,6 +283,6 @@ export function getTierLimit(tierId: TierId, feature: FeatureName): number {
 }
 
 // Helper function to get daily limit for a feature
-export function getDailyLimit(tier: 'core' | 'full', feature: FeatureName): number {
+export function getDailyLimit(tier: 'free' | 'core' | 'full', feature: FeatureName): number {
   return DAILY_RATE_LIMITS[tier][feature];
 }

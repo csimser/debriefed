@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
+import { getUnsubscribeUrl } from '@/lib/unsubscribe-token'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -86,11 +87,16 @@ export async function POST(req: Request) {
       `,
     })
 
+    const unsubscribeUrl = getUnsubscribeUrl(email)
+
     // Send thank you email to user
     await resend.emails.send({
       from: 'Debriefed <noreply@getdebriefed.co>',
       to: email,
       subject: "You're on the Debriefed Waitlist",
+      headers: {
+        'List-Unsubscribe': `<${unsubscribeUrl}>`,
+      },
       html: `<!DOCTYPE html>
 <html>
 <head>
@@ -182,8 +188,11 @@ export async function POST(req: Request) {
           <!-- Footer -->
           <tr>
             <td style="padding: 20px 40px; border-top: 1px solid #2d3748; text-align: center;">
-              <p style="margin: 0; font-size: 12px; color: #8b949e;">
+              <p style="margin: 0 0 8px 0; font-size: 12px; color: #8b949e;">
                 Built by a veteran, for veterans.
+              </p>
+              <p style="margin: 0; font-size: 11px; color: #6b7280;">
+                <a href="${unsubscribeUrl}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> from marketing emails.
               </p>
             </td>
           </tr>

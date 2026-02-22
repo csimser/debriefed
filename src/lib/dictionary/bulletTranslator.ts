@@ -66,6 +66,36 @@ export interface BulletTranslationResult {
 const COVERAGE_THRESHOLD = 40;
 
 // ============================================================================
+// Placeholder system — prevents double-replacement across translation passes
+// ============================================================================
+
+/** Context for tracking placeholder tokens within a single translateBullet call */
+interface PlaceholderCtx {
+  counter: number;
+  map: Map<string, string>;
+}
+
+function createPlaceholderCtx(): PlaceholderCtx {
+  return { counter: 0, map: new Map() };
+}
+
+/** Wrap replacement text in a unique placeholder so later passes cannot match inside it */
+function wrapPlaceholder(ctx: PlaceholderCtx, text: string): string {
+  const key = `\x01DPH${ctx.counter++}\x02`;
+  ctx.map.set(key, text);
+  return key;
+}
+
+/** Restore all placeholders back to their actual replacement text */
+function restorePlaceholders(ctx: PlaceholderCtx, text: string): string {
+  let result = text;
+  for (const [key, value] of ctx.map) {
+    result = result.split(key).join(value);
+  }
+  return result;
+}
+
+// ============================================================================
 // Compound Phrases — match as units BEFORE individual words
 // ============================================================================
 
@@ -768,10 +798,11 @@ const ACRONYM_TO_CIVILIAN: Record<string, string> = {
   'evolution': 'planned operation',
   'sortie': 'mission flight',
   'op tempo': 'operational pace',
-  'readiness': 'operational preparedness',
+  // 'readiness' removed — valid civilian English; was causing chain: readiness→operational preparedness→active
   'spot checks': 'quality inspections',
   'maintenance lags': 'maintenance delays',
   'material readiness': 'equipment readiness',
+  // NOTE: standalone 'readiness' removed — it is valid civilian English
 };
 
 /** Build case-insensitive lookup for ACRONYM_TO_CIVILIAN */
@@ -811,41 +842,48 @@ export async function translateBullet(
   const replacements: DictReplacement[] = [];
   let totalReplacedChars = 0;
 
+  // Placeholder context: each replacement is wrapped in a unique placeholder
+  // so later passes cannot re-match inside already-translated text
+  const ctx = createPlaceholderCtx();
+
   // 0. Compound phrases (multi-word units matched BEFORE individual words)
-  const compoundResult = applyCompoundPhrases(translated);
+  const compoundResult = applyCompoundPhrases(translated, ctx);
   translated = compoundResult.text;
   replacements.push(...compoundResult.replacements);
   totalReplacedChars += compoundResult.replacedChars;
 
   // 1. Hardcoded acronym map (checked BEFORE dict_acronyms table)
-  const hardcodedResult = applyHardcodedAcronyms(translated);
+  const hardcodedResult = applyHardcodedAcronyms(translated, ctx);
   translated = hardcodedResult.text;
   replacements.push(...hardcodedResult.replacements);
   totalReplacedChars += hardcodedResult.replacedChars;
 
   // 2. Phrase translations (longest first to avoid partial replacements)
-  const phraseResult = applyPhraseTranslations(translated, dict, branch);
+  const phraseResult = applyPhraseTranslations(translated, dict, branch, ctx);
   translated = phraseResult.text;
   replacements.push(...phraseResult.replacements);
   totalReplacedChars += phraseResult.replacedChars;
 
   // 3. Eval phrases (branch-aware, longest first)
-  const evalResult = applyEvalPhrases(translated, dict, branch);
+  const evalResult = applyEvalPhrases(translated, dict, branch, ctx);
   translated = evalResult.text;
   replacements.push(...evalResult.replacements);
   totalReplacedChars += evalResult.replacedChars;
 
   // 4. Military jargon (branch-aware, longest first)
-  const jargonResult = applyMilitaryJargon(translated, dict, branch);
+  const jargonResult = applyMilitaryJargon(translated, dict, branch, ctx);
   translated = jargonResult.text;
   replacements.push(...jargonResult.replacements);
   totalReplacedChars += jargonResult.replacedChars;
 
   // 5. Dict acronyms fallback (only for terms NOT in hardcoded map; description only)
-  const acronymResult = applyAcronyms(translated, dict, branch);
+  const acronymResult = applyAcronyms(translated, dict, branch, ctx);
   translated = acronymResult.text;
   replacements.push(...acronymResult.replacements);
   totalReplacedChars += acronymResult.replacedChars;
+
+  // Restore all placeholders to actual text before analysis passes
+  translated = restorePlaceholders(ctx, translated);
 
   // Calculate coverage: what percentage of the original text was touched
   const originalLen = bulletText.trim().length;
@@ -937,7 +975,7 @@ interface ReplacementResult {
  * Apply compound phrase matching — multi-word military phrases matched as units
  * BEFORE individual words are processed. Sorted longest-first.
  */
-function applyCompoundPhrases(text: string): ReplacementResult {
+function applyCompoundPhrases(text: string, ctx: PlaceholderCtx): ReplacementResult {
   const replacements: DictReplacement[] = [];
   let result = text;
   let replacedChars = 0;
@@ -952,7 +990,7 @@ function applyCompoundPhrases(text: string): ReplacementResult {
     const regex = new RegExp(escaped, 'gi');
     const match = result.match(regex);
     if (match) {
-      result = result.replace(regex, civilian);
+      result = result.replace(regex, () => wrapPlaceholder(ctx, civilian));
       replacedChars += match.reduce((sum, m) => sum + m.length, 0);
       replacements.push({
         original: match[0],
@@ -969,7 +1007,7 @@ function applyCompoundPhrases(text: string): ReplacementResult {
  * Apply hardcoded ACRONYM_TO_CIVILIAN map — checked FIRST before dict_acronyms.
  * Case-insensitive matching using pre-built lookup.
  */
-function applyHardcodedAcronyms(text: string): ReplacementResult {
+function applyHardcodedAcronyms(text: string, ctx: PlaceholderCtx): ReplacementResult {
   const replacements: DictReplacement[] = [];
   let result = text;
   let replacedChars = 0;
@@ -993,7 +1031,7 @@ function applyHardcodedAcronyms(text: string): ReplacementResult {
       const regex = new RegExp(escaped, 'gi');
       const match = result.match(regex);
       if (match) {
-        result = result.replace(regex, civilian);
+        result = result.replace(regex, () => wrapPlaceholder(ctx, civilian));
         replacedChars += match.reduce((sum, m) => sum + m.length, 0);
         alreadyReplaced.add(keyLower);
         replacements.push({ original: match[0], replacement: civilian, source: 'acronym' });
@@ -1007,7 +1045,7 @@ function applyHardcodedAcronyms(text: string): ReplacementResult {
         const regex = new RegExp(`\\b${escaped}\\b`, 'g');
         const match = result.match(regex);
         if (match) {
-          result = result.replace(regex, civilian);
+          result = result.replace(regex, () => wrapPlaceholder(ctx, civilian));
           replacedChars += match.reduce((sum, m) => sum + m.length, 0);
           alreadyReplaced.add(keyLower);
           replacements.push({ original: match[0], replacement: civilian, source: 'acronym' });
@@ -1017,7 +1055,7 @@ function applyHardcodedAcronyms(text: string): ReplacementResult {
         const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
         const match = result.match(regex);
         if (match) {
-          result = result.replace(regex, civilian);
+          result = result.replace(regex, () => wrapPlaceholder(ctx, civilian));
           replacedChars += match.reduce((sum, m) => sum + m.length, 0);
           alreadyReplaced.add(keyLower);
           replacements.push({ original: match[0], replacement: civilian, source: 'acronym' });
@@ -1037,6 +1075,7 @@ function applyPhraseTranslations(
   text: string,
   dict: DictionaryCache,
   branch: string,
+  ctx: PlaceholderCtx,
 ): ReplacementResult {
   // Sort by phrase length descending, prefer branch-specific matches
   const sorted = [...(dict.phraseTranslations ?? [])].sort((a, b) => {
@@ -1051,7 +1090,7 @@ function applyPhraseTranslations(
     search: entry.military_phrase,
     replace: entry.civilian_phrase,
     branchFilter: entry.branch,
-  }), branch);
+  }), branch, ctx);
 }
 
 /**
@@ -1062,6 +1101,7 @@ function applyEvalPhrases(
   text: string,
   dict: DictionaryCache,
   branch: string,
+  ctx: PlaceholderCtx,
 ): ReplacementResult {
   const sorted = [...(dict.evalPhrases ?? [])].sort((a, b) => {
     const aMatch = branchMatches(a.branch, branch) ? 1 : 0;
@@ -1074,7 +1114,7 @@ function applyEvalPhrases(
     search: entry.eval_phrase,
     replace: entry.civilian_translation,
     branchFilter: entry.branch,
-  }), branch);
+  }), branch, ctx);
 }
 
 /** Common English words that exist in the jargon table but should NOT be auto-replaced in bullets */
@@ -1084,6 +1124,12 @@ const JARGON_SKIP_LIST = new Set([
   'rate', 'rates', 'field', 'post', 'detail', 'watch', 'cover', 'leave',
   'round', 'check', 'fire', 'camp', 'base', 'point', 'order', 'copy',
   'line', 'mark', 'head', 'lead', 'deck', 'log', 'top',
+  'operational', 'readiness', 'active',
+]);
+
+/** Civilian words wrongly present in DB dictionary tables — skip in ALL translation layers */
+const TRANSLATION_SKIP_TERMS = new Set([
+  'operational', 'readiness', 'active',
 ]);
 
 /**
@@ -1096,12 +1142,14 @@ function applyMilitaryJargon(
   text: string,
   dict: DictionaryCache,
   branch: string,
+  ctx: PlaceholderCtx,
 ): ReplacementResult {
   const filtered = (dict.militaryJargon ?? []).filter(entry => {
     const term = (entry.military_term ?? '').trim();
     const termLower = term.toLowerCase();
-    // Skip common English words
+    // Skip common English words and blacklisted civilian terms
     if (JARGON_SKIP_LIST.has(termLower)) return false;
+    if (TRANSLATION_SKIP_TERMS.has(termLower)) return false;
     return true;
   });
 
@@ -1143,7 +1191,7 @@ function applyMilitaryJargon(
       const regex = new RegExp(`\\b${escaped}\\b`, 'g'); // Case-sensitive for short terms
       const match = result.match(regex);
       if (match) {
-        result = result.replace(regex, cleanReplace);
+        result = result.replace(regex, () => wrapPlaceholder(ctx, cleanReplace));
         replacedChars += match.reduce((sum, m) => sum + m.length, 0);
         alreadyReplaced.add(searchLower);
         replacements.push({ original: match[0], replacement: cleanReplace, source: 'jargon' });
@@ -1154,7 +1202,7 @@ function applyMilitaryJargon(
       const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
       const match = result.match(regex);
       if (match) {
-        result = result.replace(regex, cleanReplace);
+        result = result.replace(regex, () => wrapPlaceholder(ctx, cleanReplace));
         replacedChars += match.reduce((sum, m) => sum + m.length, 0);
         alreadyReplaced.add(searchLower);
         replacements.push({ original: match[0], replacement: cleanReplace, source: 'jargon' });
@@ -1174,6 +1222,7 @@ function applyAcronyms(
   text: string,
   dict: DictionaryCache,
   branch: string,
+  ctx: PlaceholderCtx,
 ): ReplacementResult {
   const replacements: DictReplacement[] = [];
   let result = text;
@@ -1221,7 +1270,7 @@ function applyAcronyms(
     const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
     const match = result.match(regex);
     if (match) {
-      result = result.replace(regex, replacement);
+      result = result.replace(regex, () => wrapPlaceholder(ctx, replacement));
       replacedChars += match[0].length;
       alreadyReplaced.add(acronymLower);
       replacements.push({
@@ -1682,6 +1731,7 @@ function applyReplacements<T>(
   source: DictReplacement['source'],
   getFields: (entry: T) => { search: string; replace: string; branchFilter: string | null },
   branch: string,
+  ctx: PlaceholderCtx,
 ): ReplacementResult {
   const replacements: DictReplacement[] = [];
   let result = text;
@@ -1696,6 +1746,9 @@ function applyReplacements<T>(
     const searchLower = search.toLowerCase();
     if (alreadyReplaced.has(searchLower)) continue;
 
+    // Skip civilian words wrongly present in DB
+    if (TRANSLATION_SKIP_TERMS.has(searchLower)) continue;
+
     // Branch filter: branch-specific entries only match their branch
     if (branchFilter && branch && !branchMatches(branchFilter, branch)) continue;
 
@@ -1708,7 +1761,7 @@ function applyReplacements<T>(
       if (cleanReplace.includes(' / ')) {
         cleanReplace = cleanReplace.split(' / ')[0].trim();
       }
-      result = result.replace(regex, cleanReplace);
+      result = result.replace(regex, () => wrapPlaceholder(ctx, cleanReplace));
       replacedChars += match.reduce((sum, m) => sum + m.length, 0);
       alreadyReplaced.add(searchLower);
       replacements.push({

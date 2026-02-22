@@ -19,6 +19,7 @@ export default async function ResumesPage() {
     privateCheck,
     federalCheck,
     bulletCheck,
+    downloadCheck,
   ] = user?.id
     ? await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
@@ -30,17 +31,21 @@ export default async function ResumesPage() {
         checkLimit(user.id, 'private_resumes'),
         checkLimit(user.id, 'federal_resumes'),
         checkLimit(user.id, 'bullet_translations'),
+        checkLimit(user.id, 'downloads'),
       ])
     : [
         { data: null }, { data: null }, { data: null },
         { data: null }, { data: null }, { data: null },
-        defaultUsage, defaultUsage, defaultUsage,
+        defaultUsage, defaultUsage, defaultUsage, defaultUsage,
       ]
 
   const usage = {
     private_downloads: privateCheck.used,
     federal_downloads: federalCheck.used,
     bullet_rewrites: bulletCheck.used,
+    download_used: downloadCheck.used,
+    download_limit: downloadCheck.limit,
+    download_remaining: downloadCheck.remaining,
   }
 
   const userProfile = profile || {}
@@ -49,18 +54,6 @@ export default async function ResumesPage() {
 
   return (
     <div className="h-[calc(100vh-90px)] -mx-4 md:-mx-6 lg:-mx-8 -mb-4">
-      {tier === 'free' && resumeCount >= 5 && (
-        <div className="p-4 pb-0">
-          <UpgradeBanner
-            feature="Resumes"
-            currentUsage={resumeCount}
-            freeLimit={5}
-            coreLimit={10}
-            tier={tier}
-            variant="inline"
-          />
-        </div>
-      )}
       <ResumeEditor
         userId={user?.id || ''}
         userPlan={tier}

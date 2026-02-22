@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 
 export const PRIMARY_MODEL = 'claude-haiku-4-5-20251001'
-export const ESCALATION_MODEL = 'claude-sonnet-4-5-20250929'
+export const ESCALATION_MODEL = 'claude-sonnet-4-5'
 
 export type ModelUsed = 'haiku' | 'sonnet'
 

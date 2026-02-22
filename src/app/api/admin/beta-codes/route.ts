@@ -126,8 +126,6 @@ export async function POST(request: NextRequest) {
       created_at: new Date().toISOString(),
     }
 
-    console.log('Inserting beta code:', insertData)
-
     const { data, error } = await serviceClient
       .from('beta_codes')
       .insert(insertData)
@@ -135,12 +133,11 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error('Error inserting beta code:', error)
-      console.error('Error details:', JSON.stringify(error, null, 2))
+      console.error('Error inserting beta code:', error?.code || 'unknown')
       if (error.code === '23505') {
         return NextResponse.json({ error: 'Code already exists' }, { status: 400 })
       }
-      return NextResponse.json({ error: error.message || 'Database error' }, { status: 400 })
+      return NextResponse.json({ error: 'Failed to create code' }, { status: 400 })
     }
 
     if (!data) {

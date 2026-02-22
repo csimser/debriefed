@@ -19,7 +19,8 @@ import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import type { DictBulletPattern, DictAtsKeyword, DictionaryCache } from '@/lib/dictionary/types'
 import { createClient } from '@/lib/supabase/client'
 import { getUserTier, isPaidTier } from '@/lib/tier-utils'
-import { UpgradeLink } from '@/components/modals/UpgradeModal'
+import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { BulletTemplateModal } from '@/components/profile/BulletTemplateModal'
 
 interface ResumeFormProps {
   resumeId: string
@@ -84,7 +85,8 @@ const CLEARANCE_STATUS_OPTIONS = [
 
 export function ResumeForm({ resumeId, content, resumeType, onChange, userProfile, profileSummary, allSkills = [], allCertifications = [], bulletTranslationUsage = 0, bulletTranslationLimit = 999, userPlan }: ResumeFormProps) {
   const isFreeUser = !isPaidTier(getUserTier({ tier: userPlan }))
-  const bulletTranslationRemaining = bulletTranslationLimit - bulletTranslationUsage
+  const [localTranslationRemaining, setLocalTranslationRemaining] = useState(bulletTranslationLimit - bulletTranslationUsage)
+  const bulletTranslationRemaining = localTranslationRemaining
   const updateContent = (key: string, value: any) => {
     onChange({ ...content, [key]: value })
   }
@@ -321,6 +323,8 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               }}
               userProfile={userProfile}
               translationRemaining={bulletTranslationRemaining}
+              onTranslationUsed={() => setLocalTranslationRemaining(prev => Math.max(0, prev - 1))}
+              isFreeUser={isFreeUser}
               targetRole={targetRole}
             />
           ))}
@@ -1356,7 +1360,7 @@ function populateBulletTemplate(
 
 // Eval parsing moved to src/lib/dictionary/evalParser.ts (parseAndTranslateEvalText)
 
-function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeType, onChange, onDelete, userProfile, translationRemaining = 999, targetRole }: {
+function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeType, onChange, onDelete, userProfile, translationRemaining = 999, onTranslationUsed, isFreeUser = false, targetRole }: {
   experience: any
   experienceIndex: number
   totalExperiences: number
@@ -1365,8 +1369,11 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
   onDelete: () => void
   userProfile: any
   translationRemaining?: number
+  onTranslationUsed?: () => void
+  isFreeUser?: boolean
   targetRole?: string
 }) {
+  const { openUpgradeModal } = useUpgradeModal()
   const [translating, setTranslating] = useState<string | null>(null)
   const [editingBulletIdx, setEditingBulletIdx] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
@@ -1399,6 +1406,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
   const [pasteSuggestions, setPasteSuggestions] = useState<{ original: string; translated: string; coverage: number }[]>([])
   const [translatingPaste, setTranslatingPaste] = useState(false)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [headerForm, setHeaderForm] = useState({
     job_title: experience.job_title || '',
     civilian_title: experience.civilian_title || '',
@@ -1711,9 +1719,55 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
         }
         onChange({ ...experience, bullets: newBullets })
         setBulletSources(prev => ({ ...prev, [bulletIdx]: 'ai' }))
+        onTranslationUsed?.()
       }
     } catch (error) {
       console.error('Translation error:', error)
+    } finally {
+      setTranslating(null)
+    }
+  }
+
+  const handleEnhanceWithAI = async (bulletIdx: number, bulletText: string) => {
+    // Free tier: open upgrade modal instead
+    if (isFreeUser) {
+      openUpgradeModal()
+      return
+    }
+    if (translationRemaining <= 0) return
+
+    setTranslating(bulletIdx.toString())
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bullet: bulletText,
+          context: {
+            branch: userProfile?.branch || 'navy',
+            rank: userProfile?.rank || '',
+            jobType: resumeType,
+          },
+        }),
+      })
+
+      if (res.status === 403) {
+        return
+      }
+
+      const data = await res.json()
+      if (data.translated) {
+        const newBullets = [...(experience.bullets || [])]
+        newBullets[bulletIdx] = {
+          ...newBullets[bulletIdx],
+          translated_text: data.translated,
+        }
+        onChange({ ...experience, bullets: newBullets })
+        setBulletSources(prev => ({ ...prev, [bulletIdx]: 'ai' }))
+        onTranslationUsed?.()
+      }
+    } catch (error) {
+      console.error('AI enhancement error:', error)
     } finally {
       setTranslating(null)
     }
@@ -1744,6 +1798,21 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
       status: 'pending',
     }
     onChange({ ...experience, bullets: newBullets })
+  }
+
+  const handleTemplateSelect = (template: string) => {
+    const newBullet = {
+      original_text: '',
+      translated_text: template,
+      status: 'accepted' as const,
+      sort_order: 0,
+    }
+    const shiftedBullets = (experience.bullets || []).map((b: any) => ({
+      ...b,
+      sort_order: (b.sort_order ?? 0) + 1,
+    }))
+    onChange({ ...experience, bullets: [newBullet, ...shiftedBullets] })
+    setShowTemplateModal(false)
   }
 
   const handleSaveHeader = () => {
@@ -2083,6 +2152,16 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   <span>Paste Eval</span>
                   <span className="text-[10px] text-status-green ml-auto">Free</span>
                 </button>
+                <div className="h-px bg-border mx-2 my-0.5" />
+                <button
+                  onClick={() => { setShowTemplateModal(true); setShowMoreMenu(false) }}
+                  className="w-full text-left px-3 py-2 text-xs hover:bg-bg-hover transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-3.5 h-3.5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  </svg>
+                  <span>Use Template</span>
+                </button>
               </div>
             </>
           )}
@@ -2195,31 +2274,67 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
 
                 {/* Actions */}
                 <div className="flex gap-2 flex-wrap">
-                  {!bullet.translated_text && bullet.original_text && !alreadyCivilianBullets[bullet._idx] && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => handleTranslateBullet(bullet._idx, bullet.original_text)}
-                      disabled={translating === bullet._idx.toString() || translationRemaining <= 0}
-                    >
-                      {translating === bullet._idx.toString() ? 'Translating...' : translationRemaining <= 0 ? 'Limit Reached' : '✦ Translate'}
+                  {/* Translate / Re-translate — visible on any bullet with content */}
+                  {(bullet.translated_text || bullet.original_text) && !alreadyCivilianBullets[bullet._idx] && (
+                    isFreeUser && translationRemaining <= 0 ? (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => openUpgradeModal()}
+                      >
+                        Upgrade to Translate
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleTranslateBullet(bullet._idx, bullet.translated_text || bullet.original_text)}
+                        disabled={translating === bullet._idx.toString() || translationRemaining <= 0}
+                      >
+                        {translating === bullet._idx.toString()
+                          ? 'Translating...'
+                          : translationRemaining <= 0
+                            ? 'Limit Reached'
+                            : bullet.translated_text
+                              ? '✦ Re-translate'
+                              : '✦ Translate'}
+                      </Button>
+                    )
+                  )}
+
+                  {/* Accept — for translated bullets not yet accepted */}
+                  {bullet.translated_text && bullet.status !== 'accepted' && (
+                    <Button size="sm" onClick={() => handleAcceptBullet(bullet._idx)}>
+                      ✓ Accept
                     </Button>
                   )}
 
-                  {bullet.translated_text && bullet.status !== 'accepted' && (
-                    <>
-                      <Button size="sm" onClick={() => handleAcceptBullet(bullet._idx)}>
-                        ✓ Accept
-                      </Button>
+                  {/* Enhance with AI — matches profile Translate button: visible on any bullet with content */}
+                  {(bullet.translated_text || bullet.original_text) && !alreadyCivilianBullets[bullet._idx] && (
+                    isFreeUser ? (
                       <Button
                         size="sm"
-                        variant="ghost"
-                        onClick={() => handleTranslateBullet(bullet._idx, bullet.original_text)}
+                        variant="secondary"
+                        className="text-gold border-gold/30"
+                        onClick={() => openUpgradeModal()}
+                      >
+                        ✦ Enhance with AI
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="text-gold border-gold/30"
+                        onClick={() => handleEnhanceWithAI(bullet._idx, bullet.translated_text || bullet.original_text)}
                         disabled={translating === bullet._idx.toString() || translationRemaining <= 0}
                       >
-                        ↻ Retry
+                        {translating === bullet._idx.toString()
+                          ? 'Enhancing...'
+                          : translationRemaining <= 0
+                            ? 'Limit Reached'
+                            : '✦ Enhance with AI'}
                       </Button>
-                    </>
+                    )
                   )}
 
                   {bullet.status === 'accepted' && (
@@ -2607,6 +2722,12 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
           </details>
         </div>
       )}
+
+      <BulletTemplateModal
+        isOpen={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
+        onSelect={handleTemplateSelect}
+      />
     </Card>
   )
 }

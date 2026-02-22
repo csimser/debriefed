@@ -1,21 +1,13 @@
 import { NextRequest, NextResponse, after } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage } from '@/lib/usage-tracking'
-import { ADMIN_BYPASS_EMAILS } from '@/lib/pricing-config'
-import { canUseFeature, incrementUsage } from '@/lib/usage-service'
+import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { callWithEscalation, getModelString } from '@/lib/ai-model'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
-
-// Admin client for database operations
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,15 +23,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
     }
 
-    // Check usage limits
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('subscription_tier, email')
-      .eq('user_id', user.id)
-      .single()
-
-    // Admin bypass
-    if (!profile?.email || !ADMIN_BYPASS_EMAILS.includes(profile.email)) {
+    // Check usage limits (centralized admin check with case normalization)
+    const userEmail = await getUserEmail(user.id)
+    if (!isAdmin(userEmail)) {
       const usageCheck = await canUseFeature(user.id, 'linkedin_profile_analysis')
       if (!usageCheck.allowed) {
         return NextResponse.json({
@@ -209,7 +195,7 @@ Return ONLY valid JSON, no other text.`
   } catch (error: any) {
     console.error('LinkedIn PDF parse error:', error)
     return NextResponse.json({
-      error: 'Failed to parse PDF: ' + error.message
+      error: 'Failed to parse PDF. Please try again.'
     }, { status: 500 })
   }
 }

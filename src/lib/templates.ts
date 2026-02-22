@@ -21,24 +21,24 @@ export const TEMPLATES = {
     id: 'modern',
     name: 'Modern',
     description: 'Dark header with teal accents and timeline experience layout',
-    free: false,
+    free: true,
   },
   minimal: {
     id: 'minimal',
     name: 'Minimal',
     description: 'Typography-driven design with generous whitespace',
-    free: false,
+    free: true,
   },
   twocol: {
     id: 'twocol',
     name: 'Two Column',
     description: 'Dark sidebar with gold accents and skills layout',
-    free: false,
+    free: true,
   },
 }
 
-export const FREE_TEMPLATES = ['classic_professional', 'federal', 'executive']
-export const PRO_TEMPLATES = ['modern', 'minimal', 'twocol']
+export const FREE_TEMPLATES = ['classic_professional', 'federal', 'executive', 'modern', 'minimal', 'twocol']
+export const PAID_TEMPLATES: string[] = [] // All templates now free
 
 export type TemplateId = keyof typeof TEMPLATES
 

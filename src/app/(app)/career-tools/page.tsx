@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { CareerToolsHub } from '@/components/career-tools/CareerToolsHub'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
@@ -56,22 +57,24 @@ export default async function CareerToolsPage() {
           variant="inline"
         />
       )}
-      <CareerToolsHub
-        userId={user?.id || ''}
-        userPlan={tier}
-        userProfile={profile || {}}
-        experiences={mappedExperiences}
-        skills={skills?.map(s => s.name) || []}
-        certifications={certifications || []}
-        education={education || []}
-        coverLetterUsage={coverLetterUsage}
-        coverLetterLimit={coverLetterLimit}
-        linkedinUsage={linkedinCheck.used}
-        linkedinLimit={linkedinCheck.limit}
-        evalUsage={evalCheck.used}
-        evalLimit={evalCheck.limit}
-        evalUploads={evalUploads || []}
-      />
+      <Suspense fallback={null}>
+        <CareerToolsHub
+          userId={user?.id || ''}
+          userPlan={tier}
+          userProfile={profile || {}}
+          experiences={mappedExperiences}
+          skills={skills?.map(s => s.name) || []}
+          certifications={certifications || []}
+          education={education || []}
+          coverLetterUsage={coverLetterUsage}
+          coverLetterLimit={coverLetterLimit}
+          linkedinUsage={linkedinCheck.used}
+          linkedinLimit={linkedinCheck.limit}
+          evalUsage={evalCheck.used}
+          evalLimit={evalCheck.limit}
+          evalUploads={evalUploads || []}
+        />
+      </Suspense>
     </div>
   )
 }

@@ -1,0 +1,13 @@
+acronym,full_term,civilian_explanation,branch,category
+BDE S1,Brigade S-1 (Personnel/HR Section),"Brigade-level human resources office responsible for personnel actions, records, and administrative support.",Army,administration
+BDE S2,Brigade S-2 (Intelligence Section),"Brigade-level intelligence office responsible for threat analysis, briefings, and situational awareness.",Army,intelligence
+BDE S3,Brigade S-3 (Operations Section),"Brigade-level operations office responsible for planning, coordinating, and tracking operational execution.",Army,operations
+BDE S4,Brigade S-4 (Logistics Section),"Brigade-level logistics office responsible for supply, transportation, and sustainment planning.",Army,logistics
+BN S1,Battalion S-1 (Personnel/HR Section),Battalion-level HR office handling personnel actions and administrative processing.,Army,administration
+BN S2,Battalion S-2 (Intelligence Section),Battalion-level intelligence office providing threat updates and reporting.,Army,intelligence
+BN S3,Battalion S-3 (Operations Section),"Battalion-level operations office coordinating plans, training schedules, and mission execution.",Army,operations
+BN S4,Battalion S-4 (Logistics Section),"Battalion-level logistics office coordinating supply, maintenance support, and sustainment.",Army,logistics
+S-6,S-6 (Communications/IT Section),"Unit communications/IT office responsible for networks, radios, user support, and system availability.",Army,cyber
+G-6,G-6 (Division/Corps Communications/IT),Senior-level communications/IT directorate responsible for enterprise connectivity and technical governance.,Army,cyber
+J-6,J-6 (Joint Communications/IT),Joint-level communications/IT directorate responsible for enterprise services and interoperability.,All,cyber
+IAO,Information Assurance Officer,"Cybersecurity compliance lead responsible for security controls, documentation, and risk management.",All,cyber

@@ -129,7 +129,23 @@ export function OnboardingWizard({ userId, currentStep, existingProfile }: Onboa
     router.push('/dashboard')
   }
 
-  const handleSkip = () => {
+  const handleSkip = async () => {
+    setSaving(true)
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          onboarding_completed: true,
+          onboarding_skipped: true,
+          onboarding_step: STEPS.length,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+    } catch (error) {
+      console.error('Error skipping onboarding:', error)
+    } finally {
+      setSaving(false)
+    }
     router.push('/dashboard')
   }
 
