@@ -35,6 +35,9 @@ interface UserProfile {
   suspend_reason: string | null
   suspended_at: string | null
   onboarding_completed: boolean
+  onboarding_step: number | null
+  onboarding_skipped: boolean | null
+  last_login_at: string | null
   professional_summary: string | null
   target_industry: string | null
   target_role: string | null
@@ -100,6 +103,21 @@ interface UsageStats {
   federal_downloads: number
 }
 
+interface ConversionBlockers {
+  emailVerified: boolean
+  emailConfirmedAt: string | null
+  onboardingStep: number
+  onboardingCompleted: boolean
+  onboardingSkipped: boolean
+  onboardingTotalSteps: number
+  profileCompleteness: number
+  missingFields: string[]
+  resumeCount: number
+  firstFeatureUsed: { action: string; date: string } | null
+  lastLoginAt: string | null
+  dropOffPoint: string | null
+}
+
 const TIER_OPTIONS = [
   { value: 'free', label: 'Free' },
   { value: 'core', label: 'Core ($25/30 days)' },
@@ -130,6 +148,9 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
     private_downloads: 0,
     federal_downloads: 0,
   })
+  const [conversionBlockers, setConversionBlockers] = useState<ConversionBlockers | null>(null)
+  const [prevUserId, setPrevUserId] = useState<string | null>(null)
+  const [nextUserId, setNextUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
@@ -157,7 +178,14 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
     const fetchUser = async () => {
       setLoading(true)
       try {
-        const response = await fetch(`/api/admin/users/${userId}`)
+        // Forward list nav context to API for prev/next computation
+        const navParams = new URLSearchParams()
+        for (const key of ['sortBy', 'sortOrder', 'search', 'tier', 'role', 'suspended']) {
+          const val = searchParams.get(key)
+          if (val) navParams.set(key, val)
+        }
+        const qs = navParams.toString()
+        const response = await fetch(`/api/admin/users/${userId}${qs ? `?${qs}` : ''}`)
         if (!response.ok) {
           if (response.status === 404) {
             router.push('/admin/users')
@@ -173,6 +201,8 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
         setActivityLog(data.activityLog)
         setApiUsage(data.apiUsage || [])
         setTotalTokensUsed(data.totalTokensUsed || 0)
+        setPrevUserId(data.prevUserId || null)
+        setNextUserId(data.nextUserId || null)
         setUsageStats(data.usageStats || {
           resumes_created: 0,
           resumes_downloaded: 0,
@@ -184,6 +214,9 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
           private_downloads: 0,
           federal_downloads: 0,
         })
+        if (data.conversionBlockers) {
+          setConversionBlockers(data.conversionBlockers)
+        }
 
         // Auto-open edit modal if ?edit=true
         if (searchParams.get('edit') === 'true' && data.user) {
@@ -413,15 +446,53 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
     )
   }
 
+  // Build nav context query string for prev/next links
+  const navContextQs = (() => {
+    const params = new URLSearchParams()
+    for (const key of ['sortBy', 'sortOrder', 'search', 'tier', 'role', 'suspended']) {
+      const val = searchParams.get(key)
+      if (val) params.set(key, val)
+    }
+    return params.toString()
+  })()
+
   return (
     <div className="space-y-6">
-      {/* Back Button */}
-      <Link
-        href="/admin/users"
-        className="inline-flex items-center gap-2 text-text-muted hover:text-text transition-colors"
-      >
-        ← Back to Users
-      </Link>
+      {/* Navigation Bar */}
+      <div className="flex items-center justify-between">
+        <Link
+          href="/admin/users"
+          className="inline-flex items-center gap-2 text-text-muted hover:text-text transition-colors"
+        >
+          ← Back to Users
+        </Link>
+        <div className="flex items-center gap-2">
+          {prevUserId ? (
+            <Link
+              href={`/admin/users/${prevUserId}${navContextQs ? `?${navContextQs}` : ''}`}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-text-muted hover:text-text bg-bg-secondary border border-border rounded-md hover:border-gold/30 transition-colors"
+            >
+              ← Prev
+            </Link>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-text-dim bg-bg-secondary border border-border rounded-md opacity-50 cursor-not-allowed">
+              ← Prev
+            </span>
+          )}
+          {nextUserId ? (
+            <Link
+              href={`/admin/users/${nextUserId}${navContextQs ? `?${navContextQs}` : ''}`}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-text-muted hover:text-text bg-bg-secondary border border-border rounded-md hover:border-gold/30 transition-colors"
+            >
+              Next →
+            </Link>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-text-dim bg-bg-secondary border border-border rounded-md opacity-50 cursor-not-allowed">
+              Next →
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* User Header */}
       <Card className="p-6 bg-navy/20 border-navy/30">
@@ -900,6 +971,120 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
             </div>
           </Card>
 
+          {/* Conversion Blockers */}
+          {conversionBlockers && (
+            <Card className="p-6">
+              <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">
+                Conversion Blockers
+              </h2>
+              <div className="space-y-3">
+                {/* Email Verified */}
+                <div className="flex justify-between items-center">
+                  <span className="text-text-muted text-sm">Email Verified</span>
+                  {conversionBlockers.emailVerified ? (
+                    <Badge variant="green">
+                      Verified {conversionBlockers.emailConfirmedAt
+                        ? new Date(conversionBlockers.emailConfirmedAt).toLocaleDateString()
+                        : ''}
+                    </Badge>
+                  ) : (
+                    <Badge variant="red">Not Verified</Badge>
+                  )}
+                </div>
+
+                {/* Onboarding */}
+                <div className="flex justify-between items-center">
+                  <span className="text-text-muted text-sm">Onboarding</span>
+                  {conversionBlockers.onboardingCompleted ? (
+                    <Badge variant="green">Completed</Badge>
+                  ) : conversionBlockers.onboardingSkipped ? (
+                    <Badge variant="amber">Skipped</Badge>
+                  ) : (
+                    <Badge variant="amber">
+                      Step {conversionBlockers.onboardingStep} of {conversionBlockers.onboardingTotalSteps}
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Profile Completeness */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-text-muted text-sm">Profile Complete</span>
+                    <span className="text-sm font-mono">{conversionBlockers.profileCompleteness}%</span>
+                  </div>
+                  <div className="w-full bg-bg-tertiary rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all ${
+                        conversionBlockers.profileCompleteness === 100
+                          ? 'bg-status-green'
+                          : conversionBlockers.profileCompleteness >= 50
+                          ? 'bg-status-amber'
+                          : 'bg-status-red'
+                      }`}
+                      style={{ width: `${conversionBlockers.profileCompleteness}%` }}
+                    />
+                  </div>
+                  {conversionBlockers.missingFields.length > 0 && (
+                    <div className="mt-1 text-xs text-text-dim">
+                      Missing: {conversionBlockers.missingFields.map(formatFieldName).join(', ')}
+                    </div>
+                  )}
+                </div>
+
+                {/* Resume Created */}
+                <div className="flex justify-between items-center">
+                  <span className="text-text-muted text-sm">Resumes</span>
+                  {conversionBlockers.resumeCount > 0 ? (
+                    <Badge variant="green">{conversionBlockers.resumeCount} created</Badge>
+                  ) : (
+                    <Badge variant="red">None</Badge>
+                  )}
+                </div>
+
+                {/* First Feature */}
+                <div className="flex justify-between items-center">
+                  <span className="text-text-muted text-sm">First Feature</span>
+                  {conversionBlockers.firstFeatureUsed ? (
+                    <span className="text-xs text-right">
+                      <span className="font-mono text-gold">{conversionBlockers.firstFeatureUsed.action}</span>
+                      <br />
+                      <span className="text-text-dim">
+                        {new Date(conversionBlockers.firstFeatureUsed.date).toLocaleDateString()}
+                      </span>
+                    </span>
+                  ) : (
+                    <Badge variant="red">None</Badge>
+                  )}
+                </div>
+
+                {/* Last Seen */}
+                <div className="flex justify-between items-center">
+                  <span className="text-text-muted text-sm">Last Seen</span>
+                  <span className="text-sm font-mono text-text-muted">
+                    {formatRelativeTime(conversionBlockers.lastLoginAt)}
+                  </span>
+                </div>
+
+                {/* Drop-off Diagnosis */}
+                {conversionBlockers.dropOffPoint ? (
+                  <div className="mt-2 p-3 rounded-lg bg-status-red/10 border border-status-red/20">
+                    <div className="text-xs text-text-dim uppercase tracking-wider mb-1">Drop-off Point</div>
+                    <div className="text-sm text-status-red font-medium">
+                      {conversionBlockers.dropOffPoint}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 p-3 rounded-lg bg-status-green/10 border border-status-green/20">
+                    <div className="text-xs text-text-dim uppercase tracking-wider mb-1">Status</div>
+                    <div className="text-sm text-status-green font-medium">
+                      Converted
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
           {/* Activity Log */}
           <Card className="p-6">
             <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">
@@ -1144,6 +1329,36 @@ export default function AdminUserDetailPage({ params }: { params: Promise<{ id: 
       )}
     </div>
   )
+}
+
+function formatRelativeTime(dateString: string | null): string {
+  if (!dateString) return 'Never'
+
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffSecs = Math.floor(diffMs / 1000)
+  const diffMins = Math.floor(diffSecs / 60)
+  const diffHours = Math.floor(diffMins / 60)
+  const diffDays = Math.floor(diffHours / 24)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+  })
+}
+
+function formatFieldName(field: string): string {
+  return field
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 }
 
 function InfoField({

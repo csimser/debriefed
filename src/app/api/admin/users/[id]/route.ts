@@ -112,6 +112,19 @@ export async function GET(
     .order('created_at', { ascending: false })
     .limit(20)
 
+  // Get auth user data for email verification status
+  const { data: authUserData } = await serviceClient.auth.admin.getUserById(id)
+
+  // Get first feature activity (excludes housekeeping actions)
+  const { data: firstFeatureActivity } = await serviceClient
+    .from('activity_log')
+    .select('action, created_at')
+    .eq('user_id', id)
+    .not('action', 'in', '("login","logout","profile_updated","admin_viewed_user","admin_grant")')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .single()
+
   // Calculate total tokens used
   const { data: tokenSum } = await serviceClient
     .from('api_usage')
@@ -157,6 +170,105 @@ export async function GET(
     }
   }
 
+  // Compute adjacent user IDs for prev/next navigation
+  const { searchParams } = new URL(request.url)
+  let prevUserId: string | null = null
+  let nextUserId: string | null = null
+
+  const navSortBy = searchParams.get('sortBy') || 'created_at'
+  const navSortOrder = searchParams.get('sortOrder') || 'desc'
+  const navSearch = searchParams.get('search') || ''
+  const navTier = searchParams.get('tier') || ''
+  const navRole = searchParams.get('role') || ''
+  const navSuspended = searchParams.get('suspended') || ''
+
+  let navQuery = serviceClient
+    .from('profiles')
+    .select('user_id')
+
+  if (navSearch) {
+    navQuery = navQuery.or(`email.ilike.%${navSearch}%,first_name.ilike.%${navSearch}%,last_name.ilike.%${navSearch}%`)
+  }
+  if (navTier && navTier !== 'all') {
+    if (navTier === 'free') {
+      navQuery = navQuery.or('tier.is.null,tier.eq.free')
+    } else {
+      navQuery = navQuery.eq('tier', navTier)
+    }
+  }
+  if (navRole && navRole !== 'all') {
+    if (navRole === 'admin') {
+      navQuery = navQuery.eq('is_admin', true)
+    } else if (navRole === 'user') {
+      navQuery = navQuery.or('is_admin.is.null,is_admin.eq.false')
+    }
+  }
+  if (navSuspended && navSuspended !== 'all') {
+    if (navSuspended === 'suspended') {
+      navQuery = navQuery.eq('suspended', true)
+    } else if (navSuspended === 'active') {
+      navQuery = navQuery.or('suspended.is.null,suspended.eq.false')
+    }
+  }
+
+  navQuery = navQuery.order(navSortBy, { ascending: navSortOrder === 'asc' })
+
+  const { data: navUsers } = await navQuery
+  if (navUsers) {
+    const idx = navUsers.findIndex(u => u.user_id === id)
+    if (idx > 0) prevUserId = navUsers[idx - 1].user_id
+    if (idx >= 0 && idx < navUsers.length - 1) nextUserId = navUsers[idx + 1].user_id
+  }
+
+  // Compute conversion blockers
+  const emailVerified = !!authUserData?.user?.email_confirmed_at
+  const emailConfirmedAt = authUserData?.user?.email_confirmed_at || null
+  const onboardingStep = profile.onboarding_step ?? 0
+  const onboardingCompleted = !!profile.onboarding_completed
+  const onboardingSkipped = !!profile.onboarding_skipped
+  const onboardingTotalSteps = 7
+  const resumeCount = resumes?.length || 0
+
+  const profileKeyFields = ['branch', 'rank', 'years_of_service', 'city', 'state', 'target_role', 'target_industry']
+  const missingFields = profileKeyFields.filter(f => !profile[f])
+  const profileCompleteness = Math.round(((profileKeyFields.length - missingFields.length) / profileKeyFields.length) * 100)
+
+  const isPaid = profile.tier && profile.tier !== 'free'
+
+  let dropOffPoint: string | null = null
+  if (!emailVerified) {
+    dropOffPoint = 'Never verified email'
+  } else if (!onboardingCompleted && !onboardingSkipped && onboardingStep === 0) {
+    dropOffPoint = 'Verified email but never started onboarding'
+  } else if (!onboardingCompleted && !onboardingSkipped && onboardingStep > 0) {
+    dropOffPoint = `Dropped off during onboarding at step ${onboardingStep} of ${onboardingTotalSteps}`
+  } else if (onboardingSkipped) {
+    dropOffPoint = 'Skipped onboarding — profile likely incomplete'
+  } else if (resumeCount === 0) {
+    dropOffPoint = 'Completed onboarding but never built a resume'
+  } else if (!firstFeatureActivity) {
+    dropOffPoint = 'Built a resume but never used any AI features'
+  } else if (!isPaid) {
+    dropOffPoint = 'Active free user — has not upgraded'
+  }
+
+  const conversionBlockers = {
+    emailVerified,
+    emailConfirmedAt,
+    onboardingStep,
+    onboardingCompleted,
+    onboardingSkipped,
+    onboardingTotalSteps,
+    profileCompleteness,
+    missingFields,
+    resumeCount,
+    firstFeatureUsed: firstFeatureActivity
+      ? { action: firstFeatureActivity.action, date: firstFeatureActivity.created_at }
+      : null,
+    lastLoginAt: profile.last_login_at || null,
+    dropOffPoint,
+  }
+
   return NextResponse.json({
     user: profile,
     resumes: resumes || [],
@@ -168,6 +280,9 @@ export async function GET(
     apiUsage: apiUsage || [],
     totalTokensUsed,
     usageStats,
+    conversionBlockers,
+    prevUserId,
+    nextUserId,
   })
 }
 

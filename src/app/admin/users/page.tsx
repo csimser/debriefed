@@ -118,6 +118,18 @@ function UsersPageContent() {
     return params
   }, [page, search, tier, role, status, sortBy, sortOrder])
 
+  // Build nav context query string for detail page links
+  const navContext = useCallback(() => {
+    const params = new URLSearchParams()
+    if (search) params.set('search', search)
+    if (tier && tier !== 'all') params.set('tier', tier)
+    if (role && role !== 'all') params.set('role', role)
+    if (status && status !== 'all') params.set('suspended', status)
+    params.set('sortBy', sortBy)
+    params.set('sortOrder', sortOrder)
+    return params.toString()
+  }, [search, tier, role, status, sortBy, sortOrder])
+
   // Fetch users
   const fetchUsers = useCallback(async () => {
     setLoading(true)
@@ -472,13 +484,13 @@ function UsersPageContent() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <Link
-                          href={`/admin/users/${user.user_id}?edit=true`}
+                          href={`/admin/users/${user.user_id}?edit=true&${navContext()}`}
                           className="text-sm text-gold hover:text-gold-bright hover:underline"
                         >
                           Edit
                         </Link>
                         <Link
-                          href={`/admin/users/${user.user_id}`}
+                          href={`/admin/users/${user.user_id}?${navContext()}`}
                           className="text-sm text-gold hover:text-gold-bright hover:underline"
                         >
                           View →
