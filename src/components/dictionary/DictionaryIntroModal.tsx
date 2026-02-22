@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
+
+const LS_KEY = 'dictionary_intro_dismissed'
 
 interface DictionaryIntroModalProps {
   userId: string
@@ -15,21 +17,41 @@ export function DictionaryIntroModal({ userId }: DictionaryIntroModalProps) {
   const router = useRouter()
   const supabase = createClient()
 
+  // Check localStorage on mount — prevents re-showing if DB update failed previously
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem(LS_KEY) === 'true') {
+      setDismissed(true)
+    }
+  }, [])
+
   if (dismissed) return null
 
   const markShown = async () => {
-    await supabase
+    // localStorage fallback — survives even if DB update fails
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LS_KEY, 'true')
+    }
+
+    console.log('[dictionary-intro] Updating dictionary_intro_shown for user:', userId)
+    const { error } = await supabase
       .from('profiles')
       .update({ dictionary_intro_shown: true })
       .eq('user_id', userId)
+
+    if (error) {
+      console.error('[dictionary-intro] Failed to update dictionary_intro_shown:', error.message, error)
+    } else {
+      console.log('[dictionary-intro] Successfully updated dictionary_intro_shown')
+    }
   }
 
   const handleDismiss = async () => {
-    await markShown()
     setDismissed(true)
+    await markShown()
   }
 
   const handleContribute = async () => {
+    setDismissed(true)
     await markShown()
     router.push('/career-tools?tool=community')
   }
