@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
+import { DownloadCelebration } from '@/components/resume/DownloadCelebration'
 import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
 import { useUpgradeModal } from '@/components/modals/UpgradeModal'
 import { trackEvent } from '@/lib/analytics'
@@ -28,7 +29,10 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
   const [exporting, setExporting] = useState<'pdf' | 'docx' | null>(null)
   const [limitError, setLimitError] = useState<string | null>(null)
   const [downloadToast, setDownloadToast] = useState<string | null>(null)
+  const [celebration, setCelebration] = useState<{ fileName: string; format: 'pdf' | 'docx' } | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  const dismissCelebration = useCallback(() => setCelebration(null), [])
 
   // Close on click outside
   useEffect(() => {
@@ -118,6 +122,9 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
 
+      // Trigger celebration animation
+      setCelebration({ fileName: resumeName || 'resume', format })
+
       // Show remaining export count toast for free tier users
       if (userTier === 'free' && dailyRemaining !== null && dailyLimit !== null) {
         const remaining = parseInt(dailyRemaining, 10)
@@ -143,6 +150,15 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
 
   return (
     <div className="relative" ref={menuRef}>
+      {/* Download Celebration Overlay */}
+      {celebration && (
+        <DownloadCelebration
+          fileName={celebration.fileName}
+          format={celebration.format}
+          onDismiss={dismissCelebration}
+        />
+      )}
+
       {/* Download Success Toast */}
       {downloadToast && (
         <div className="absolute right-0 bottom-full mb-2 w-80 bg-status-green/10 border border-status-green/30 rounded-lg shadow-lg z-20 p-3">

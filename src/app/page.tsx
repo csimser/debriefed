@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -5,6 +6,17 @@ import { PRICING_TIERS, getFormattedPrice } from '@/lib/pricing-config'
 import { MarketingNav } from '@/components/layout/MarketingNav'
 import { TestimonialsSection } from '@/components/testimonials/TestimonialsSection'
 import { TranslationDemo } from '@/components/landing/TranslationDemo'
+
+export const metadata: Metadata = {
+  title: 'Debriefed | Military to Civilian Resume Builder & Job Match Tool',
+  description: 'Translate your military experience into civilian career opportunities. AI-powered resume builder, job match analysis, cover letter generator, and LinkedIn optimizer built for veterans.',
+  openGraph: {
+    title: 'Debriefed | Military to Civilian Resume Builder & Job Match Tool',
+    description: 'Translate your military experience into civilian career opportunities. AI-powered resume builder, job match analysis, and LinkedIn optimizer built for veterans.',
+    type: 'website',
+    images: [{ url: '/og-default.png', width: 1200, height: 630 }],
+  },
+}
 
 export default async function HomePage({
   searchParams,
@@ -33,8 +45,34 @@ export default async function HomePage({
     redirect('/dashboard')
   }
 
+  const orgJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        name: 'Debriefed',
+        url: 'https://getdebriefed.co',
+        logo: 'https://getdebriefed.co/favicon.svg',
+        description: 'Military-to-civilian resume translation for veterans.',
+        sameAs: [],
+      },
+      {
+        '@type': 'WebSite',
+        url: 'https://getdebriefed.co',
+        name: 'Debriefed',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: 'https://getdebriefed.co/mos?q={search_term_string}',
+          'query-input': 'required name=search_term_string',
+        },
+      },
+    ],
+  }
+
   return (
-    <div className="min-h-screen bg-bg-primary flex flex-col">
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
+      <div className="min-h-screen bg-bg-primary flex flex-col">
       <MarketingNav currentPage="home" />
 
       {/* Hero Section */}
@@ -66,18 +104,24 @@ export default async function HomePage({
             <span className="font-mono text-xs text-gold">MISSION BRIEFING • TRANSITION OPERATIONS</span>
           </div>
 
-          {/* Main Tagline */}
-          <h1 className="font-heading text-4xl md:text-6xl font-bold uppercase tracking-wide leading-none mb-4">
-            Translate. Match. Optimize.
+          {/* Main Headline — benefit first */}
+          <h1 className="font-heading text-4xl md:text-6xl font-bold uppercase tracking-wide leading-tight mb-4">
+            Turn Your Military Experience<br className="hidden md:block" />
+            Into a <span className="text-gold">Civilian Career</span>
           </h1>
-          <h2 className="font-heading text-3xl md:text-5xl font-bold text-gold mb-6">
+
+          {/* Supporting tagline */}
+          <p className="font-heading text-lg md:text-2xl font-semibold uppercase tracking-wider text-text-muted mb-2">
+            Translate. Match. Optimize.
+          </p>
+          <p className="font-heading text-xl md:text-3xl font-bold text-gold mb-6">
             Get Debriefed.
-          </h2>
+          </p>
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
-            Turn your military experience into civilian opportunities. Resume translation,
-            job matching, and LinkedIn optimization built by a veteran in transition.
+            AI-powered resume translation, job matching, and LinkedIn optimization
+            built by a veteran in transition. Start free — no credit card needed.
           </p>
 
           {/* Feature Callouts - 3 columns */}
@@ -105,15 +149,18 @@ export default async function HomePage({
             <Link href="/signup" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all text-center">
               Start Free →
             </Link>
-            <Link href="/help" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider text-text-muted border border-border hover:border-border-bright hover:text-text rounded transition-all text-center">
-              View Operations Manual
-            </Link>
+            <a href="#translation-demo" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider text-text-muted border border-border hover:border-border-bright hover:text-text rounded transition-all text-center">
+              See How It Works
+            </a>
           </div>
         </div>
       </section>
 
       {/* Interactive Translation Demo */}
       <TranslationDemo />
+
+      {/* Testimonials — right after value demo for maximum impact */}
+      <TestimonialsSection />
 
       {/* Features Section */}
       <section id="features" className="bg-bg-secondary border-t border-border px-4 md:px-20 py-16 md:py-24">
@@ -132,17 +179,12 @@ export default async function HomePage({
             </p>
           </div>
 
-          {/* Features Grid */}
+          {/* Features Grid — condensed to 5 cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <FeatureCard
               icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>}
               title="Resume Builder"
-              description="Create professional private sector resumes from your military experience with AI-powered suggestions."
-            />
-            <FeatureCard
-              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
-              title="Federal Resume Builder"
-              description="USAJOBS-compliant federal resumes with proper formatting, hours worked, and supervisor details."
+              description="Create professional private sector and USAJOBS-compliant federal resumes from your military experience with AI-powered suggestions."
             />
             <FeatureCard
               icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>}
@@ -150,36 +192,23 @@ export default async function HomePage({
               description="Convert military jargon to civilian language instantly. Stop confusing hiring managers with acronyms."
             />
             <FeatureCard
+              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
+              title="Job Match & Cover Letters"
+              description="Paste a job posting to see your match score with tailored recommendations, then generate an AI cover letter to apply."
+            />
+            <FeatureCard
               icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>}
               title="Eval Upload & OCR"
-              description="Upload FITREPs, NCOERs, or EPRs and automatically extract achievements and bullet points."
-            />
-            <FeatureCard
-              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
-              title="Job Match Analysis"
-              description="Paste a job posting and see how your resume matches. Get specific recommendations to improve your score."
-            />
-            <FeatureCard
-              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
-              title="Cover Letter Generator"
-              description="AI-generated cover letters tailored to each job posting and your military experience."
+              description="Upload FITREPs, NCOERs, or EPRs and automatically extract achievements and bullet points for your resume."
             />
             <FeatureCard
               icon={<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>}
-              title="LinkedIn Optimizer"
-              description="Generate optimized headlines and summaries, or get full profile analysis with skills recommendations."
-            />
-            <FeatureCard
-              icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>}
-              title="Smart Apply & Skills by Rank"
-              description="Get skills recommendations based on your rank and experience level mapped to civilian equivalents."
+              title="LinkedIn & Smart Apply"
+              description="Generate optimized LinkedIn headlines and summaries, get profile analysis, and receive skills recommendations mapped to your rank."
             />
           </div>
         </div>
       </section>
-
-      {/* Testimonials */}
-      <TestimonialsSection />
 
       {/* Why Free Section */}
       <section className="bg-bg-primary border-t border-border px-4 md:px-20 py-16 md:py-24 relative overflow-hidden">
@@ -323,7 +352,7 @@ export default async function HomePage({
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
 
-            <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all">
+            <Link href="/signup?plan=core" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all">
               Get Core
             </Link>
           </div>
@@ -353,7 +382,7 @@ export default async function HomePage({
               <PricingFeature label="Templates" limit="All 6" isLast />
             </ul>
 
-            <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
+            <Link href="/signup?plan=full" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
               Get Full
             </Link>
           </div>
@@ -405,6 +434,7 @@ export default async function HomePage({
         </div>
       </footer>
     </div>
+    </>
   )
 }
 

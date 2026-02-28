@@ -5,6 +5,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     { url: 'https://getdebriefed.co', lastModified: new Date(), priority: 1 },
     { url: 'https://getdebriefed.co/pricing', lastModified: new Date(), priority: 0.8 },
+    { url: 'https://getdebriefed.co/about', lastModified: new Date(), priority: 0.6 },
+    { url: 'https://getdebriefed.co/blog', lastModified: new Date(), priority: 0.8 },
     { url: 'https://getdebriefed.co/help', lastModified: new Date(), priority: 0.5 },
     { url: 'https://getdebriefed.co/login', lastModified: new Date(), priority: 0.5 },
     { url: 'https://getdebriefed.co/signup', lastModified: new Date(), priority: 0.7 },

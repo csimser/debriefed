@@ -55,42 +55,38 @@ const freeLimits = PRICING_TIERS.free.limits
 const FREE_FEATURES = [
   `${freeLimits.private_resumes} Resumes`,
   `${freeLimits.federal_resumes} Federal Resumes`,
-  `${freeLimits.cover_letters} Cover Letters (template only)`,
-  `${freeLimits.job_match_analysis} Job Match Analyses (dictionary only)`,
-  'No AI Summaries',
-  'No LinkedIn AI Tools',
+  `${freeLimits.cover_letters} AI Cover Letter`,
+  `${freeLimits.job_match_analysis} Job Match Analysis`,
+  `${freeLimits.ai_summaries} AI Summary`,
+  `${freeLimits.linkedin_headline} LinkedIn Headline`,
   `${freeLimits.downloads} Downloads`,
-  '1 Template',
 ]
 
 const coreLimits = PRICING_TIERS.core.limits
-const coreDur = PRICING_TIERS.core.duration
 const CORE_FEATURES = [
-  `${coreLimits.private_resumes} Resumes / ${coreDur} days`,
-  `${coreLimits.federal_resumes} Federal Resumes / ${coreDur} days`,
-  `${coreLimits.cover_letters} AI Cover Letters / ${coreDur} days`,
-  `${coreLimits.job_match_analysis} AI Job Match Analyses / ${coreDur} days`,
-  'AI Summary Generation',
+  `${coreLimits.private_resumes} Resumes`,
+  `${coreLimits.federal_resumes} Federal Resumes`,
+  `${coreLimits.cover_letters} AI Cover Letters`,
+  `${coreLimits.job_match_analysis} AI Job Match Analyses`,
+  'Unlimited AI Summaries',
   'AI LinkedIn Headlines & Summaries',
-  `${coreLimits.downloads} Downloads / ${coreDur} days`,
-  `${coreLimits.eval_uploads} Eval Uploads / ${coreDur} days`,
-  `${coreLimits.cover_letter_exports} Cover Letter Exports / ${coreDur} days`,
+  `${coreLimits.downloads} Downloads`,
+  `${coreLimits.eval_uploads} Eval Uploads`,
   'Unlimited Imports',
   'All 6 Templates',
 ]
 
 const fullLimits = PRICING_TIERS.full.limits
-const fullDur = PRICING_TIERS.full.duration
 const FULL_FEATURES = [
-  'Unlimited Resumes (7/day)',
-  'Unlimited Federal Resumes (7/day)',
-  `${fullLimits.cover_letters} AI Cover Letters / ${fullDur} days (15/day)`,
-  `${fullLimits.job_match_analysis} AI Job Match / ${fullDur} days (15/day)`,
+  'Unlimited Resumes',
+  'Unlimited Federal Resumes',
+  `${fullLimits.cover_letters} AI Cover Letters`,
+  `${fullLimits.job_match_analysis} AI Job Match Analyses`,
   'Unlimited AI Summaries',
   'Unlimited LinkedIn Tools',
   'LinkedIn Profile Analysis & Recommendations',
-  'Unlimited Downloads (10/day)',
-  `${fullLimits.eval_uploads} Eval Uploads / ${fullDur} days (10/day)`,
+  'Unlimited Downloads',
+  `${fullLimits.eval_uploads} Eval Uploads`,
   'All 6 Templates',
 ]
 
@@ -141,7 +137,7 @@ function UpgradeModalContent({ onClose }: { onClose: () => void }) {
               Choose Your Mission Package
             </h2>
             <p className="text-sm text-text-muted mt-1">
-              No subscriptions — straightforward access during your transition.
+              One payment. No subscription. Built for your transition.
             </p>
           </div>
           <button
@@ -196,7 +192,7 @@ function UpgradeModalContent({ onClose }: { onClose: () => void }) {
             <div className="font-heading text-lg font-bold uppercase mb-0.5">Core</div>
             <div className="mb-3">
               <span className="font-heading text-2xl font-bold text-gold">{getFormattedPrice('core')}</span>
-              <span className="text-sm text-text-muted ml-1">/ {PRICING_TIERS.core.duration} days</span>
+              <span className="text-sm text-text-muted ml-1">/ 30-day sprint</span>
             </div>
             <p className="text-xs text-text-muted mb-4">AI-powered tools to land the job</p>
             <ul className="flex-1 space-y-1.5 mb-5">
@@ -224,7 +220,7 @@ function UpgradeModalContent({ onClose }: { onClose: () => void }) {
             <div className="font-heading text-lg font-bold uppercase mb-0.5">Full</div>
             <div className="mb-3">
               <span className="font-heading text-2xl font-bold text-gold">{getFormattedPrice('full')}</span>
-              <span className="text-sm text-text-muted ml-1">/ {PRICING_TIERS.full.duration} days</span>
+              <span className="text-sm text-text-muted ml-1">/ 90-day campaign</span>
             </div>
             <p className="text-xs text-text-muted mb-4">Unlimited AI for serious job searches</p>
             <ul className="flex-1 space-y-1.5 mb-5">

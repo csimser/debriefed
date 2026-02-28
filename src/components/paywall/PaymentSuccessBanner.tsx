@@ -17,7 +17,7 @@ const TIER_HIGHLIGHTS: Record<string, string[]> = {
   full: [
     'Unlimited resumes & AI analysis',
     'LinkedIn Profile Analysis & Recommendations',
-    'Maximum daily limits across all tools',
+    '200 cover letters & job match analyses',
   ],
 }
 
@@ -66,7 +66,7 @@ export function PaymentSuccessBanner({ tier }: PaymentSuccessBannerProps) {
             You&apos;re Upgraded!
           </h2>
           <p className="text-sm text-text-muted mb-3">
-            Welcome to <span className="font-semibold text-text">{tierConfig.name}</span> &mdash; {getFormattedPrice(tier)} for {tierConfig.duration} days of access.
+            Welcome to <span className="font-semibold text-text">{tierConfig.name}</span> &mdash; {getFormattedPrice(tier)} for your {tier === 'core' ? '30-day sprint' : '90-day campaign'}.
           </p>
 
           {highlights.length > 0 && (

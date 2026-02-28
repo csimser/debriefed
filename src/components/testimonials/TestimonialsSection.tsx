@@ -20,13 +20,18 @@ const FEATURE_LABELS: Record<string, string> = {
   federal_resume: 'Federal Resume',
 }
 
-function StarRating({ rating }: { rating: number }) {
+function StarRating({ rating, animate }: { rating: number; animate?: boolean }) {
   return (
     <div className="flex gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
         <svg
           key={i}
-          className={`w-4 h-4 ${i <= rating ? 'text-gold' : 'text-border'}`}
+          className={`w-4 h-4 transition-colors duration-300 ${
+            i <= rating ? 'text-gold' : 'text-white/20'
+          }`}
+          style={animate ? {
+            transitionDelay: `${(i - 1) * 50}ms`,
+          } : undefined}
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -37,9 +42,31 @@ function StarRating({ rating }: { rating: number }) {
   )
 }
 
+function SkeletonCard() {
+  return (
+    <div className="bg-bg-secondary border border-border p-6 flex flex-col animate-pulse">
+      <div className="flex gap-0.5 mb-3">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="w-4 h-4 rounded-sm bg-border" />
+        ))}
+      </div>
+      <div className="space-y-2 flex-1">
+        <div className="h-3 w-full rounded bg-border" />
+        <div className="h-3 w-5/6 rounded bg-border" />
+        <div className="h-3 w-4/6 rounded bg-border" />
+      </div>
+      <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
+        <div className="h-3 w-24 rounded bg-border" />
+        <div className="h-4 w-16 rounded bg-border" />
+      </div>
+    </div>
+  )
+}
+
 export function TestimonialsSection() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [loaded, setLoaded] = useState(false)
+  const [animateIn, setAnimateIn] = useState(false)
 
   useEffect(() => {
     fetch('/api/testimonials/featured')
@@ -47,13 +74,14 @@ export function TestimonialsSection() {
       .then((data) => {
         setTestimonials(data.testimonials || [])
         setLoaded(true)
+        // Trigger staggered entrance after a tick
+        requestAnimationFrame(() => setAnimateIn(true))
       })
       .catch(() => setLoaded(true))
   }, [])
 
-  // Hide section if no testimonials
+  // Hide section if loaded with no testimonials
   if (loaded && testimonials.length === 0) return null
-  if (!loaded) return null
 
   return (
     <section className="px-4 md:px-20 py-12 md:py-20 bg-bg-primary">
@@ -67,27 +95,39 @@ export function TestimonialsSection() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-        {testimonials.map((t) => (
-          <div
-            key={t.id}
-            className="bg-bg-secondary border border-border p-6 flex flex-col"
-          >
-            <StarRating rating={t.rating} />
-            <p className="text-sm text-text mt-3 flex-1 leading-relaxed">
-              &ldquo;{t.comment && t.comment.length > 200
-                ? t.comment.slice(0, 200) + '...'
-                : t.comment}&rdquo;
-            </p>
-            <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-              <span className="text-xs text-text-muted">Verified Veteran</span>
-              {FEATURE_LABELS[t.feature_context] && (
-                <span className="text-[10px] font-mono uppercase tracking-wider text-gold bg-gold-dim px-2 py-0.5">
-                  {FEATURE_LABELS[t.feature_context]}
-                </span>
-              )}
+        {!loaded ? (
+          /* Skeleton cards while loading */
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          testimonials.map((t, idx) => (
+            <div
+              key={t.id}
+              className={`bg-bg-secondary border border-border p-6 flex flex-col transition-all duration-300 ${
+                animateIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+              }`}
+              style={{ transitionDelay: `${idx * 150}ms` }}
+            >
+              <StarRating rating={t.rating} animate={animateIn} />
+              <p className="text-sm text-text mt-3 flex-1 leading-relaxed">
+                &ldquo;{t.comment && t.comment.length > 200
+                  ? t.comment.slice(0, 200) + '...'
+                  : t.comment}&rdquo;
+              </p>
+              <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
+                <span className="text-xs text-text-muted">Verified Veteran</span>
+                {FEATURE_LABELS[t.feature_context] && (
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-gold bg-gold-dim px-2 py-0.5">
+                    {FEATURE_LABELS[t.feature_context]}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </section>
   )

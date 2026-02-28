@@ -84,7 +84,7 @@ export function UpgradeBanner({
               ? `You've used ${currentUsage} of ${freeLimit} free ${feature.toLowerCase()}. `
               : ''}
             {coreLimit
-              ? `Upgrade to Core for ${coreLimit}+ ${feature.toLowerCase()} — just ${getFormattedPrice('core')} for ${PRICING_TIERS.core.duration} days.`
+              ? `Upgrade to Core for ${coreLimit}+ ${feature.toLowerCase()} — just ${getFormattedPrice('core')} for a 30-day sprint.`
               : `Upgrade to unlock more ${feature.toLowerCase()} and premium features.`}
           </p>
         </div>

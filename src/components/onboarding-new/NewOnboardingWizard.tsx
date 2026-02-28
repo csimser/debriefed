@@ -73,6 +73,7 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
   const [step, setStep] = useState(mappedStep)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [showSaved, setShowSaved] = useState(false)
 
   const [data, setData] = useState<OnboardingData>({
     first_name: existingProfile?.first_name || '',
@@ -181,6 +182,9 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
 
       if (error) {
         console.error('Error saving progress:', error)
+      } else {
+        setShowSaved(true)
+        setTimeout(() => setShowSaved(false), 2000)
       }
     } catch (error) {
       console.error('Error saving progress:', error)
@@ -342,7 +346,17 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
       </div>
 
       {/* Progress Bar */}
-      <ProgressBar currentStep={step} />
+      <div className="relative">
+        <ProgressBar currentStep={step} />
+        {showSaved && (
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-status-green flex items-center gap-1 animate-fade-in">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            Saved
+          </div>
+        )}
+      </div>
 
       {/* Step Content */}
       <div className="flex-1 py-6 px-4">

@@ -6,6 +6,7 @@ import { FeedbackWrapper } from '@/components/layout/FeedbackWrapper'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://getdebriefed.co'),
   title: 'Debriefed | Military to Civilian Resume Builder',
   description: 'Military-to-civilian resume translation for veterans. Convert your service record into civilian language and land your next career.',
   keywords: 'military resume, veteran resume, military to civilian, resume builder, FITREP, NCOER, MOS translator',
@@ -13,6 +14,16 @@ export const metadata: Metadata = {
     title: 'Debriefed | Military to Civilian Resume Builder',
     description: 'Military-to-civilian resume translation for veterans.',
     type: 'website',
+    images: [{ url: '/og-default.png', width: 1200, height: 630, alt: 'Debriefed — Military to Civilian Resume Builder' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Debriefed | Military to Civilian Resume Builder',
+    description: 'Military-to-civilian resume translation for veterans. Convert your service record into civilian language and land your next career.',
+    images: ['/og-default.png'],
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GSC_VERIFICATION ?? '',
   },
   manifest: '/manifest.json',
 }

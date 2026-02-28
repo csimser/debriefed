@@ -49,12 +49,23 @@ export default async function BlogPostPage({ params }: Props) {
     description: post.description,
     datePublished: post.date,
     author: { '@type': 'Person', name: post.author },
-    publisher: { '@type': 'Organization', name: 'Debriefed', url: 'https://debriefed.app' },
+    publisher: { '@type': 'Organization', name: 'Debriefed', url: 'https://getdebriefed.co' },
+  }
+
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Blog', item: 'https://getdebriefed.co/blog' },
+      { '@type': 'ListItem', position: 2, name: CATEGORY_LABELS[post.category] || post.category, item: `https://getdebriefed.co/blog?category=${post.category}` },
+      { '@type': 'ListItem', position: 3, name: post.title },
+    ],
   }
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <div className="min-h-screen bg-bg-primary flex flex-col">
         <MarketingNav />
 

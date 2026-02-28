@@ -169,13 +169,32 @@ const STATIC_EXAMPLES = [
 export function TranslationDemo() {
   const [input, setInput] = useState('')
   const [hasTranslated, setHasTranslated] = useState(false)
+  const [showSkeleton, setShowSkeleton] = useState(false)
   const [result, setResult] = useState<{ matches: TermMatch[]; translated: string } | null>(null)
+  const [showResults, setShowResults] = useState(false)
 
   function handleTranslate() {
     if (!input.trim()) return
     const res = translateText(input.trim())
-    setResult(res)
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (prefersReduced) {
+      setResult(res)
+      setShowResults(true)
+      setHasTranslated(true)
+      return
+    }
+
+    // Show skeleton for deliberate processing feel
+    setShowSkeleton(true)
+    setShowResults(false)
     setHasTranslated(true)
+
+    setTimeout(() => {
+      setResult(res)
+      setShowSkeleton(false)
+      setShowResults(true)
+    }, 400)
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -188,8 +207,24 @@ export function TranslationDemo() {
   function handleTryExample(text: string) {
     setInput(text)
     const res = translateText(text)
-    setResult(res)
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    if (prefersReduced) {
+      setResult(res)
+      setShowResults(true)
+      setHasTranslated(true)
+      return
+    }
+
+    setShowSkeleton(true)
+    setShowResults(false)
     setHasTranslated(true)
+
+    setTimeout(() => {
+      setResult(res)
+      setShowSkeleton(false)
+      setShowResults(true)
+    }, 400)
   }
 
   // Deduplicate matched terms for chips
@@ -236,7 +271,7 @@ export function TranslationDemo() {
   }
 
   return (
-    <section className="bg-bg-primary border-t border-gold/20 px-4 md:px-12 py-14 md:py-20 relative overflow-hidden">
+    <section id="translation-demo" className="bg-bg-primary border-t border-gold/20 px-4 md:px-12 py-14 md:py-20 relative overflow-hidden scroll-mt-4">
       {/* Subtle gold glow top-center */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] pointer-events-none"
@@ -284,7 +319,7 @@ export function TranslationDemo() {
             </button>
             {hasTranslated && (
               <button
-                onClick={() => { setInput(''); setResult(null); setHasTranslated(false) }}
+                onClick={() => { setInput(''); setResult(null); setHasTranslated(false); setShowSkeleton(false); setShowResults(false) }}
                 className="text-xs text-text-dim hover:text-text-muted transition-colors font-mono"
               >
                 Clear
@@ -293,8 +328,22 @@ export function TranslationDemo() {
           </div>
         </div>
 
+        {/* ── Skeleton loading state ──────────────────────────── */}
+        {hasTranslated && showSkeleton && (
+          <div className="mt-8 space-y-5">
+            <div className="bg-bg-secondary/50 border border-border rounded-lg p-5">
+              <div className="font-mono text-[11px] uppercase tracking-wider text-text-dim mb-3">Processing...</div>
+              <div className="space-y-2.5">
+                <div className="h-3 w-full rounded bg-gradient-to-r from-white/5 via-white/10 to-white/5 animate-pulse" />
+                <div className="h-3 w-4/5 rounded bg-gradient-to-r from-white/5 via-white/10 to-white/5 animate-pulse" style={{ animationDelay: '100ms' }} />
+                <div className="h-3 w-3/5 rounded bg-gradient-to-r from-white/5 via-white/10 to-white/5 animate-pulse" style={{ animationDelay: '200ms' }} />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ── Results panel ────────────────────────────────────── */}
-        {hasTranslated && result && (
+        {hasTranslated && showResults && result && (
           <div className="mt-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
             {result.matches.length > 0 ? (
               <div className="space-y-5">
@@ -334,7 +383,7 @@ export function TranslationDemo() {
                   </Link>
                 </div>
 
-                {/* Term chips — show ALL unique matches */}
+                {/* Term chips — staggered entrance */}
                 <div>
                   <div className="font-mono text-[11px] uppercase tracking-wider text-text-dim mb-2">
                     {uniqueMatches.length} Term{uniqueMatches.length !== 1 ? 's' : ''} Matched
@@ -343,7 +392,8 @@ export function TranslationDemo() {
                     {uniqueMatches.map((m, i) => (
                       <span
                         key={i}
-                        className="bg-gold-dim text-gold font-mono text-[11px] px-2.5 py-1 rounded"
+                        className="bg-gold-dim text-gold font-mono text-[11px] px-2.5 py-1 rounded animate-fade-in opacity-0"
+                        style={{ animationDelay: `${i * 80}ms`, animationFillMode: 'forwards' }}
                       >
                         {m.military} → {m.civilianShort}
                       </span>

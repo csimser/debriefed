@@ -18,6 +18,7 @@ import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import type { ExtractionResult, MatchResult, DictProfessionalSummary } from '@/lib/dictionary/types'
 import { TailoredPreviewModal, type PreviewChange } from './TailoredPreviewModal'
 import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { FirstUseUpgradePrompt } from '@/components/paywall/FirstUseUpgradePrompt'
 import { ScoreGauge } from './ScoreGauge'
 
 interface JobMatchWorkspaceProps {
@@ -2786,6 +2787,16 @@ export function JobMatchWorkspace({
         )}
 
       </div>
+
+      {/* First-use upgrade prompt for free users */}
+      {(analysis || dictResult) && (
+        <FirstUseUpgradePrompt
+          feature="job_match"
+          tier={hasPaidAccess ? (userPlan || 'core') : 'free'}
+          used={currentUsage}
+          limit={usageLimit}
+        />
+      )}
 
       {showLastUseWarning && (
         <LastUseWarningModal

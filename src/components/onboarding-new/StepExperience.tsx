@@ -42,7 +42,7 @@ const emptyExperience: Experience = {
 }
 
 export function StepExperience({ data, updateData, onNext, onBack, onSkip, saving, userId, supabase }: StepExperienceProps) {
-  const [showForm, setShowForm] = useState(data.experiences.length === 0)
+  const [showForm, setShowForm] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [formData, setFormData] = useState<Experience>(emptyExperience)
   const [savingExp, setSavingExp] = useState(false)
@@ -188,6 +188,39 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
           Add your work history — military and/or civilian
         </p>
       </div>
+
+      {/* Empty State Chooser */}
+      {data.experiences.length === 0 && !showForm && (
+        <div className="bg-bg-card border border-border rounded-lg p-6 mb-6">
+          <p className="text-text-muted text-center mb-4">What type of experience do you want to add first?</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                setFormData({ ...emptyExperience, employment_type: 'military' })
+                setShowForm(true)
+              }}
+              className="p-4 bg-bg-tertiary rounded-lg border border-border hover:border-gold/50 transition-colors text-left"
+            >
+              <div className="text-2xl mb-2">&#127894;</div>
+              <h3 className="font-semibold text-gold">Military Experience</h3>
+              <p className="text-xs text-text-muted mt-1">Active duty, reserve, or guard positions</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFormData({ ...emptyExperience, employment_type: 'civilian' })
+                setShowForm(true)
+              }}
+              className="p-4 bg-bg-tertiary rounded-lg border border-border hover:border-gold/50 transition-colors text-left"
+            >
+              <div className="text-2xl mb-2">&#128188;</div>
+              <h3 className="font-semibold text-gold">Civilian Experience</h3>
+              <p className="text-xs text-text-muted mt-1">Private sector, government, or contract work</p>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Existing Experiences List */}
       {data.experiences.length > 0 && !showForm && (
@@ -414,7 +447,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
           disabled={saving}
           className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
         >
-          Skip for now — I&apos;ll complete my profile later
+          Skip — I&apos;ll add experience later
         </button>
       </div>
 

@@ -67,7 +67,9 @@
       "Bash(source /home/fiveftslim/projects/debriefedfinal/debriefed/.env.local 2>/dev/null; node -e \"\nconst { createClient } = require\\('@supabase/supabase-js'\\);\nconst c = createClient\\('$NEXT_PUBLIC_SUPABASE_URL', '$SUPABASE_SERVICE_ROLE_KEY'\\);\nc.from\\('dict_mos_to_civilian'\\).select\\('military_code', { count: 'exact', head: true }\\).then\\(r => {\n  console.log\\('Total rows:', r.count\\);\n}\\);\n\" 2>&1)",
       "Bash(source /home/fiveftslim/projects/debriefedfinal/debriefed/.env.local 2>/dev/null; node -e \"\nconst { createClient } = require\\('@supabase/supabase-js'\\);\nconst c = createClient\\('$NEXT_PUBLIC_SUPABASE_URL', '$SUPABASE_SERVICE_ROLE_KEY'\\);\nc.from\\('dict_mos_to_civilian'\\).select\\('military_code, branch'\\).order\\('military_code'\\).then\\(r => {\n  const codes = r.data.map\\(d => d.military_code.toLowerCase\\(\\)\\);\n  const unique = new Set\\(codes\\);\n  console.log\\('Total rows:', r.data.length\\);\n  console.log\\('Unique lowercase codes:', unique.size\\);\n  \n  // Find duplicates\n  const counts = {};\n  codes.forEach\\(c => { counts[c] = \\(counts[c] || 0\\) + 1; }\\);\n  const dupes = Object.entries\\(counts\\).filter\\(\\([,v]\\) => v > 1\\);\n  console.log\\('Duplicate codes:', dupes.length\\);\n  dupes.slice\\(0, 10\\).forEach\\(\\([k,v]\\) => console.log\\('  ', k, '=', v\\)\\);\n}\\);\n\" 2>&1)",
       "Bash(npx next dev -p 3001 2>&1 | head -15)",
-      "Bash(npx next dev -p 3001 2>&1 | head -5)"
+      "Bash(npx next dev -p 3001 2>&1 | head -5)",
+      "WebSearch",
+      "WebFetch(domain:empireresume.com)"
     ]
   }
 }

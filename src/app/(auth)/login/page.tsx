@@ -30,9 +30,8 @@ function LoginForm() {
     }).catch(() => {})
   }
 
-  // OTP: send code
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // Extracted OTP sending logic — no fake events needed
+  const sendOtp = async () => {
     if (!email) {
       setError('Please enter your email address')
       return
@@ -51,6 +50,12 @@ function LoginForm() {
     // whether the email exists or not
     setOtpSent(true)
     setLoading(false)
+  }
+
+  // OTP: form submit handler
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await sendOtp()
   }
 
   // OTP: verify code
@@ -91,6 +96,13 @@ function LoginForm() {
     setOtpSent(false)
     setOtpCode('')
     setError('')
+  }
+
+  // Resend handler — calls sendOtp directly, no fake events
+  const handleResend = async () => {
+    setOtpCode('')
+    setError('')
+    await sendOtp()
   }
 
   return (
@@ -179,11 +191,11 @@ function LoginForm() {
               onClick={resetOtp}
               className="text-text-muted hover:text-gold transition-colors"
             >
-              ← Change email
+              &larr; Change email
             </button>
             <button
               type="button"
-              onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); handleSendOtp(new Event('submit') as any) }}
+              onClick={handleResend}
               className="text-gold hover:text-gold-bright transition-colors"
             >
               Resend code
@@ -194,8 +206,8 @@ function LoginForm() {
 
       <div className="mt-6 pt-6 border-t border-border">
         <p className="text-sm text-text-muted text-center">
-          Don't have an account?{' '}
-          <Link href="/signup" className="text-gold hover:text-gold-bright">Create Account</Link>
+          Don&apos;t have an account?{' '}
+          <Link href={planIntent ? `/signup?plan=${planIntent}` : '/signup'} className="text-gold hover:text-gold-bright">Create Account</Link>
         </p>
       </div>
     </Card>

@@ -21,6 +21,7 @@ import { getUserTier, isPaidTier } from '@/lib/tier-utils'
 import { useUpgradeModal } from '@/components/modals/UpgradeModal'
 import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
 import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
+import { FirstUseUpgradePrompt } from '@/components/paywall/FirstUseUpgradePrompt'
 
 interface DictCoverLetterBuilderProps {
   userProfile: any
@@ -1575,6 +1576,16 @@ export function DictCoverLetterBuilder({
           )}
         </div>
       </div>
+
+      {/* First-use upgrade prompt for free users */}
+      {editorText && (
+        <FirstUseUpgradePrompt
+          feature="cover_letter"
+          tier={isFree ? 'free' : userPlan || 'free'}
+          used={currentUsage}
+          limit={usageLimit}
+        />
+      )}
 
       {/* Last use warning modal */}
       {showLastUseWarning && (

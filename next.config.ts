@@ -17,6 +17,19 @@ const nextConfig: NextConfig = {
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "img-src 'self' data: https: blob:",
+              "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com",
+              "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.sentry.io",
+              "frame-src 'self' https://js.stripe.com",
+              "worker-src 'self' blob:",
+            ].join('; '),
+          },
         ],
       },
     ]

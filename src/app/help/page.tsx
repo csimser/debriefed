@@ -11,19 +11,19 @@ const FAQ_SECTIONS = [
     questions: [
       {
         q: 'How do I upgrade my account?',
-        a: 'Navigate to the Pricing page from your dashboard or visit /pricing. Choose between Core ($25 for 30 days) or Full ($50 for 90 days) plans. Click the upgrade button and complete checkout through our secure Stripe payment system. Your new limits are available immediately after purchase. All tiers include daily rate limits to ensure fair usage.',
+        a: 'Navigate to the Pricing page from your dashboard or visit /pricing. Choose between Core ($25 for a 30-day sprint) or Full ($50 for a 90-day campaign). Click the upgrade button and complete checkout through our secure Stripe payment system. Your new limits are available immediately after purchase.',
       },
       {
         q: "What's the difference between Core and Full?",
-        a: 'Core ($25/30 days) gives you 10 resumes, 10 AI cover letters, 10 job match analyses, 10 eval uploads, AI summaries, and all 6 templates - perfect for an active job search. Full ($50/90 days) provides unlimited resumes, 200 cover letters, 200 job matches, LinkedIn profile analysis & recommendations, and 30 eval uploads - ideal for longer transition periods or career changers exploring multiple paths.',
+        a: 'Core ($25 / 30-day sprint) gives you 10 resumes, 10 AI cover letters, 10 job match analyses, 10 eval uploads, AI summaries, and all 6 templates — perfect for an active job search. Full ($50 / 90-day campaign) provides unlimited resumes, 200 cover letters, 200 job matches, LinkedIn profile analysis & recommendations, and 30 eval uploads — ideal for longer transition periods or career changers exploring multiple paths.',
       },
       {
         q: 'How do I cancel or get a refund?',
         a: "Debriefed uses one-time purchases, not recurring subscriptions - so there's nothing to cancel. If you're unsatisfied within 7 days of purchase and haven't used a significant portion of your limits, contact support@getdebriefed.co for refund consideration.",
       },
       {
-        q: 'What happens when my paid plan expires?',
-        a: 'When your Core or Full plan expires, your account reverts to the Free tier. All your resumes and data are preserved - you just can\'t create new ones beyond Free limits until you upgrade again.',
+        q: 'What happens when my access ends?',
+        a: 'When your Core or Full access ends, your account reverts to the Free tier. All your resumes and data are preserved — you just can\'t create new ones beyond Free limits until you purchase again.',
       },
     ],
   },

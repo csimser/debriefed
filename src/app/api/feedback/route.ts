@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+/** Strip all HTML tags and script content from user input */
+function stripHtml(input: string): string {
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // remove script blocks
+    .replace(/<[^>]*>/g, '') // remove remaining HTML tags
+    .trim()
+}
+
 // Simple in-memory rate limiter (5 submissions per IP per hour)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
 
@@ -27,21 +35,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Too many submissions. Try again later.' }, { status: 429 })
   }
 
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+  }
+
+  const { category, message, pageUrl } = body as { category?: string; message?: string; pageUrl?: string }
+
+  if (!message || typeof message !== 'string' || !category || typeof category !== 'string') {
+    return NextResponse.json({ error: 'Message and category required' }, { status: 400 })
+  }
+
+  if (!['bug', 'feature', 'general'].includes(category)) {
+    return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
+  }
+
+  // Sanitize: strip HTML/script tags and enforce length limit
+  const sanitizedMessage = stripHtml(message).slice(0, 5000)
+  if (!sanitizedMessage) {
+    return NextResponse.json({ error: 'Message cannot be empty' }, { status: 400 })
+  }
+
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
-
-    const { category, message, pageUrl } = await request.json()
-
-    if (!message || !category) {
-      return NextResponse.json({ error: 'Message and category required' }, { status: 400 })
-    }
-
-    if (!['bug', 'feature', 'general'].includes(category)) {
-      return NextResponse.json({ error: 'Invalid category' }, { status: 400 })
-    }
 
     // Derive userId/email from auth session if available (never trust client-supplied values)
     let authUserId: string | null = null
@@ -58,14 +79,16 @@ export async function POST(request: NextRequest) {
       // Anonymous feedback allowed — user fields stay null
     }
 
+    const sanitizedPageUrl = typeof pageUrl === 'string' ? stripHtml(pageUrl).slice(0, 2000) : null
+
     const { data, error } = await supabase
       .from('user_feedback')
       .insert({
         user_id: authUserId,
         email: authEmail,
         category,
-        message: message.trim(),
-        page_url: pageUrl || null,
+        message: sanitizedMessage,
+        page_url: sanitizedPageUrl,
         status: 'new',
       })
       .select()

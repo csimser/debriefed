@@ -129,15 +129,66 @@ function getInitialOpenSection(content: any): string | null {
   return 'experience'
 }
 
-// Circular completeness badge
+// Count-up hook (same pattern as QuickStats.tsx)
+function useCountUp(target: number, duration: number = 800, delay: number = 0) {
+  const [current, setCurrent] = useState(0)
+  const [done, setDone] = useState(false)
+  const frameRef = useRef<number>(null)
+
+  useEffect(() => {
+    if (target === 0) { setCurrent(0); setDone(true); return }
+    // Skip animation if reduced motion preferred
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setCurrent(target); setDone(true); return
+    }
+    setCurrent(0); setDone(false)
+    const timeout = setTimeout(() => {
+      const startTime = performance.now()
+      function tick(now: number) {
+        const elapsed = now - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        const eased = 1 - (1 - progress) * (1 - progress)
+        setCurrent(Math.round(eased * target))
+        if (progress < 1) { frameRef.current = requestAnimationFrame(tick) }
+        else { setDone(true) }
+      }
+      frameRef.current = requestAnimationFrame(tick)
+    }, delay)
+    return () => { clearTimeout(timeout); if (frameRef.current) cancelAnimationFrame(frameRef.current) }
+  }, [target, duration, delay])
+
+  return { current, done }
+}
+
+// Circular completeness badge with count-up and milestone animations
 function CompletenessRing({ value }: { value: number }) {
   const r = 14
   const circ = 2 * Math.PI * r
-  const offset = circ - (value / 100) * circ
-  const color = value >= 100 ? 'text-status-green' : value >= 60 ? 'text-gold' : 'text-status-amber'
+  const { current: displayValue, done } = useCountUp(value, 800, 200)
+  const offset = circ - (displayValue / 100) * circ
+  const [showComplete, setShowComplete] = useState(false)
+  const [showPulse, setShowPulse] = useState(false)
+
+  // Smooth color via thresholds
+  const color = displayValue >= 100 ? 'text-status-green' : displayValue >= 80 ? 'text-gold-bright' : displayValue >= 60 ? 'text-gold' : 'text-status-amber'
+
+  // Milestone: 100% triggers victory pulse + COMPLETE label
+  useEffect(() => {
+    if (done && value >= 100) {
+      setShowPulse(true)
+      const t = setTimeout(() => setShowComplete(true), 200)
+      return () => clearTimeout(t)
+    }
+    setShowComplete(false)
+    setShowPulse(false)
+  }, [done, value])
 
   return (
-    <div className="relative w-9 h-9 flex items-center justify-center" title={`${value}% complete`}>
+    <div className="relative w-9 h-9 flex items-center justify-center" title={`${displayValue}% complete`}>
+      {/* Victory pulse ring at 100% */}
+      {showPulse && (
+        <div className="absolute inset-[-4px] rounded-full border-2 border-status-green animate-victory-pulse pointer-events-none" />
+      )}
       <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
         <circle cx="18" cy="18" r={r} fill="none" stroke="currentColor" strokeWidth="2.5" className="text-border" />
         <circle
@@ -146,10 +197,15 @@ function CompletenessRing({ value }: { value: number }) {
           strokeDasharray={circ}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          className={`${color} transition-all duration-500`}
+          className={`${color} transition-colors duration-400`}
+          style={{ transition: 'stroke-dashoffset 0.1s linear, color 400ms ease' }}
         />
       </svg>
-      <span className="absolute text-[9px] font-heading font-bold">{value}%</span>
+      {showComplete ? (
+        <span className="absolute text-[6px] font-heading font-bold text-status-green animate-stamp-in" style={{ transform: 'translateX(-50%)', left: '50%' }}>COMPLETE</span>
+      ) : (
+        <span className={`absolute text-[9px] font-heading font-bold ${done && value > 0 ? 'animate-stat-pulse' : ''}`}>{displayValue}%</span>
+      )}
     </div>
   )
 }

@@ -3,7 +3,7 @@ import { getAllPosts } from '@/lib/mdx'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const posts = getAllPosts()
-  const BASE_URL = 'https://debriefed.app'
+  const BASE_URL = 'https://getdebriefed.co'
 
   const postEntries: MetadataRoute.Sitemap = posts.map((post) => ({
     url: `${BASE_URL}/blog/${post.slug}`,

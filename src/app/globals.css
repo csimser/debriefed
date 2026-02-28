@@ -415,6 +415,141 @@ html, body {
   animation: confetti-fall 2.5s ease-in forwards;
 }
 
+/* ===========================
+   DOPAMINE REWARD ANIMATIONS
+   =========================== */
+
+/* Score gauge — victory pulse glow behind gauge on high scores */
+@keyframes victoryPulse {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+.animate-victory-pulse {
+  animation: victoryPulse 0.8s ease-out forwards;
+}
+
+/* Score gauge — "STRONG MATCH" badge stamps in */
+@keyframes stampIn {
+  0% { transform: translateX(-50%) scale(0) rotate(-10deg); opacity: 0; }
+  60% { transform: translateX(-50%) scale(1.15) rotate(2deg); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 1; }
+}
+
+.animate-stamp-in {
+  animation: stampIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Score improvement delta floats up into view */
+@keyframes deltaFloat {
+  0% { transform: translateY(4px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-delta-float {
+  animation: deltaFloat 0.6s ease-out forwards;
+}
+
+/* Download celebration — checkmark circle scales in */
+@keyframes celebrationPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-celebration-pop {
+  animation: celebrationPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Download celebration — gold shimmer sweep */
+@keyframes shimmerSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer-sweep {
+  animation: shimmerSweep 0.8s ease-out 0.3s forwards;
+}
+
+/* Download celebration — text fades up */
+@keyframes celebrationTextIn {
+  0% { transform: translateY(8px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-celebration-text {
+  animation: celebrationTextIn 0.4s ease-out forwards;
+}
+
+/* Dashboard stats — number count-up finish pulse */
+@keyframes statPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.animate-stat-pulse {
+  animation: statPulse 0.3s ease-out;
+}
+
+/* Stagger entrance for dashboard sections */
+@keyframes staggerSlideIn {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-stagger-in {
+  opacity: 0;
+  animation: staggerSlideIn 0.4s ease-out forwards;
+}
+
+/* Gold confetti particle for download celebration */
+@keyframes goldParticle {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-60px) scale(0); opacity: 0; }
+}
+
+.animate-gold-particle {
+  animation: goldParticle 0.8s ease-out forwards;
+}
+
+/* Template selector — gold ring expand on selection */
+@keyframes templateSelectRing {
+  0% { box-shadow: 0 0 0 0 rgba(212,168,75,0.6); }
+  50% { box-shadow: 0 0 0 4px rgba(212,168,75,1); }
+  100% { box-shadow: 0 0 0 6px rgba(212,168,75,0); }
+}
+
+/* ===========================
+   REDUCED MOTION — disable dopamine animations
+   =========================== */
+@media (prefers-reduced-motion: reduce) {
+  .animate-victory-pulse,
+  .animate-stamp-in,
+  .animate-delta-float,
+  .animate-celebration-pop,
+  .animate-shimmer-sweep,
+  .animate-celebration-text,
+  .animate-stat-pulse,
+  .animate-stagger-in,
+  .animate-gold-particle,
+  .animate-fade-in,
+  .animate-success-pop,
+  .animate-slide-in-right,
+  .animate-post-action-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Kill all remaining custom animations */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Safe area insets for notched devices */
 @supports (padding: max(0px)) {
   .safe-area-inset-bottom {

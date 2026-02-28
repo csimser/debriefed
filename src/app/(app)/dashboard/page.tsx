@@ -111,6 +111,7 @@ export default async function DashboardPage({
 
   const tier = subscriptionInfo.tier
   const isPaid = tier === 'core' || tier === 'full'
+  const isExpired = tier === 'expired'
 
   const { completeness, nextAction } = getProfileCompleteness(profile)
   const displayName = profile?.first_name || ''
@@ -142,6 +143,21 @@ export default async function DashboardPage({
         </h1>
         <p className="text-text-muted text-sm mt-1">Mission Status: Active</p>
       </div>
+
+      {/* Expired renewal banner */}
+      {isExpired && (
+        <div className="p-4 rounded border border-gold/30 bg-gold/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <p className="text-gold font-heading uppercase tracking-wider text-sm">Your Access Has Ended</p>
+            <p className="text-white/50 text-xs mt-1">
+              Renew within 7 days for 20% off &mdash; use code <strong className="text-white/70">RENEW20</strong>
+            </p>
+          </div>
+          <Link href="/pricing" className="px-4 py-2 bg-gold text-bg-primary font-heading text-sm font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors whitespace-nowrap">
+            Renew Access &rarr;
+          </Link>
+        </div>
+      )}
 
       {/* Banner slot — max 1 visible at a time */}
       {paymentSuccess ? (

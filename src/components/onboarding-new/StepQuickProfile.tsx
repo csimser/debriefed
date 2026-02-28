@@ -20,6 +20,7 @@ interface StepQuickProfileProps {
 export function StepQuickProfile({ data, updateData, onNext, onBack, onSkip, saving }: StepQuickProfileProps) {
   const [loadingCrosswalk, setLoadingCrosswalk] = useState(false)
   const [civilianTitles, setCivilianTitles] = useState<string[]>([])
+  const [showOptional, setShowOptional] = useState(!!(data.phone || data.city || data.clearance))
 
   // Auto-populate rank when branch and paygrade change
   useEffect(() => {
@@ -93,54 +94,7 @@ export function StepQuickProfile({ data, updateData, onNext, onBack, onSkip, sav
       </div>
 
       <div className="bg-bg-card border border-border rounded-lg p-6 space-y-8">
-        {/* === Section 1: Basic Info === */}
-        <div>
-          <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-gold mb-4 pb-2 border-b border-border">
-            Basic Info
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <InternationalPhoneInput
-                label="Phone"
-                value={data.phone}
-                onChange={(phone) => updateData({ phone })}
-                hint="Include country code for international numbers"
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>City</label>
-                <input
-                  type="text"
-                  name="city"
-                  autoComplete="address-level2"
-                  value={data.city}
-                  onChange={(e) => updateData({ city: e.target.value })}
-                  placeholder="San Diego"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>State</label>
-                <select
-                  value={data.state}
-                  onChange={(e) => updateData({ state: e.target.value })}
-                  autoComplete="address-level1"
-                  className={inputClass}
-                >
-                  <option value="">Select State</option>
-                  {US_STATES.map((state) => (
-                    <option key={state.value} value={state.value}>
-                      {state.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* === Section 2: Military Background === */}
+        {/* === Section 1: Military Background === */}
         <div>
           <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-gold mb-4 pb-2 border-b border-border">
             Military Background
@@ -242,29 +196,10 @@ export function StepQuickProfile({ data, updateData, onNext, onBack, onSkip, sav
                 </div>
               )}
             </div>
-
-            {/* Clearance */}
-            <div>
-              <label className={labelClass}>
-                Security Clearance
-                <span className="text-text-dim ml-2">(Optional)</span>
-              </label>
-              <select
-                value={data.clearance}
-                onChange={(e) => updateData({ clearance: e.target.value })}
-                autoComplete="off"
-                className={inputClass}
-              >
-                <option value="">Select Clearance</option>
-                {CLEARANCE_LEVELS.map(c => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
-            </div>
           </div>
         </div>
 
-        {/* === Section 3: Career Target === */}
+        {/* === Section 2: Career Target === */}
         <div>
           <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-gold mb-4 pb-2 border-b border-border">
             Career Target
@@ -285,6 +220,78 @@ export function StepQuickProfile({ data, updateData, onNext, onBack, onSkip, sav
             </p>
           </div>
         </div>
+
+        {/* === Section 3: Optional Details (collapsible) === */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowOptional(!showOptional)}
+            className="w-full flex items-center justify-between pb-2 border-b border-border group"
+          >
+            <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-text-muted group-hover:text-gold transition-colors">
+              Optional Details
+            </h3>
+            <span className={`text-text-dim text-sm transition-transform ${showOptional ? 'rotate-180' : ''}`}>
+              &#9660;
+            </span>
+          </button>
+          {showOptional && (
+            <div className="space-y-4 mt-4">
+              <div>
+                <InternationalPhoneInput
+                  label="Phone"
+                  value={data.phone}
+                  onChange={(phone) => updateData({ phone })}
+                  hint="Include country code for international numbers"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>City</label>
+                  <input
+                    type="text"
+                    name="city"
+                    autoComplete="address-level2"
+                    value={data.city}
+                    onChange={(e) => updateData({ city: e.target.value })}
+                    placeholder="San Diego"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>State</label>
+                  <select
+                    value={data.state}
+                    onChange={(e) => updateData({ state: e.target.value })}
+                    autoComplete="address-level1"
+                    className={inputClass}
+                  >
+                    <option value="">Select State</option>
+                    {US_STATES.map((state) => (
+                      <option key={state.value} value={state.value}>
+                        {state.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>Security Clearance</label>
+                <select
+                  value={data.clearance}
+                  onChange={(e) => updateData({ clearance: e.target.value })}
+                  autoComplete="off"
+                  className={inputClass}
+                >
+                  <option value="">Select Clearance</option>
+                  {CLEARANCE_LEVELS.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Navigation */}
@@ -303,7 +310,7 @@ export function StepQuickProfile({ data, updateData, onNext, onBack, onSkip, sav
           disabled={saving}
           className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
         >
-          Skip for now — I&apos;ll complete my profile later
+          Skip — I&apos;ll add this from my profile later
         </button>
       </div>
     </div>

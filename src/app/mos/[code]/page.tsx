@@ -103,6 +103,16 @@ export default async function MOSPage({
     }),
   }
 
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://getdebriefed.co' },
+      { '@type': 'ListItem', position: 2, name: 'MOS Career Guide', item: 'https://getdebriefed.co/mos' },
+      { '@type': 'ListItem', position: 3, name: `${mos.military_code} — ${mos.military_title}` },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
       <MarketingNav currentPage={undefined} />
@@ -111,6 +121,10 @@ export default async function MOSPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
 
       {/* Main Content */}

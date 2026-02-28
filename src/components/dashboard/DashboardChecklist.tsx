@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 interface ChecklistItemData {
@@ -16,6 +16,28 @@ interface DashboardChecklistProps {
 export function DashboardChecklist({ items }: DashboardChecklistProps) {
   const completedCount = items.filter(i => i.done).length
   const [collapsed, setCollapsed] = useState(completedCount > 3)
+  const allComplete = completedCount === items.length
+  const [showBadge, setShowBadge] = useState(false)
+  const [barFilled, setBarFilled] = useState(false)
+  const prefersReducedMotion = useRef(false)
+
+  useEffect(() => {
+    prefersReducedMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }, [])
+
+  // When all complete: fill bar, then show badge
+  useEffect(() => {
+    if (allComplete && collapsed) {
+      if (prefersReducedMotion.current) {
+        setBarFilled(true)
+        setShowBadge(true)
+        return
+      }
+      setBarFilled(true)
+      const timer = setTimeout(() => setShowBadge(true), 350)
+      return () => clearTimeout(timer)
+    }
+  }, [allComplete, collapsed])
 
   return (
     <div className="rounded-xl border border-border bg-bg-card p-5">
@@ -39,12 +61,35 @@ export function DashboardChecklist({ items }: DashboardChecklistProps) {
 
       {collapsed && (
         <div className="mt-3">
-          <div className="h-1.5 bg-bg-secondary rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gold rounded-full transition-all duration-500"
-              style={{ width: `${(completedCount / items.length) * 100}%` }}
-            />
-          </div>
+          {allComplete && showBadge ? (
+            /* Completion badge */
+            <div className="relative flex items-center justify-center py-2">
+              {/* Victory pulse ring behind badge */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-32 h-8 rounded-full bg-gold/20 animate-victory-pulse" />
+              </div>
+              <div className="relative px-4 py-1.5 bg-gold text-bg-primary font-heading text-xs font-bold uppercase tracking-widest rounded animate-stamp-in">
+                All Missions Complete
+              </div>
+            </div>
+          ) : (
+            /* Progress bar */
+            <div className="h-1.5 bg-bg-secondary rounded-full overflow-hidden">
+              <div
+                className={`h-full bg-gold rounded-full transition-all duration-500 relative overflow-hidden ${
+                  barFilled ? 'w-full' : ''
+                }`}
+                style={barFilled ? undefined : { width: `${(completedCount / items.length) * 100}%` }}
+              >
+                {/* Shimmer sweep on fill */}
+                {allComplete && barFilled && (
+                  <div className="absolute inset-0 animate-shimmer-sweep">
+                    <div className="w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -1,16 +1,54 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
+import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
 
+// ── Email typo detection ────────────────────────────────────────────
+const COMMON_TYPOS: Record<string, string> = {
+  'gmial.com': 'gmail.com',
+  'gmai.com': 'gmail.com',
+  'gmail.co': 'gmail.com',
+  'gamil.com': 'gmail.com',
+  'gnail.com': 'gmail.com',
+  'yaho.com': 'yahoo.com',
+  'yahooo.com': 'yahoo.com',
+  'yhaoo.com': 'yahoo.com',
+  'hotmal.com': 'hotmail.com',
+  'hotmial.com': 'hotmail.com',
+  'hotmil.com': 'hotmail.com',
+  'outlok.com': 'outlook.com',
+  'outllok.com': 'outlook.com',
+  'outloo.com': 'outlook.com',
+}
+
+// ── Step indicator ──────────────────────────────────────────────────
+function StepIndicator({ step }: { step: 'form' | 'otp' }) {
+  return (
+    <div className="flex items-center justify-center gap-3 mb-6">
+      <div className={`flex items-center gap-2 text-xs font-heading uppercase tracking-wider ${step === 'form' ? 'text-gold' : 'text-white/30'}`}>
+        <span className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] ${step === 'form' ? 'border-gold text-gold' : 'border-white/20 text-white/20'}`}>1</span>
+        Your Info
+      </div>
+      <div className="w-8 h-px bg-white/10" />
+      <div className={`flex items-center gap-2 text-xs font-heading uppercase tracking-wider ${step === 'otp' ? 'text-gold' : 'text-white/30'}`}>
+        <span className={`w-5 h-5 rounded-full border flex items-center justify-center text-[10px] ${step === 'otp' ? 'border-gold text-gold' : 'border-white/20 text-white/20'}`}>2</span>
+        Verify Email
+      </div>
+    </div>
+  )
+}
+
+// ── Signup form ─────────────────────────────────────────────────────
 function SignupForm() {
   const searchParams = useSearchParams()
   const planIntent = searchParams.get('plan')
+  const hasPlanIntent = planIntent === 'core' || planIntent === 'full'
 
   const [formData, setFormData] = useState({
     email: '',
@@ -23,7 +61,9 @@ function SignupForm() {
   const [loading, setLoading] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   const [resending, setResending] = useState(false)
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null)
   const submittingRef = useRef(false)
+  const verifyingRef = useRef(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -33,6 +73,19 @@ function SignupForm() {
     const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000)
     return () => clearTimeout(timer)
   }, [resendCooldown])
+
+  // Email typo detection
+  const handleEmailChange = (value: string) => {
+    setFormData({ ...formData, email: value })
+    const domain = value.split('@')[1]?.toLowerCase()
+    setEmailSuggestion(domain ? COMMON_TYPOS[domain] ?? null : null)
+  }
+
+  const correctEmail = (suggestion: string) => {
+    const localPart = formData.email.split('@')[0]
+    setFormData({ ...formData, email: `${localPart}@${suggestion}` })
+    setEmailSuggestion(null)
+  }
 
   const handleResendOtp = async () => {
     if (resendCooldown > 0 || resending) return
@@ -97,14 +150,13 @@ function SignupForm() {
         return
       }
 
-      // Send the OTP code — always show the same generic message regardless
-      // of outcome to prevent email enumeration attacks
+      // Send the OTP code
       await supabase.auth.signInWithOtp({
         email: formData.email,
         options: { shouldCreateUser: false },
       })
 
-      // Always transition to the verify screen with a generic message
+      // Transition to the verify screen
       setOtpSent(true)
       setResendCooldown(60)
       submittingRef.current = false
@@ -117,12 +169,14 @@ function SignupForm() {
   }
 
   // OTP signup: step 2 — verify code
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleVerifyOtp = useCallback(async (e?: React.FormEvent) => {
+    e?.preventDefault()
+    if (verifyingRef.current) return
     if (!otpCode || otpCode.length !== 6) {
       setError('Please enter the 6-digit code')
       return
     }
+    verifyingRef.current = true
     setLoading(true)
     setError('')
 
@@ -135,12 +189,14 @@ function SignupForm() {
     if (verifyError) {
       setError(verifyError.message)
       setLoading(false)
+      verifyingRef.current = false
       return
     }
 
     if (!data.user) {
       setError('Verification failed. Please try again.')
       setLoading(false)
+      verifyingRef.current = false
       return
     }
 
@@ -155,17 +211,26 @@ function SignupForm() {
     const onboardingUrl = planIntent ? `/onboarding?plan=${planIntent}` : '/onboarding'
     router.push(onboardingUrl)
     router.refresh()
-  }
+  }, [otpCode, formData.email, planIntent, router, supabase.auth])
+
+  // OTP auto-submit when 6 digits entered
+  useEffect(() => {
+    if (otpCode.length === 6 && otpSent) {
+      const timer = setTimeout(() => handleVerifyOtp(), 300)
+      return () => clearTimeout(timer)
+    }
+  }, [otpCode, otpSent, handleVerifyOtp])
 
   // OTP verification screen
   if (otpSent) {
     return (
       <Card className="p-8">
+        <StepIndicator step="otp" />
         <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-center mb-6">Verify Your Email</h2>
 
         <div className="bg-gold-dim border border-gold/30 rounded-md p-3 mb-6">
           <p className="text-sm text-gold">
-            If an account exists for that email address, we&apos;ve sent a 6-digit code. Check your inbox and spam folder.
+            We&apos;ve sent a 6-digit code to <strong>{formData.email}</strong>. Check your inbox and spam folder.
           </p>
         </div>
 
@@ -205,10 +270,10 @@ function SignupForm() {
 
           <button
             type="button"
-            onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); setResendCooldown(0); submittingRef.current = false }}
+            onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); setResendCooldown(0); submittingRef.current = false; verifyingRef.current = false }}
             className="w-full text-sm text-text-muted hover:text-gold transition-colors"
           >
-            ← Back to signup
+            &larr; Back to signup
           </button>
         </form>
       </Card>
@@ -217,21 +282,24 @@ function SignupForm() {
 
   return (
     <Card className="p-8">
+      <StepIndicator step="form" />
       <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-center mb-4">Create Account</h2>
 
-      {/* Welcome notice */}
-      <div className="bg-gold-dim border border-gold/30 rounded-md p-3 mb-6">
-        <p className="text-sm text-gold">
-          <span className="font-medium">Start free.</span> Create your first resume at no cost. Upgrade anytime for more.
-        </p>
-      </div>
-
-      {/* Locked fields warning */}
-      <div className="bg-status-yellow/10 border border-status-yellow/20 rounded-md p-3 mb-6">
-        <p className="text-sm text-status-yellow">
-          <span className="font-medium">Note:</span> Please enter your first name, last name, and email exactly as you want them to appear on your resume. These fields are locked after registration.
-        </p>
-      </div>
+      {/* Plan context badge — shows when arriving from pricing */}
+      {hasPlanIntent ? (
+        <div className="mb-6 p-3 rounded border border-gold/30 bg-gold/5 text-center">
+          <span className="text-gold text-sm font-heading uppercase tracking-wider">
+            {planIntent === 'core' ? 'Core Plan — $25 / 30 days' : 'Full Plan — $50 / 90 days'}
+          </span>
+          <p className="text-white/50 text-xs mt-1">You&apos;ll complete payment after account creation</p>
+        </div>
+      ) : (
+        <div className="bg-gold-dim border border-gold/30 rounded-md p-3 mb-6">
+          <p className="text-sm text-gold">
+            <span className="font-medium">Start free.</span> Create your first resume at no cost. Upgrade anytime for more.
+          </p>
+        </div>
+      )}
 
       <form onSubmit={handleOtpSignup} className="space-y-4" autoComplete="on">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -243,7 +311,6 @@ function SignupForm() {
             autoComplete="given-name"
             value={formData.firstName}
             onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-            placeholder="John"
             required
           />
           <Input
@@ -254,21 +321,31 @@ function SignupForm() {
             autoComplete="family-name"
             value={formData.lastName}
             onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-            placeholder="Doe"
             required
           />
         </div>
-        <Input
-          id="signup-email"
-          label="Email"
-          type="email"
-          name="email"
-          autoComplete="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="your@email.com"
-          required
-        />
+        <p className="text-xs text-white/40 -mt-2">This name will appear on your resumes</p>
+        <div>
+          <Input
+            id="signup-email"
+            label="Email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            value={formData.email}
+            onChange={(e) => handleEmailChange(e.target.value)}
+            placeholder="your@email.com"
+            required
+          />
+          {emailSuggestion && (
+            <p className="text-xs text-gold/80 mt-1">
+              Did you mean{' '}
+              <button type="button" onClick={() => correctEmail(emailSuggestion)} className="underline hover:text-gold">
+                {formData.email.split('@')[0]}@{emailSuggestion}
+              </button>?
+            </p>
+          )}
+        </div>
 
         <p className="text-xs text-text-muted">
           No password needed — we&apos;ll send a 6-digit code to verify your email.
@@ -281,14 +358,14 @@ function SignupForm() {
         )}
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Creating Account...' : 'Create Account'}
+          {loading ? 'Creating Account...' : hasPlanIntent ? 'Get Started — Complete Payment Next' : 'Start Building My Resume'}
         </Button>
       </form>
 
       <div className="mt-6 text-center">
         <p className="text-sm text-text-muted">
           Already have an account?{' '}
-          <Link href="/login" className="text-gold hover:text-gold-bright">Sign In</Link>
+          <Link href={planIntent ? `/login?plan=${planIntent}` : '/login'} className="text-gold hover:text-gold-bright">Sign In</Link>
         </p>
       </div>
     </Card>
@@ -332,9 +409,15 @@ export default function SignupPage() {
       <div className="w-full max-w-md">
         <SignupBranding />
 
+        <GovComputerBanner />
+
         <Suspense fallback={<SignupFormLoading />}>
           <SignupForm />
         </Suspense>
+
+        <p className="text-center text-white/30 text-xs mt-6">
+          Join 500+ veterans who&apos;ve built their civilian resume with Debriefed
+        </p>
       </div>
     </div>
   )

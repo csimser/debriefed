@@ -61,15 +61,17 @@ export function StepFinish({ data, updateData, onComplete, onBack, onSkip, savin
   const [completed, setCompleted] = useState(false)
   const [generatingSummary, setGeneratingSummary] = useState(false)
 
-  // Profile completeness checks
+  // Weighted profile completeness checks
   const completenessChecks = [
-    { label: 'Name set', done: !!(data.first_name && data.last_name) },
-    { label: 'Contact info', done: !!(data.phone || data.city) },
-    { label: 'Military background', done: !!(data.branch && data.paygrade) },
-    { label: 'Work experience', done: data.experiences.length > 0 },
-    { label: 'Target role', done: !!data.target_role },
+    { label: 'Name set', done: !!(data.first_name && data.last_name), weight: 25 },
+    { label: 'Military background', done: !!(data.branch && data.paygrade), weight: 25 },
+    { label: 'Work experience', done: data.experiences.length > 0, weight: 25 },
+    { label: 'Target role', done: !!data.target_role, weight: 15 },
+    { label: 'Contact info', done: !!(data.phone || data.city), weight: 10 },
   ]
-  const completenessPercent = Math.round((completenessChecks.filter(c => c.done).length / completenessChecks.length) * 100)
+  const completenessPercent = Math.round(
+    completenessChecks.reduce((sum, c) => sum + (c.done ? c.weight : 0), 0)
+  )
 
   // Auto-generate professional summary on mount
   const generateSummary = useCallback(async () => {
@@ -133,15 +135,16 @@ export function StepFinish({ data, updateData, onComplete, onBack, onSkip, savin
   }, [onComplete])
 
   // Auto-redirect countdown after completion
+  const redirectPath = planIntent ? `/dashboard?plan=${planIntent}` : '/resumes?new=true'
   useEffect(() => {
     if (!completed) return
     if (countdown <= 0) {
-      router.push('/resumes?new=true')
+      router.push(redirectPath)
       return
     }
     const timer = setTimeout(() => setCountdown(c => c - 1), 1000)
     return () => clearTimeout(timer)
-  }, [completed, countdown, router])
+  }, [completed, countdown, router, redirectPath])
 
   const [showConfetti, setShowConfetti] = useState(false)
 
@@ -167,17 +170,23 @@ export function StepFinish({ data, updateData, onComplete, onBack, onSkip, savin
         </p>
 
         <button
-          onClick={() => router.push('/resumes?new=true')}
+          onClick={() => router.push(redirectPath)}
           className="w-full max-w-md mx-auto py-4 bg-gold text-bg-primary font-heading text-lg font-bold uppercase tracking-wider rounded-lg hover:bg-gold-bright transition-all mb-4 block"
         >
-          Build My First Resume →
+          {planIntent ? 'Complete Payment \u2192' : 'Build My First Resume \u2192'}
         </button>
 
         <p className="text-text-dim text-sm">
           Redirecting in {countdown}s...{' '}
-          <button onClick={() => router.push(planIntent ? `/dashboard?plan=${planIntent}` : '/dashboard')} className="text-gold hover:underline">
-            Go to dashboard
-          </button>
+          {planIntent ? (
+            <button onClick={() => router.push('/resumes?new=true')} className="text-gold hover:underline">
+              Skip to resume builder
+            </button>
+          ) : (
+            <button onClick={() => router.push('/dashboard')} className="text-gold hover:underline">
+              Go to dashboard
+            </button>
+          )}
         </p>
       </div>
     )
@@ -247,18 +256,37 @@ export function StepFinish({ data, updateData, onComplete, onBack, onSkip, savin
           What Happens Next
         </h3>
         <ul className="space-y-2 text-sm text-text-muted">
-          <li className="flex items-start gap-2">
-            <span className="text-gold">1.</span>
-            <span>We&apos;ll take you to the resume builder</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-gold">2.</span>
-            <span>Your profile data auto-fills the resume</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-gold">3.</span>
-            <span>Add skills, education, and certs from your profile page anytime</span>
-          </li>
+          {planIntent ? (
+            <>
+              <li className="flex items-start gap-2">
+                <span className="text-gold">1.</span>
+                <span>Complete your payment to unlock {planIntent === 'core' ? 'Core' : 'Full'} features</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-gold">2.</span>
+                <span>Your profile data auto-fills the resume builder</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-gold">3.</span>
+                <span>Start building unlimited resumes and cover letters</span>
+              </li>
+            </>
+          ) : (
+            <>
+              <li className="flex items-start gap-2">
+                <span className="text-gold">1.</span>
+                <span>We&apos;ll take you to the resume builder</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-gold">2.</span>
+                <span>Your profile data auto-fills the resume</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-gold">3.</span>
+                <span>Add skills, education, and certs from your profile page anytime</span>
+              </li>
+            </>
+          )}
         </ul>
       </div>
 
@@ -268,7 +296,7 @@ export function StepFinish({ data, updateData, onComplete, onBack, onSkip, savin
           &#8592; Back
         </Button>
         <Button onClick={handleFinish} disabled={saving}>
-          {saving ? 'Saving...' : 'Finish & Build Resume \u2192'}
+          {saving ? 'Saving...' : planIntent ? 'Finish & Complete Payment \u2192' : 'Finish & Build Resume \u2192'}
         </Button>
       </div>
 
@@ -278,7 +306,7 @@ export function StepFinish({ data, updateData, onComplete, onBack, onSkip, savin
           disabled={saving}
           className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
         >
-          Skip for now — I&apos;ll complete my profile later
+          I&apos;ll finish this later
         </button>
       </div>
     </div>

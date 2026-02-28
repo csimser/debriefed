@@ -228,11 +228,12 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
       <div className="mb-8">
         <div className="text-6xl mb-4">&#128587;</div>
         <h1 className="font-heading text-3xl md:text-4xl font-bold uppercase tracking-wider mb-4">
-          Welcome to Debriefed
+          {data.first_name ? `Welcome, ${data.first_name}` : 'Welcome to Debriefed'}
         </h1>
         <p className="text-text-muted text-lg max-w-md mx-auto">
           Let&apos;s build your profile so you can create powerful civilian resumes from your military experience.
         </p>
+        <p className="text-text-dim text-sm mt-2">Takes about 3 minutes</p>
       </div>
 
       {importSuccess && (
@@ -315,7 +316,7 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
           disabled={saving}
           className="text-sm text-text-dim hover:text-text-muted hover:underline transition-colors"
         >
-          Skip for now — I&apos;ll complete my profile later
+          Skip setup — go straight to dashboard
         </button>
       </div>
 

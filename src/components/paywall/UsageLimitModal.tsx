@@ -95,9 +95,9 @@ export function UsageLimitModal({
     if (currentTier === 'expired') {
       return (
         <>
-          Your subscription has expired.
+          Your access has ended.
           <br />
-          <span className="text-sm">Renew to regain access to {featureName.toLowerCase()}.</span>
+          <span className="text-sm">Purchase again to regain {featureName.toLowerCase()}.</span>
         </>
       );
     }
@@ -187,7 +187,7 @@ export function UsageLimitModal({
                   <span className="text-lg font-bold">{getFormattedPrice('core')}</span>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
-                  {PRICING_TIERS.core.duration} days access with {formatLimit(PRICING_TIERS.core.limits[feature])} {featureName}
+                  30-day sprint with {formatLimit(PRICING_TIERS.core.limits[feature])} {featureName}
                 </p>
                 <Button
                   variant="primary"
@@ -208,7 +208,7 @@ export function UsageLimitModal({
                   <span className="text-lg font-bold">{getFormattedPrice('full')}</span>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
-                  {PRICING_TIERS.full.duration} days access with {formatLimit(PRICING_TIERS.full.limits[feature])} {featureName}
+                  90-day campaign with {formatLimit(PRICING_TIERS.full.limits[feature])} {featureName}
                 </p>
                 <Button
                   variant="primary"
