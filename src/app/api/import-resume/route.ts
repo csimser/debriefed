@@ -12,6 +12,8 @@ const RESUME_PROMPT = `You are a resume parser. Extract ALL structured data from
 
 {
   "contact": {
+    "first_name": "string or null",
+    "last_name": "string or null",
     "phone": "string or null",
     "city": "string or null",
     "state": "2-letter state code or null",
@@ -62,7 +64,8 @@ Rules:
 - Education: only include REAL degrees (Bachelor, Master, MBA, Associate, Doctorate, High School, Certificate). Do NOT create entries for professional training, certifications, or military schools — those go in certifications.
 - Certifications: include professional licenses, military training completions, and certificates. Include the issuing organization if stated.
 - Skills: extract actual skill names only. Do NOT include section headers, page numbers, formatting artifacts, or individual words from paragraph text. Each skill should be a real, recognizable competency (e.g. "Project Management", "Python", "Budget Analysis").
-- Do NOT include names, emails, or SSNs in the output
+- Extract the person's first_name and last_name from the resume header
+- Do NOT include SSNs or email addresses in the output
 - Return ONLY a JSON object, no markdown, no backticks, no explanation`
 
 /**

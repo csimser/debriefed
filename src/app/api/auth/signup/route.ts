@@ -102,29 +102,69 @@ export async function POST(req: Request) {
     }
 
     // Create initial profile with free tier + opt-in values
+    console.log(`[signup] Creating profile for ${normalizedEmail}: first_name="${formattedFirstName}", last_name="${formattedLastName}"`)
+
+    const profilePayload = {
+      user_id: userId,
+      email: normalizedEmail,
+      first_name: formattedFirstName,
+      last_name: formattedLastName,
+      ...(branch ? { branch } : {}),
+      ...(paygrade ? { paygrade } : {}),
+      subscription_tier: 'free',
+      plan: 'free',
+      onboarding_completed: false,
+      auth_method: 'otp',
+      ...(employerSharingOptIn != null ? { employer_sharing_opt_in: !!employerSharingOptIn } : {}),
+      ...(marketingOptIn != null ? { marketing_opt_in: !!marketingOptIn } : {}),
+      ...(orgId ? { org_id: orgId } : {}),
+    }
+
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .upsert({
-        user_id: userId,
-        email: normalizedEmail,
-        first_name: formattedFirstName,
-        last_name: formattedLastName,
-        ...(branch ? { branch } : {}),
-        ...(paygrade ? { paygrade } : {}),
-        subscription_tier: 'free',
-        plan: 'free',
-        onboarding_completed: false,
-        auth_method: 'otp',
-        ...(employerSharingOptIn != null ? { employer_sharing_opt_in: !!employerSharingOptIn } : {}),
-        ...(marketingOptIn != null ? { marketing_opt_in: !!marketingOptIn } : {}),
-        ...(orgId ? { org_id: orgId } : {}),
-      }, {
-        onConflict: 'user_id'
-      });
+      .upsert(profilePayload, { onConflict: 'user_id' });
 
     if (profileError) {
-      console.error('Failed to create profile:', profileError);
-      // Don't fail signup - profile will be created on first login if needed
+      console.error(`[signup] Upsert failed for ${normalizedEmail}:`, profileError.message)
+
+      // Fallback: the trigger may have created the row — try a direct UPDATE
+      const { error: updateError } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          first_name: formattedFirstName,
+          last_name: formattedLastName,
+          email: normalizedEmail,
+          ...(branch ? { branch } : {}),
+          ...(paygrade ? { paygrade } : {}),
+          auth_method: 'otp',
+          ...(employerSharingOptIn != null ? { employer_sharing_opt_in: !!employerSharingOptIn } : {}),
+          ...(marketingOptIn != null ? { marketing_opt_in: !!marketingOptIn } : {}),
+          ...(orgId ? { org_id: orgId } : {}),
+        })
+        .eq('user_id', userId)
+
+      if (updateError) {
+        console.error(`[signup] UPDATE fallback also failed for ${normalizedEmail}:`, updateError.message)
+      } else {
+        console.log(`[signup] UPDATE fallback succeeded for ${normalizedEmail}`)
+      }
+    } else {
+      console.log(`[signup] Profile upsert succeeded for ${normalizedEmail}`)
+    }
+
+    // Verify the profile has names (catch silent failures)
+    const { data: verifyProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('user_id', userId)
+      .single()
+
+    if (verifyProfile && (!verifyProfile.first_name || !verifyProfile.last_name)) {
+      console.error(`[signup] CRITICAL: Profile names empty after creation for ${normalizedEmail}. first_name="${verifyProfile.first_name}", last_name="${verifyProfile.last_name}". Attempting direct fix.`)
+      await supabaseAdmin
+        .from('profiles')
+        .update({ first_name: formattedFirstName, last_name: formattedLastName })
+        .eq('user_id', userId)
     }
 
     // Auto-add to org as member if signing up via white-label

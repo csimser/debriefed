@@ -56,6 +56,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
   const [editingBulletId, setEditingBulletId] = useState<string | null>(null)
   const [editingText, setEditingText] = useState('')
   const [retryingBulletId, setRetryingBulletId] = useState<string | null>(null)
+  const [piiWarning, setPiiWarning] = useState<string | null>(null)
   const [fetchedRemaining, setFetchedRemaining] = useState<number | undefined>(evalRemaining)
   const [fetchedLimit, setFetchedLimit] = useState<number | undefined>(evalLimit)
   const [savedCount, setSavedCount] = useState(0)
@@ -107,6 +108,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
     setRetryingBulletId(null)
     setSavedCount(0)
     setShowCloseConfirm(false)
+    setPiiWarning(null)
   }
 
   // Find best matching experience for auto-assignment
@@ -139,18 +141,62 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
     setStep('review')
   }, [findMatchingExperience])
 
+  // Convert unsupported image formats (HEIC, BMP, TIFF) to JPEG via canvas
+  const convertToSupportedFormat = async (file: File): Promise<File> => {
+    const supported = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+    if (supported.includes(file.type)) return file
+
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = img.naturalWidth
+        canvas.height = img.naturalHeight
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0)
+        canvas.toBlob(
+          (blob) => {
+            URL.revokeObjectURL(url)
+            if (blob) {
+              resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }))
+            } else {
+              reject(new Error('Could not convert image. Please save as PNG or JPEG and try again.'))
+            }
+          },
+          'image/jpeg',
+          0.92
+        )
+      }
+      img.onerror = () => {
+        URL.revokeObjectURL(url)
+        reject(new Error('Unsupported image format. Please convert to PNG or JPEG, or take a screenshot of the document.'))
+      }
+      img.src = url
+    })
+  }
+
   // Handle file selection — send full image or PDF directly (no crop step)
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (!selectedFile) return
 
     setError('')
+    setPiiWarning(null)
+
+    // File size check — 10MB limit for phone photos
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setError('File is too large (max 10MB). Try a lower resolution photo or compress the image first.')
+      return
+    }
+
     setFile(selectedFile)
     setStep('processing')
     setProcessing(true)
 
     try {
       let data
+      let response
 
       if (selectedFile.type === 'application/pdf') {
         // PDF path: base64 → /api/parse-eval
@@ -165,7 +211,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
           reader.readAsDataURL(selectedFile)
         })
 
-        const response = await fetch('/api/parse-eval', {
+        response = await fetch('/api/parse-eval', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -175,27 +221,43 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
           }),
         })
         data = await response.json()
-      } else if (selectedFile.type.startsWith('image/')) {
+      } else if (selectedFile.type.startsWith('image/') || selectedFile.name.match(/\.(heic|heif|bmp|tiff?)$/i)) {
+        // Convert unsupported formats (HEIC, BMP, TIFF) to JPEG
+        let imageFile = selectedFile
+        try {
+          imageFile = await convertToSupportedFormat(selectedFile)
+        } catch (convErr: any) {
+          setError(convErr?.message || 'Could not process this image format. Please use PNG or JPEG.')
+          setStep('upload')
+          return
+        }
+
         // Image path: send full file via FormData → /api/eval/extract
         const formData = new FormData()
-        formData.append('image', selectedFile)
+        formData.append('image', imageFile)
         formData.append('evalType', evalType)
 
-        const response = await fetch('/api/eval/extract', {
+        response = await fetch('/api/eval/extract', {
           method: 'POST',
           body: formData,
         })
         data = await response.json()
-
-        if (response.status === 403 && data.limitReached) {
-          setError(data.error || 'Eval upload limit reached')
-          setStep('upload')
-          return
-        }
       } else {
-        setError('Please upload a PDF or image file (PNG, JPG)')
+        setError('Please upload a PDF or image file (PNG, JPG, HEIC)')
         setStep('upload')
         return
+      }
+
+      // Handle limit reached (both routes return 403)
+      if (response.status === 403 && data.limitReached) {
+        setError(data.error || 'Eval upload limit reached')
+        setStep('upload')
+        return
+      }
+
+      // Capture PII warning (non-blocking)
+      if (data.piiWarning) {
+        setPiiWarning(data.piiWarning)
       }
 
       if (data.error) {
@@ -511,7 +573,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                 <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-gold/50 transition-all">
                   <input
                     type="file"
-                    accept="image/png,image/jpeg,image/*,.pdf"
+                    accept="image/png,image/jpeg,image/heic,image/heif,image/*,.pdf,.heic,.heif"
                     onChange={handleFileSelect}
                     className="hidden"
                     id="eval-upload-modal"
@@ -527,7 +589,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                       <line x1="12" y1="3" x2="12" y2="15"/>
                     </svg>
                     <p className="text-sm text-text mb-1">Click to upload</p>
-                    <p className="text-xs text-text-muted">PNG, JPG, or PDF</p>
+                    <p className="text-xs text-text-muted">PNG, JPG, HEIC, or PDF (max 10MB)</p>
                   </label>
                 </div>
                 {!evalType && (
@@ -535,23 +597,23 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                 )}
               </div>
 
-              {/* PII warning — compact */}
-              <div className="flex items-start gap-2 p-3 bg-status-red/5 border border-status-red/20 rounded-lg">
-                <svg className="w-4 h-4 text-status-red flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              {/* Privacy note — non-scary */}
+              <div className="flex items-start gap-2 p-3 bg-status-amber/5 border border-status-amber/20 rounded-lg">
+                <svg className="w-4 h-4 text-status-amber flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
                 <p className="text-xs text-text-muted">
-                  <strong className="text-status-red">Redact PII</strong> — Remove SSN, DODID, DOB, and personal contact info before uploading.
+                  <strong className="text-status-amber">Privacy Note</strong> — We&apos;ll automatically redact any SSN, DODID, or personal contact info we detect. You can also crop it out before uploading.
                 </p>
               </div>
 
-              {/* Pro tip */}
+              {/* Phone photo tip */}
               <div className="flex items-start gap-2 p-3 bg-bg-tertiary rounded-lg border border-border">
                 <svg className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p className="text-xs text-text-muted">
-                  <strong className="text-gold">Tip:</strong> Screenshot the write-up section as a PNG for best results.
+                  <strong className="text-gold">Tip:</strong> You can upload a photo from your phone. Block 41/43 PII is not required — crop it out or we&apos;ll handle it automatically.
                 </p>
               </div>
             </div>
@@ -569,6 +631,20 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
           {/* ── REVIEW STEP ── */}
           {step === 'review' && (
             <div className="space-y-4">
+              {/* PII auto-redaction warning */}
+              {piiWarning && (
+                <div className="p-3 bg-status-amber/10 border border-status-amber/30 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <svg className="w-4 h-4 text-status-amber flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <p className="text-xs text-text-muted">
+                      <strong className="text-status-amber">PII Detected &amp; Redacted:</strong> {piiWarning}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Accept All + counter */}
               <div className="flex items-center justify-between">
                 <button

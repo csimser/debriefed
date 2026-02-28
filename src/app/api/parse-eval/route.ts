@@ -345,6 +345,7 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
     let bullets: any[] = []
     let evalPeriod: { startDate: string | null; endDate: string | null } = { startDate: null, endDate: null }
     let jobTitle: string | null = null
+    let piiWarning: string | null = null
 
     try {
       // Handle potential markdown code blocks
@@ -375,18 +376,16 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
         jobTitle = parsed.jobTitle || null
       }
 
-      // Scan extracted text for critical PII (SSN, DODID) BEFORE returning
+      // Scan extracted text for critical PII (SSN, DODID) — warn, don't block
+      // PII patterns are auto-redacted by cleanText() during post-processing below
       const allText = bullets
         .map((b: any) => `${b.original || ''} ${b.translated || ''}`)
         .join(' ')
 
       const piiCheck = hasCriticalPII(allText)
       if (piiCheck.blocked) {
-        return NextResponse.json({
-          error: piiCheck.reason,
-          piiBlocked: true,
-          bullets: [],
-        }, { status: 400 })
+        const detected = (piiCheck.reason || '').replace(/\.\s*Please redact and retry\.?/, '')
+        piiWarning = `We detected personal information in your document (${detected}). It has been automatically redacted. Your original document was not stored.`
       }
     } catch (err) {
       console.error('JSON parse error:', err)
@@ -488,6 +487,7 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
       evalPeriod,
       jobTitle,
       model_used,
+      ...(piiWarning ? { piiWarning } : {}),
     })
 
     after(async () => {

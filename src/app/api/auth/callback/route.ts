@@ -45,6 +45,13 @@ export async function POST(request: Request) {
       // Create profile from user metadata
       const metadata = user.user_metadata || {}
 
+      console.log(`[callback] No profile found for ${user.email}, creating from metadata:`, {
+        has_first_name: !!metadata.first_name,
+        has_last_name: !!metadata.last_name,
+        has_full_name: !!metadata.full_name,
+        has_branch: !!metadata.branch,
+      })
+
       // Read first_name and last_name directly from metadata (new signup flow)
       // Fall back to parsing full_name for backwards compatibility
       const fullName = metadata.full_name || ''
@@ -55,6 +62,10 @@ export async function POST(request: Request) {
       const firstName = capitalizeName(rawFirstName)
       const lastName = capitalizeName(rawLastName)
 
+      if (!firstName || !lastName) {
+        console.error(`[callback] WARNING: Empty name for ${user.email} — firstName="${firstName}", lastName="${lastName}", metadata:`, JSON.stringify(metadata))
+      }
+
       // Branch is already stored in full format (e.g., "U.S. Navy") from signup
       const branch = metadata.branch || ''
       const paygrade = metadata.paygrade || ''
@@ -62,7 +73,7 @@ export async function POST(request: Request) {
       // Auto-populate rank from paygrade
       const rank = branch && paygrade ? getRankFromPaygrade(branch, paygrade) : ''
 
-      await supabase
+      const { error: insertError } = await supabase
         .from('profiles')
         .insert({
           user_id: user.id,
@@ -82,6 +93,12 @@ export async function POST(request: Request) {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
+
+      if (insertError) {
+        console.error(`[callback] Profile insert failed for ${user.email}:`, insertError.message)
+      } else {
+        console.log(`[callback] Profile created for ${user.email}: first_name="${firstName}", last_name="${lastName}"`)
+      }
 
       // Track IP for new signup (detect duplicate accounts)
       await trackUserIP(user.id, ip, userAgent, 'signup')
@@ -167,6 +184,12 @@ export async function GET(request: Request) {
       // Create profile from user metadata
       const metadata = user.user_metadata || {}
 
+      console.log(`[callback-GET] No profile found for ${user.email}, creating from metadata:`, {
+        has_first_name: !!metadata.first_name,
+        has_last_name: !!metadata.last_name,
+        has_full_name: !!metadata.full_name,
+      })
+
       const fullName = metadata.full_name || ''
       const rawFirstName = metadata.first_name || fullName.trim().split(' ')[0] || ''
       const rawLastName = metadata.last_name || fullName.trim().split(' ').slice(1).join(' ') || ''
@@ -175,11 +198,15 @@ export async function GET(request: Request) {
       const firstName = capitalizeName(rawFirstName)
       const lastName = capitalizeName(rawLastName)
 
+      if (!firstName || !lastName) {
+        console.error(`[callback-GET] WARNING: Empty name for ${user.email} — firstName="${firstName}", lastName="${lastName}"`)
+      }
+
       const branch = metadata.branch || ''
       const paygrade = metadata.paygrade || ''
       const rank = branch && paygrade ? getRankFromPaygrade(branch, paygrade) : ''
 
-      await supabase
+      const { error: insertError } = await supabase
         .from('profiles')
         .insert({
           user_id: user.id,
@@ -199,6 +226,12 @@ export async function GET(request: Request) {
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
+
+      if (insertError) {
+        console.error(`[callback-GET] Profile insert failed for ${user.email}:`, insertError.message)
+      } else {
+        console.log(`[callback-GET] Profile created for ${user.email}: first_name="${firstName}", last_name="${lastName}"`)
+      }
 
       // Track IP for new signup
       await trackUserIP(user.id, ip, userAgent, 'signup')

@@ -216,6 +216,14 @@ Use this context to make translations more relevant to their career path.\n`
       return NextResponse.json({ error: 'No image provided' }, { status: 400 })
     }
 
+    // Validate image format is supported by Claude Vision
+    const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp']
+    if (!supportedImageTypes.includes(imageFile.type)) {
+      return NextResponse.json({
+        error: `Unsupported image format (${imageFile.type || 'unknown'}). Please convert to PNG or JPEG first, or take a screenshot of the document.`,
+      }, { status: 400 })
+    }
+
     // Convert image to base64
     const bytes = await imageFile.arrayBuffer()
     const base64 = Buffer.from(bytes).toString('base64')
@@ -297,6 +305,7 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
       evalPeriod: { startDate: null as string | null, endDate: null as string | null },
       jobTitle: null as string | null,
     }
+    let piiWarning: string | null = null
 
     try {
       // Try to parse as JSON - handle potential markdown code blocks
@@ -329,11 +338,8 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
 
         const piiCheck = hasCriticalPII(allText)
         if (piiCheck.blocked) {
-          return NextResponse.json({
-            error: piiCheck.reason,
-            piiBlocked: true,
-            bullets: [],
-          }, { status: 400 })
+          const detected = (piiCheck.reason || '').replace(/\.\s*Please redact and retry\.?/, '')
+          piiWarning = `We detected personal information in your document (${detected}). It has been automatically redacted. Your original document was not stored.`
         }
       }
     } catch (parseError) {
@@ -443,6 +449,7 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
       evalType,
       extractedAt: new Date().toISOString(),
       model_used,
+      ...(piiWarning ? { piiWarning } : {}),
     })
 
     after(async () => {
