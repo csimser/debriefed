@@ -1,6 +1,9 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
+import { ModalShell } from '@/components/ui/ModalShell'
+import { PRICING_TIERS, getFormattedPrice } from '@/lib/pricing-config'
+import { trackEvent } from '@/lib/analytics'
 
 /* ──────────────────────────── Context ──────────────────────────── */
 
@@ -48,30 +51,46 @@ export function UpgradeLink({
 
 /* ──────────────────────── Modal content ────────────────────────── */
 
+const freeLimits = PRICING_TIERS.free.limits
+const FREE_FEATURES = [
+  `${freeLimits.private_resumes} Resumes`,
+  `${freeLimits.federal_resumes} Federal Resumes`,
+  `${freeLimits.cover_letters} Cover Letters (template only)`,
+  `${freeLimits.job_match_analysis} Job Match Analyses (dictionary only)`,
+  'No AI Summaries',
+  'No LinkedIn AI Tools',
+  `${freeLimits.downloads} Downloads`,
+  '1 Template',
+]
+
+const coreLimits = PRICING_TIERS.core.limits
+const coreDur = PRICING_TIERS.core.duration
 const CORE_FEATURES = [
-  '10 Resumes / 30 days',
-  '5 Federal Resumes / 30 days',
-  '10 AI Cover Letters / 30 days',
-  '10 AI Job Match Analyses / 30 days',
+  `${coreLimits.private_resumes} Resumes / ${coreDur} days`,
+  `${coreLimits.federal_resumes} Federal Resumes / ${coreDur} days`,
+  `${coreLimits.cover_letters} AI Cover Letters / ${coreDur} days`,
+  `${coreLimits.job_match_analysis} AI Job Match Analyses / ${coreDur} days`,
   'AI Summary Generation',
   'AI LinkedIn Headlines & Summaries',
-  '10 Downloads / 30 days',
-  '10 Eval Uploads / 30 days',
-  '10 Cover Letter Exports / 30 days',
+  `${coreLimits.downloads} Downloads / ${coreDur} days`,
+  `${coreLimits.eval_uploads} Eval Uploads / ${coreDur} days`,
+  `${coreLimits.cover_letter_exports} Cover Letter Exports / ${coreDur} days`,
   'Unlimited Imports',
   'All 6 Templates',
 ]
 
+const fullLimits = PRICING_TIERS.full.limits
+const fullDur = PRICING_TIERS.full.duration
 const FULL_FEATURES = [
   'Unlimited Resumes (7/day)',
   'Unlimited Federal Resumes (7/day)',
-  '200 AI Cover Letters / 90 days (15/day)',
-  '200 AI Job Match / 90 days (15/day)',
+  `${fullLimits.cover_letters} AI Cover Letters / ${fullDur} days (15/day)`,
+  `${fullLimits.job_match_analysis} AI Job Match / ${fullDur} days (15/day)`,
   'Unlimited AI Summaries',
   'Unlimited LinkedIn Tools',
   'LinkedIn Profile Analysis & Recommendations',
   'Unlimited Downloads (10/day)',
-  '30 Eval Uploads / 90 days (10/day)',
+  `${fullLimits.eval_uploads} Eval Uploads / ${fullDur} days (10/day)`,
   'All 6 Templates',
 ]
 
@@ -79,7 +98,12 @@ function UpgradeModalContent({ onClose }: { onClose: () => void }) {
   const [loading, setLoading] = useState<'core' | 'full' | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    trackEvent('upgrade_modal_shown')
+  }, [])
+
   const handleCheckout = async (tier: 'core' | 'full') => {
+    trackEvent('upgrade_modal_checkout_click', { tier })
     setLoading(tier)
     setError(null)
     try {
@@ -108,15 +132,8 @@ function UpgradeModalContent({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-bg-secondary border border-border rounded-xl shadow-2xl overflow-hidden">
+    <ModalShell isOpen={true} onClose={onClose} title="Choose Your Mission Package" maxWidth="max-w-3xl" backdrop="bg-black/60 backdrop-blur-sm">
+      <div className="bg-bg-secondary border border-border rounded-xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="px-6 pt-6 pb-4 flex items-start justify-between">
           <div>
@@ -145,14 +162,41 @@ function UpgradeModalContent({ onClose }: { onClose: () => void }) {
           </div>
         )}
 
-        {/* Two-column grid */}
-        <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Social proof */}
+        <div className="mx-6 mb-4 text-center">
+          <p className="text-xs text-text-muted">
+            Join veterans who&apos;ve already translated their service into civilian careers with Debriefed.
+          </p>
+        </div>
+
+        {/* Three-column grid */}
+        <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Free — Current Plan */}
+          <div className="border border-border rounded-lg p-5 flex flex-col relative opacity-70">
+            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-bg-tertiary text-text-muted font-mono text-[9px] font-bold px-2.5 py-0.5 tracking-wider border border-border rounded-full">
+              CURRENT PLAN
+            </div>
+            <div className="font-heading text-lg font-bold uppercase mb-0.5">Free</div>
+            <div className="mb-3">
+              <span className="font-heading text-2xl font-bold text-text-muted">$0</span>
+            </div>
+            <p className="text-xs text-text-muted mb-4">Basic tools to get started</p>
+            <ul className="flex-1 space-y-1.5 mb-5">
+              {FREE_FEATURES.map((f) => (
+                <li key={f} className="flex items-center gap-2 text-sm text-text-muted">
+                  <span className="text-text-muted font-bold text-xs">{f.startsWith('No ') ? '\u2013' : '\u2713'}</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {/* Core */}
-          <div className="border border-gold rounded-lg p-5 flex flex-col">
+          <div className="border border-border rounded-lg p-5 flex flex-col">
             <div className="font-heading text-lg font-bold uppercase mb-0.5">Core</div>
             <div className="mb-3">
-              <span className="font-heading text-2xl font-bold text-gold">$25</span>
-              <span className="text-sm text-text-muted ml-1">/ 30 days</span>
+              <span className="font-heading text-2xl font-bold text-gold">{getFormattedPrice('core')}</span>
+              <span className="text-sm text-text-muted ml-1">/ {PRICING_TIERS.core.duration} days</span>
             </div>
             <p className="text-xs text-text-muted mb-4">AI-powered tools to land the job</p>
             <ul className="flex-1 space-y-1.5 mb-5">
@@ -166,21 +210,21 @@ function UpgradeModalContent({ onClose }: { onClose: () => void }) {
             <button
               onClick={() => handleCheckout('core')}
               disabled={loading !== null}
-              className="w-full py-3 bg-gold border border-gold text-bg-primary font-heading text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-gold-bright transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 border border-gold text-gold font-heading text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-gold hover:text-bg-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading === 'core' ? 'Processing...' : 'Upgrade to Core \u2192'}
             </button>
           </div>
 
-          {/* Full */}
-          <div className="border border-border rounded-lg p-5 flex flex-col relative">
+          {/* Full — Best Value */}
+          <div className="border border-gold rounded-lg p-5 flex flex-col relative">
             <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-bg-tertiary text-gold font-mono text-[9px] font-bold px-2.5 py-0.5 tracking-wider border border-gold rounded-full">
               BEST VALUE
             </div>
             <div className="font-heading text-lg font-bold uppercase mb-0.5">Full</div>
             <div className="mb-3">
-              <span className="font-heading text-2xl font-bold text-gold">$50</span>
-              <span className="text-sm text-text-muted ml-1">/ 90 days</span>
+              <span className="font-heading text-2xl font-bold text-gold">{getFormattedPrice('full')}</span>
+              <span className="text-sm text-text-muted ml-1">/ {PRICING_TIERS.full.duration} days</span>
             </div>
             <p className="text-xs text-text-muted mb-4">Unlimited AI for serious job searches</p>
             <ul className="flex-1 space-y-1.5 mb-5">
@@ -194,13 +238,13 @@ function UpgradeModalContent({ onClose }: { onClose: () => void }) {
             <button
               onClick={() => handleCheckout('full')}
               disabled={loading !== null}
-              className="w-full py-3 border border-gold text-gold font-heading text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-gold hover:text-bg-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-gold border border-gold text-bg-primary font-heading text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-gold-bright transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading === 'full' ? 'Processing...' : 'Upgrade to Full \u2192'}
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </ModalShell>
   )
 }

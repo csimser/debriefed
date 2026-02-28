@@ -70,9 +70,13 @@ interface CertificationsSectionProps {
   certifications: any[]
   userMOS?: string
   onUpdate: (certifications: any[]) => void
+  isOpen?: boolean
+  onToggle?: () => void
+  summary?: string
+  hint?: string
 }
 
-export function CertificationsSection({ userId, certifications, userMOS, onUpdate }: CertificationsSectionProps) {
+export function CertificationsSection({ userId, certifications, userMOS, onUpdate, isOpen, onToggle, summary, hint }: CertificationsSectionProps) {
   const [adding, setAdding] = useState(false)
   const [newCert, setNewCert] = useState({ name: '', issuing_organization: '', issue_date: '', expiration_date: '' })
   const [showMOSRecommendations, setShowMOSRecommendations] = useState(true)
@@ -204,6 +208,10 @@ export function CertificationsSection({ userId, certifications, userMOS, onUpdat
     <CollapsibleSection
       title="Certifications"
       icon="✦"
+      isOpen={isOpen}
+      onToggle={onToggle}
+      summary={summary}
+      hint={hint}
       actions={<Button size="sm" variant="secondary" onClick={() => setAdding(true)}>+ Add</Button>}
     >
       {/* MOS-Based Recommendations */}

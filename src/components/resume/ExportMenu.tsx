@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
 import { useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { trackEvent } from '@/lib/analytics'
 
 interface ExportMenuProps {
   resumeId: string
@@ -16,9 +17,11 @@ interface ExportMenuProps {
   isUntitled?: boolean
   downloadRemaining?: number
   downloadLimit?: number
+  onBeforeExport?: () => Promise<void>
+  compact?: boolean
 }
 
-export function ExportMenu({ resumeId, resumeName, userId, template, resumeType = 'private', onLimitReached, isTemplateLocked, isUntitled, downloadRemaining, downloadLimit }: ExportMenuProps) {
+export function ExportMenu({ resumeId, resumeName, userId, template, resumeType = 'private', onLimitReached, isTemplateLocked, isUntitled, downloadRemaining, downloadLimit, onBeforeExport, compact }: ExportMenuProps) {
   const { triggerPostActionModal } = usePostActionModal()
   const { openUpgradeModal } = useUpgradeModal()
   const [isOpen, setIsOpen] = useState(false)
@@ -67,6 +70,11 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
     setIsOpen(false)
 
     try {
+      // Force save before export to avoid stale data
+      if (onBeforeExport) {
+        await onBeforeExport()
+      }
+
       const res = await fetch('/api/export-resume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,6 +88,7 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
         // Handle limit reached errors
         if (res.status === 403 && data.limitReached) {
           setLimitError(data.error)
+          trackEvent('download_gate_shown', { feature: 'downloads', tier: data.tier || 'unknown', format, resumeType })
           if (onLimitReached) {
             onLimitReached(data.error, data.tier)
           }
@@ -153,7 +162,10 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
           <p className="text-sm text-status-amber mb-2">{limitError}</p>
           <Button
             size="sm"
-            onClick={openUpgradeModal}
+            onClick={() => {
+              trackEvent('download_gate_upgrade_click', { feature: 'downloads', resumeType })
+              openUpgradeModal()
+            }}
           >
             Upgrade Now
           </Button>
@@ -168,23 +180,24 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
 
       <div className="flex flex-col items-end gap-1">
         <Button
-          variant="secondary"
+          variant={compact ? 'primary' : 'secondary'}
+          size={compact ? 'sm' : undefined}
           onClick={() => setIsOpen(!isOpen)}
           disabled={exporting !== null || isTemplateLocked || isUntitled}
         >
-          {exporting ? `Exporting ${exporting.toUpperCase()}...` : '↓ Export'}
+          {exporting ? (compact ? '...' : `Exporting ${exporting.toUpperCase()}...`) : 'Export'}
         </Button>
-        {isTemplateLocked && (
+        {!compact && isTemplateLocked && (
           <span className="text-[10px] text-status-amber whitespace-nowrap">
             Switch to a free template or upgrade
           </span>
         )}
-        {isUntitled && !isTemplateLocked && (
+        {!compact && isUntitled && !isTemplateLocked && (
           <span className="text-[10px] text-gold whitespace-nowrap">
             Name your resume to export
           </span>
         )}
-        {downloadRemaining !== undefined && downloadLimit !== undefined && !isTemplateLocked && !isUntitled && (
+        {!compact && downloadRemaining !== undefined && downloadLimit !== undefined && !isTemplateLocked && !isUntitled && (
           downloadLimit >= 999
             ? <span className="text-[10px] text-text-dim whitespace-nowrap">Downloads: ∞</span>
             : downloadRemaining <= 0

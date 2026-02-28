@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { PostActionModal, PostActionLink } from './PostActionModal'
+import { PRICING_TIERS } from '@/lib/pricing-config'
 
 // ─── Modal Configurations ────────────────────────────────────────────────────
 
@@ -107,6 +108,9 @@ interface ProviderProps {
 export function PostActionModalProvider({ children, userId }: ProviderProps) {
   // Track which features have been used (from DB) — keyed by feature name from usage_tracking
   const [usedFeatures, setUsedFeatures] = useState<Set<string>>(new Set())
+  // Feature usage counts for remaining calculation
+  const [featureUsageCounts, setFeatureUsageCounts] = useState<Record<string, number>>({})
+  const [userTier, setUserTier] = useState<string>('free')
   // Track which modals have been dismissed this session (keyed by featureKey)
   const [sessionDismissals, setSessionDismissals] = useState<Set<string>>(new Set())
   // Currently active modal config, or null
@@ -136,12 +140,23 @@ export function PostActionModalProvider({ children, userId }: ProviderProps) {
         .gt('count', 0)
 
       const features = new Set<string>()
+      const counts: Record<string, number> = {}
 
       if (usageRows) {
         for (const row of usageRows) {
           features.add(row.feature)
+          counts[row.feature] = row.count
         }
       }
+      setFeatureUsageCounts(counts)
+
+      // Get user tier
+      const { data: profileTier } = await supabase
+        .from('profiles')
+        .select('tier')
+        .eq('user_id', userId)
+        .single()
+      if (profileTier?.tier) setUserTier(profileTier.tier)
 
       // Also check for federal resumes specifically (user may have one but not tracked via usage_tracking)
       const { data: federalResumes } = await supabase
@@ -179,6 +194,16 @@ export function PostActionModalProvider({ children, userId }: ProviderProps) {
     && feedbackIgnoreCount < 3
     && countDistinctFeaturesUsed(usedFeatures) >= 2
 
+  // Calculate remaining uses for a feature
+  const getRemainingForFeature = useCallback((featureCheck: string): number | undefined => {
+    const tierConfig = PRICING_TIERS[userTier as keyof typeof PRICING_TIERS]
+    if (!tierConfig) return undefined
+    const limit = tierConfig.limits[featureCheck as keyof typeof tierConfig.limits]
+    if (limit === undefined || limit >= 999) return undefined // unlimited
+    const used = featureUsageCounts[featureCheck] || 0
+    return Math.max(0, limit - used)
+  }, [userTier, featureUsageCounts])
+
   const triggerPostActionModal = useCallback((featureKey: string) => {
     if (!loaded) return
 
@@ -192,9 +217,12 @@ export function PostActionModalProvider({ children, userId }: ProviderProps) {
     if (usedFeatures.has(config.primaryCTA.featureCheck)) return
 
     // Filter secondary links to only features the user hasn't tried
-    const filteredSecondaryLinks = config.secondaryLinks.filter(
-      (link) => !usedFeatures.has(link.featureCheck)
-    )
+    const filteredSecondaryLinks = config.secondaryLinks
+      .filter((link) => !usedFeatures.has(link.featureCheck))
+      .map((link) => ({
+        ...link,
+        remaining: getRemainingForFeature(link.featureCheck),
+      }))
 
     setFeedbackShownOnCurrentModal(false)
 
@@ -202,10 +230,14 @@ export function PostActionModalProvider({ children, userId }: ProviderProps) {
       featureKey,
       config: {
         ...config,
+        primaryCTA: {
+          ...config.primaryCTA,
+          remaining: getRemainingForFeature(config.primaryCTA.featureCheck),
+        },
         secondaryLinks: filteredSecondaryLinks,
       },
     })
-  }, [loaded, sessionDismissals, usedFeatures])
+  }, [loaded, sessionDismissals, usedFeatures, getRemainingForFeature])
 
   const handleDismiss = useCallback(() => {
     if (activeModal) {

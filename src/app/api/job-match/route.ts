@@ -5,6 +5,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logActivity } from '@/lib/usage-tracking'
 import { withAISecurity, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+import { dictionaryTranslate } from '@/lib/translation-engine'
 import { PRIMARY_MODEL } from '@/lib/ai-model'
 import { captureFullTextOutput, type CaptureContext } from '@/lib/ai-translation-capture'
 import crypto from 'crypto'
@@ -122,8 +123,9 @@ export const POST = withAISecurity<JobMatchInput>(
       return NextResponse.json({ analysis: cached.result, cached: true })
     }
 
-    // Build resume text from content
-    const resumeText = buildResumeText(resumeContent)
+    // Build resume text from content, pre-translate military terms
+    const rawResumeText = buildResumeText(resumeContent)
+    const { translated: resumeText } = await dictionaryTranslate(rawResumeText)
     const candidateProfile = buildCandidateProfile(resumeContent)
 
     // Fetch O*NET context for job title (async, with timeout)

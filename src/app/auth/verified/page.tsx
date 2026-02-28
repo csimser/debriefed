@@ -1,7 +1,16 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 
-export default function EmailVerifiedPage() {
+export default async function EmailVerifiedPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
   return (
     <div className="min-h-screen bg-bg-primary flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -27,7 +36,7 @@ export default function EmailVerifiedPage() {
           {/* Message */}
           <p className="text-text-muted mb-8">
             Your email has been verified successfully.
-            You're all set to start using Debriefed.
+            You&apos;re all set to start using Debriefed.
           </p>
 
           {/* CTA Button */}
@@ -40,7 +49,7 @@ export default function EmailVerifiedPage() {
 
           {/* Secondary info */}
           <p className="text-text-dim text-sm mt-6">
-            Welcome aboard. Let's get you debriefed.
+            Welcome aboard. Let&apos;s get you debriefed.
           </p>
         </Card>
       </div>

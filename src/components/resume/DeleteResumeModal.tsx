@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { ModalShell } from '@/components/ui/ModalShell'
 
 interface DeleteResumeModalProps {
   isOpen: boolean
@@ -22,8 +23,6 @@ export function DeleteResumeModal({
   const supabase = createClient()
   const [deleting, setDeleting] = useState(false)
   const [confirmText, setConfirmText] = useState('')
-
-  if (!isOpen) return null
 
   const handleDelete = async () => {
     if (confirmText !== 'DELETE') {
@@ -60,8 +59,8 @@ export function DeleteResumeModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-end md:items-center justify-center z-50">
-      <div className="bg-bg-card border-t md:border border-border rounded-t-2xl md:rounded-lg w-full md:max-w-md shadow-xl md:mx-4">
+    <ModalShell isOpen={isOpen} onClose={handleClose} title="Delete Resume" maxWidth="max-w-md">
+      <div className="bg-bg-card border-t md:border border-border rounded-t-2xl md:rounded-lg w-full shadow-xl">
         {/* Mobile drag indicator */}
         <div className="md:hidden w-12 h-1 bg-border rounded-full mx-auto mt-3" />
 
@@ -132,6 +131,6 @@ export function DeleteResumeModal({
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   )
 }

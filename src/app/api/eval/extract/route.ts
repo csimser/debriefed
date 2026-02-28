@@ -4,6 +4,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
 import { logApiUsage } from '@/lib/usage-tracking'
 import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary'
+import { dictionaryTranslate } from '@/lib/translation-engine'
 import { hasCriticalPII, redactMinorPII } from '@/lib/pii-scanner'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
@@ -352,7 +353,7 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
     }
 
     // Post-process bullets with our dictionary for any terms Claude missed
-    result.bullets = result.bullets.map(bullet => {
+    result.bullets = await Promise.all(result.bullets.map(async (bullet) => {
       const cleanText = (text: string) => {
         // Remove SSN patterns (XXX-XX-XXXX)
         text = text.replace(/\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g, '[REDACTED]')
@@ -409,9 +410,16 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
       const cleanedOriginal = cleanText(bullet.original || '')
       const cleanedTranslated = cleanText(bullet.translated || '')
 
-      // Apply military dictionary translation
-      const { translated: processedOriginal, unflaggedTerms: originalUnflagged } = translateMilitaryToCivilian(cleanedOriginal)
-      const { translated: processedTranslated, unflaggedTerms: translatedUnflagged } = translateMilitaryToCivilian(cleanedTranslated)
+      // Apply shared translation engine (phrase-first + jargon + constants)
+      const [dictOriginal, dictTranslated] = await Promise.all([
+        dictionaryTranslate(cleanedOriginal),
+        dictionaryTranslate(cleanedTranslated),
+      ])
+      const processedOriginal = dictOriginal.translated
+      const processedTranslated = dictTranslated.translated
+      // Also run legacy function for unflagged term detection
+      const { unflaggedTerms: originalUnflagged } = translateMilitaryToCivilian(processedOriginal)
+      const { unflaggedTerms: translatedUnflagged } = translateMilitaryToCivilian(processedTranslated)
 
       return {
         ...bullet,
@@ -421,7 +429,7 @@ Return ONLY the JSON object, no other text or markdown formatting.`,
         skills: bullet.skills || [],
         unflaggedTerms: [...new Set([...originalUnflagged, ...translatedUnflagged])],
       }
-    }).filter(b => b.translated && b.translated.length > 10)
+    })).then(bullets => bullets.filter(b => b.translated && b.translated.length > 10))
 
     // DO NOT store the image - only return extracted data
     // The original image data is discarded after this request completes

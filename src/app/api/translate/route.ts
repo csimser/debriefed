@@ -6,6 +6,7 @@ import { translateTerm } from '@/lib/debriefed-token-saver/termLookup'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { callWithEscalation, getModelString } from '@/lib/ai-model'
 import { captureTermPairs, type TermPair, type CaptureContext } from '@/lib/ai-translation-capture'
+import { dictionaryTranslate } from '@/lib/translation-engine'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -130,7 +131,10 @@ Only include terms you actually changed. Do not include terms that are already c
       }
     }
 
-    // For full bullets, pre-translate known terms to provide context to AI
+    // Pre-translate full bullet using shared engine (phrase-first + jargon + constants)
+    const { translated: preTranslated, matchedTerms } = await dictionaryTranslate(trimmed)
+
+    // Also do word-level lookup for AI context
     const words = trimmed.split(/\s+/)
     const knownTranslations: string[] = []
     for (const word of words) {
@@ -142,8 +146,15 @@ Only include terms you actually changed. Do not include terms that are already c
         }
       }
     }
+    // Add matched terms from shared engine
+    for (const mt of matchedTerms) {
+      const entry = `${mt.military} = ${mt.civilian}`
+      if (!knownTranslations.includes(entry)) {
+        knownTranslations.push(entry)
+      }
+    }
     const termContext = knownTranslations.length > 0
-      ? `\nKnown term translations (use these): ${knownTranslations.join('; ')}`
+      ? `\nKnown term translations (use these): ${knownTranslations.join('; ')}\nPre-translated version: ${preTranslated}`
       : ''
 
     // Try local crosswalk data first, then fall back to O*NET API

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { CivilianTitleSuggestions } from './CivilianTitleSuggestions'
+import { ModalShell } from '@/components/ui/ModalShell'
 
 interface ExtractedBullet {
   original: string
@@ -48,8 +49,6 @@ export function BulletAssignmentModal({
     end_date: '',
   })
 
-  if (!isOpen) return null
-
   const handleSave = () => {
     if (mode === 'select' && selectedExpId) {
       onAssign(selectedExpId)
@@ -69,8 +68,8 @@ export function BulletAssignmentModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-bg-card border border-border rounded-lg w-full max-w-lg shadow-xl">
+    <ModalShell isOpen={isOpen} onClose={handleClose} title="Save Extracted Bullets">
+      <div className="bg-bg-card border border-border rounded-lg w-full shadow-xl">
         {/* Header */}
         <div className="p-6 border-b border-border">
           <h2 className="font-heading text-lg font-bold">Save Extracted Bullets</h2>
@@ -272,6 +271,6 @@ export function BulletAssignmentModal({
           </button>
         </div>
       </div>
-    </div>
+    </ModalShell>
   )
 }

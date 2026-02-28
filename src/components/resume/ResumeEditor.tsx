@@ -1,19 +1,22 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { ResumeForm } from './ResumeForm'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { ResumeForm, isSectionComplete } from './ResumeForm'
 import { ResumePreview } from './ResumePreview'
+import { TemplateSelector } from './TemplateSelector'
 import { DeleteResumeModal } from './DeleteResumeModal'
 import { ExportMenu } from './ExportMenu'
-import { PageLengthIndicator, useContentHeight } from './PageLengthIndicator'
+import { PageLengthIndicator, PageBreakLine, useContentHeight } from './PageLengthIndicator'
 import { FederalTrimSuggestions } from './FederalTrimSuggestions'
+import { FederalCompletenessChecker } from './FederalCompletenessChecker'
+import { VersionHistoryPanel } from './VersionHistoryPanel'
 import { estimateFederalOverflow } from '@/lib/resume/federalTrimmer'
 
+import { AutosaveIndicator } from '@/components/AutosaveIndicator'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
 import { createClient } from '@/lib/supabase/client'
-import { TEMPLATES, SELECTABLE_TEMPLATES, TemplateId, resolveTemplate, isTemplateFreeTier } from '@/lib/templates'
+import { TEMPLATES, TemplateId, resolveTemplate, isTemplateFreeTier } from '@/lib/templates'
 import { getUserTier, isPaidTier, TIER_LIMITS } from '@/lib/tier-utils'
 import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
 
@@ -107,6 +110,50 @@ function isUntitledName(name: string): boolean {
   return n === 'untitled resume' || n === 'untitled' || n === ''
 }
 
+// Compute resume completeness from section checks
+function getResumeCompleteness(content: any): number {
+  const sections = ['contact', 'target', 'summary', 'experience', 'education', 'skills']
+  let done = 0
+  for (const s of sections) {
+    if (isSectionComplete(content, s)) done++
+  }
+  return Math.round((done / sections.length) * 100)
+}
+
+// Pick the first incomplete section to auto-open
+function getInitialOpenSection(content: any): string | null {
+  const order = ['contact', 'target', 'summary', 'experience', 'education', 'skills']
+  for (const s of order) {
+    if (!isSectionComplete(content, s)) return s
+  }
+  return 'experience'
+}
+
+// Circular completeness badge
+function CompletenessRing({ value }: { value: number }) {
+  const r = 14
+  const circ = 2 * Math.PI * r
+  const offset = circ - (value / 100) * circ
+  const color = value >= 100 ? 'text-status-green' : value >= 60 ? 'text-gold' : 'text-status-amber'
+
+  return (
+    <div className="relative w-9 h-9 flex items-center justify-center" title={`${value}% complete`}>
+      <svg className="w-9 h-9 -rotate-90" viewBox="0 0 36 36">
+        <circle cx="18" cy="18" r={r} fill="none" stroke="currentColor" strokeWidth="2.5" className="text-border" />
+        <circle
+          cx="18" cy="18" r={r} fill="none" strokeWidth="2.5"
+          stroke="currentColor"
+          strokeDasharray={circ}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          className={`${color} transition-all duration-500`}
+        />
+      </svg>
+      <span className="absolute text-[9px] font-heading font-bold">{value}%</span>
+    </div>
+  )
+}
+
 
 export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profileData, usage = { private_downloads: 0, federal_downloads: 0 } }: ResumeEditorProps) {
   const { openUpgradeModal } = useUpgradeModal()
@@ -120,6 +167,10 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
   const [showNameModal, setShowNameModal] = useState(false)
   const [newResumeName, setNewResumeName] = useState('')
   const [nameModalError, setNameModalError] = useState('')
+  const [showVersionHistory, setShowVersionHistory] = useState(false)
+
+  // Single-section accordion state
+  const [openSection, setOpenSection] = useState<string | null>(null)
 
   const supabase = createClient()
 
@@ -155,6 +206,9 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
 
   const isCurrentTemplateLocked = !isTemplateFreeTier(currentResume.template) && isFreeUser
   const isCurrentUntitled = selectedId ? isUntitledName(currentResume.name) : false
+
+  // Completeness
+  const completeness = getResumeCompleteness(currentResume.content)
 
   // Federal page-length tracking
   const previewRef = useRef<HTMLDivElement>(null)
@@ -255,6 +309,9 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
           resume_type: resume.resume_type || 'private',
           content,
         })
+
+        // Auto-open the first incomplete section
+        setOpenSection(getInitialOpenSection(content))
       }
     }
   }, [selectedId])
@@ -267,13 +324,29 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     ))
   }, [currentResume.name, selectedId])
 
-  // Auto-save
-  useEffect(() => {
-    if (!selectedId) return
+  // Skip auto-save when ProfessionalSummaryEditor already saved directly
+  const skipAutoSaveRef = useRef(false)
+  const handleSummarySaved = useCallback(() => {
+    skipAutoSaveRef.current = true
+  }, [])
 
-    const timeout = setTimeout(async () => {
-      setSaving(true)
-      await supabase
+  // Auto-save with error handling and retry
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+  const savingRef = useRef(false)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [lastSaved, setLastSaved] = useState<Date | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const retryCountRef = useRef(0)
+
+  const performSave = useCallback(async () => {
+    if (!selectedId || savingRef.current) return
+    savingRef.current = true
+    setSaving(true)
+    setSaveStatus('saving')
+    setSaveError(null)
+
+    try {
+      const { error } = await supabase
         .from('resumes')
         .update({
           name: currentResume.name,
@@ -283,11 +356,53 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
           updated_at: new Date().toISOString(),
         })
         .eq('id', selectedId)
-      setSaving(false)
-    }, 2000)
 
-    return () => clearTimeout(timeout)
-  }, [currentResume, selectedId])
+      if (error) throw error
+
+      setSaveStatus('saved')
+      setLastSaved(new Date())
+      retryCountRef.current = 0
+      setTimeout(() => setSaveStatus('idle'), 2000)
+    } catch (err: any) {
+      console.error('Auto-save failed:', err)
+      setSaveStatus('error')
+      setSaveError(err?.message || 'Failed to save')
+
+      // Retry up to 3 times with exponential backoff
+      if (retryCountRef.current < 3) {
+        retryCountRef.current++
+        const delay = Math.pow(2, retryCountRef.current) * 1000
+        debounceRef.current = setTimeout(performSave, delay)
+      }
+    } finally {
+      setSaving(false)
+      savingRef.current = false
+    }
+  }, [selectedId, currentResume, supabase])
+
+  // Force save immediately (used before export)
+  const saveNow = useCallback(async () => {
+    if (!selectedId) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    await performSave()
+  }, [selectedId, performSave])
+
+  useEffect(() => {
+    if (!selectedId) return
+
+    // ProfessionalSummaryEditor already saved this change directly — skip parent save
+    if (skipAutoSaveRef.current) {
+      skipAutoSaveRef.current = false
+      return
+    }
+
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(performSave, 2000)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [currentResume, selectedId, performSave])
 
   const handleCreate = () => {
     if (!canCreateNew) {
@@ -353,24 +468,39 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     }
   }
 
-  // Get current template display name
-  const currentTemplateName = TEMPLATES[currentResume.template]?.name || 'Classic Professional'
+  const handleSectionToggle = (section: string) => {
+    setOpenSection(prev => prev === section ? null : section)
+  }
+
+  const handleVersionRestore = (resumeData: { name: string; template: string; resume_type: string; content: any }) => {
+    setCurrentResume({
+      name: resumeData.name,
+      template: resolveTemplate(resumeData.template) as TemplateId,
+      resume_type: (resumeData.resume_type as 'private' | 'federal') || 'private',
+      content: resumeData.content,
+    })
+    // Update resumes list with restored name
+    if (selectedId) {
+      setResumes(prev => prev.map(r =>
+        r.id === selectedId ? { ...r, name: resumeData.name, template: resumeData.template, resume_type: resumeData.resume_type, content: resumeData.content } : r
+      ))
+    }
+    setShowVersionHistory(false)
+  }
 
   return (
     <div className="flex flex-col h-full">
-      {/* ── Top Bar: Resume Selector + Type Toggle + New Button ── */}
+      {/* ── Top Bar ── */}
       <div className="bg-bg-secondary border-b border-border px-3 md:px-4 py-2">
-        <div className="flex items-center justify-between gap-3">
-          {/* Left: Resume dropdown */}
+        <div className="flex items-center gap-2 md:gap-3">
+          {/* Resume dropdown — chevron trigger with +New and Delete inside */}
           <div className="relative flex-shrink-0" ref={resumeDropdownRef}>
             <button
               onClick={() => setIsResumeDropdownOpen(!isResumeDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary border border-border rounded-lg hover:border-border-bright transition-colors max-w-[240px]"
+              className="flex items-center justify-center w-8 h-8 bg-bg-tertiary border border-border rounded-lg hover:border-border-bright transition-colors"
+              title="Switch resume"
             >
-              <span className="font-heading text-sm font-semibold truncate">
-                {currentResume.name || 'Untitled Resume'}
-              </span>
-              <svg className={`w-4 h-4 text-text-muted flex-shrink-0 transition-transform ${isResumeDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 text-text-muted transition-transform ${isResumeDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
@@ -406,54 +536,127 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                     <div className="px-4 py-6 text-center text-text-muted text-sm">No resumes yet</div>
                   )}
                 </div>
+                {/* Dropdown actions */}
+                <div className="border-t border-border">
+                  <button
+                    onClick={() => {
+                      setIsResumeDropdownOpen(false)
+                      handleCreate()
+                    }}
+                    disabled={!canCreateNew}
+                    className="w-full px-4 py-3 text-left text-sm font-heading uppercase tracking-wider hover:bg-bg-tertiary transition-colors flex items-center gap-2 disabled:opacity-50"
+                  >
+                    <span className="text-gold">+</span> New Resume
+                  </button>
+                  {selectedId && (
+                    <button
+                      onClick={() => {
+                        setIsResumeDropdownOpen(false)
+                        setShowDeleteModal(true)
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm font-heading uppercase tracking-wider hover:bg-status-red/10 text-status-red/70 hover:text-status-red transition-colors flex items-center gap-2"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                      Delete Current
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
 
-          {/* Center: Type toggle + save indicator */}
-          <div className="flex items-center gap-3">
-            <div className="flex bg-bg-tertiary rounded-lg p-0.5">
-              <button
-                onClick={() => setCurrentResume(prev => ({
-                  ...prev,
-                  resume_type: 'private',
-                  template: prev.template === 'federal' ? 'classic_professional' : prev.template,
-                }))}
-                className={`px-3 py-1.5 rounded-md text-xs font-heading uppercase tracking-wider transition-all ${
-                  currentResume.resume_type === 'private'
-                    ? 'bg-gold text-bg-primary'
-                    : 'text-text-muted hover:text-text'
-                }`}
-              >
-                Private
-              </button>
-              <button
-                onClick={() => setCurrentResume(prev => ({
-                  ...prev,
-                  resume_type: 'federal',
-                  template: 'federal' as TemplateId,
-                }))}
-                className={`px-3 py-1.5 rounded-md text-xs font-heading uppercase tracking-wider transition-all ${
-                  currentResume.resume_type === 'federal'
-                    ? 'bg-gold text-bg-primary'
-                    : 'text-text-muted hover:text-text'
-                }`}
-              >
-                Federal
-              </button>
-            </div>
-            {saving && <Badge variant="amber">Saving...</Badge>}
+          {/* Inline resume name */}
+          <div className="flex-1 min-w-0">
+            <input
+              type="text"
+              value={currentResume.name}
+              onChange={(e) => setCurrentResume(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="Resume Name"
+              autoComplete="off"
+              className={`w-full bg-transparent border-0 px-0 py-1 font-heading text-sm font-bold uppercase tracking-wider text-text placeholder:text-text-dim focus:ring-0 focus:outline-none truncate ${
+                isCurrentUntitled ? 'text-gold' : ''
+              }`}
+            />
           </div>
 
-          {/* Right: + New Resume */}
-          <button
-            onClick={handleCreate}
-            disabled={!canCreateNew}
-            className="flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg text-sm font-heading uppercase tracking-wider hover:border-gold hover:text-gold transition-colors disabled:opacity-50 disabled:hover:border-border disabled:hover:text-current flex-shrink-0"
-          >
-            <span>+</span>
-            <span className="hidden sm:inline">New Resume</span>
-          </button>
+          {/* Type toggle */}
+          <div className="hidden sm:flex bg-bg-tertiary rounded-lg p-0.5 flex-shrink-0">
+            <button
+              onClick={() => setCurrentResume(prev => ({
+                ...prev,
+                resume_type: 'private',
+                template: prev.template === 'federal' ? 'classic_professional' : prev.template,
+              }))}
+              className={`px-2.5 py-1 rounded-md text-[10px] font-heading uppercase tracking-wider transition-all ${
+                currentResume.resume_type === 'private'
+                  ? 'bg-gold text-bg-primary'
+                  : 'text-text-muted hover:text-text'
+              }`}
+            >
+              Private
+            </button>
+            <button
+              onClick={() => setCurrentResume(prev => ({
+                ...prev,
+                resume_type: 'federal',
+                template: 'federal' as TemplateId,
+              }))}
+              className={`px-2.5 py-1 rounded-md text-[10px] font-heading uppercase tracking-wider transition-all ${
+                currentResume.resume_type === 'federal'
+                  ? 'bg-gold text-bg-primary'
+                  : 'text-text-muted hover:text-text'
+              }`}
+            >
+              Federal
+            </button>
+          </div>
+
+          {/* Autosave — hidden on small screens */}
+          <div className="hidden sm:block flex-shrink-0">
+            <AutosaveIndicator status={saveStatus} lastSaved={lastSaved} error={saveError} />
+          </div>
+
+          {/* Version History — clock icon */}
+          {selectedId && (
+            <button
+              onClick={() => setShowVersionHistory(true)}
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border border-border hover:border-gold hover:text-gold text-text-muted transition-colors"
+              title="Version History"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                <polyline points="12 6 12 12 16 14" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          )}
+
+          {/* Completeness ring — hidden on small screens */}
+          <div className="hidden md:block flex-shrink-0">
+            <CompletenessRing value={completeness} />
+          </div>
+
+          {/* Export — gold compact */}
+          {selectedId && (
+            <div className="flex-shrink-0">
+              <ExportMenu
+                resumeId={selectedId}
+                resumeName={currentResume.name}
+                userId={userId}
+                template={currentResume.template}
+                resumeType={currentResume.resume_type}
+                onLimitReached={handleLimitReached}
+                isTemplateLocked={isCurrentTemplateLocked}
+                isUntitled={isCurrentUntitled}
+                downloadRemaining={usage?.download_remaining}
+                downloadLimit={usage?.download_limit}
+                onBeforeExport={saveNow}
+                compact
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -484,66 +687,43 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
           </div>
 
           <div className="flex-1 flex overflow-hidden">
-            {/* Left: Editor — 45% */}
-            <div className={`w-full md:w-[45%] overflow-auto p-4 md:p-5 md:border-r border-border relative mobile-scroll ${
+            {/* Left: Editor — 35% */}
+            <div className={`w-full md:w-[35%] overflow-auto p-4 md:p-5 md:border-r border-border relative mobile-scroll ${
               mobileView === 'preview' ? 'hidden md:block' : ''
             }`}>
-              {/* Inline editable resume name */}
-              <div className="mb-4">
-                {isCurrentUntitled && (
-                  <p className="text-xs text-gold mb-1.5 font-semibold flex items-center gap-1">
-                    <span>&#9888;</span> Please rename your resume before exporting
-                  </p>
-                )}
-                <input
-                  type="text"
-                  value={currentResume.name}
-                  onChange={(e) => setCurrentResume(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Resume Name"
-                  autoComplete="off"
-                  className={`w-full bg-transparent border-0 px-0 py-1 font-heading text-lg font-bold uppercase tracking-wider text-text placeholder:text-text-dim focus:ring-0 focus:outline-none ${
-                    isCurrentUntitled
-                      ? 'border-b-2 border-gold'
-                      : 'border-b border-border focus:border-gold'
-                  }`}
-                />
-              </div>
-
-              {/* Template Pills — hidden for federal (always uses federal template) */}
-              {currentResume.resume_type !== 'federal' && (
-                <div className="mb-4">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">Template:</span>
-                    {Object.values(SELECTABLE_TEMPLATES).map((template) => {
-                      const isSelected = currentResume.template === template.id
-                      const isLocked = !template.free && isFreeUser
-                      return (
-                        <button
-                          key={template.id}
-                          onClick={() => setCurrentResume(prev => ({ ...prev, template: template.id as TemplateId }))}
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-heading uppercase tracking-wider transition-all ${
-                            isSelected
-                              ? 'bg-gold text-bg-primary font-bold'
-                              : isLocked
-                                ? 'border border-border text-text-dim hover:border-gold/30'
-                                : 'border border-border text-text-muted hover:border-border-bright hover:text-text'
-                          }`}
-                        >
-                          {isSelected && <span>&#10003;</span>}
-                          {template.name}
-                          {isLocked && !isSelected && (
-                            <span className="text-[10px] text-gold font-bold ml-0.5">Core</span>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
+              {/* Mobile type toggle (shown only on mobile where top-bar toggle is hidden) */}
+              <div className="sm:hidden mb-4">
+                <div className="flex bg-bg-tertiary rounded-lg p-0.5">
+                  <button
+                    onClick={() => setCurrentResume(prev => ({
+                      ...prev,
+                      resume_type: 'private',
+                      template: prev.template === 'federal' ? 'classic_professional' : prev.template,
+                    }))}
+                    className={`flex-1 px-3 py-1.5 rounded-md text-xs font-heading uppercase tracking-wider transition-all ${
+                      currentResume.resume_type === 'private'
+                        ? 'bg-gold text-bg-primary'
+                        : 'text-text-muted hover:text-text'
+                    }`}
+                  >
+                    Private
+                  </button>
+                  <button
+                    onClick={() => setCurrentResume(prev => ({
+                      ...prev,
+                      resume_type: 'federal',
+                      template: 'federal' as TemplateId,
+                    }))}
+                    className={`flex-1 px-3 py-1.5 rounded-md text-xs font-heading uppercase tracking-wider transition-all ${
+                      currentResume.resume_type === 'federal'
+                        ? 'bg-gold text-bg-primary'
+                        : 'text-text-muted hover:text-text'
+                    }`}
+                  >
+                    Federal
+                  </button>
                 </div>
-              )}
-
-              <p className="text-xs text-text-dim mb-4">
-                Building from your Base Resume. Edit sections below to tailor for this specific role.
-              </p>
+              </div>
 
               {isFederal && federalOverflow && (
                 <FederalTrimSuggestions
@@ -555,11 +735,16 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                 />
               )}
 
+              {isFederal && (
+                <FederalCompletenessChecker content={currentResume.content} />
+              )}
+
               <ResumeForm
                 resumeId={selectedId || ''}
                 content={currentResume.content}
                 resumeType={currentResume.resume_type}
                 onChange={(content) => setCurrentResume(prev => ({ ...prev, content }))}
+                onSummarySaved={handleSummarySaved}
                 userProfile={profileData.userProfile}
                 profileSummary={profileData.userProfile?.professional_summary}
                 allSkills={profileData.skills}
@@ -567,64 +752,84 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                 bulletTranslationUsage={usage?.bullet_rewrites || 0}
                 bulletTranslationLimit={TIER_LIMITS[userTier]?.bullet_translations}
                 userPlan={userPlan}
+                openSection={openSection}
+                onSectionToggle={handleSectionToggle}
               />
+
+              {/* FAB — Add Experience Bullet (desktop only) */}
+              <button
+                onClick={() => setOpenSection('experience')}
+                className="hidden md:flex fixed bottom-6 right-[calc(65%+1.5rem)] z-20 items-center gap-2 px-4 py-2.5 bg-gold text-bg-primary rounded-full shadow-lg hover:bg-gold-bright transition-colors font-heading text-xs font-bold uppercase tracking-wider"
+                title="Add experience bullet"
+              >
+                <span className="text-base leading-none">+</span> Add Bullet
+              </button>
+
+              {/* Mobile mini preview thumbnail — tap to switch to preview tab */}
+              <div className="md:hidden mt-6 mb-4">
+                <button
+                  onClick={() => setMobileView('preview')}
+                  className="w-full text-left group"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-text-muted font-semibold uppercase tracking-wider">Quick Preview</span>
+                    <span className="text-xs text-gold group-hover:text-gold-bright transition-colors">Tap to expand &#8594;</span>
+                  </div>
+                  <div className="relative border border-border rounded-lg overflow-hidden bg-white" style={{ height: '200px' }}>
+                    <div
+                      className="origin-top-left pointer-events-none"
+                      style={{
+                        transform: 'scale(0.22)',
+                        width: '816px',
+                        height: '1056px',
+                      }}
+                    >
+                      <ResumePreview
+                        template={currentResume.template}
+                        resumeType={currentResume.resume_type}
+                        content={currentResume.content}
+                      />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/80" />
+                  </div>
+                </button>
+              </div>
             </div>
 
-            {/* Right: Preview — 55% */}
-            <div className={`w-full md:w-[55%] overflow-auto bg-bg-tertiary flex flex-col mobile-scroll ${
+            {/* Right: Preview — 65% */}
+            <div className={`w-full md:w-[65%] overflow-auto bg-bg-tertiary flex flex-col mobile-scroll ${
               mobileView === 'form' ? 'hidden md:block' : ''
             }`}>
-              {/* Preview Header */}
-              <div className="bg-bg-secondary border-b border-border px-4 py-2 flex items-center justify-between flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-text-muted">Preview</span>
-                  <span className="text-xs text-text-dim">—</span>
-                  <span className="text-xs font-heading font-semibold uppercase tracking-wider">{currentTemplateName}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {/* Export */}
-                  <ExportMenu
-                    resumeId={selectedId || ''}
-                    resumeName={currentResume.name}
-                    userId={userId}
-                    template={currentResume.template}
-                    resumeType={currentResume.resume_type}
-                    onLimitReached={handleLimitReached}
-                    isTemplateLocked={isCurrentTemplateLocked}
-                    isUntitled={isCurrentUntitled}
-                    downloadRemaining={usage?.download_remaining}
-                    downloadLimit={usage?.download_limit}
+              {/* Preview Header — template strip for private resumes */}
+              <div className="bg-bg-secondary border-b border-border px-4 py-2 flex-shrink-0">
+                {currentResume.resume_type !== 'federal' ? (
+                  <TemplateSelector
+                    selected={currentResume.template}
+                    onSelect={(id) => setCurrentResume(prev => ({ ...prev, template: id }))}
+                    userPlan={userPlan}
                   />
-
-                  {/* Delete */}
-                  <button
-                    onClick={() => setShowDeleteModal(true)}
-                    className="p-1.5 text-text-muted hover:text-status-red hover:bg-status-red/10 rounded transition-all"
-                    title="Delete resume"
-                  >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                  </button>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-2 py-1">
+                    <span className="text-xs text-text-muted">Template:</span>
+                    <span className="text-xs font-heading font-semibold uppercase tracking-wider">Federal (USAJOBS)</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex-1 p-3 md:p-6">
-                {/* Federal page indicator */}
-                {isFederal && (
-                  <div className="mb-2 flex justify-center">
-                    <PageLengthIndicator
-                      contentHeight={contentHeight}
-                      format="federal"
-                    />
-                  </div>
-                )}
+                {/* Page length indicator */}
+                <div className="mb-2 flex justify-center">
+                  <PageLengthIndicator
+                    contentHeight={contentHeight}
+                    format={isFederal ? 'federal' : 'private'}
+                  />
+                </div>
                 {/* Mobile hint */}
                 <div className="md:hidden mb-3 text-center">
                   <p className="text-xs text-text-dim">Pinch to zoom | Scroll to see more</p>
                 </div>
                 <div className="pinch-zoom relative" ref={previewRef}>
+                  <PageBreakLine contentHeight={contentHeight} />
                   <ResumePreview
                     template={currentResume.template}
                     resumeType={currentResume.resume_type}
@@ -657,7 +862,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
       ) : (
         <div className="flex-1 flex items-center justify-center">
           <Card className="p-8 text-center">
-            <div className="text-4xl mb-4">◫</div>
+            <div className="text-4xl mb-4">&#9647;</div>
             <h2 className="font-heading text-xl font-bold uppercase mb-2">No Resume Selected</h2>
             <p className="text-text-muted mb-4">
               {canCreateNew
@@ -710,6 +915,17 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
             </div>
           </Card>
         </div>
+      )}
+
+      {/* Version History Panel */}
+      {selectedId && (
+        <VersionHistoryPanel
+          isOpen={showVersionHistory}
+          onClose={() => setShowVersionHistory(false)}
+          resumeId={selectedId}
+          onRestore={handleVersionRestore}
+          onBeforeSave={saveNow}
+        />
       )}
 
       {/* Name Resume Modal */}

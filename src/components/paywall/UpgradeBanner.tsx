@@ -1,6 +1,7 @@
 'use client'
 
 import { useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { getFormattedPrice, PRICING_TIERS } from '@/lib/pricing-config'
 
 interface UpgradeBannerProps {
   feature: string
@@ -83,7 +84,7 @@ export function UpgradeBanner({
               ? `You've used ${currentUsage} of ${freeLimit} free ${feature.toLowerCase()}. `
               : ''}
             {coreLimit
-              ? `Upgrade to Core for ${coreLimit}+ ${feature.toLowerCase()} — just $25 for 30 days.`
+              ? `Upgrade to Core for ${coreLimit}+ ${feature.toLowerCase()} — just ${getFormattedPrice('core')} for ${PRICING_TIERS.core.duration} days.`
               : `Upgrade to unlock more ${feature.toLowerCase()} and premium features.`}
           </p>
         </div>

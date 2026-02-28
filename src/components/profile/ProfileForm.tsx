@@ -6,12 +6,14 @@ import { ExperienceSection } from './sections/ExperienceSection'
 import { EducationSection } from './sections/EducationSection'
 import { CertificationsSection } from './sections/CertificationsSection'
 import { SkillsSection } from './sections/SkillsSection'
+import { CollapsibleSection } from './CollapsibleSection'
 import { ProfessionalSummaryEditor } from './ProfessionalSummaryEditor'
 import { ResumeImportModal } from './ResumeImportModal'
 import { AutosaveIndicator } from '@/components/AutosaveIndicator'
 import { useAutosave } from '@/hooks/useAutosave'
 import { InternationalPhoneInput } from '@/components/ui/InternationalPhoneInput'
 import { toE164 } from '@/lib/formatPhone'
+import { formatPhoneForDisplay } from '@/lib/formatPhone'
 import { buildProfileDataFromForm } from '@/lib/populateTemplate'
 import { US_STATES } from '@/lib/constants/states'
 import { BRANCHES as MILITARY_BRANCHES, PAYGRADES as MILITARY_PAYGRADES, PAYGRADE_TO_RANK } from '@/lib/constants/military'
@@ -43,8 +45,6 @@ const PAYGRADES = [
   ...MILITARY_PAYGRADES
 ]
 
-// Use PAYGRADE_TO_RANK from imported constants for rank auto-fill
-
 const CLEARANCES = [
   { value: '', label: 'Select Clearance' },
   { value: 'none', label: 'None' },
@@ -54,23 +54,100 @@ const CLEARANCES = [
   { value: 'ts_sci', label: 'TS/SCI' },
 ]
 
+const CLEARANCE_LABELS: Record<string, string> = {
+  none: 'None',
+  confidential: 'Confidential',
+  secret: 'Secret',
+  top_secret: 'Top Secret',
+  ts_sci: 'TS/SCI',
+}
+
+// Section keys for accordion
+type SectionKey = 'personal' | 'military' | 'career' | 'summary' | 'experience' | 'education' | 'certifications' | 'skills'
+
+// Completeness checks per section
+function getSectionComplete(
+  section: SectionKey,
+  profile: any,
+  experiences: any[],
+  education: any[],
+  certifications: any[],
+  skills: any[],
+): boolean {
+  switch (section) {
+    case 'personal': return !!(profile.first_name && profile.email && profile.city)
+    case 'military': return !!(profile.branch && profile.rank && profile.rating_mos)
+    case 'career': return !!(profile.target_industry && profile.target_role)
+    case 'summary': return !!(profile.professional_summary && profile.professional_summary.trim().length > 20)
+    case 'experience': return experiences.length > 0 && experiences.some((e: any) => e.bullets?.length > 0 || e.experience_bullets?.length > 0)
+    case 'education': return education.length > 0
+    case 'certifications': return certifications.length > 0
+    case 'skills': return skills.length > 0
+    default: return false
+  }
+}
+
+// Section summaries
+function getSectionSummary(
+  section: SectionKey,
+  profile: any,
+  experiences: any[],
+  education: any[],
+  certifications: any[],
+  skills: any[],
+): string | undefined {
+  switch (section) {
+    case 'personal': {
+      const parts = [profile.first_name, profile.city && profile.state ? `${profile.city}, ${profile.state}` : profile.city, formatPhoneForDisplay(profile.phone)].filter(Boolean)
+      return parts.length > 0 ? parts.join(' | ') : undefined
+    }
+    case 'military': {
+      const parts = [profile.rank, profile.branch, profile.years_of_service ? `${profile.years_of_service} years` : '', profile.clearance ? CLEARANCE_LABELS[profile.clearance] || profile.clearance : ''].filter(Boolean)
+      return parts.length > 0 ? parts.join(' | ') : undefined
+    }
+    case 'career': {
+      const parts = [profile.target_role, profile.target_industry].filter(Boolean)
+      return parts.length > 0 ? parts.join(' | ') : undefined
+    }
+    case 'summary': {
+      if (profile.professional_summary?.trim()) {
+        const text = profile.professional_summary.trim()
+        return text.length > 80 ? text.slice(0, 80) + '...' : text
+      }
+      return undefined
+    }
+    case 'experience': return experiences.length > 0 ? `${experiences.length} position${experiences.length !== 1 ? 's' : ''} added` : undefined
+    case 'education': return education.length > 0 ? `${education.length} entr${education.length !== 1 ? 'ies' : 'y'} added` : undefined
+    case 'certifications': return certifications.length > 0 ? `${certifications.length} certification${certifications.length !== 1 ? 's' : ''} added` : undefined
+    case 'skills': return skills.length > 0 ? `${skills.length} skill${skills.length !== 1 ? 's' : ''} added` : undefined
+    default: return undefined
+  }
+}
+
+// Impact hints for empty/incomplete sections
+const SECTION_HINTS: Record<SectionKey, string> = {
+  personal: 'Complete contact info so employers can reach you',
+  military: 'Your MOS unlocks tailored resume translations',
+  career: 'Setting target role and industry improves job match accuracy',
+  summary: 'A strong summary increases resume response rates',
+  experience: 'Add experience with bullets to power your resume',
+  education: 'Education strengthens your civilian credentials',
+  certifications: 'Adding certifications increases your job match score',
+  skills: 'Skills help ATS systems surface your resume',
+}
+
+const ALL_SECTIONS: SectionKey[] = ['personal', 'military', 'career', 'summary', 'experience', 'education', 'certifications', 'skills']
+
 export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImportLimit, bulletTranslationUsage, userBranch, userPlan }: ProfileFormProps) {
   const supabase = createClient()
 
   // Initialize state from initialData
-  const profileData = initialData?.profile || initialData // Support both old and new format
-
-  // DEBUG: Log what we received
-  console.log('=== PROFILE FORM DEBUG ===')
-  console.log('4. initialData received:', initialData)
-  console.log('5. profileData extracted:', profileData)
-  console.log('6. profileData.first_name:', profileData?.first_name)
+  const profileData = initialData?.profile || initialData
 
   const [profile, setProfile] = useState({
     first_name: profileData?.first_name || '',
     last_name: profileData?.last_name || '',
     email: profileData?.email || '',
-    // Store phone in E.164 format, convert legacy US numbers
     phone: toE164(profileData?.phone || ''),
     city: profileData?.city || '',
     state: profileData?.state || '',
@@ -102,12 +179,41 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
   // State for resume import modal
   const [showResumeImport, setShowResumeImport] = useState(false)
 
+  // Accordion state — only one section open at a time
+  const [openSection, setOpenSection] = useState<SectionKey | null>(() => {
+    // Auto-open the first incomplete section
+    for (const s of ALL_SECTIONS) {
+      if (!getSectionComplete(s, profileData, initialData?.experiences || [], initialData?.education || [], initialData?.certifications || [], initialData?.skills || [])) {
+        return s
+      }
+    }
+    return 'personal'
+  })
+
+  const handleSectionToggle = (section: SectionKey) => {
+    setOpenSection(prev => prev === section ? null : section)
+  }
+
+  // Completeness
+  const completeness = useMemo(() => {
+    let done = 0
+    for (const s of ALL_SECTIONS) {
+      if (getSectionComplete(s, profile, experiences, education, certifications, skills)) done++
+    }
+    return Math.round((done / ALL_SECTIONS.length) * 100)
+  }, [profile, experiences, education, certifications, skills])
+
+  // Next recommended section
+  const nextSection = useMemo(() => {
+    for (const s of ALL_SECTIONS) {
+      if (!getSectionComplete(s, profile, experiences, education, certifications, skills)) return s
+    }
+    return null
+  }, [profile, experiences, education, certifications, skills])
+
   // Autosave function
   const saveProfile = useCallback(async (data: typeof profile) => {
-    // Note: first_name, last_name, and email are locked after signup
-    // Users must contact support to change these fields (prevents account sharing abuse)
     const profilePayload = {
-      // Store phone in E.164 format (e.g., +18005551234) for international support
       phone: data.phone || null,
       city: data.city || null,
       state: data.state || null,
@@ -128,29 +234,19 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
       updated_at: new Date().toISOString(),
     }
 
-    // DEBUG: Log save attempt
-    console.log('=== PROFILE SAVE DEBUG ===')
-    console.log('7. Saving to userId:', userId)
-    console.log('8. Profile payload:', profilePayload)
-
-    // Use update - profile is auto-created by trigger on user signup
     const result = await supabase
       .from('profiles')
       .update(profilePayload)
       .eq('user_id', userId)
       .select()
 
-    console.log('9. Save result:', result)
-
     if (result.error) {
-      console.error('10. Save ERROR:', result.error)
       throw new Error(result.error.message)
     }
-    console.log('11. Save SUCCESS')
   }, [supabase, userId])
 
   // Hook up autosave (1.5 second debounce)
-  const { autosaveStatus, saveNow } = useAutosave(profile, saveProfile, 1500)
+  const { autosaveStatus } = useAutosave(profile, saveProfile, 1500)
 
   // Warn user if they try to leave while saving
   useEffect(() => {
@@ -176,7 +272,6 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
   }, [profile.branch, profile.paygrade])
 
   const updateField = (field: string, value: any) => {
-    // Phone is handled by InternationalPhoneInput which returns E.164 format
     setProfile(prev => ({ ...prev, [field]: value }))
   }
 
@@ -198,26 +293,13 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
       if (!profile.rank && data.military_info.rank) updates.rank = data.military_info.rank
     }
 
-    console.log('[ImportSave] Contact from parsed data:', data.contact)
-    console.log('[ImportSave] Profile updates to save:', updates)
-
     if (Object.keys(updates).length > 0) {
-      console.log('[ImportSave] Saving contact to profiles:', {
-        phone: updates.phone,
-        city: updates.city,
-        state: updates.state,
-        linkedin_url: updates.linkedin_url,
-      })
-
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('user_id', userId)
 
-      if (profileError) {
-        console.error('[ImportSave] Failed to save contact to profiles:', profileError)
-      } else {
-        console.log('[ImportSave] Contact saved successfully')
+      if (!profileError) {
         setProfile(prev => ({ ...prev, ...updates }))
       }
     }
@@ -234,7 +316,6 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
       })
 
       const startOrder = experiences.length
-      let expSuccessCount = 0
       for (let i = 0; i < newExps.length; i++) {
         const exp = newExps[i]
         const isMilitary = exp.employment_type === 'military'
@@ -263,7 +344,6 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
         if (expError) continue
 
         if (insertedExp && exp.bullets?.length > 0) {
-          expSuccessCount++
           const bulletsToInsert = exp.bullets.map((text: string, bIdx: number) => ({
             experience_id: insertedExp.id,
             original_text: text,
@@ -382,42 +462,64 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
   const inputClass = "w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
   const labelClass = "block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2"
 
+  // Helper to get summary/hint for a section
+  const sectionSummary = (s: SectionKey) => getSectionSummary(s, profile, experiences, education, certifications, skills)
+  const sectionHint = (s: SectionKey) => !getSectionComplete(s, profile, experiences, education, certifications, skills) ? SECTION_HINTS[s] : undefined
+
   return (
-    <div className="space-y-6">
-      {/* Autosave Indicator - Fixed at top */}
-      <div className="flex items-center justify-between sticky top-4 z-10 bg-bg-primary/80 backdrop-blur-sm py-2 px-4 -mx-4 rounded-lg">
-        <h2 className="font-heading text-lg font-bold text-gold uppercase tracking-wider">Profile</h2>
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => setShowResumeImport(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-status-green/20 hover:bg-status-green/30 border border-status-green/30 text-status-green font-semibold rounded text-sm transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            Import Resume
-          </button>
-          <AutosaveIndicator
-            status={autosaveStatus.status}
-            lastSaved={autosaveStatus.lastSaved}
-            error={autosaveStatus.error}
-          />
-          <button
-            type="button"
-            onClick={saveNow}
-            className="px-4 py-2 bg-bg-tertiary hover:bg-bg-hover border border-border text-text-muted hover:text-text font-semibold rounded text-sm transition-colors"
-          >
-            Save Now
-          </button>
+    <div className="space-y-4">
+      {/* Progress bar + header */}
+      <div className="sticky top-4 z-10 bg-bg-primary/80 backdrop-blur-sm py-3 px-4 -mx-4 rounded-lg">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-heading text-lg font-bold text-gold uppercase tracking-wider">Profile</h2>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setShowResumeImport(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-status-green/20 hover:bg-status-green/30 border border-status-green/30 text-status-green font-semibold rounded text-sm transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <span className="hidden sm:inline">Import Resume</span>
+            </button>
+            <AutosaveIndicator
+              status={autosaveStatus.status}
+              lastSaved={autosaveStatus.lastSaved}
+              error={autosaveStatus.error}
+            />
+          </div>
         </div>
+        {/* Progress bar */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-2 bg-bg-tertiary rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gold rounded-full transition-all duration-500"
+              style={{ width: `${completeness}%` }}
+            />
+          </div>
+          <span className="text-xs font-heading font-bold text-text-muted whitespace-nowrap">{completeness}%</span>
+        </div>
+        {nextSection && completeness < 100 && (
+          <button
+            type="button"
+            onClick={() => setOpenSection(nextSection)}
+            className="mt-1.5 text-xs text-gold/70 hover:text-gold transition-colors"
+          >
+            Next: {nextSection === 'personal' ? 'Personal Info' : nextSection === 'military' ? 'Military Background' : nextSection === 'career' ? 'Career Goals' : nextSection === 'summary' ? 'Professional Summary' : nextSection.charAt(0).toUpperCase() + nextSection.slice(1)} &#8594;
+          </button>
+        )}
       </div>
 
       {/* Personal Information */}
-      <div className="bg-bg-card border border-border rounded-lg p-6">
-        <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-gold mb-6 flex items-center gap-2">
-          <span className="text-lg">&#9670;</span> Personal Information
-        </h3>
+      <CollapsibleSection
+        title="Personal Information"
+        icon="&#9670;"
+        isOpen={openSection === 'personal'}
+        onToggle={() => handleSectionToggle('personal')}
+        summary={sectionSummary('personal')}
+        hint={sectionHint('personal')}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>
@@ -525,13 +627,17 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             />
           </div>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Military Background */}
-      <div className="bg-bg-card border border-border rounded-lg p-6">
-        <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-gold mb-6 flex items-center gap-2">
-          <span className="text-lg">&#9875;</span> Military Background
-        </h3>
+      <CollapsibleSection
+        title="Military Background"
+        icon="&#9875;"
+        isOpen={openSection === 'military'}
+        onToggle={() => handleSectionToggle('military')}
+        summary={sectionSummary('military')}
+        hint={sectionHint('military')}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Branch</label>
@@ -658,13 +764,17 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             </div>
           </div>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Career Goals */}
-      <div className="bg-bg-card border border-border rounded-lg p-6">
-        <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-gold mb-6 flex items-center gap-2">
-          <span className="text-lg">&#127919;</span> Career Goals
-        </h3>
+      <CollapsibleSection
+        title="Career Goals"
+        icon="&#127919;"
+        isOpen={openSection === 'career'}
+        onToggle={() => handleSectionToggle('career')}
+        summary={sectionSummary('career')}
+        hint={sectionHint('career')}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Target Industry</label>
@@ -691,20 +801,24 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             />
           </div>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Professional Summary */}
-      <div className="bg-bg-card border border-border rounded-lg p-6">
-        <h3 className="font-heading text-sm font-bold uppercase tracking-wider text-gold mb-6 flex items-center gap-2">
-          <span className="text-lg">&#128221;</span> Professional Summary
-        </h3>
+      <CollapsibleSection
+        title="Professional Summary"
+        icon="&#128221;"
+        isOpen={openSection === 'summary'}
+        onToggle={() => handleSectionToggle('summary')}
+        summary={sectionSummary('summary')}
+        hint={sectionHint('summary')}
+      >
         <ProfessionalSummaryEditor
           value={profile.professional_summary}
           onChange={(value) => updateField('professional_summary', value)}
           profile={profileDataForTemplates}
           userPlan={userPlan}
         />
-      </div>
+      </CollapsibleSection>
 
       {/* Experience Section */}
       <ExperienceSection
@@ -717,6 +831,10 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
         userBranch={userBranch}
         userPaygrade={profile.paygrade}
         userPlan={userPlan}
+        isOpen={openSection === 'experience'}
+        onToggle={() => handleSectionToggle('experience')}
+        summary={sectionSummary('experience')}
+        hint={sectionHint('experience')}
       />
 
       {/* Education Section */}
@@ -724,6 +842,10 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
         userId={userId}
         education={education}
         onUpdate={setEducation}
+        isOpen={openSection === 'education'}
+        onToggle={() => handleSectionToggle('education')}
+        summary={sectionSummary('education')}
+        hint={sectionHint('education')}
       />
 
       {/* Certifications Section */}
@@ -732,6 +854,10 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
         certifications={certifications}
         userMOS={profile.rating_mos}
         onUpdate={setCertifications}
+        isOpen={openSection === 'certifications'}
+        onToggle={() => handleSectionToggle('certifications')}
+        summary={sectionSummary('certifications')}
+        hint={sectionHint('certifications')}
       />
 
       {/* Skills Section */}
@@ -741,6 +867,10 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
         paygrade={profile.paygrade}
         ratingMOS={profile.rating_mos}
         onUpdate={setSkills}
+        isOpen={openSection === 'skills'}
+        onToggle={() => handleSectionToggle('skills')}
+        summary={sectionSummary('skills')}
+        hint={sectionHint('skills')}
       />
 
       {/* Resume Import Modal */}

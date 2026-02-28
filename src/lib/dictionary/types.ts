@@ -175,9 +175,25 @@ export interface DictMosToCivilian {
   id: string;
   branch: string;
   military_code: string;
+  military_title: string;
   civilian_titles: string[];
+  onet_codes: string[];
   industries: string[];
   key_skills: string[];
+  description: string;
+  created_at: string;
+}
+
+/** Row from dict_onet_crosswalk — DoD DMDC military-to-O*NET occupation crosswalk */
+export interface DictOnetCrosswalk {
+  id: string;
+  svc: string;
+  moc: string;
+  moc_title: string;
+  onet_code: string | null;
+  onet_title: string | null;
+  soc_code: string | null;
+  soc_title: string | null;
   created_at: string;
 }
 

@@ -12,6 +12,7 @@ import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
 function LoginForm() {
   const searchParams = useSearchParams()
   const confirmed = searchParams.get('confirmed') === 'true'
+  const planIntent = searchParams.get('plan')
 
   const [email, setEmail] = useState('')
   const [otpCode, setOtpCode] = useState('')
@@ -81,7 +82,8 @@ function LoginForm() {
     }
 
     trackLogin()
-    router.push('/dashboard')
+    const dashboardUrl = planIntent ? `/dashboard?plan=${planIntent}` : '/dashboard'
+    router.push(dashboardUrl)
     router.refresh()
   }
 

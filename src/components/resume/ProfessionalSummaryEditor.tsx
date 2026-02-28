@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { SUMMARY_TEMPLATES, TEMPLATE_CATEGORIES, getTemplatesByCategory, SummaryTemplate } from '@/lib/summaryTemplates'
 import { populateTemplate, cleanTemplateOutput, personalizeStaticSummary, ProfileData } from '@/lib/populateTemplate'
@@ -16,6 +16,7 @@ interface ProfessionalSummaryEditorProps {
   profileSummary?: string
   profile?: ProfileData
   onUpdate: (summary: string) => void
+  onSummarySaved?: () => void
   userPlan?: string
   targetIndustry?: string
   targetRole?: string
@@ -31,6 +32,7 @@ export function ProfessionalSummaryEditor({
   profileSummary,
   profile,
   onUpdate,
+  onSummarySaved,
   userPlan,
   targetIndustry,
   targetRole
@@ -58,10 +60,50 @@ export function ProfessionalSummaryEditor({
     }).catch(() => {})
   }, [])
 
-  // Update local state when summary prop changes
+  // Update local state when summary prop changes (from external source)
+  const externalUpdateRef = useRef(false)
   useEffect(() => {
+    externalUpdateRef.current = true
     setEditedSummary(summary || profileSummary || '')
   }, [summary, profileSummary])
+
+  // Auto-save debounce: writes directly to DB, notifies parent to skip its auto-save
+  const autoSaveRef = useRef<NodeJS.Timeout | null>(null)
+  const autoSave = useCallback(async (text: string) => {
+    if (!resumeId || text.length > MAX_CHARS) return
+    setIsSaving(true)
+    try {
+      const { error } = await supabase
+        .from('resumes')
+        .update({ professional_summary: text || null })
+        .eq('id', resumeId)
+      if (!error) {
+        // Tell parent to skip its next auto-save (we already wrote)
+        onSummarySaved?.()
+        // Sync parent state for preview rendering
+        onUpdate(text)
+      }
+    } finally {
+      setIsSaving(false)
+    }
+  }, [resumeId, supabase, onUpdate, onSummarySaved])
+
+  // Trigger debounced save when editedSummary changes from user input
+  useEffect(() => {
+    // Skip auto-save when the change came from an external prop update
+    if (externalUpdateRef.current) {
+      externalUpdateRef.current = false
+      return
+    }
+    if (!isEditing) return
+
+    if (autoSaveRef.current) clearTimeout(autoSaveRef.current)
+    autoSaveRef.current = setTimeout(() => autoSave(editedSummary), 1500)
+
+    return () => {
+      if (autoSaveRef.current) clearTimeout(autoSaveRef.current)
+    }
+  }, [editedSummary, isEditing, autoSave])
 
   // Get civilian equivalent title from dict_rank_equivalents
   const getCivilianTitle = (): string | null => {
@@ -169,38 +211,25 @@ export function ProfessionalSummaryEditor({
     }
     text = polishSummary(cleanTemplateOutput(text), { tone: 'professional', length: 'standard' })
     setEditedSummary(text)
-    onUpdate(text)
+    // Save directly — don't trigger parent auto-save
+    autoSave(text)
     setTemplateFallbacks(fallbacks)
     setEditingFallback(null)
     setSummarySource(template.isDictionary ? 'dictionary' : null)
   }
 
-  const handleSave = async () => {
-    if (isOverLimit) return
-
-    setIsSaving(true)
-    try {
-      // Save to resume's professional_summary field
-      const { error } = await supabase
-        .from('resumes')
-        .update({ professional_summary: editedSummary || null })
-        .eq('id', resumeId)
-
-      if (!error) {
-        onUpdate(editedSummary)
-        setIsEditing(false)
-        setShowTemplates(false)
-      }
-    } finally {
-      setIsSaving(false)
+  const handleDoneEditing = () => {
+    // Flush any pending auto-save immediately
+    if (autoSaveRef.current) {
+      clearTimeout(autoSaveRef.current)
+      autoSave(editedSummary)
     }
-  }
-
-  const handleCancel = () => {
-    setEditedSummary(summary || profileSummary || '')
     setIsEditing(false)
     setShowTemplates(false)
   }
+
+  // AI enhance comparison state
+  const [enhancePreview, setEnhancePreview] = useState<{ original: string; enhanced: string } | null>(null)
 
   const handleEnhance = async () => {
     if (!editedSummary.trim()) return
@@ -226,8 +255,7 @@ export function ProfessionalSummaryEditor({
       if (response.ok) {
         const { enhanced } = await response.json()
         if (enhanced) {
-          setEditedSummary(enhanced)
-          setSummarySource('ai')
+          setEnhancePreview({ original: editedSummary, enhanced })
         }
       }
     } catch (error) {
@@ -235,6 +263,17 @@ export function ProfessionalSummaryEditor({
     } finally {
       setIsEnhancing(false)
     }
+  }
+
+  const handleAcceptEnhanced = () => {
+    if (!enhancePreview) return
+    setEditedSummary(enhancePreview.enhanced)
+    setSummarySource('ai')
+    setEnhancePreview(null)
+  }
+
+  const handleKeepOriginal = () => {
+    setEnhancePreview(null)
   }
 
   const handleResetToProfile = async () => {
@@ -255,6 +294,7 @@ export function ProfessionalSummaryEditor({
         .eq('id', resumeId)
 
       if (!error) {
+        onSummarySaved?.()
         onUpdate(profileSummary || '')
         setEditedSummary(profileSummary || '')
         setIsEditing(false)
@@ -330,6 +370,39 @@ export function ProfessionalSummaryEditor({
             </div>
           </div>
 
+          {/* AI Enhancement Comparison */}
+          {enhancePreview && (
+            <div className="border border-gold/30 rounded-lg overflow-hidden">
+              <div className="bg-gold/10 px-3 py-2 border-b border-gold/20">
+                <span className="text-xs font-semibold text-gold uppercase tracking-wider">Compare Versions</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+                <div className="p-3 border-b md:border-b-0 md:border-r border-border">
+                  <div className="text-xs text-text-muted font-semibold uppercase tracking-wider mb-2">Original</div>
+                  <p className="text-sm text-text-secondary leading-relaxed">{enhancePreview.original}</p>
+                  <button
+                    onClick={handleKeepOriginal}
+                    className="mt-3 w-full py-2 bg-bg-secondary hover:bg-bg-hover border border-border text-text-muted text-xs font-semibold rounded transition-colors"
+                  >
+                    Keep Original
+                  </button>
+                </div>
+                <div className="p-3 bg-gold/5">
+                  <div className="text-xs text-gold font-semibold uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <span>&#10024;</span> AI Enhanced
+                  </div>
+                  <p className="text-sm text-text-secondary leading-relaxed">{enhancePreview.enhanced}</p>
+                  <button
+                    onClick={handleAcceptEnhanced}
+                    className="mt-3 w-full py-2 bg-gold hover:bg-gold-bright text-bg-primary text-xs font-semibold rounded transition-colors"
+                  >
+                    Use Enhanced
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Action buttons row */}
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2 flex-wrap">
@@ -382,18 +455,14 @@ export function ProfessionalSummaryEditor({
             </div>
 
             <div className="flex items-center gap-2">
+              {isSaving && (
+                <span className="text-xs text-text-dim">Saving...</span>
+              )}
               <button
-                onClick={handleCancel}
-                className="px-3 py-1.5 bg-bg-secondary hover:bg-bg-hover text-text-muted text-xs font-semibold rounded transition-colors"
+                onClick={handleDoneEditing}
+                className="px-3 py-1.5 bg-gold hover:bg-gold-bright text-bg-primary text-xs font-semibold rounded transition-colors"
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={isSaving || isOverLimit}
-                className="px-3 py-1.5 bg-gold hover:bg-gold-bright text-bg-primary text-xs font-semibold rounded transition-colors disabled:opacity-50"
-              >
-                {isSaving ? 'Saving...' : 'Save'}
+                Done
               </button>
             </div>
           </div>

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
-import { isAdmin, getUserEmail } from '@/lib/usage-service'
+import { verifyAdmin } from '@/lib/admin-auth'
 
 const serviceClient = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,12 +9,8 @@ const serviceClient = createServiceClient(
 
 // GET: List AI translations with filters
 export async function GET(request: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const email = await getUserEmail(user.id)
-  if (!isAdmin(email)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const auth = await verifyAdmin()
+  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const url = new URL(request.url)
   const status = url.searchParams.get('status') || 'all'
@@ -95,12 +90,8 @@ export async function GET(request: NextRequest) {
 
 // PATCH: Approve, reject, or modify a translation
 export async function PATCH(request: NextRequest) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const email = await getUserEmail(user.id)
-  if (!isAdmin(email)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const auth = await verifyAdmin()
+  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const body = await request.json()
   const { action, ids, dictTable, militaryOverride, civilianOverride, notes } = body
@@ -116,7 +107,7 @@ export async function PATCH(request: NextRequest) {
       if (action === 'approve') {
         const { data, error } = await serviceClient.rpc('approve_ai_translation', {
           p_translation_id: id,
-          p_admin_id: user.id,
+          p_admin_id: auth.user.id,
           p_dict_table: dictTable || null,
           p_military_override: militaryOverride || null,
           p_civilian_override: civilianOverride || null,
@@ -133,7 +124,7 @@ export async function PATCH(request: NextRequest) {
           .from('ai_generated_translations')
           .update({
             status: 'rejected',
-            approved_by: user.id,
+            approved_by: auth.user.id,
             approved_at: new Date().toISOString(),
             notes: notes || null,
           })

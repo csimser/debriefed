@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from 'next/server'
  * Public routes that must NEVER trigger a session refresh.
  * These pages are stateless w.r.t. auth — the middleware just passes through.
  */
-const PUBLIC_PATHS = ['/pricing', '/login', '/signup', '/help', '/auth/callback', '/auth/confirm', '/api/stripe']
+const PUBLIC_PATHS = ['/pricing', '/login', '/signup', '/help', '/auth/callback', '/auth/confirm', '/api/stripe', '/join', '/api/join']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl

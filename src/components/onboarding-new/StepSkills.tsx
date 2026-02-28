@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
 import { getMOSData } from '@/lib/military-mos-data'
+import { getSkillsForPaygrade } from '@/lib/constants/rank-skills'
 import { OnboardingData } from './NewOnboardingWizard'
 
 // Common certs by category for quick-add
@@ -31,17 +32,6 @@ const CERT_ISSUERS: Record<string, string> = {
   'Azure Admin': 'Microsoft',
 }
 
-// Leadership skills by paygrade
-const PAYGRADE_SKILLS: Record<string, string[]> = {
-  'E-5': ['Team Leadership', 'Training & Development', 'Performance Management'],
-  'E-6': ['Team Leadership', 'Process Improvement', 'Resource Management'],
-  'E-7': ['Organizational Leadership', 'Strategic Planning', 'Program Management'],
-  'E-8': ['Strategic Planning', 'Change Management', 'Executive Communication'],
-  'E-9': ['Executive Leadership', 'Strategic Vision', 'Organizational Transformation'],
-  'O-3': ['Organizational Leadership', 'Operations Management', 'Budget Management'],
-  'O-4': ['Strategic Leadership', 'Program Management', 'Policy Development'],
-  'O-5': ['Executive Leadership', 'Strategic Planning', 'Stakeholder Engagement'],
-}
 
 interface StepSkillsProps {
   data: OnboardingData
@@ -67,7 +57,7 @@ export function StepSkills({ data, updateData, onNext, onBack, onSkip, saving, u
 
   // Get paygrade-based leadership skills
   const leadershipSkills = useMemo(() => {
-    return PAYGRADE_SKILLS[data.paygrade] || []
+    return getSkillsForPaygrade(data.paygrade)
   }, [data.paygrade])
 
   // Skills already added — handle both objects {name} and legacy string entries
@@ -220,7 +210,7 @@ export function StepSkills({ data, updateData, onNext, onBack, onSkip, saving, u
     }
   }
 
-  const inputClass = "w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
+  const inputClass = "w-full px-4 py-3.5 text-base md:py-3 md:text-sm bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
 
   return (
     <div>
@@ -320,7 +310,7 @@ export function StepSkills({ data, updateData, onNext, onBack, onSkip, saving, u
               {typeof skill === 'string' ? skill : skill.name}
               <button
                 onClick={() => handleRemoveSkill(skill.id)}
-                className="opacity-0 group-hover:opacity-100 text-status-red hover:bg-status-red/10 rounded px-1 transition-all"
+                className="opacity-40 md:opacity-0 md:group-hover:opacity-100 text-status-red hover:bg-status-red/10 rounded px-1 transition-all"
               >
                 &#215;
               </button>

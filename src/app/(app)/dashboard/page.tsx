@@ -1,63 +1,69 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card } from '@/components/ui/Card'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
-import { checkLimit, getSubscriptionInfo } from '@/lib/usage-service'
 import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
 import { IncompleteProfileBanner } from '@/components/layout/IncompleteProfileBanner'
 import { OptInPrompt } from '@/components/layout/OptInPrompt'
-import { CommunityMissionWidget } from '@/components/dashboard/CommunityMissionWidget'
-import { DictionaryIntroModal } from '@/components/dictionary/DictionaryIntroModal'
+import { PaymentSuccessBanner } from '@/components/paywall/PaymentSuccessBanner'
+import { PlanIntentCheckout } from '@/components/paywall/PlanIntentCheckout'
+import { ResumeHero } from '@/components/dashboard/ResumeHero'
+import { ProfileProgress } from '@/components/dashboard/ProfileProgress'
+import { QuickStats } from '@/components/dashboard/QuickStats'
+import { DashboardChecklist } from '@/components/dashboard/DashboardChecklist'
+import { checkLimit, getSubscriptionInfo } from '@/lib/usage-service'
 import Link from 'next/link'
 
-// Profile fields for completeness calculation
-// Only fields collected during signup (first/last/branch/rank) and onboarding (years_of_service, eas_date)
+// Expanded profile fields for completeness — ordered by impact priority (highest first)
 const PROFILE_FIELDS = [
-  'first_name',
-  'last_name',
-  'branch',
-  'rank',
-  'years_of_service',
-  'eas_date',
+  { key: 'rating_mos', label: 'Add your MOS to unlock tailored job matches', href: '/profile', priority: 10 },
+  { key: 'professional_summary', label: 'Add a professional summary for stronger resumes', href: '/profile', priority: 8 },
+  { key: 'target_role', label: 'Set your target role for better job matching', href: '/profile', priority: 7 },
+  { key: 'target_industry', label: 'Set your target industry for better recommendations', href: '/profile', priority: 5 },
+  { key: 'branch', label: 'Add your military branch', href: '/profile', priority: 3 },
+  { key: 'rank', label: 'Add your rank', href: '/profile', priority: 3 },
+  { key: 'years_of_service', label: 'Add years of service', href: '/profile', priority: 2 },
+  { key: 'eas_date', label: 'Set your EAS date for transition planning', href: '/profile', priority: 2 },
+  { key: 'first_name', label: 'Add your first name', href: '/profile', priority: 1 },
+  { key: 'last_name', label: 'Add your last name', href: '/profile', priority: 1 },
 ]
 
-function calculateProfileCompleteness(profile: Record<string, unknown> | null): number {
-  if (!profile) return 0
+function getProfileCompleteness(profile: Record<string, unknown> | null) {
+  if (!profile) return { completeness: 0, nextAction: PROFILE_FIELDS[0] }
 
+  const missing: typeof PROFILE_FIELDS = []
   let completed = 0
+
   for (const field of PROFILE_FIELDS) {
-    const value = profile[field]
+    const value = profile[field.key]
     if (value && value !== '' && value !== null) {
       completed++
+    } else {
+      missing.push(field)
     }
   }
 
-  return Math.round((completed / PROFILE_FIELDS.length) * 100)
+  const completeness = Math.round((completed / PROFILE_FIELDS.length) * 100)
+  // Highest priority missing field = most impactful next action
+  const nextAction = missing.sort((a, b) => b.priority - a.priority)[0] || null
+
+  return { completeness, nextAction }
 }
 
-function getGreeting(firstName?: string): string {
-  const hour = new Date().getHours()
-  let timeGreeting
-  if (hour < 12) {
-    timeGreeting = 'Welcome back'
-  } else if (hour < 17) {
-    timeGreeting = 'Welcome back'
-  } else {
-    timeGreeting = 'Welcome back'
-  }
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const params = await searchParams
+  const paymentSuccess = params.payment === 'success'
+  const planIntent = typeof params.plan === 'string' ? params.plan : null
 
-  return firstName
-    ? `${timeGreeting}, ${firstName}`
-    : timeGreeting
-}
-
-export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const defaultSubscription = { tier: 'free' as const, tierName: 'Free', expiresAt: null, daysRemaining: null, isActive: true }
   const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
 
-  // Helper: query usage_tracking directly for checklist (bypasses admin short-circuit in checkLimit)
+  // Helper: query usage_tracking directly for display counts
   async function getFeatureUsageCount(userId: string, feature: string): Promise<number> {
     const { data } = await supabase
       .from('usage_tracking')
@@ -67,177 +73,113 @@ export default async function DashboardPage() {
     return data?.reduce((sum, row) => sum + (row.count || 0), 0) || 0
   }
 
-  // Run ALL queries in parallel — they all only need user.id
+  // Run ALL queries in parallel
   const [
+    { data: latestResumes },
     { count: resumeCount },
     { data: profile },
     subscriptionInfo,
-    jobMatchUsed,
-    coverLetterUsed,
+    jobMatchCheck,
+    coverLetterCheck,
     linkedinUsed,
-    privateDownloadUsage,
-    federalDownloadUsage,
+    translationsUsed,
+    privateResumeCheck,
+    federalResumeCheck,
   ] = user?.id
     ? await Promise.all([
+        supabase.from('resumes').select('id, name, template, resume_type, updated_at').eq('user_id', user.id).order('updated_at', { ascending: false }).limit(1),
         supabase.from('resumes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-        supabase.from('profiles').select('first_name, last_name, branch, rank, years_of_service, eas_date, tier, onboarding_skipped, employer_sharing_opt_in, marketing_opt_in, opt_in_dismiss_count, dictionary_intro_shown').eq('user_id', user.id).single(),
+        supabase.from('profiles').select('first_name, last_name, branch, rank, years_of_service, eas_date, rating_mos, professional_summary, target_industry, target_role, tier, onboarding_skipped, employer_sharing_opt_in, marketing_opt_in, opt_in_dismiss_count').eq('user_id', user.id).single(),
         getSubscriptionInfo(user.id),
-        getFeatureUsageCount(user.id, 'job_match_analysis'),
-        getFeatureUsageCount(user.id, 'cover_letters'),
+        checkLimit(user.id, 'job_match_analysis'),
+        checkLimit(user.id, 'cover_letters'),
         getFeatureUsageCount(user.id, 'linkedin_profile_analysis'),
+        getFeatureUsageCount(user.id, 'bullet_translations'),
         checkLimit(user.id, 'private_resumes'),
         checkLimit(user.id, 'federal_resumes'),
       ])
     : [
-        { count: 0 }, { data: null },
+        { data: null }, { count: 0 }, { data: null },
         defaultSubscription,
-        0, 0, 0, defaultUsage, defaultUsage,
+        defaultUsage, defaultUsage,
+        0, 0, defaultUsage, defaultUsage,
       ]
+
+  const latestResume = latestResumes?.[0] || null
+  const jobMatchUsed = jobMatchCheck.used
+  const coverLetterUsed = coverLetterCheck.used
 
   const tier = subscriptionInfo.tier
   const isPaid = tier === 'core' || tier === 'full'
 
-  // Calculate profile completeness
-  const profileComplete = calculateProfileCompleteness(profile)
-
+  const { completeness, nextAction } = getProfileCompleteness(profile)
   const displayName = profile?.first_name || ''
+  const showIncompleteProfile = !!(profile?.onboarding_skipped && (!profile?.first_name || !profile?.last_name || !profile?.branch || !profile?.rank))
+  const showOptIn = !!(user?.id && profile?.employer_sharing_opt_in === null && profile?.marketing_opt_in === null)
 
-  return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-2xl md:text-3xl font-bold uppercase tracking-wider">
-            {getGreeting(displayName)}
-          </h1>
-          <p className="text-text-muted mt-1">Mission Status: Active</p>
-        </div>
-      </div>
-
-      {/* Government Computer Notice */}
-      <GovComputerBanner />
-
-      {/* Incomplete Profile Banner (skipped onboarding) */}
-      <IncompleteProfileBanner
-        show={!!(profile?.onboarding_skipped && (!profile?.first_name || !profile?.last_name || !profile?.branch || !profile?.rank))}
-      />
-
-      {/* Opt-In Prompt (existing users who haven't been asked) */}
-      {user?.id && profile?.employer_sharing_opt_in === null && profile?.marketing_opt_in === null && (
-        <OptInPrompt userId={user.id} dismissCount={profile?.opt_in_dismiss_count || 0} />
-      )}
-
-      {/* Dictionary Intro Modal (one-time, first login) */}
-      {user?.id && profile?.dictionary_intro_shown !== true && (
-        <DictionaryIntroModal userId={user.id} />
-      )}
-
-      {/* Feedback Banner */}
-      <div className="bg-gold-dim border border-gold/30 rounded-lg p-4 mb-6">
-        <div className="flex items-start gap-3">
-          <span className="text-gold text-xl">💡</span>
-          <div className="flex-1">
-            <p className="text-sm">
-              <strong>Welcome!</strong> This is a new platform and we&apos;re actively improving it.
-              Please report any bugs or feature suggestions using the{' '}
-              <span className="text-gold font-medium">Feedback</span> button or email{' '}
-              <a href="mailto:support@getdebriefed.co" className="text-gold hover:underline">
-                support@getdebriefed.co
-              </a>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Community Callout */}
-      <div className="p-5 border-2 border-gold/30 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent rounded-xl">
-        <h2 className="font-heading text-base md:text-lg font-bold uppercase tracking-wider text-gold mb-2">
-          Why is Debriefed free?
-        </h2>
-        <p className="text-sm text-text-muted mb-1">
-          Because veterans like you contribute translations to our dictionary. That dictionary replaces expensive AI — keeping resume building, job matching, cover letters, and LinkedIn optimization free for everyone.
-        </p>
-        <p className="text-sm font-semibold text-text mb-4">
-          The more you contribute, the better it gets for every veteran.
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/career-tools?tool=community"
-            className="px-4 py-2 bg-gold text-bg-primary rounded-lg font-heading font-bold uppercase text-xs tracking-wider hover:bg-gold-bright transition-colors"
-          >
-            Contribute a Translation →
-          </Link>
-        </div>
-      </div>
-
-      {/* Mission Checklist */}
-      <Card className="p-6">
-        <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">Your Mission Checklist</h2>
-        <div className="space-y-3">
-          <ChecklistItem
-            done={profileComplete >= 100}
-            label="Complete your profile"
-            href="/profile"
-          />
-          <ChecklistItem
-            done={(resumeCount || 0) > 0}
-            label="Create a resume"
-            href="/resumes"
-          />
-          <ChecklistItem
-            done={jobMatchUsed > 0}
-            label="Run a job match"
-            href="/job-match"
-          />
-          <ChecklistItem
-            done={coverLetterUsed > 0}
-            label="Generate a cover letter"
-            href="/career-tools"
-          />
-          <ChecklistItem
-            done={linkedinUsed > 0}
-            label="Optimize your LinkedIn"
-            href="/career-tools"
-          />
-        </div>
-      </Card>
-
-      {/* Community Mission Widget */}
-      <CommunityMissionWidget />
-
-      {/* Upgrade Banner - shows for free users at 50%+ usage */}
-      {!isPaid && jobMatchUsed + coverLetterUsed + (privateDownloadUsage.used || 0) > 0 && (
-        <UpgradeBanner
-          feature="AI features"
-          tier={tier}
-          variant="banner"
-        />
-      )}
-
-    </div>
+  // UpgradeBanner: only show when a limit is actually hit
+  const anyLimitHit = !isPaid && (
+    jobMatchCheck.remaining === 0 ||
+    coverLetterCheck.remaining === 0 ||
+    privateResumeCheck.remaining === 0 ||
+    federalResumeCheck.remaining === 0
   )
-}
 
-function ChecklistItem({ done, label, href }: { done: boolean; label: string; href: string }) {
+  const checklist = [
+    { done: completeness >= 100, label: 'Complete your profile', href: '/profile' },
+    { done: (resumeCount || 0) > 0, label: 'Create a resume', href: '/resumes' },
+    { done: jobMatchUsed > 0, label: 'Run a job match', href: '/job-match' },
+    { done: coverLetterUsed > 0, label: 'Generate a cover letter', href: '/career-tools' },
+    { done: linkedinUsed > 0, label: 'Optimize your LinkedIn', href: '/career-tools' },
+  ]
+
   return (
-    <div className="flex items-center gap-3">
-      <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
-        done ? 'bg-gold/20 text-gold' : 'bg-bg-tertiary text-text-muted'
-      }`}>
-        {done ? (
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        ) : (
-          <span className="w-2 h-2 rounded-full bg-text-muted/40" />
-        )}
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div>
+        <h1 className="font-heading text-2xl md:text-3xl font-bold uppercase tracking-wider">
+          {displayName ? `Welcome back, ${displayName}` : 'Welcome back'}
+        </h1>
+        <p className="text-text-muted text-sm mt-1">Mission Status: Active</p>
       </div>
-      {done ? (
-        <span className="text-sm text-text">{label}</span>
+
+      {/* Banner slot — max 1 visible at a time */}
+      {paymentSuccess ? (
+        <PaymentSuccessBanner tier={tier} />
+      ) : planIntent ? (
+        <PlanIntentCheckout plan={planIntent} currentTier={tier} />
+      ) : showIncompleteProfile ? (
+        <IncompleteProfileBanner show />
+      ) : showOptIn ? (
+        <OptInPrompt userId={user!.id} dismissCount={profile?.opt_in_dismiss_count || 0} />
       ) : (
-        <Link href={href} className="text-sm text-gold hover:text-gold-bright font-medium transition-colors">
-          {label} →
+        <GovComputerBanner />
+      )}
+
+      {/* Hero — latest resume or create CTA */}
+      <ResumeHero resume={latestResume} />
+
+      {/* Profile progress + Quick stats */}
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-4">
+        <ProfileProgress completeness={completeness} nextAction={nextAction} />
+        <QuickStats stats={{ resumes: resumeCount || 0, jobsAnalyzed: jobMatchUsed, translations: translationsUsed }} />
+      </div>
+
+      {/* Mission Checklist — auto-collapses when >3 items complete */}
+      <DashboardChecklist items={checklist} />
+
+      {/* Community Mission — compact single line */}
+      <div className="flex items-center gap-2 p-3 rounded-lg border border-gold/10 bg-gold/[0.02]">
+        <span className="text-xs">&#128293;</span>
+        <span className="text-xs text-text-muted flex-1">Help fellow veterans &mdash; submit military-to-civilian translations</span>
+        <Link href="/career-tools?tool=community" className="text-xs font-heading font-bold uppercase tracking-wider text-gold hover:text-gold-bright transition-colors whitespace-nowrap">
+          Help Translate &rarr;
         </Link>
+      </div>
+
+      {/* Upgrade Banner — only when a limit is actually hit */}
+      {anyLimitHit && (
+        <UpgradeBanner feature="AI features" tier={tier} variant="banner" />
       )}
     </div>
   )

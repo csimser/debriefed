@@ -286,3 +286,14 @@ export function getTierLimit(tierId: TierId, feature: FeatureName): number {
 export function getDailyLimit(tier: 'free' | 'core' | 'full', feature: FeatureName): number {
   return DAILY_RATE_LIMITS[tier][feature];
 }
+
+// Helper: formatted price string (e.g. "$25")
+export function getFormattedPrice(tierId: TierId): string {
+  return `$${PRICING_TIERS[tierId].price}`;
+}
+
+// Helper: duration label (e.g. "30 days")
+export function getTierDuration(tierId: TierId): string {
+  const d = PRICING_TIERS[tierId].duration;
+  return d ? `${d} days` : 'Forever';
+}

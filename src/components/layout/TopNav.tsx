@@ -5,12 +5,14 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { useTheme } from '@/components/theme/ThemeProvider'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/resumes', label: 'My Resumes' },
   { href: '/job-match', label: 'Job Match' },
   { href: '/career-tools', label: 'Cover Letter & LinkedIn' },
+  { href: '/tracker', label: 'Tracker' },
 ]
 
 const secondaryItems = [
@@ -28,9 +30,10 @@ interface TopNavProps {
   }
   tier?: string
   isAdmin?: boolean
+  isOrgAdmin?: boolean
 }
 
-export function TopNav({ user, tier = 'free', isAdmin = false }: TopNavProps) {
+export function TopNav({ user, tier = 'free', isAdmin = false, isOrgAdmin = false }: TopNavProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -112,6 +115,7 @@ export function TopNav({ user, tier = 'free', isAdmin = false }: TopNavProps) {
   }
 
   const { openUpgradeModal } = useUpgradeModal()
+  const { theme, toggleTheme } = useTheme()
   const isFree = tier?.toLowerCase() === 'free'
 
   if (!isHydrated) {
@@ -165,6 +169,24 @@ export function TopNav({ user, tier = 'free', isAdmin = false }: TopNavProps) {
               </button>
             )}
 
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              className="w-9 h-9 flex items-center justify-center rounded-lg text-text-muted hover:text-gold hover:bg-gold-dim transition-colors"
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            >
+              {theme === 'dark' ? (
+                <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              ) : (
+                <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+              )}
+            </button>
+
             {/* User dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
@@ -193,6 +215,14 @@ export function TopNav({ user, tier = 'free', isAdmin = false }: TopNavProps) {
                         {item.label}
                       </Link>
                     ))}
+                    {isOrgAdmin && (
+                      <Link
+                        href="/partner"
+                        className="block px-4 py-2 text-sm text-gold/70 hover:text-gold hover:bg-gold/10 transition-colors"
+                      >
+                        Partner Portal
+                      </Link>
+                    )}
                     {isAdmin && (
                       <Link
                         href="/admin"
@@ -273,6 +303,15 @@ export function TopNav({ user, tier = 'free', isAdmin = false }: TopNavProps) {
                 </Link>
               ))}
 
+              {isOrgAdmin && (
+                <Link
+                  href="/partner"
+                  className="block px-6 py-3 text-sm text-gold/70 hover:text-gold transition-colors"
+                >
+                  Partner Portal
+                </Link>
+              )}
+
               {isAdmin && (
                 <Link
                   href="/admin"
@@ -295,6 +334,25 @@ export function TopNav({ user, tier = 'free', isAdmin = false }: TopNavProps) {
                   </button>
                 </>
               )}
+
+              <div className="h-px bg-border mx-4 my-2" />
+
+              {/* Theme toggle (mobile) */}
+              <button
+                onClick={toggleTheme}
+                className="flex items-center gap-3 px-6 py-3 text-sm text-text-muted hover:text-text transition-colors w-full text-left"
+              >
+                {theme === 'dark' ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+              </button>
 
               <div className="h-px bg-border mx-4 my-2" />
 

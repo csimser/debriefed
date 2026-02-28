@@ -8,6 +8,7 @@ import { logApiUsage } from '@/lib/usage-tracking'
 import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { callWithEscalation, getModelString } from '@/lib/ai-model'
 import { translateMilitaryToCivilian } from '@/lib/constants/military-dictionary'
+import { dictionaryTranslate } from '@/lib/translation-engine'
 import { hasCriticalPII } from '@/lib/pii-scanner'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import militaryTermsDictionary from '@/lib/debriefed-token-saver/military-terms-dictionary.json'
@@ -433,12 +434,20 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
       return cleaned
     }
 
-    const processedBullets = bullets.map(bullet => {
+    const processedBullets = (await Promise.all(bullets.map(async (bullet) => {
       const cleanedOriginal = cleanText(bullet.original || '')
       const cleanedTranslated = cleanText(bullet.translated || bullet.original || '')
 
-      const { translated: processedOriginal, unflaggedTerms: originalUnflagged } = translateMilitaryToCivilian(cleanedOriginal)
-      const { translated: processedTranslated, unflaggedTerms: translatedUnflagged } = translateMilitaryToCivilian(cleanedTranslated)
+      // Use shared translation engine (phrase-first + jargon + constants)
+      const [dictOriginal, dictTranslated] = await Promise.all([
+        dictionaryTranslate(cleanedOriginal),
+        dictionaryTranslate(cleanedTranslated),
+      ])
+      const processedOriginal = dictOriginal.translated
+      const processedTranslated = dictTranslated.translated
+      // Legacy function for unflagged term detection
+      const { unflaggedTerms: originalUnflagged } = translateMilitaryToCivilian(processedOriginal)
+      const { unflaggedTerms: translatedUnflagged } = translateMilitaryToCivilian(processedTranslated)
 
       return {
         ...bullet,
@@ -448,7 +457,7 @@ Return ONLY valid JSON, no markdown or explanation. ALWAYS extract at least 3-5 
         skills: bullet.skills || [],
         unflaggedTerms: [...new Set([...originalUnflagged, ...translatedUnflagged])],
       }
-    }).filter(b => b.translated && b.translated.length > 20)
+    }))).filter(b => b.translated && b.translated.length > 20)
 
     // Save to database
     const { data: upload, error: uploadError } = await supabaseAdmin

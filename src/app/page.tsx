@@ -1,6 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { PRICING_TIERS, getFormattedPrice } from '@/lib/pricing-config'
+import { MarketingNav } from '@/components/layout/MarketingNav'
+import { TestimonialsSection } from '@/components/testimonials/TestimonialsSection'
+import { TranslationDemo } from '@/components/landing/TranslationDemo'
 
 export default async function HomePage({
   searchParams,
@@ -31,60 +35,7 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
-      {/* Status Bar */}
-      <div className="bg-bg-secondary border-b border-border px-8 py-2.5 flex items-center justify-between font-mono text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-status-green animate-pulse" />
-          <span className="text-status-green">SYSTEMS OPERATIONAL</span>
-        </div>
-        <div className="text-text-muted">
-          <span>v1.0</span>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="bg-bg-secondary border-b border-border px-4 md:px-8 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 py-4">
-          <div className="w-9 h-9 border-2 border-gold flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 text-gold">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <path d="M9 9h6M9 13h6M9 17h4"/>
-            </svg>
-          </div>
-          <span className="font-heading text-xl md:text-2xl font-bold tracking-wider uppercase">Debriefed</span>
-        </Link>
-
-        {/* Nav Links - hidden on mobile */}
-        <div className="hidden md:flex">
-          <Link href="/" className="px-6 py-5 font-heading text-xs font-semibold tracking-wider uppercase text-gold border-b-2 border-gold">
-            Home
-          </Link>
-          <Link href="#features" className="px-6 py-5 font-heading text-xs font-semibold tracking-wider uppercase text-text-muted hover:text-text hover:bg-bg-tertiary border-b-2 border-transparent">
-            Features
-          </Link>
-          <Link href="#pricing" className="px-6 py-5 font-heading text-xs font-semibold tracking-wider uppercase text-text-muted hover:text-text hover:bg-bg-tertiary border-b-2 border-transparent">
-            Pricing
-          </Link>
-          <Link href="/about" className="px-6 py-5 font-heading text-xs font-semibold tracking-wider uppercase text-text-muted hover:text-text hover:bg-bg-tertiary border-b-2 border-transparent">
-            About
-          </Link>
-          <Link href="/help" className="px-6 py-5 font-heading text-xs font-semibold tracking-wider uppercase text-text-muted hover:text-text hover:bg-bg-tertiary border-b-2 border-transparent">
-            Help
-          </Link>
-        </div>
-
-        {/* CTA Buttons */}
-        <div className="flex items-center gap-2 md:gap-3">
-          <Link href="/login" className="px-3 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text border border-border hover:border-border-bright rounded transition-all">
-            Sign In
-          </Link>
-          
-          <Link href="/signup" className="px-4 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
-            Begin Mission →
-          </Link>
-        </div>
-      </nav>
+      <MarketingNav currentPage="home" />
 
       {/* Hero Section */}
       <section className="flex-1 px-4 md:px-12 py-12 md:py-20 relative overflow-hidden flex items-center">
@@ -161,6 +112,9 @@ export default async function HomePage({
         </div>
       </section>
 
+      {/* Interactive Translation Demo */}
+      <TranslationDemo />
+
       {/* Features Section */}
       <section id="features" className="bg-bg-secondary border-t border-border px-4 md:px-20 py-16 md:py-24">
         <div className="max-w-6xl mx-auto">
@@ -223,6 +177,9 @@ export default async function HomePage({
           </div>
         </div>
       </section>
+
+      {/* Testimonials */}
+      <TestimonialsSection />
 
       {/* Why Free Section */}
       <section className="bg-bg-primary border-t border-border px-4 md:px-20 py-16 md:py-24 relative overflow-hidden">
@@ -348,8 +305,8 @@ export default async function HomePage({
             <div className="font-heading text-2xl font-bold uppercase mb-2">Core</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">AI-powered tools to land the job</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$25</span>
-              <span className="text-sm text-text-muted ml-1">/ 30 days</span>
+              <span className="font-heading text-3xl font-bold text-gold">{getFormattedPrice('core')}</span>
+              <span className="text-sm text-text-muted ml-1">/ {PRICING_TIERS.core.duration} days</span>
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Resumes" limit="10 / 30 days" tooltip="5/day" />
@@ -379,8 +336,8 @@ export default async function HomePage({
             <div className="font-heading text-2xl font-bold uppercase mb-2">Full</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">Unlimited AI for serious job searches</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$50</span>
-              <span className="text-sm text-text-muted ml-1">/ 90 days</span>
+              <span className="font-heading text-3xl font-bold text-gold">{getFormattedPrice('full')}</span>
+              <span className="text-sm text-text-muted ml-1">/ {PRICING_TIERS.full.duration} days</span>
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Resumes" limit="Unlimited" tooltip="7/day" />

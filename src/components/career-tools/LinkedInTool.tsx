@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -9,8 +9,8 @@ import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
 import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
 import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
 import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
-import type { DictProfessionalSummary, DictRankEquivalent } from '@/lib/dictionary/types'
-import { getRankTier, formatClearanceForHeadline, buildLinkedInValues, fillLinkedInTemplate, ensureProperTitle, titleCaseHeadline, smartSkillSort } from './DictLinkedInTools'
+import type { DictProfessionalSummary, DictRankEquivalent, DictLinkedinKeyword, DictMilitaryJargon } from '@/lib/dictionary/types'
+import { getRankTier, formatClearanceForHeadline, buildLinkedInValues, fillLinkedInTemplate, ensureProperTitle, titleCaseHeadline, smartSkillSort } from './linkedInUtils'
 import type { DictAtsKeyword } from '@/lib/dictionary/types'
 
 interface LinkedInToolProps {
@@ -45,8 +45,28 @@ function formatCredential(cert: string): string {
 
 export function LinkedInTool({ userProfile, experiences, skills, certifications, education, hasPaidAccess, userTier = 'free', currentUsage = 0, usageLimit = 999, onBack }: LinkedInToolProps) {
   const remaining = usageLimit - currentUsage
+  const { openUpgradeModal } = useUpgradeModal()
+
   // Mode toggle
-  const [mode, setMode] = useState<'generate' | 'analyze'>('generate')
+  const [mode, setMode] = useState<'generate' | 'keywords' | 'analyze'>('generate')
+
+  // Inline headline editing
+  const [editingHeadlineIdx, setEditingHeadlineIdx] = useState<number | null>(null)
+  const [editedHeadlineText, setEditedHeadlineText] = useState('')
+  // Selected headline index
+  const [selectedHeadlineIdx, setSelectedHeadlineIdx] = useState<number>(0)
+
+  // Keywords mode state
+  const [keywordPasteText, setKeywordPasteText] = useState('')
+  const [keywordResults, setKeywordResults] = useState<{
+    found: string[]
+    missing: string[]
+    jargonDetected: string[]
+    score: number
+    total: number
+  } | null>(null)
+  const [linkedinKeywords, setLinkedinKeywords] = useState<DictLinkedinKeyword[]>([])
+  const [jargonTerms, setJargonTerms] = useState<DictMilitaryJargon[]>([])
 
   // Generate mode state - restore from sessionStorage if available
   const [targetRole, setTargetRole] = useState(() => {
@@ -94,6 +114,10 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   const [leadWith, setLeadWith] = useState<'experience' | 'clearance' | 'certification' | 'role' | 'skill'>('experience')
   const [skillSearch, setSkillSearch] = useState('')
 
+  // Refine drawer
+  const [refineOpen, setRefineOpen] = useState(false)
+  const refineSnapshotRef = useRef('')
+
   // Analyze mode state
   const [linkedInPDF, setLinkedInPDF] = useState<any>(null)
   const [analysis, setAnalysis] = useState<any>(null)
@@ -101,6 +125,10 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   const [isUploading, setIsUploading] = useState(false)
   const [showLastUseWarning, setShowLastUseWarning] = useState(false)
   const { triggerPostActionModal } = usePostActionModal()
+
+  // Summary editing
+  const [summaryFocused, setSummaryFocused] = useState(false)
+  const summaryRef = useRef<HTMLTextAreaElement>(null)
 
   // Dictionary state
   const [dictLoading, setDictLoading] = useState(true)
@@ -135,6 +163,8 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
       setSummaries(dict.professionalSummaries ?? [])
       setRankEquivalents(dict.rankEquivalents ?? [])
       setAtsKeywords(dict.atsKeywords ?? [])
+      setLinkedinKeywords(dict.linkedinKeywords ?? [])
+      setJargonTerms(dict.militaryJargon ?? [])
       setDictLoading(false)
     }).catch(() => setDictLoading(false))
   }, [])
@@ -167,6 +197,21 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   // Reset template variant when tone or length changes
   useEffect(() => { setAboutTemplateIndex(0) }, [tone, aboutLength])
 
+  // Auto-generate on mount when dictionary loads and we have data + target role
+  const autoGenRef = useRef(false)
+  useEffect(() => {
+    if (!dictLoading && !autoGenRef.current && !hasGenerated) {
+      const role = targetRole || userProfile?.target_role || userProfile?.desired_position || ''
+      if (role && (userProfile || experiences?.length > 0)) {
+        if (!targetRole && role) setTargetRole(role)
+        autoGenRef.current = true
+        // Small delay to let targetRole state propagate
+        setTimeout(() => handleDictGenerate(), 50)
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dictLoading])
+
   const getCivilianTitle = () => {
     if (!userProfile?.paygrade || !userProfile?.branch || rankEquivalents.length === 0)
       return targetRole || 'Professional'
@@ -180,10 +225,12 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   }
 
   const handleDictGenerate = (overrideTemplateIndex?: number) => {
-    if (!targetRole) {
+    const role = targetRole || userProfile?.target_role || userProfile?.desired_position || ''
+    if (!role) {
       setError('Please enter your target role')
       return
     }
+    if (!targetRole && role) setTargetRole(role)
     setError('')
     const rankTier = getRankTier(userProfile?.paygrade)
     const civTitle = ensureProperTitle(getCivilianTitle(), rankTier)
@@ -198,9 +245,9 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     // Smart-sort skills: emphasis > ATS keywords > hard skills, deduped against certs
     const orderedSkills = smartSkillSort(selectedSkills.length > 0 ? selectedSkills : skills, emphasis, certs, relevantAtsKw)
 
-    const values = buildLinkedInValues(userProfile, orderedSkills, certs.map((c: string) => ({ name: c })), education || [], civTitle, targetRole)
+    const values = buildLinkedInValues(userProfile, orderedSkills, certs.map((c: string) => ({ name: c })), education || [], civTitle, role)
     const clearance = values['clearance'] || ''
-    const industry = userProfile?.target_industry || targetRole
+    const industry = userProfile?.target_industry || role
     const years = userProfile?.years_of_service || '10+'
 
     // --- Credential ranking: use FULL cert stack ---
@@ -358,7 +405,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
       clearance ? `${clearance.replace(' Clearance', '')} Cleared` : '',
     ], 'bold'))
 
-    // --- ABOUT SECTION: tone × length × templateIndex (3 visibly distinct variants per tone) ---
+    // --- ABOUT SECTION: tone x length x templateIndex (3 visibly distinct variants per tone) ---
     const templateIndex = (overrideTemplateIndex ?? aboutTemplateIndex) % 3
     const clearanceStmt = clearance ? `Holds active ${clearance}.` : ''
     const certStmt = cert1 ? `${cert1} certified.` : ''
@@ -377,9 +424,9 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     if (tone === 'professional') {
       // 3 openings: 0=transition story, 1=achievement lead, 2=role + value prop
       const openings = [
-        `${years}-year ${branchShort} veteran transitioning to ${targetRole} in ${industry}.`,
+        `${years}-year ${branchShort} veteran transitioning to ${role} in ${industry}.`,
         `Proven track record of ${shortAchievement} — now bringing ${years}+ years of ${branchShort} experience to ${industry}.`,
-        `${targetRole} with deep expertise in ${skillPhrase}, combining ${years}+ years of military leadership with ${[cert1, degreeShort].filter(Boolean).join(' and ') || 'proven results'}.`,
+        `${role} with deep expertise in ${skillPhrase}, combining ${years}+ years of military leadership with ${[cert1, degreeShort].filter(Boolean).join(' and ') || 'proven results'}.`,
       ]
       const opening = openings[templateIndex]
 
@@ -395,10 +442,10 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
         if (competencies.length > 0) {
           summary += `\n\nCore Competencies:\n${competencies.join(' • ')}`
         }
-        summary += `\n\nCurrently seeking ${targetRole} opportunities where I can leverage ${years}+ years of operational experience to drive ${industry} outcomes.`
+        summary += `\n\nCurrently seeking ${role} opportunities where I can leverage ${years}+ years of operational experience to drive ${industry} outcomes.`
       } else {
         summary = `${opening} Skilled in ${skillPhrase} with a proven record of ${shortAchievement}. ${credSuffix}`
-        summary += `\n\nCurrently seeking ${targetRole} opportunities where I can leverage ${years}+ years of operational experience to drive results in ${industry}.`
+        summary += `\n\nCurrently seeking ${role} opportunities where I can leverage ${years}+ years of operational experience to drive results in ${industry}.`
       }
     } else if (tone === 'conversational') {
       // 3 openings: 0=transition story, 1=achievement lead, 2=value prop
@@ -410,9 +457,9 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
       const opening = openings[templateIndex]
 
       if (aboutLength === 'concise') {
-        summary = `${opening} Now I'm bringing that experience to ${industry} as a ${targetRole.toLowerCase()}.${clearanceStmt ? ` ${clearanceStmt}` : ''}`
+        summary = `${opening} Now I'm bringing that experience to ${industry} as a ${role.toLowerCase()}.${clearanceStmt ? ` ${clearanceStmt}` : ''}`
       } else if (aboutLength === 'detailed') {
-        summary = `${opening} Now I'm bringing that experience to ${industry} as a ${targetRole.toLowerCase()}.`
+        summary = `${opening} Now I'm bringing that experience to ${industry} as a ${role.toLowerCase()}.`
         // Avoid repeating achievement when opening already mentions it
         if (templateIndex === 1) {
           summary += `\n\nMy background spans ${skillPhrase.toLowerCase()}, from team leadership to strategic execution. ${[clearanceStmt, certStmt].filter(Boolean).join(' ')}`
@@ -424,7 +471,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
         }
         summary += `\n\nIf you're looking for someone who can turn complex challenges into real outcomes, let's connect.`
       } else {
-        summary = `${opening} Now I'm bringing that experience to ${industry} as a ${targetRole.toLowerCase()}.`
+        summary = `${opening} Now I'm bringing that experience to ${industry} as a ${role.toLowerCase()}.`
         summary += `\n\nMy background includes ${skillPhrase.toLowerCase()}. ${[clearanceStmt, certStmt].filter(Boolean).join(' ')} If you're looking for someone who delivers results, let's connect.`
       }
     } else {
@@ -432,16 +479,16 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
       const openings = [
         `${years} years.${teamSize ? ` ${teamSize}-person teams.` : ''} Results delivered.`,
         `${shortAchievement}. That's the standard.`,
-        `${targetRole}. ${industry}. Mission-ready.`,
+        `${role}. ${industry}. Mission-ready.`,
       ]
       const opening = openings[templateIndex]
 
       if (aboutLength === 'concise') {
-        summary = `${opening}\n\n${branchShort} veteran. ${cert1 || targetRole}.${clearance ? ` ${clearance.replace(' Clearance', '')} cleared.` : ''} Now targeting ${targetRole} in ${industry}.`
+        summary = `${opening}\n\n${branchShort} veteran. ${cert1 || role}.${clearance ? ` ${clearance.replace(' Clearance', '')} cleared.` : ''} Now targeting ${role} in ${industry}.`
       } else if (aboutLength === 'detailed') {
         summary = opening
-        summary += `\n\n${branchShort} veteran. ${cert1 || targetRole}.${cert2 ? ` ${cert2}.` : ''}${clearance ? ` ${clearance.replace(' Clearance', '')} cleared.` : ''}${degreeShort ? ` ${degreeShort}.` : ''}`
-        summary += `\n\nNow targeting ${targetRole} in ${industry}. I bring ${skillPhrase.toLowerCase()} — and the discipline to execute.`
+        summary += `\n\n${branchShort} veteran. ${cert1 || role}.${cert2 ? ` ${cert2}.` : ''}${clearance ? ` ${clearance.replace(' Clearance', '')} cleared.` : ''}${degreeShort ? ` ${degreeShort}.` : ''}`
+        summary += `\n\nNow targeting ${role} in ${industry}. I bring ${skillPhrase.toLowerCase()} — and the discipline to execute.`
         if (topBullets.length > 0) {
           summary += `\n\nTrack record:\n${topBullets.map((b: string) => `• ${b.trim()}`).join('\n')}`
         }
@@ -451,8 +498,8 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
         }
       } else {
         summary = opening
-        summary += `\n\n${branchShort} veteran. ${cert1 || targetRole}.${clearance ? ` ${clearance.replace(' Clearance', '')} cleared.` : ''}${degreeShort ? ` ${degreeShort}.` : ''}`
-        summary += `\n\nNow targeting ${targetRole} in ${industry}. I bring ${skillPhrase.toLowerCase()} — and the discipline to execute.`
+        summary += `\n\n${branchShort} veteran. ${cert1 || role}.${clearance ? ` ${clearance.replace(' Clearance', '')} cleared.` : ''}${degreeShort ? ` ${degreeShort}.` : ''}`
+        summary += `\n\nNow targeting ${role} in ${industry}. I bring ${skillPhrase.toLowerCase()} — and the discipline to execute.`
       }
     }
 
@@ -548,6 +595,117 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     setTimeout(() => setCopied(null), 2000)
   }
 
+  // Keyword analysis
+  const analyzeKeywords = useCallback(() => {
+    if (!keywordPasteText.trim()) return
+    const textLower = keywordPasteText.toLowerCase()
+    const targetIndustry = (userProfile?.target_industry || '').toLowerCase()
+
+    // Collect recommended keywords from LinkedIn + ATS dictionaries for user's industry
+    const allRecommended = new Set<string>()
+    linkedinKeywords
+      .filter(lk => !targetIndustry || lk.industry.toLowerCase().includes(targetIndustry))
+      .forEach(lk => { lk.linkedin_keywords.forEach(kw => allRecommended.add(kw.toLowerCase())) })
+    atsKeywords
+      .filter(ak => !targetIndustry || ak.industry.toLowerCase().includes(targetIndustry))
+      .forEach(ak => { ak.keywords.forEach(kw => allRecommended.add(kw.toLowerCase())) })
+
+    const found: string[] = []
+    const missing: string[] = []
+    for (const kw of allRecommended) {
+      if (textLower.includes(kw)) { found.push(kw) } else { missing.push(kw) }
+    }
+
+    // Detect military jargon
+    const jargonDetected: string[] = []
+    for (const j of jargonTerms) {
+      const term = (j.military_term || '').toLowerCase()
+      if (term.length >= 3 && textLower.includes(term)) {
+        jargonDetected.push(`${j.military_term} → ${j.civilian_equivalent}`)
+      }
+    }
+
+    setKeywordResults({
+      found: found.slice(0, 20),
+      missing: missing.slice(0, 15),
+      jargonDetected: jargonDetected.slice(0, 10),
+      score: found.length,
+      total: allRecommended.size,
+    })
+  }, [keywordPasteText, linkedinKeywords, atsKeywords, jargonTerms, userProfile?.target_industry])
+
+  // --- Filtered headlines by current tone ---
+  const toneHeadlines = dictResults?.headlines?.filter(h => h.tone === tone) || []
+  const otherHeadlines = dictResults?.headlines?.filter(h => h.tone !== tone) || []
+  // Show top 4 headlines total (tone-matched first, then others)
+  const displayHeadlines = [...toneHeadlines, ...otherHeadlines].slice(0, 4)
+
+  // Compute the selected headline (from filtered list)
+  const selectedHeadline = displayHeadlines[selectedHeadlineIdx] || displayHeadlines[0]
+
+  // Character count for summary
+  const summaryCharCount = (results?.summary || editedSummary || '').length
+
+  // Refine drawer open/close logic
+  const handleOpenRefine = () => {
+    refineSnapshotRef.current = JSON.stringify({ tone, aboutLength, emphasis, leadWith, selectedSkills })
+    setRefineOpen(true)
+  }
+  const handleCloseRefine = () => {
+    setRefineOpen(false)
+    // Auto-regenerate if settings changed while drawer was open
+    const current = JSON.stringify({ tone, aboutLength, emphasis, leadWith, selectedSkills })
+    if (current !== refineSnapshotRef.current && hasGenerated) {
+      // The useEffect dependencies already handle auto-regenerate
+    }
+  }
+
+  // Profile snapshot data
+  const profileYears = userProfile?.years_of_service || '--'
+  const profileRank = userProfile?.rank || userProfile?.paygrade || '--'
+  const profileBranch = (() => {
+    const b = (userProfile?.branch || '').toLowerCase()
+    if (b.includes('navy')) return 'Navy'
+    if (b.includes('army')) return 'Army'
+    if (b.includes('air') || b === 'air_force') return 'Air Force'
+    if (b.includes('marine')) return 'Marine Corps'
+    if (b.includes('coast')) return 'Coast Guard'
+    if (b.includes('space')) return 'Space Force'
+    return userProfile?.branch || '--'
+  })()
+  const profileExpCount = experiences?.length || 0
+  const profileEduCount = education?.length || 0
+  const profileCertCount = certifications?.length || 0
+  const profileSkillCount = skills?.length || 0
+
+  // Loading skeleton
+  const HeadlineSkeleton = () => (
+    <div className="space-y-3">
+      {[1, 2, 3].map(i => (
+        <div key={i} className="p-4 rounded-lg border border-border bg-bg-secondary">
+          <div className="animate-pulse space-y-2">
+            <div className="h-2 bg-text-dim/10 rounded w-[20%]" />
+            <div className="h-3.5 bg-text-dim/10 rounded w-[85%]" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+
+  const SummarySkeleton = () => (
+    <div className="animate-pulse space-y-3 min-h-[200px] p-4 bg-bg-secondary rounded-lg border border-border">
+      <div className="h-2 bg-text-dim/10 rounded w-full" />
+      <div className="h-2 bg-text-dim/10 rounded w-[95%]" />
+      <div className="h-2 bg-text-dim/10 rounded w-[88%]" />
+      <div className="h-2 bg-text-dim/10 rounded w-full" />
+      <div className="h-2 bg-text-dim/10 rounded w-[92%]" />
+      <div className="h-2 bg-text-dim/10 rounded w-[78%]" />
+      <div className="h-2 bg-text-dim/10 rounded w-full" />
+      <div className="h-2 bg-text-dim/10 rounded w-[85%]" />
+      <div className="h-2 bg-text-dim/10 rounded w-[70%]" />
+    </div>
+  )
+
   return (
     <div>
       {/* Breadcrumb Header */}
@@ -566,370 +724,226 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
       {/* Mode Tabs */}
       <div className="flex gap-1 mb-6 bg-bg-secondary rounded-lg p-1 w-fit">
-        <button
-          onClick={() => setMode('generate')}
-          className={`px-4 py-2 text-sm rounded-md transition-all ${
-            mode === 'generate'
-              ? 'bg-gold text-bg-primary font-medium'
-              : 'text-text-muted hover:text-text'
-          }`}
-        >
-          Generate
-        </button>
-        <button
-          onClick={() => setMode('analyze')}
-          className={`px-4 py-2 text-sm rounded-md transition-all ${
-            mode === 'analyze'
-              ? 'bg-gold text-bg-primary font-medium'
-              : 'text-text-muted hover:text-text'
-          }`}
-        >
-          Analyze Profile
-        </button>
+        {([
+          { id: 'generate', label: 'Generate' },
+          { id: 'keywords', label: 'Keywords' },
+          { id: 'analyze', label: 'Analyze Profile' },
+        ] as const).map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setMode(tab.id)}
+            className={`px-4 py-2 text-sm rounded-md transition-all ${
+              mode === tab.id
+                ? 'bg-gold text-bg-primary font-medium'
+                : 'text-text-muted hover:text-text'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {mode === 'generate' ? (
-        // === EXISTING GENERATE UI ===
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Input */}
-          <div className="space-y-4">
-            <h3 className="font-heading text-xs font-bold uppercase tracking-wider text-text-dim pb-2 border-b border-border flex items-center gap-2">
-              <span className="text-gold">◎</span> YOUR TARGET
-            </h3>
-
-            <div className="space-y-3">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* ============ LEFT PANEL ============ */}
+          <div className="lg:w-[340px] flex-shrink-0 space-y-4">
+            {/* Target Role */}
+            <Card className="p-5">
+              <h3 className="font-heading text-xs font-bold uppercase tracking-wider text-text-dim pb-2 border-b border-border flex items-center gap-2 mb-3">
+                <span className="text-gold">&#9678;</span> Your Target
+              </h3>
               <Input
                 label="Target Role / Industry"
                 value={targetRole}
                 onChange={(e) => setTargetRole(e.target.value)}
-                placeholder="e.g., Operations Manager, Project Management, Cybersecurity"
+                placeholder="e.g., Operations Manager, Cybersecurity"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && targetRole.trim()) {
+                    handleDictGenerate()
+                  }
+                }}
               />
+            </Card>
 
-              <div className="border-l-2 border-gold pl-3 bg-gold/5 rounded-r-lg p-3">
-                <h4 className="font-heading text-xs font-bold uppercase tracking-wider mb-1.5">Using Your Profile Data</h4>
-                <ul className="text-xs text-text-muted space-y-0.5">
-                  <li>• {userProfile?.rank || 'Senior military leader'} with {userProfile?.years_of_service || '20'} years experience</li>
-                  <li>• {experiences?.length || 0} work experience{experiences?.length !== 1 ? 's' : ''}</li>
-                  {education && education.length > 0 && (
-                    <li>• {education.map((e: any) =>
-                      e.degree_type === 'master' ? "Master's Degree" :
-                      e.degree_type === 'bachelor' ? "Bachelor's Degree" :
-                      e.degree_type === 'associate' ? "Associate's Degree" :
-                      e.degree_type || 'Degree'
-                    ).join(', ')}</li>
-                  )}
-                  {certifications && certifications.length > 0 && (
-                    <li>• {certifications.length} certification{certifications.length !== 1 ? 's' : ''}: {certifications.slice(0, 3).map((c: any) => c.name || c).join(', ')}{certifications.length > 3 ? '...' : ''}</li>
-                  )}
-                  <li>• {skills?.length || 0} skills</li>
-                </ul>
+            {/* Profile Snapshot */}
+            <Card className="p-5">
+              <h3 className="font-heading text-xs font-bold uppercase tracking-wider text-text-dim pb-2 border-b border-border flex items-center gap-2 mb-3">
+                <span className="text-gold">&#9670;</span> Profile Snapshot
+              </h3>
+              <div className="space-y-2 text-xs text-text-muted">
+                <div className="flex justify-between">
+                  <span className="text-text-dim">Rank</span>
+                  <span className="text-text">{profileRank}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-dim">Branch</span>
+                  <span className="text-text">{profileBranch}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-dim">Years</span>
+                  <span className="text-text">{profileYears}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-dim">Experience</span>
+                  <span className="text-text">{profileExpCount} position{profileExpCount !== 1 ? 's' : ''}</span>
+                </div>
+                {profileEduCount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-text-dim">Education</span>
+                    <span className="text-text">
+                      {education?.map((e: any) =>
+                        e.degree_type === 'master' ? "Master's" :
+                        e.degree_type === 'bachelor' ? "Bachelor's" :
+                        e.degree_type === 'associate' ? "Associate's" :
+                        e.degree_type || 'Degree'
+                      ).join(', ')}
+                    </span>
+                  </div>
+                )}
+                {profileCertCount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-text-dim">Certs</span>
+                    <span className="text-text">{certifications!.slice(0, 3).map((c: any) => c.name || c).join(', ')}{profileCertCount > 3 ? '...' : ''}</span>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-text-dim">Skills</span>
+                  <span className="text-text">{profileSkillCount} skills</span>
+                </div>
               </div>
+            </Card>
 
-              {/* Customization Options */}
-              <div className="space-y-3">
-                <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text-dim pb-2 border-b border-border">Customize Output</h4>
+            {error && (
+              <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
+                <p className="text-sm text-status-red">{error}</p>
+              </div>
+            )}
+          </div>
 
-                {/* Tone */}
-                <div>
-                  <label className="text-xs text-text-dim mb-1.5 block">Tone</label>
-                  <div className="flex gap-2">
-                    {[
-                      { id: 'professional', label: 'Professional' },
-                      { id: 'conversational', label: 'Conversational' },
-                      { id: 'bold', label: 'Bold & Direct' },
-                    ].map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        onClick={() => setTone(t.id as any)}
-                        className={`flex-1 py-1.5 px-2 text-xs rounded transition-all ${
-                          tone === t.id
-                            ? 'bg-gold text-bg-primary font-medium'
-                            : 'bg-bg-secondary text-text-muted hover:text-text'
-                        }`}
-                      >
-                        {t.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Lead With */}
-                <div>
-                  <label className="text-xs text-text-dim mb-1.5 block">Lead Headline With</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { id: 'experience', label: 'Years of Experience' },
-                      { id: 'clearance', label: 'Clearance Level' },
-                      { id: 'certification', label: 'Top Certification' },
-                      { id: 'role', label: 'Target Role' },
-                      { id: 'skill', label: 'Top Skill' },
-                    ].map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setLeadWith(opt.id as any)}
-                        className={`px-2 py-1 text-xs rounded transition-all ${
-                          leadWith === opt.id
-                            ? 'bg-gold text-bg-primary font-medium'
-                            : 'bg-bg-secondary text-text-muted hover:text-text'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* About Length */}
-                <div>
-                  <label className="text-xs text-text-dim mb-1.5 block">About Length</label>
-                  <div className="flex gap-2">
-                    {[
-                      { id: 'concise', label: 'Concise', desc: '~150 words' },
-                      { id: 'standard', label: 'Standard', desc: '~250 words' },
-                      { id: 'detailed', label: 'Detailed', desc: '~350 words' },
-                    ].map((l) => (
-                      <button
-                        key={l.id}
-                        type="button"
-                        onClick={() => setAboutLength(l.id as any)}
-                        className={`flex-1 py-1.5 px-2 text-xs rounded transition-all ${
-                          aboutLength === l.id
-                            ? 'bg-gold text-bg-primary font-medium'
-                            : 'bg-bg-secondary text-text-muted hover:text-text'
-                        }`}
-                      >
-                        {l.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Emphasis Areas */}
-                <div>
-                  <label className="text-xs text-text-dim mb-1.5 block">Emphasize (select up to 3)</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      'Leadership',
-                      'Technical Skills',
-                      'Certifications',
-                      'Project Management',
-                      'Team Development',
-                      'Process Improvement',
-                      'Safety/Compliance',
-                      'Cybersecurity',
-                      'Clearance',
-                      'Federal Experience',
-                      'Operations',
-                      'Training & Development',
-                      'Budget Management',
-                    ].map((area) => {
-                      const isSelected = emphasis.includes(area)
-                      return (
-                        <button
-                          key={area}
-                          type="button"
-                          onClick={() => {
-                            if (isSelected) {
-                              setEmphasis(emphasis.filter(e => e !== area))
-                            } else if (emphasis.length < 3) {
-                              setEmphasis([...emphasis, area])
-                            }
-                          }}
-                          className={`px-2 py-1 text-xs rounded transition-all ${
-                            isSelected
-                              ? 'bg-gold text-bg-primary'
-                              : 'bg-bg-secondary text-text-dim hover:text-text-muted'
-                          }`}
-                        >
-                          {area}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Skill Selection */}
-                <div>
-                  <label className="text-xs text-text-dim mb-1.5 block">Skills to Highlight ({selectedSkills.length}/{skills.length})</label>
-                  <input
-                    type="text"
-                    name="skill-search"
-                    autoComplete="off"
-                    placeholder="Search skills..."
-                    value={skillSearch}
-                    onChange={(e) => setSkillSearch(e.target.value)}
-                    className="w-full px-2 py-1.5 text-xs rounded bg-bg-secondary border border-border text-text placeholder:text-text-dim focus:outline-none focus:border-gold mb-2"
-                  />
-                  <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto">
-                    {skills
-                      .filter(s => !skillSearch || s.toLowerCase().includes(skillSearch.toLowerCase()))
-                      .map((skill) => {
-                        const isSelected = selectedSkills.includes(skill)
-                        return (
-                          <button
-                            key={skill}
-                            type="button"
-                            onClick={() => {
-                              if (isSelected) {
-                                setSelectedSkills(selectedSkills.filter(s => s !== skill))
-                              } else {
-                                setSelectedSkills([...selectedSkills, skill])
-                              }
-                            }}
-                            className={`px-2 py-1 text-xs rounded transition-all ${
-                              isSelected
-                                ? 'bg-gold text-bg-primary'
-                                : 'bg-bg-secondary text-text-dim hover:text-text-muted'
-                            }`}
-                          >
-                            {skill}
-                          </button>
-                        )
-                      })}
-                    {skills.filter(s => !skillSearch || s.toLowerCase().includes(skillSearch.toLowerCase())).length === 0 && (
-                      <p className="text-xs text-text-dim">No matching skills</p>
-                    )}
-                  </div>
-                  {selectedSkills.length > 0 && (
+          {/* ============ RIGHT PANEL ============ */}
+          <div className="flex-1 space-y-6 min-w-0">
+            {/* HEADLINES */}
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                  <span className="text-gold">&#9670;</span> Headlines
+                </h3>
+                <div className="flex items-center gap-2">
+                  {selectedHeadline && (
                     <button
-                      type="button"
-                      onClick={() => setSelectedSkills([])}
-                      className="text-xs text-text-dim hover:text-text mt-1"
+                      onClick={() => handleCopy(selectedHeadline.text, 'headline-selected')}
+                      className="text-xs px-2 py-1 bg-gold/20 text-gold rounded hover:bg-gold/30 transition-colors"
                     >
-                      Clear all
+                      {copied === 'headline-selected' ? 'Copied!' : 'Copy Selected'}
                     </button>
                   )}
                 </div>
               </div>
 
-              {error && (
-                <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
-                  <p className="text-sm text-status-red">{error}</p>
-                </div>
-              )}
-
-              <Button
-                className="w-full"
-                onClick={handleDictGenerate}
-                disabled={dictLoading}
-              >
-                {dictLoading ? 'Loading Dictionary...' : '✦ Generate LinkedIn Content'}
-              </Button>
-            </div>
-          </div>
-
-          {/* Output */}
-          <div className="space-y-6">
-            {/* Headline */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                  <span className="text-gold">◆</span> Headline
-                </h3>
-                {(results?.headline || (dictResults?.headlines && dictResults.headlines.length > 0)) && (
-                  <button
-                    onClick={() => {
-                      const headlineText = results?.headline || dictResults?.headlines?.find(h => h.tone === tone)?.text || dictResults?.headlines?.[0]?.text || ''
-                      handleCopy(headlineText, 'headline-main')
-                    }}
-                    className="text-xs text-text-muted hover:text-text"
-                  >
-                    {copied === 'headline-main' ? 'Copied!' : 'Copy'}
-                  </button>
-                )}
-              </div>
-
               {results?.headline ? (
-                <div>
-                  <div className="bg-bg-secondary rounded-lg p-4 mb-2">
+                <div className="space-y-3">
+                  <div className="bg-bg-secondary rounded-lg p-4">
                     <p className="text-xs text-gold font-semibold mb-1">AI Enhanced</p>
                     <p className="text-lg font-medium">{results.headline}</p>
                   </div>
                   <button
-                    onClick={() => handleCopy(results.headline, 'headline')}
+                    onClick={() => handleCopy(results.headline, 'headline-ai')}
                     className="text-xs text-text-muted hover:text-text"
                   >
-                    {copied === 'headline' ? 'Copied!' : 'Copy'}
+                    {copied === 'headline-ai' ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
               ) : generating ? (
                 <div className="h-16 flex items-center justify-center">
                   <div className="animate-pulse text-text-muted">Enhancing with AI...</div>
                 </div>
-              ) : dictResults?.headlines ? (
+              ) : dictLoading && !dictResults ? (
+                <HeadlineSkeleton />
+              ) : displayHeadlines.length > 0 ? (
                 <div className="space-y-2">
-                  {/* Selected tone headlines first */}
-                  {dictResults.headlines
-                    .filter(h => h.tone === tone)
-                    .map((h, idx) => (
-                    <div
-                      key={`match-${idx}`}
-                      className="flex items-center justify-between p-3 rounded-lg border transition-colors bg-gold/10 border-gold/30"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <span className="text-xs text-text-dim uppercase tracking-wider">
-                          {h.tone === 'professional' ? 'Professional' : h.tone === 'conversational' ? 'Conversational' : 'Bold & Direct'}
-                        </span>
-                        <p className="text-sm font-medium text-text">{h.text}</p>
-                      </div>
-                      <button
-                        onClick={() => handleCopy(h.text, `headline-match-${idx}`)}
-                        className="ml-2 px-2 py-1 text-xs bg-gold/20 text-gold rounded hover:bg-gold/30 transition-colors flex-shrink-0"
+                  {displayHeadlines.map((h, idx) => {
+                    const globalIdx = dictResults!.headlines.indexOf(h)
+                    const isSelected = idx === selectedHeadlineIdx
+                    const isEditing = editingHeadlineIdx === globalIdx
+                    const toneLabel = h.tone === 'professional' ? 'Professional' : h.tone === 'conversational' ? 'Conversational' : 'Bold'
+                    return (
+                      <div
+                        key={`headline-${idx}`}
+                        onClick={() => { if (!isEditing) setSelectedHeadlineIdx(idx) }}
+                        className={`flex items-center gap-2 p-4 rounded-lg border transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'bg-gold/10 border-gold'
+                            : 'bg-bg-secondary border-border hover:border-border-bright'
+                        }`}
                       >
-                        {copied === `headline-match-${idx}` ? 'Copied!' : 'Copy'}
-                      </button>
-                    </div>
-                  ))}
-                  {/* Other tone headlines dimmed */}
-                  {dictResults.headlines.some(h => h.tone !== tone) && (
-                    <p className="text-xs text-text-dim uppercase tracking-wider pt-2">More Options</p>
-                  )}
-                  {dictResults.headlines
-                    .filter(h => h.tone !== tone)
-                    .map((h, idx) => (
-                    <div
-                      key={`other-${idx}`}
-                      className="flex items-center justify-between p-3 rounded-lg border transition-colors bg-bg-secondary border-border opacity-70"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <span className="text-xs text-text-dim uppercase tracking-wider">
-                          {h.tone === 'professional' ? 'Professional' : h.tone === 'conversational' ? 'Conversational' : 'Bold & Direct'}
-                        </span>
-                        <p className="text-sm text-text-muted">{h.text}</p>
+                        {isEditing ? (
+                          <input
+                            type="text"
+                            autoComplete="off"
+                            value={editedHeadlineText}
+                            onChange={(e) => setEditedHeadlineText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const updated = { ...dictResults!, headlines: dictResults!.headlines.map((hl, i) => i === globalIdx ? { ...hl, text: editedHeadlineText } : hl) }
+                                setDictResults(updated)
+                                setEditingHeadlineIdx(null)
+                              }
+                              if (e.key === 'Escape') setEditingHeadlineIdx(null)
+                            }}
+                            autoFocus
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex-1 bg-bg-primary border border-gold rounded px-2 py-1 text-sm focus:ring-1 focus:ring-gold/25"
+                          />
+                        ) : (
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded ${
+                                h.tone === tone ? 'bg-gold/20 text-gold' : 'bg-bg-tertiary text-text-dim'
+                              }`}>
+                                {toneLabel}
+                              </span>
+                              {isSelected && (
+                                <span className="text-[10px] uppercase tracking-wider text-gold font-semibold">Selected</span>
+                              )}
+                            </div>
+                            <p className={`text-sm font-medium ${isSelected ? 'text-text' : 'text-text-muted'}`}>{h.text}</p>
+                          </div>
+                        )}
+                        <div className="flex gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                          {isEditing ? (
+                            <button
+                              onClick={() => {
+                                const updated = { ...dictResults!, headlines: dictResults!.headlines.map((hl, i) => i === globalIdx ? { ...hl, text: editedHeadlineText } : hl) }
+                                setDictResults(updated)
+                                setEditingHeadlineIdx(null)
+                              }}
+                              className="px-2 py-1 text-xs bg-gold text-bg-primary rounded font-semibold"
+                            >
+                              Save
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => { setEditingHeadlineIdx(globalIdx); setEditedHeadlineText(h.text) }}
+                                className="px-2 py-1 text-xs text-text-dim hover:text-text transition-colors"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleCopy(h.text, `headline-card-${idx}`)}
+                                className="px-2 py-1 text-xs bg-gold/20 text-gold rounded hover:bg-gold/30 transition-colors"
+                              >
+                                {copied === `headline-card-${idx}` ? 'Copied!' : 'Copy'}
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <button
-                        onClick={() => handleCopy(h.text, `headline-other-${idx}`)}
-                        className="ml-2 px-2 py-1 text-xs bg-gold/20 text-gold rounded hover:bg-gold/30 transition-colors flex-shrink-0"
-                      >
-                        {copied === `headline-other-${idx}` ? 'Copied!' : 'Copy'}
-                      </button>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               ) : (
-                /* Skeleton shimmer state */
-                <div className="space-y-2">
-                  <div className="p-3 rounded-lg border border-border bg-bg-secondary">
-                    <div className="animate-pulse space-y-2">
-                      <div className="h-2 bg-text-dim/10 rounded w-[20%]"></div>
-                      <div className="h-3 bg-text-dim/10 rounded w-[85%]"></div>
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-lg border border-border bg-bg-secondary">
-                    <div className="animate-pulse space-y-2">
-                      <div className="h-2 bg-text-dim/10 rounded w-[25%]"></div>
-                      <div className="h-3 bg-text-dim/10 rounded w-[75%]"></div>
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-lg border border-border bg-bg-secondary">
-                    <div className="animate-pulse space-y-2">
-                      <div className="h-2 bg-text-dim/10 rounded w-[18%]"></div>
-                      <div className="h-3 bg-text-dim/10 rounded w-[90%]"></div>
-                    </div>
-                  </div>
-                </div>
+                <HeadlineSkeleton />
               )}
 
               <p className="text-xs text-text-dim mt-2">Max 220 characters for LinkedIn</p>
@@ -954,11 +968,11 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
               )}
             </Card>
 
-            {/* Summary */}
+            {/* SUMMARY */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                  <span className="text-gold">◫</span> About / Summary
+                  <span className="text-gold">&#9643;</span> About / Summary
                 </h3>
                 <div className="flex items-center gap-2">
                   {dictResults?.summary && !results?.summary && (
@@ -970,15 +984,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                       }}
                       className="text-xs text-text-muted hover:text-text"
                     >
-                      Regenerate ({aboutTemplateIndex + 1}/3)
-                    </button>
-                  )}
-                  {(results?.summary || editedSummary) && (
-                    <button
-                      onClick={() => handleCopy(results?.summary || editedSummary, 'summary')}
-                      className="text-xs text-text-muted hover:text-text"
-                    >
-                      {copied === 'summary' ? 'Copied!' : 'Copy'}
+                      Variant ({aboutTemplateIndex + 1}/3)
                     </button>
                   )}
                 </div>
@@ -995,32 +1001,68 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                 <div className="h-48 flex items-center justify-center">
                   <div className="animate-pulse text-text-muted">Enhancing with AI...</div>
                 </div>
+              ) : dictLoading && !dictResults ? (
+                <SummarySkeleton />
               ) : dictResults?.summary ? (
                 <textarea
+                  ref={summaryRef}
                   name="linkedin-summary"
                   autoComplete="off"
                   value={editedSummary}
                   onChange={(e) => setEditedSummary(e.target.value)}
-                  className="w-full min-h-[200px] px-3 py-3 bg-bg-secondary border border-border rounded-lg text-sm leading-relaxed focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-y"
+                  onFocus={() => setSummaryFocused(true)}
+                  onBlur={() => setSummaryFocused(false)}
+                  className={`w-full min-h-[200px] px-3 py-3 bg-bg-secondary border rounded-lg text-sm leading-relaxed focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-y ${
+                    summaryFocused ? 'border-gold' : 'border-border'
+                  }`}
                 />
               ) : (
-                /* Skeleton shimmer state */
-                <div className="animate-pulse space-y-3 min-h-[200px] p-4 bg-bg-secondary rounded-lg border border-border">
-                  <div className="h-2 bg-text-dim/10 rounded w-full"></div>
-                  <div className="h-2 bg-text-dim/10 rounded w-[95%]"></div>
-                  <div className="h-2 bg-text-dim/10 rounded w-[88%]"></div>
-                  <div className="h-2 bg-text-dim/10 rounded w-full"></div>
-                  <div className="h-2 bg-text-dim/10 rounded w-[92%]"></div>
-                  <div className="h-2 bg-text-dim/10 rounded w-[78%]"></div>
-                  <div className="h-2 bg-text-dim/10 rounded w-full"></div>
-                  <div className="h-2 bg-text-dim/10 rounded w-[85%]"></div>
-                  <div className="h-2 bg-text-dim/10 rounded w-[70%]"></div>
+                <SummarySkeleton />
+              )}
+
+              {/* Character count */}
+              {(results?.summary || editedSummary) && (
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-xs text-text-dim">Optimized for LinkedIn's 2,600 character limit</p>
+                  <p className={`text-xs font-mono ${summaryCharCount > 2600 ? 'text-status-red' : summaryCharCount > 2400 ? 'text-status-amber' : 'text-text-dim'}`}>
+                    {summaryCharCount.toLocaleString()} / 2,600
+                  </p>
                 </div>
               )}
 
-              <p className="text-xs text-text-dim mt-2">Optimized for LinkedIn's 2,600 character limit</p>
+              {/* Action buttons */}
+              {(results?.summary || editedSummary) && !generating && (
+                <div className="flex items-center gap-2 mt-3">
+                  <button
+                    onClick={() => handleCopy(results?.summary || editedSummary, 'summary-accept')}
+                    className="flex-1 py-2 px-3 text-sm bg-gold text-bg-primary rounded-lg font-medium hover:bg-gold-bright transition-colors"
+                  >
+                    {copied === 'summary-accept' ? 'Copied!' : 'Copy Summary'}
+                  </button>
+                  {!results?.summary && (
+                    <button
+                      onClick={() => summaryRef.current?.focus()}
+                      className="py-2 px-3 text-sm bg-bg-secondary border border-border rounded-lg text-text-muted hover:text-text hover:border-border-bright transition-colors"
+                    >
+                      Edit
+                    </button>
+                  )}
+                  {!results?.summary && dictResults?.summary && (
+                    <button
+                      onClick={() => {
+                        const nextIdx = (aboutTemplateIndex + 1) % 3
+                        setAboutTemplateIndex(nextIdx)
+                        handleDictGenerate(nextIdx)
+                      }}
+                      className="py-2 px-3 text-sm bg-bg-secondary border border-border rounded-lg text-text-muted hover:text-text hover:border-border-bright transition-colors"
+                    >
+                      Dismiss
+                    </button>
+                  )}
+                </div>
+              )}
 
-              {/* Inline upgrade prompt instead of card */}
+              {/* Enhance with AI */}
               {dictResults?.summary && !results?.summary && !generating && (
                 hasPaidAccess ? (
                   <button
@@ -1032,18 +1074,321 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                   </button>
                 ) : (
                   <p className="mt-3 text-xs text-text-dim">
-                    <span className="text-gold">◆</span> Want deeper insights?{' '}
+                    <span className="text-gold">&#9670;</span> Want deeper insights?{' '}
                     <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">Upgrade to Full</UpgradeLink>
                     {' '}for a complete profile audit with specific fixes.
                   </p>
                 )
               )}
             </Card>
+
+            {/* Copy All button */}
+            {(dictResults || results) && !generating && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const headlineText = results?.headline || selectedHeadline?.text || ''
+                    const summaryText = results?.summary || editedSummary || ''
+                    const combined = `HEADLINE:\n${headlineText}\n\nABOUT:\n${summaryText}`
+                    handleCopy(combined, 'copy-all')
+                  }}
+                  className="flex-1 py-2 px-3 text-sm bg-bg-secondary border border-border rounded-lg text-text-muted hover:text-text hover:border-border-bright transition-colors text-center"
+                >
+                  {copied === 'copy-all' ? 'Copied All!' : 'Copy Headline + Summary'}
+                </button>
+                <button
+                  onClick={() => handleDictGenerate()}
+                  className="py-2 px-3 text-sm bg-bg-secondary border border-border rounded-lg text-text-muted hover:text-text hover:border-border-bright transition-colors"
+                >
+                  Regenerate
+                </button>
+                <button
+                  onClick={refineOpen ? handleCloseRefine : handleOpenRefine}
+                  className={`py-2 px-3 text-sm border rounded-lg transition-colors ${
+                    refineOpen
+                      ? 'bg-gold/10 border-gold text-gold'
+                      : 'bg-bg-secondary border-border text-text-muted hover:text-text hover:border-border-bright'
+                  }`}
+                  title="Refine settings"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            {/* Refine Settings Drawer */}
+            {refineOpen && (
+              <Card className="p-5 border-gold/30">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-gold">Refine Settings</h4>
+                  <button onClick={handleCloseRefine} className="text-text-dim hover:text-text">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {/* Tone */}
+                  <div>
+                    <label className="text-xs text-text-dim mb-1.5 block">Tone</label>
+                    <div className="flex gap-2">
+                      {[
+                        { id: 'professional', label: 'Professional' },
+                        { id: 'conversational', label: 'Conversational' },
+                        { id: 'bold', label: 'Bold & Direct' },
+                      ].map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setTone(t.id as any)}
+                          className={`flex-1 py-1.5 px-2 text-xs rounded transition-all ${
+                            tone === t.id
+                              ? 'bg-gold text-bg-primary font-medium'
+                              : 'bg-bg-secondary text-text-muted hover:text-text'
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* About Length */}
+                  <div>
+                    <label className="text-xs text-text-dim mb-1.5 block">About Length</label>
+                    <div className="flex gap-2">
+                      {[
+                        { id: 'concise', label: 'Concise', desc: '~150 words' },
+                        { id: 'standard', label: 'Standard', desc: '~250 words' },
+                        { id: 'detailed', label: 'Detailed', desc: '~350 words' },
+                      ].map((l) => (
+                        <button
+                          key={l.id}
+                          type="button"
+                          onClick={() => setAboutLength(l.id as any)}
+                          className={`flex-1 py-1.5 px-2 text-xs rounded transition-all ${
+                            aboutLength === l.id
+                              ? 'bg-gold text-bg-primary font-medium'
+                              : 'bg-bg-secondary text-text-muted hover:text-text'
+                          }`}
+                        >
+                          {l.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Lead With */}
+                  <div>
+                    <label className="text-xs text-text-dim mb-1.5 block">Lead Headline With</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { id: 'experience', label: 'Years of Experience' },
+                        { id: 'clearance', label: 'Clearance Level' },
+                        { id: 'certification', label: 'Top Certification' },
+                        { id: 'role', label: 'Target Role' },
+                        { id: 'skill', label: 'Top Skill' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => setLeadWith(opt.id as any)}
+                          className={`px-2 py-1 text-xs rounded transition-all ${
+                            leadWith === opt.id
+                              ? 'bg-gold text-bg-primary font-medium'
+                              : 'bg-bg-secondary text-text-muted hover:text-text'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Emphasis Areas */}
+                  <div>
+                    <label className="text-xs text-text-dim mb-1.5 block">Emphasize (select up to 3)</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        'Leadership',
+                        'Technical Skills',
+                        'Certifications',
+                        'Project Management',
+                        'Team Development',
+                        'Process Improvement',
+                        'Safety/Compliance',
+                        'Cybersecurity',
+                        'Clearance',
+                        'Federal Experience',
+                        'Operations',
+                        'Training & Development',
+                        'Budget Management',
+                      ].map((area) => {
+                        const isSelected = emphasis.includes(area)
+                        return (
+                          <button
+                            key={area}
+                            type="button"
+                            onClick={() => {
+                              if (isSelected) {
+                                setEmphasis(emphasis.filter(e => e !== area))
+                              } else if (emphasis.length < 3) {
+                                setEmphasis([...emphasis, area])
+                              }
+                            }}
+                            className={`px-2 py-1 text-xs rounded transition-all ${
+                              isSelected
+                                ? 'bg-gold text-bg-primary'
+                                : 'bg-bg-secondary text-text-dim hover:text-text-muted'
+                            }`}
+                          >
+                            {area}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Skill Selection */}
+                  <div>
+                    <label className="text-xs text-text-dim mb-1.5 block">Skills to Highlight ({selectedSkills.length}/{skills.length})</label>
+                    <input
+                      type="text"
+                      name="skill-search"
+                      autoComplete="off"
+                      placeholder="Search skills..."
+                      value={skillSearch}
+                      onChange={(e) => setSkillSearch(e.target.value)}
+                      className="w-full px-2 py-1.5 text-xs rounded bg-bg-secondary border border-border text-text placeholder:text-text-dim focus:outline-none focus:border-gold mb-2"
+                    />
+                    <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto">
+                      {skills
+                        .filter(s => !skillSearch || s.toLowerCase().includes(skillSearch.toLowerCase()))
+                        .map((skill) => {
+                          const isSelected = selectedSkills.includes(skill)
+                          return (
+                            <button
+                              key={skill}
+                              type="button"
+                              onClick={() => {
+                                if (isSelected) {
+                                  setSelectedSkills(selectedSkills.filter(s => s !== skill))
+                                } else {
+                                  setSelectedSkills([...selectedSkills, skill])
+                                }
+                              }}
+                              className={`px-2 py-1 text-xs rounded transition-all ${
+                                isSelected
+                                  ? 'bg-gold text-bg-primary'
+                                  : 'bg-bg-secondary text-text-dim hover:text-text-muted'
+                              }`}
+                            >
+                              {skill}
+                            </button>
+                          )
+                        })}
+                      {skills.filter(s => !skillSearch || s.toLowerCase().includes(skillSearch.toLowerCase())).length === 0 && (
+                        <p className="text-xs text-text-dim">No matching skills</p>
+                      )}
+                    </div>
+                    {selectedSkills.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSkills([])}
+                        className="text-xs text-text-dim hover:text-text mt-1"
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
+      ) : mode === 'keywords' ? (
+        // === KEYWORDS MODE ===
+        <div className="max-w-2xl space-y-4">
+          <Card className="p-6">
+            <h3 className="font-heading text-sm uppercase tracking-wider text-gold mb-3">Keyword Checker</h3>
+            <p className="text-xs text-text-dim mb-4">
+              Paste your LinkedIn About section or a job posting to check for industry keywords and military jargon.
+            </p>
+
+            <textarea
+              autoComplete="off"
+              value={keywordPasteText}
+              onChange={(e) => setKeywordPasteText(e.target.value)}
+              placeholder="Paste your LinkedIn summary, headline, or a job posting here..."
+              className="w-full min-h-[120px] px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-none mb-3"
+            />
+
+            <Button onClick={analyzeKeywords} disabled={!keywordPasteText.trim() || dictLoading}>
+              {dictLoading ? 'Loading Dictionary...' : 'Analyze Keywords'}
+            </Button>
+
+            {keywordResults && (
+              <div className="mt-4 space-y-4">
+                {/* Score */}
+                <div className="p-3 bg-bg-secondary rounded-lg border border-border">
+                  <p className="text-sm font-medium">
+                    Your text has <span className="text-gold font-bold">{keywordResults.score}</span> of{' '}
+                    <span className="font-bold">{keywordResults.total}</span> recommended keywords
+                    {userProfile?.target_industry ? ` for ${userProfile.target_industry}` : ''}
+                  </p>
+                  <div className="w-full bg-bg-tertiary rounded-full h-2 mt-2">
+                    <div
+                      className="bg-gold rounded-full h-2 transition-all"
+                      style={{ width: `${keywordResults.total > 0 ? Math.min(100, (keywordResults.score / keywordResults.total) * 100) : 0}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Keywords Found */}
+                {keywordResults.found.length > 0 && (
+                  <div>
+                    <p className="text-xs text-status-green font-semibold uppercase tracking-wider mb-2">Keywords Found</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {keywordResults.found.map((kw, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-status-green/15 text-status-green text-xs rounded">{kw}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Military Jargon Detected */}
+                {keywordResults.jargonDetected.length > 0 && (
+                  <div>
+                    <p className="text-xs text-status-amber font-semibold uppercase tracking-wider mb-2">Military Jargon Detected — translate these</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {keywordResults.jargonDetected.map((j, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-status-amber/15 text-status-amber text-xs rounded">{j}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Missing Keywords */}
+                {keywordResults.missing.length > 0 && (
+                  <div>
+                    <p className="text-xs text-text-dim font-semibold uppercase tracking-wider mb-2">Missing High-Value Keywords</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {keywordResults.missing.map((kw, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-bg-tertiary text-text-dim text-xs rounded border border-border">{kw}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
+        </div>
       ) : (
-        // === NEW ANALYZE UI ===
-        // Free users can see score, but recommendations are paywalled
+        // === ANALYZE UI ===
         <AnalyzeMode
           linkedInPDF={linkedInPDF}
           setLinkedInPDF={setLinkedInPDF}
@@ -1224,7 +1569,7 @@ function AnalyzeMode({
         {/* Section Scores Summary - visible to all */}
         <Card className="p-6">
           <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-            <span className="text-gold">◎</span> Section Breakdown
+            <span className="text-gold">&#9678;</span> Section Breakdown
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {analysis.sections.headline && (
@@ -1285,12 +1630,12 @@ function AnalyzeMode({
         {hasPaidAccess && analysis.quickWins && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
-              <span className="text-gold">⚡</span> Quick Wins
+              <span className="text-gold">&#9889;</span> Quick Wins
             </h3>
             <ul className="space-y-2">
               {analysis.quickWins.map((win: string, index: number) => (
                 <li key={index} className="flex items-start gap-2 text-sm text-text-muted">
-                  <span className="text-status-green">•</span>
+                  <span className="text-status-green">&#8226;</span>
                   {win}
                 </li>
               ))}
@@ -1303,7 +1648,7 @@ function AnalyzeMode({
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                <span className="text-gold">◆</span> Headline
+                <span className="text-gold">&#9670;</span> Headline
                 <span className={`text-lg font-bold ml-2 ${getScoreColor(analysis.sections.headline.score)}`}>
                   {analysis.sections.headline.score}/100
                 </span>
@@ -1334,7 +1679,7 @@ function AnalyzeMode({
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                <span className="text-gold">◫</span> About Section
+                <span className="text-gold">&#9643;</span> About Section
                 <span className={`text-lg font-bold ml-2 ${getScoreColor(analysis.sections.about.score)}`}>
                   {analysis.sections.about.score}/100
                 </span>
@@ -1364,7 +1709,7 @@ function AnalyzeMode({
         {hasPaidAccess && analysis.sections.experience && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="text-gold">◆</span> Experience Analysis
+              <span className="text-gold">&#9670;</span> Experience Analysis
               <span className={`text-lg font-bold ml-2 ${getScoreColor(analysis.sections.experience.score)}`}>
                 {analysis.sections.experience.score}/100
               </span>
@@ -1377,7 +1722,7 @@ function AnalyzeMode({
                 <ul className="space-y-1">
                   {analysis.sections.experience.overallTips.map((tip: string, i: number) => (
                     <li key={i} className="text-sm text-text-muted flex items-start gap-2">
-                      <span className="text-gold">•</span>
+                      <span className="text-gold">&#8226;</span>
                       {tip}
                     </li>
                   ))}
@@ -1545,7 +1890,7 @@ function AnalyzeMode({
         {hasPaidAccess && analysis.sections.skills && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="text-gold">◈</span> Skills Analysis
+              <span className="text-gold">&#9672;</span> Skills Analysis
               <span className={`text-lg font-bold ml-2 ${getScoreColor(analysis.sections.skills.score)}`}>
                 {analysis.sections.skills.score}/100
               </span>
@@ -1583,7 +1928,7 @@ function AnalyzeMode({
         {hasPaidAccess && analysis.sections.certifications && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="text-gold">◎</span> Certifications
+              <span className="text-gold">&#9678;</span> Certifications
               <span className={`text-lg font-bold ml-2 ${getScoreColor(analysis.sections.certifications.score)}`}>
                 {analysis.sections.certifications.score}/100
               </span>
@@ -1629,7 +1974,7 @@ function AnalyzeMode({
               <div className="space-y-1">
                 {analysis.sections.certifications.tips.map((tip: string, i: number) => (
                   <p key={i} className="text-sm text-text-muted flex items-start gap-2">
-                    <span className="text-gold">•</span>
+                    <span className="text-gold">&#8226;</span>
                     {tip}
                   </p>
                 ))}
@@ -1642,7 +1987,7 @@ function AnalyzeMode({
         {hasPaidAccess && analysis.sections.education && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="text-gold">◫</span> Education
+              <span className="text-gold">&#9643;</span> Education
               <span className={`text-lg font-bold ml-2 ${getScoreColor(analysis.sections.education.score)}`}>
                 {analysis.sections.education.score}/100
               </span>
@@ -1679,7 +2024,7 @@ function AnalyzeMode({
               <div className="space-y-1">
                 {analysis.sections.education.tips.map((tip: string, i: number) => (
                   <p key={i} className="text-sm text-text-muted flex items-start gap-2">
-                    <span className="text-gold">•</span>
+                    <span className="text-gold">&#8226;</span>
                     {tip}
                   </p>
                 ))}
@@ -1692,7 +2037,7 @@ function AnalyzeMode({
         {hasPaidAccess && analysis.sections.keywords && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="text-gold">◇</span> Keyword Analysis
+              <span className="text-gold">&#9671;</span> Keyword Analysis
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -1719,7 +2064,7 @@ function AnalyzeMode({
         {hasPaidAccess && analysis.priorityActions && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-              <span className="text-gold">▶</span> Priority Actions
+              <span className="text-gold">&#9654;</span> Priority Actions
             </h3>
             <div className="space-y-3">
               {analysis.priorityActions.map((action: any, i: number) => (
@@ -1777,7 +2122,7 @@ function AnalyzeMode({
             <div className="flex-1">
               <p className="font-medium text-text">{linkedInPDF.name || 'LinkedIn Profile'}</p>
               <p className="text-sm text-text-muted">
-                Profile loaded • {linkedInPDF.skills?.length || 0} skills found
+                Profile loaded &#8226; {linkedInPDF.skills?.length || 0} skills found
               </p>
             </div>
             <button
@@ -1797,7 +2142,7 @@ function AnalyzeMode({
           >
             {isAnalyzing ? (
               <>
-                <span className="animate-spin mr-2">⟳</span>
+                <span className="animate-spin mr-2">&#10227;</span>
                 Analyzing Your Profile...
               </>
             ) : (
@@ -1935,7 +2280,7 @@ function AnalyzeMode({
         />
         {isUploading ? (
           <div className="flex flex-col items-center">
-            <span className="animate-spin text-3xl mb-4">⟳</span>
+            <span className="animate-spin text-3xl mb-4">&#10227;</span>
             <p className="text-text-muted">Processing your profile...</p>
           </div>
         ) : (

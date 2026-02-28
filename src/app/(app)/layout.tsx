@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { TopNav } from '@/components/layout/TopNav'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { AnnouncementBanner } from '@/components/layout/AnnouncementBanner'
@@ -20,6 +21,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .select('first_name, last_name, rank, tier, subscription_tier, plan, plan_expires_at, is_admin, onboarding_completed')
     .eq('user_id', user.id)
     .single()
+
+  // Check if user is an org admin (for partner portal link)
+  const sc = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  const { data: orgMembership } = await sc
+    .from('organization_members')
+    .select('role')
+    .eq('user_id', user.id)
+    .eq('role', 'admin')
+    .single()
+
+  const isOrgAdmin = !!orgMembership
 
   // Check if plan has expired and revert to free if so
   if (profile && profile.tier !== 'free' && profile.plan_expires_at) {
@@ -70,6 +85,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           user={navUser}
           tier={profile?.tier || 'free'}
           isAdmin={profile?.is_admin || false}
+          isOrgAdmin={isOrgAdmin}
         />
 
         <AnnouncementBanner />

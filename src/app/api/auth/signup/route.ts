@@ -18,12 +18,13 @@ export async function POST(req: Request) {
       paygrade,
       employerSharingOptIn,
       marketingOptIn,
+      orgSlug,
     } = await req.json();
 
-    // Validate required fields
-    if (!email || !firstName || !lastName || !branch || !paygrade) {
+    // Validate required fields (branch/paygrade collected during onboarding)
+    if (!email || !firstName || !lastName) {
       return NextResponse.json(
-        { success: false, error: 'All fields are required' },
+        { success: false, error: 'Name and email are required' },
         { status: 400 }
       );
     }
@@ -60,8 +61,8 @@ export async function POST(req: Request) {
         first_name: formattedFirstName,
         last_name: formattedLastName,
         full_name: `${formattedFirstName} ${formattedLastName}`.trim(),
-        branch,
-        paygrade,
+        ...(branch ? { branch } : {}),
+        ...(paygrade ? { paygrade } : {}),
       },
     });
 
@@ -89,6 +90,17 @@ export async function POST(req: Request) {
 
     const userId = adminUser.user.id;
 
+    // Resolve org if signing up via white-label page
+    let orgId: string | null = null;
+    if (orgSlug) {
+      const { data: org } = await supabaseAdmin
+        .from('organizations')
+        .select('id')
+        .eq('slug', orgSlug.toLowerCase())
+        .single();
+      if (org) orgId = org.id;
+    }
+
     // Create initial profile with free tier + opt-in values
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
@@ -97,14 +109,15 @@ export async function POST(req: Request) {
         email: normalizedEmail,
         first_name: formattedFirstName,
         last_name: formattedLastName,
-        branch: branch,
-        paygrade: paygrade,
+        ...(branch ? { branch } : {}),
+        ...(paygrade ? { paygrade } : {}),
         subscription_tier: 'free',
         plan: 'free',
         onboarding_completed: false,
         auth_method: 'otp',
-        employer_sharing_opt_in: employerSharingOptIn === true ? true : employerSharingOptIn === false ? false : null,
-        marketing_opt_in: marketingOptIn === true ? true : marketingOptIn === false ? false : null,
+        ...(employerSharingOptIn != null ? { employer_sharing_opt_in: !!employerSharingOptIn } : {}),
+        ...(marketingOptIn != null ? { marketing_opt_in: !!marketingOptIn } : {}),
+        ...(orgId ? { org_id: orgId } : {}),
       }, {
         onConflict: 'user_id'
       });
@@ -112,6 +125,19 @@ export async function POST(req: Request) {
     if (profileError) {
       console.error('Failed to create profile:', profileError);
       // Don't fail signup - profile will be created on first login if needed
+    }
+
+    // Auto-add to org as member if signing up via white-label
+    if (orgId) {
+      await supabaseAdmin
+        .from('organization_members')
+        .upsert({
+          org_id: orgId,
+          user_id: userId,
+          role: 'member',
+        }, { onConflict: 'org_id,user_id' })
+        .then(() => {})
+        .catch((err: Error) => console.error('Failed to add user to org:', err));
     }
 
     return NextResponse.json({

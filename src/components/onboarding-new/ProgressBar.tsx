@@ -8,12 +8,9 @@ interface Step {
 
 const STEPS: Step[] = [
   { id: 0, name: 'Welcome', shortName: 'Welcome' },
-  { id: 1, name: 'Contact Info', shortName: 'Contact' },
-  { id: 2, name: 'Military Background', shortName: 'Military' },
-  { id: 3, name: 'Experience', shortName: 'Experience' },
-  { id: 4, name: 'Skills & Certs', shortName: 'Skills' },
-  { id: 5, name: 'Education', shortName: 'Education' },
-  { id: 6, name: 'Summary', shortName: 'Summary' },
+  { id: 1, name: 'Quick Profile', shortName: 'Profile' },
+  { id: 2, name: 'Experience', shortName: 'Experience' },
+  { id: 3, name: 'Finish', shortName: 'Finish' },
 ]
 
 interface ProgressBarProps {

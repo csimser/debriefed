@@ -5,6 +5,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { logApiUsage, logActivity } from '@/lib/usage-tracking'
 import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+import { dictionaryTranslate } from '@/lib/translation-engine'
 import { callWithEscalation, getModelString, type ModelUsed } from '@/lib/ai-model'
 import { captureFullTextOutput, type CaptureContext } from '@/lib/ai-translation-capture'
 
@@ -166,19 +167,30 @@ export async function POST(request: NextRequest) {
     }).filter(Boolean) || []
     const eduString = eduList.length > 0 ? eduList.join(', ') : 'Not specified'
 
-    // Extract experience bullets
-    const experienceBullets = experiences?.flatMap((exp: any) =>
+    // Extract experience bullets and pre-translate with shared engine
+    const rawBullets = experiences?.flatMap((exp: any) =>
       exp.bullets?.map((b: any) => b.translated_text || b.original_text) || []
     ) || []
+    const experienceBullets = await Promise.all(
+      rawBullets.map(async (b: string) => {
+        const { translated } = await dictionaryTranslate(b)
+        return translated
+      })
+    )
 
     const experienceCount = experiences?.length || 0
     const hasLimitedData = experienceCount < 2 || experienceBullets.length < 3
 
-    // Format experience for prompt
-    const experienceText = experiences?.map((exp: any) => `
-${exp.title || 'Role'} at ${exp.company || 'Organization'}:
-${exp.bullets?.map((b: any) => b.translated_text || b.original_text).join('; ') || 'No specific achievements listed'}
-`).join('\n') || 'Limited experience data'
+    // Format experience for prompt (with pre-translated bullets)
+    let bulletIdx = 0
+    const experienceText = experiences?.map((exp: any) => {
+      const bulletTexts = exp.bullets?.map(() => {
+        const t = experienceBullets[bulletIdx] || 'No specific achievements listed'
+        bulletIdx++
+        return t
+      }) || []
+      return `\n${exp.title || 'Role'} at ${exp.company || 'Organization'}:\n${bulletTexts.join('; ') || 'No specific achievements listed'}\n`
+    }).join('\n') || 'Limited experience data'
 
     // Tone instructions
     const toneInstructions: Record<string, string> = {

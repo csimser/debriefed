@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { CollapsibleSection } from '../CollapsibleSection'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Toast } from '@/components/ui/Toast'
 import { createClient } from '@/lib/supabase/client'
 import {
   DEGREE_TYPES,
@@ -18,9 +19,13 @@ interface EducationSectionProps {
   userId: string
   education: any[]
   onUpdate: (education: any[]) => void
+  isOpen?: boolean
+  onToggle?: () => void
+  summary?: string
+  hint?: string
 }
 
-export function EducationSection({ userId, education, onUpdate }: EducationSectionProps) {
+export function EducationSection({ userId, education, onUpdate, isOpen, onToggle, summary, hint }: EducationSectionProps) {
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [newEdu, setNewEdu] = useState({
@@ -32,6 +37,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
     gpa: '',
   })
   const [saving, setSaving] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const supabase = createClient()
 
   const inputClass = "w-full px-3 py-2 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all text-sm"
@@ -69,7 +75,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
 
       if (error) {
         console.error('Error adding education:', error)
-        alert(`Failed to add education: ${error.message}`)
+        setToast({ message: `Failed to add education: ${error.message}`, type: 'error' })
         return
       }
 
@@ -122,7 +128,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
 
       if (error) {
         console.error('Error updating education:', error)
-        alert(`Failed to update: ${error.message}`)
+        setToast({ message: `Failed to update: ${error.message}`, type: 'error' })
         return
       }
 
@@ -139,7 +145,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('education').delete().eq('id', id)
     if (error) {
-      alert(`Failed to delete: ${error.message}`)
+      setToast({ message: `Failed to delete: ${error.message}`, type: 'error' })
     } else {
       onUpdate(education.filter(e => e.id !== id))
     }
@@ -179,6 +185,10 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
     <CollapsibleSection
       title="Education"
       icon="&#9671;"
+      isOpen={isOpen}
+      onToggle={onToggle}
+      summary={summary}
+      hint={hint}
       actions={
         !showForm && (
           <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>
@@ -338,6 +348,7 @@ export function EducationSection({ userId, education, onUpdate }: EducationSecti
           <p className="text-text-muted text-center py-8">No education added yet</p>
         )}
       </div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </CollapsibleSection>
   )
 }

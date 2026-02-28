@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
+import { ModalShell } from '@/components/ui/ModalShell'
 
 // ============================================================================
 // Types
@@ -180,8 +181,8 @@ export function TailoredPreviewModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-      <div className="bg-bg-card border border-border rounded-xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl">
+    <ModalShell isOpen={true} onClose={onCancel} title={title} maxWidth="max-w-4xl">
+      <div className="bg-bg-card border border-border rounded-xl w-full max-h-[85vh] flex flex-col shadow-2xl">
         {/* Header */}
         <div className="p-6 border-b border-border flex-shrink-0">
           <h2 className="font-heading text-lg font-bold uppercase tracking-wider flex items-center gap-2">
@@ -258,6 +259,6 @@ export function TailoredPreviewModal({
           </div>
         </div>
       </div>
-    </div>
+    </ModalShell>
   )
 }

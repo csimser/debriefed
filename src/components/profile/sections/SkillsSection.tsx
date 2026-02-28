@@ -5,19 +5,11 @@ import { CollapsibleSection } from '../CollapsibleSection'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
+import { Toast } from '@/components/ui/Toast'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { createClient } from '@/lib/supabase/client'
 import { getMOSData } from '@/lib/military-mos-data'
-
-const PAYGRADE_SKILLS: Record<string, string[]> = {
-  'E-5': ['Team Leadership', 'Training & Development', 'Performance Management', 'Technical Expertise', 'Mentoring'],
-  'E-6': ['Team Leadership', 'Training & Development', 'Process Improvement', 'Resource Management', 'Conflict Resolution'],
-  'E-7': ['Organizational Leadership', 'Strategic Planning', 'Policy Implementation', 'Program Management', 'Executive Communication'],
-  'E-8': ['Strategic Planning', 'Change Management', 'Executive Communication', 'Organizational Development', 'Stakeholder Management'],
-  'E-9': ['Executive Leadership', 'Strategic Vision', 'Organizational Transformation', 'C-Suite Communication', 'Enterprise Risk Management'],
-  'O-3': ['Organizational Leadership', 'Operations Management', 'Budget Management', 'Staff Development'],
-  'O-4': ['Strategic Leadership', 'Program Management', 'Policy Development', 'Interagency Coordination'],
-  'O-5': ['Executive Leadership', 'Strategic Planning', 'Organizational Management', 'Stakeholder Engagement'],
-}
+import { getSkillsForPaygrade } from '@/lib/constants/rank-skills'
 
 interface SkillsSectionProps {
   userId: string
@@ -25,12 +17,18 @@ interface SkillsSectionProps {
   paygrade?: string
   ratingMOS?: string
   onUpdate: (skills: any[]) => void
+  isOpen?: boolean
+  onToggle?: () => void
+  summary?: string
+  hint?: string
 }
 
-export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate }: SkillsSectionProps) {
+export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate, isOpen, onToggle, summary, hint }: SkillsSectionProps) {
   const [newSkill, setNewSkill] = useState('')
   const [saving, setSaving] = useState(false)
   const [showMOSRecommendations, setShowMOSRecommendations] = useState(true)
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null)
   const supabase = createClient()
 
   // Get MOS-specific skill recommendations
@@ -39,7 +37,7 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate }:
     return getMOSData(ratingMOS)
   }, [ratingMOS])
 
-  const suggestedSkills = paygrade ? PAYGRADE_SKILLS[paygrade] || [] : []
+  const suggestedSkills = paygrade ? getSkillsForPaygrade(paygrade) : []
   const existingNames = new Set(skills.map(s => s.name.toLowerCase()))
 
   // Filter out already-added skills from MOS recommendations
@@ -51,7 +49,7 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate }:
   const handleAdd = async (name: string) => {
     if (!name.trim() || existingNames.has(name.toLowerCase())) {
       if (existingNames.has(name.toLowerCase())) {
-        alert('Skill already added')
+        setToast({ message: 'Skill already added', type: 'info' })
       }
       return
     }
@@ -71,7 +69,7 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate }:
 
       if (error) {
         console.error('Error adding skill:', error)
-        alert(`Failed to add skill: ${error.message}`)
+        setToast({ message: `Failed to add skill: ${error.message}`, type: 'error' })
         return
       }
 
@@ -81,7 +79,7 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate }:
       }
     } catch (err: any) {
       console.error('Error:', err)
-      alert(`Error: ${err?.message}`)
+      setToast({ message: `Error: ${err?.message}`, type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -105,7 +103,7 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate }:
 
       if (error) {
         console.error('Error adding skill:', error)
-        alert(`Failed to add skill: ${error.message}`)
+        setToast({ message: `Failed to add skill: ${error.message}`, type: 'error' })
         return
       }
 
@@ -136,7 +134,7 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate }:
 
       if (error) {
         console.error('Error adding skills:', error)
-        alert(`Failed to add skills: ${error.message}`)
+        setToast({ message: `Failed to add skills: ${error.message}`, type: 'error' })
         return
       }
 
@@ -153,26 +151,35 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate }:
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('skills').delete().eq('id', id)
     if (error) {
-      alert(`Failed to delete: ${error.message}`)
+      setToast({ message: `Failed to delete: ${error.message}`, type: 'error' })
     } else {
       onUpdate(skills.filter(s => s.id !== id))
     }
   }
 
-  const handleClearAll = async () => {
-    if (!confirm('Delete all skills?')) return
-    const { error } = await supabase.from('skills').delete().eq('user_id', userId)
-    if (error) {
-      alert(`Failed to clear: ${error.message}`)
-    } else {
-      onUpdate([])
-    }
+  const handleClearAll = () => {
+    setConfirmDialog({
+      title: 'Delete All Skills',
+      message: 'Are you sure you want to delete all skills? This cannot be undone.',
+      onConfirm: async () => {
+        const { error } = await supabase.from('skills').delete().eq('user_id', userId)
+        if (error) {
+          setToast({ message: `Failed to clear: ${error.message}`, type: 'error' })
+        } else {
+          onUpdate([])
+        }
+      },
+    })
   }
 
   return (
     <CollapsibleSection
       title="Skills"
       icon="◆"
+      isOpen={isOpen}
+      onToggle={onToggle}
+      summary={summary}
+      hint={hint}
       actions={skills.length > 0 && <Button size="sm" variant="ghost" onClick={handleClearAll}>Clear All</Button>}
     >
       {/* MOS-Based Recommendations */}
@@ -263,7 +270,7 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate }:
             {skill.name}
             <button
               onClick={() => handleDelete(skill.id)}
-              className="opacity-0 group-hover:opacity-100 text-status-red hover:bg-status-red/10 rounded px-1 ml-1 transition-all"
+              className="opacity-40 md:opacity-0 md:group-hover:opacity-100 text-status-red hover:bg-status-red/10 rounded px-1 ml-1 transition-all"
             >
               ×
             </button>
@@ -271,6 +278,17 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate }:
         ))}
         {skills.length === 0 && <p className="text-text-muted">No skills added yet</p>}
       </div>
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {confirmDialog && (
+        <ConfirmModal
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant="danger"
+          confirmLabel="Delete All"
+          onConfirm={() => { confirmDialog.onConfirm(); setConfirmDialog(null) }}
+          onCancel={() => setConfirmDialog(null)}
+        />
+      )}
     </CollapsibleSection>
   )
 }

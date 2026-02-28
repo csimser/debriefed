@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { Toast } from '@/components/ui/Toast'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import {
   DEGREE_TYPES,
   MONTHS,
@@ -47,12 +49,16 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [formData, setFormData] = useState<Education>(emptyEducation)
   const [savingEdu, setSavingEdu] = useState(false)
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const handleSaveEducation = async () => {
     if (!formData.school_name.trim()) {
-      alert('Please enter the school name')
+      setValidationError('Please enter the school name')
       return
     }
+    setValidationError(null)
 
     setSavingEdu(true)
     try {
@@ -99,7 +105,7 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
       setEditingIndex(null)
     } catch (error) {
       console.error('Error saving education:', error)
-      alert('Failed to save education. Please try again.')
+      setToast({ message: 'Failed to save education. Please try again.', type: 'error' })
     } finally {
       setSavingEdu(false)
     }
@@ -120,27 +126,32 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
     setShowForm(true)
   }
 
-  const handleDeleteEducation = async (index: number) => {
+  const handleDeleteEducation = (index: number) => {
     const edu = data.education[index]
     if (!edu.id) return
 
-    if (!confirm('Delete this education entry?')) return
+    setConfirmDialog({
+      title: 'Delete Education',
+      message: 'Are you sure you want to delete this education entry?',
+      onConfirm: async () => {
+        try {
+          const { error } = await supabase
+            .from('education')
+            .delete()
+            .eq('id', edu.id)
 
-    try {
-      const { error } = await supabase
-        .from('education')
-        .delete()
-        .eq('id', edu.id)
+          if (error) throw error
 
-      if (error) throw error
-
-      updateData({ education: data.education.filter((_, i) => i !== index) })
-    } catch (error) {
-      console.error('Error deleting education:', error)
-    }
+          updateData({ education: data.education.filter((_, i) => i !== index) })
+        } catch (error) {
+          console.error('Error deleting education:', error)
+          setToast({ message: 'Failed to delete education.', type: 'error' })
+        }
+      },
+    })
   }
 
-  const inputClass = "w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
+  const inputClass = "w-full px-4 py-3.5 text-base md:py-3 md:text-sm bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
   const labelClass = "block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2"
 
   return (
@@ -302,6 +313,13 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
             </div>
           </div>
 
+          {/* Validation Error */}
+          {validationError && (
+            <div className="p-3 bg-status-red/10 border border-status-red/30 rounded text-status-red text-sm">
+              {validationError}
+            </div>
+          )}
+
           {/* Form Actions */}
           <div className="flex gap-3">
             <Button onClick={handleSaveEducation} disabled={savingEdu}>
@@ -355,6 +373,18 @@ export function StepEducation({ data, updateData, onNext, onBack, onSkip, saving
           Skip for now — I&apos;ll complete my profile later
         </button>
       </div>
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {confirmDialog && (
+        <ConfirmModal
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant="danger"
+          confirmLabel="Delete"
+          onConfirm={() => { confirmDialog.onConfirm(); setConfirmDialog(null) }}
+          onCancel={() => setConfirmDialog(null)}
+        />
+      )}
     </div>
   )
 }

@@ -57,7 +57,17 @@
       "Bash(git ls-files .env* 2>&1)",
       "Bash(npx next dev --port 3000 2>&1)",
       "Bash(lsof -ti:3000 | xargs kill -9 2>/dev/null; sleep 1 && npx next dev --port 3000 2>&1)",
-      "Bash(ss -tlnp | grep 3000)"
+      "Bash(ss -tlnp | grep 3000)",
+      "Bash(git mv src/components/career-tools/DictLinkedInTools.tsx src/components/career-tools/linkedInUtils.ts)",
+      "Bash(du -sh /home/fiveftslim/debriefed-ai-lab/* 2>/dev/null | sort -h)",
+      "Bash(sqlite3 /home/fiveftslim/debriefed-ai-lab/chromadb/chroma.sqlite3 \".tables\")",
+      "Bash(which supabase 2>/dev/null && supabase --version 2>/dev/null || echo \"supabase CLI not found in PATH\")",
+      "Bash(dpkg -l | grep -i postgresql-client 2>/dev/null | head -3; apt list --installed 2>/dev/null | grep -i psql | head -3; echo \"---\"; which pg_isready 2>/dev/null || echo \"no pg tools\")",
+      "Bash(bash -n /home/fiveftslim/projects/debriefedfinal/debriefed/supabase/migrations/run-migrations.sh && echo \"Syntax OK\")",
+      "Bash(source /home/fiveftslim/projects/debriefedfinal/debriefed/.env.local 2>/dev/null; node -e \"\nconst { createClient } = require\\('@supabase/supabase-js'\\);\nconst c = createClient\\('$NEXT_PUBLIC_SUPABASE_URL', '$SUPABASE_SERVICE_ROLE_KEY'\\);\nc.from\\('dict_mos_to_civilian'\\).select\\('military_code', { count: 'exact', head: true }\\).then\\(r => {\n  console.log\\('Total rows:', r.count\\);\n}\\);\n\" 2>&1)",
+      "Bash(source /home/fiveftslim/projects/debriefedfinal/debriefed/.env.local 2>/dev/null; node -e \"\nconst { createClient } = require\\('@supabase/supabase-js'\\);\nconst c = createClient\\('$NEXT_PUBLIC_SUPABASE_URL', '$SUPABASE_SERVICE_ROLE_KEY'\\);\nc.from\\('dict_mos_to_civilian'\\).select\\('military_code, branch'\\).order\\('military_code'\\).then\\(r => {\n  const codes = r.data.map\\(d => d.military_code.toLowerCase\\(\\)\\);\n  const unique = new Set\\(codes\\);\n  console.log\\('Total rows:', r.data.length\\);\n  console.log\\('Unique lowercase codes:', unique.size\\);\n  \n  // Find duplicates\n  const counts = {};\n  codes.forEach\\(c => { counts[c] = \\(counts[c] || 0\\) + 1; }\\);\n  const dupes = Object.entries\\(counts\\).filter\\(\\([,v]\\) => v > 1\\);\n  console.log\\('Duplicate codes:', dupes.length\\);\n  dupes.slice\\(0, 10\\).forEach\\(\\([k,v]\\) => console.log\\('  ', k, '=', v\\)\\);\n}\\);\n\" 2>&1)",
+      "Bash(npx next dev -p 3001 2>&1 | head -15)",
+      "Bash(npx next dev -p 3001 2>&1 | head -5)"
     ]
   }
 }

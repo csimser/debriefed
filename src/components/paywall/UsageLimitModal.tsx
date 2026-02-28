@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { PRICING_TIERS, FEATURE_DISPLAY_NAMES, FeatureName, TierId } from '@/lib/pricing-config';
+import { ModalShell } from '@/components/ui/ModalShell';
+import { trackEvent } from '@/lib/analytics';
+import { PRICING_TIERS, FEATURE_DISPLAY_NAMES, FeatureName, TierId, getFormattedPrice } from '@/lib/pricing-config';
 import { useUpgradeModal } from '@/components/modals/UpgradeModal';
 
 interface UsageLimitModalProps {
@@ -30,10 +32,15 @@ export function UsageLimitModal({
   const { openUpgradeModal } = useUpgradeModal();
   const [loading, setLoading] = useState<'core' | 'full' | null>(null);
 
+  useEffect(() => {
+    trackEvent('usage_limit_modal_shown', { feature, tier: currentTier });
+  }, [feature, currentTier]);
+
   const featureName = FEATURE_DISPLAY_NAMES[feature];
   const tierConfig = PRICING_TIERS[currentTier];
 
   const handleUpgrade = async (tier: 'core' | 'full') => {
+    trackEvent('usage_limit_upgrade_click', { feature, targetTier: tier });
     setLoading(tier);
     try {
       const response = await fetch('/api/stripe/create-checkout', {
@@ -121,8 +128,8 @@ export function UsageLimitModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-lg p-6">
+    <ModalShell isOpen={true} onClose={onClose} title="Usage Limit Reached">
+      <Card className="w-full p-6">
         <div className="text-center mb-6">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-status-amber/20 flex items-center justify-center">
             <svg
@@ -177,10 +184,10 @@ export function UsageLimitModal({
                     <span className="font-heading font-bold text-gold">CORE</span>
                     <span className="text-xs text-text-muted ml-2">Best Value</span>
                   </div>
-                  <span className="text-lg font-bold">$25</span>
+                  <span className="text-lg font-bold">{getFormattedPrice('core')}</span>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
-                  30 days access with {formatLimit(PRICING_TIERS.core.limits[feature])} {featureName}
+                  {PRICING_TIERS.core.duration} days access with {formatLimit(PRICING_TIERS.core.limits[feature])} {featureName}
                 </p>
                 <Button
                   variant="primary"
@@ -189,7 +196,7 @@ export function UsageLimitModal({
                   loading={loading === 'core'}
                   onClick={() => handleUpgrade('core')}
                 >
-                  Upgrade to Core - $25
+                  Upgrade to Core - {getFormattedPrice('core')}
                 </Button>
               </div>
             )}
@@ -198,10 +205,10 @@ export function UsageLimitModal({
               <div className="p-4 border border-gold/50 rounded-lg bg-gold/5">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-heading font-bold text-gold">FULL</span>
-                  <span className="text-lg font-bold">$50</span>
+                  <span className="text-lg font-bold">{getFormattedPrice('full')}</span>
                 </div>
                 <p className="text-xs text-text-muted mb-3">
-                  90 days access with {formatLimit(PRICING_TIERS.full.limits[feature])} {featureName}
+                  {PRICING_TIERS.full.duration} days access with {formatLimit(PRICING_TIERS.full.limits[feature])} {featureName}
                 </p>
                 <Button
                   variant="primary"
@@ -210,7 +217,7 @@ export function UsageLimitModal({
                   loading={loading === 'full'}
                   onClick={() => handleUpgrade('full')}
                 >
-                  Upgrade to Full - $50
+                  Upgrade to Full - {getFormattedPrice('full')}
                 </Button>
               </div>
             )}
@@ -237,6 +244,6 @@ export function UsageLimitModal({
           </Button>
         </div>
       </Card>
-    </div>
+    </ModalShell>
   );
 }

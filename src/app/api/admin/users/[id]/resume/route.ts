@@ -2,32 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { pdf } from '@react-pdf/renderer'
 import { ResumeDocument } from '@/lib/pdf/ResumeDocument'
 import { generateDocx } from '@/lib/docx/generateDocx'
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { TemplateId, resolveTemplate } from '@/lib/templates'
 import React from 'react'
+import { verifyAdmin } from '@/lib/admin-auth'
 
 // Service role client bypasses RLS for admin queries
 const serviceClient = createServiceClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-// Helper to verify admin
-async function verifyAdmin(authClient: any) {
-  const { data: { user } } = await authClient.auth.getUser()
-  if (!user) return { error: 'Unauthorized', status: 401 }
-
-  const { data: profile } = await serviceClient
-    .from('profiles')
-    .select('is_admin, email')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!profile?.is_admin) return { error: 'Forbidden - Admin only', status: 403 }
-
-  return { user, adminProfile: profile }
-}
 
 // Helper to log admin actions
 async function logAdminAction(
@@ -60,9 +44,7 @@ export async function POST(
 ) {
   try {
     const { id: targetUserId } = await params
-    const authClient = await createClient()
-
-    const auth = await verifyAdmin(authClient)
+    const auth = await verifyAdmin()
     if ('error' in auth) {
       return NextResponse.json({ error: auth.error }, { status: auth.status })
     }
@@ -152,9 +134,7 @@ export async function GET(
 ) {
   try {
     const { id: targetUserId } = await params
-    const authClient = await createClient()
-
-    const auth = await verifyAdmin(authClient)
+    const auth = await verifyAdmin()
     if ('error' in auth) {
       return NextResponse.json({ error: auth.error }, { status: auth.status })
     }

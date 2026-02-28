@@ -284,6 +284,39 @@ export async function getSidebarCommunityData(): Promise<SidebarCommunityData> {
 }
 
 // ============================================================================
+// Community Stats (impact + leaderboard)
+// ============================================================================
+
+export interface CommunityStats {
+  impact: {
+    approvedCount: number;
+    totalCount: number;
+  };
+  leaderboard: {
+    rank: number;
+    name: string;
+    count: number;
+    isYou: boolean;
+  }[];
+}
+
+/**
+ * Fetch user impact stats and weekly leaderboard from the API.
+ */
+export async function getCommunityStats(): Promise<CommunityStats> {
+  try {
+    const res = await fetch('/api/community/stats');
+    if (!res.ok) throw new Error('Failed to fetch');
+    return await res.json();
+  } catch {
+    return {
+      impact: { approvedCount: 0, totalCount: 0 },
+      leaderboard: [],
+    };
+  }
+}
+
+// ============================================================================
 // Admin Functions
 // ============================================================================
 

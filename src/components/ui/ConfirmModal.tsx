@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
 import { Card } from './Card'
 import { Button } from './Button'
+import { ModalShell } from '@/components/ui/ModalShell'
 
 interface ConfirmModalProps {
   title: string
@@ -23,19 +23,8 @@ export function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
-
   return (
-    <div
-      className="fixed inset-0 bg-black/60 flex items-end md:items-center justify-center z-50"
-      onClick={onCancel}
-    >
+    <ModalShell isOpen={true} onClose={onCancel} title={title} maxWidth="max-w-md">
       {/* Mobile: drawer from bottom, Desktop: centered modal */}
       <Card
         className="w-full max-w-md p-6 md:p-6 rounded-t-2xl md:rounded-lg md:mx-4 animate-fade-in safe-area-inset-bottom"
@@ -59,6 +48,6 @@ export function ConfirmModal({
           </Button>
         </div>
       </Card>
-    </div>
+    </ModalShell>
   )
 }

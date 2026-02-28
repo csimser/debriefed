@@ -3,14 +3,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { ProgressBar, STEPS } from './ProgressBar'
 import { StepWelcome } from './StepWelcome'
-import { StepContact } from './StepContact'
-import { StepMilitary } from './StepMilitary'
+import { StepQuickProfile } from './StepQuickProfile'
 import { StepExperience } from './StepExperience'
-import { StepSkills } from './StepSkills'
-import { StepEducation } from './StepEducation'
-import { StepSummary } from './StepSummary'
+import { StepFinish } from './StepFinish'
 
 export interface OnboardingData {
   // Contact
@@ -52,14 +50,26 @@ interface NewOnboardingWizardProps {
   currentStep: number
   existingProfile: any
   userPlan?: string
+  planIntent?: string | null
 }
 
-export function NewOnboardingWizard({ userId, currentStep, existingProfile, userPlan }: NewOnboardingWizardProps) {
+/**
+ * Map legacy 7-step onboarding DB values to new 4-step flow.
+ * Old: 0=Welcome, 1=Contact, 2=Military, 3=Experience, 4=Skills, 5=Education, 6=Summary
+ * New: 0=Welcome, 1=Quick Profile, 2=Experience, 3=Finish
+ */
+function mapLegacyStep(dbStep: number): number {
+  if (dbStep <= 0) return 0
+  if (dbStep <= 2) return 1  // Contact or Military → Quick Profile
+  if (dbStep === 3) return 2 // Experience → Experience
+  return 3                   // Skills, Education, Summary → Finish
+}
+
+export function NewOnboardingWizard({ userId, currentStep, existingProfile, userPlan, planIntent }: NewOnboardingWizardProps) {
   const router = useRouter()
   const supabase = createClient()
 
-  // Map old step numbers to new (7 steps now)
-  const mappedStep = Math.min(currentStep, STEPS.length - 1)
+  const mappedStep = mapLegacyStep(currentStep)
   const [step, setStep] = useState(mappedStep)
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -212,13 +222,14 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
         return
       }
 
-      router.push('/dashboard')
+      const dashboardUrl = planIntent ? `/dashboard?plan=${planIntent}` : '/dashboard'
+      router.push(dashboardUrl)
     } catch (error) {
       console.error('Error skipping onboarding:', error)
     } finally {
       setSaving(false)
     }
-  }, [step, supabase, userId, router])
+  }, [supabase, userId, router, planIntent])
 
   const handleComplete = useCallback(async () => {
     setSaving(true)
@@ -249,17 +260,13 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
 
       if (error) {
         console.error('Error completing onboarding:', error)
-        alert('Failed to complete setup. Please try again.')
-        return
       }
-
-      router.push('/dashboard')
     } catch (error) {
       console.error('Error completing onboarding:', error)
     } finally {
       setSaving(false)
     }
-  }, [data, supabase, userId, router])
+  }, [data, supabase, userId])
 
   // Jump to a specific step (for resume import)
   const jumpToStep = useCallback(async (targetStep: number) => {
@@ -270,10 +277,35 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-pulse">&#9670;</div>
-          <p className="text-text-muted">Loading your profile...</p>
+      <div className="min-h-screen flex flex-col bg-bg-primary">
+        {/* Header skeleton */}
+        <div className="bg-bg-secondary border-b border-border px-6 py-4">
+          <div className="max-w-4xl mx-auto flex items-center gap-3">
+            <Skeleton variant="circle" className="w-10 h-10" />
+            <Skeleton className="w-32 h-5" />
+          </div>
+        </div>
+        {/* Progress bar skeleton */}
+        <div className="px-6 py-4 max-w-4xl mx-auto w-full">
+          <Skeleton className="w-full h-2 rounded-full" />
+          <div className="flex justify-between mt-2">
+            <Skeleton className="w-16 h-3" />
+            <Skeleton className="w-16 h-3" />
+            <Skeleton className="w-16 h-3" />
+            <Skeleton className="w-16 h-3" />
+          </div>
+        </div>
+        {/* Content skeleton */}
+        <div className="flex-1 py-6 px-4">
+          <div className="max-w-2xl mx-auto space-y-6">
+            <Skeleton className="w-48 h-8 mx-auto" />
+            <Skeleton lines={3} />
+            <Skeleton variant="card" className="h-40" />
+            <div className="flex justify-between">
+              <Skeleton className="w-24 h-10" />
+              <Skeleton className="w-32 h-10" />
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -292,6 +324,7 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
     supabase,
     loadRelatedData,
     userPlan,
+    planIntent,
   }
 
   return (
@@ -315,12 +348,9 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
       <div className="flex-1 py-6 px-4">
         <div className="max-w-2xl mx-auto">
           {step === 0 && <StepWelcome {...stepProps} />}
-          {step === 1 && <StepContact {...stepProps} />}
-          {step === 2 && <StepMilitary {...stepProps} />}
-          {step === 3 && <StepExperience {...stepProps} />}
-          {step === 4 && <StepSkills {...stepProps} />}
-          {step === 5 && <StepEducation {...stepProps} />}
-          {step === 6 && <StepSummary {...stepProps} />}
+          {step === 1 && <StepQuickProfile {...stepProps} />}
+          {step === 2 && <StepExperience {...stepProps} />}
+          {step === 3 && <StepFinish {...stepProps} />}
         </div>
       </div>
     </div>

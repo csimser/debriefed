@@ -1,8 +1,11 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { ModalShell } from '@/components/ui/ModalShell'
 import { useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { trackEvent } from '@/lib/analytics'
 
 interface LastUseWarningModalProps {
   featureName: string
@@ -24,7 +27,12 @@ export function LastUseWarningModal({
 }: LastUseWarningModalProps) {
   const { openUpgradeModal } = useUpgradeModal()
 
+  useEffect(() => {
+    trackEvent('last_use_warning_shown', { feature: featureName, tier })
+  }, [featureName, tier])
+
   const handleViewPricing = () => {
+    trackEvent('last_use_warning_cta_click', { feature: featureName, tier, action: 'view_pricing' })
     if (onViewPricing) {
       onViewPricing()
     } else {
@@ -51,8 +59,8 @@ export function LastUseWarningModal({
   const showPricingButton = tier === 'free' || tier === 'expired' || tier === 'core'
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md p-6">
+    <ModalShell isOpen={true} onClose={onContinue} title="Last Use Warning" maxWidth="max-w-md">
+      <Card className="w-full p-6">
         <div className="text-center mb-6">
           <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-status-amber/20 flex items-center justify-center">
             <svg
@@ -94,6 +102,6 @@ export function LastUseWarningModal({
           )}
         </div>
       </Card>
-    </div>
+    </ModalShell>
   )
 }

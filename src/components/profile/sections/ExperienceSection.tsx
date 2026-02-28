@@ -19,6 +19,8 @@ import { translateBullet as dictTranslateBullet } from '@/lib/dictionary/bulletT
 import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import { parseAndTranslateEvalText } from '@/lib/dictionary/evalParser'
 import { UpgradeLink } from '@/components/modals/UpgradeModal'
+import { Toast } from '@/components/ui/Toast'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { polishBullet } from '@/lib/dictionary/outputPolisher'
 import type { DictBulletPattern, DictionaryCache } from '@/lib/dictionary/types'
 import { HelpTranslatePrompt } from '@/components/dictionary/HelpTranslatePrompt'
@@ -48,6 +50,10 @@ interface ExperienceSectionProps {
   userBranch?: string
   userPaygrade?: string
   userPlan?: string
+  isOpen?: boolean
+  onToggle?: () => void
+  summary?: string
+  hint?: string
 }
 
 export function ExperienceSection({
@@ -60,6 +66,10 @@ export function ExperienceSection({
   userBranch,
   userPaygrade,
   userPlan,
+  isOpen,
+  onToggle,
+  summary,
+  hint,
 }: ExperienceSectionProps) {
   const isFreeUser = !isPaidTier(getUserTier({ tier: userPlan }))
   const [adding, setAdding] = useState(false)
@@ -145,6 +155,9 @@ export function ExperienceSection({
   const [translatingPaste, setTranslatingPaste] = useState(false)
   const [showMoreMenuForExp, setShowMoreMenuForExp] = useState<string | null>(null)
 
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null)
+
   const [formExp, setFormExp] = useState(emptyExp)
   const [showFederalFields, setShowFederalFields] = useState(false)
   const supabase = createClient()
@@ -202,28 +215,33 @@ export function ExperienceSection({
 
   // Delete individual bullet
   const deleteBullet = async (bulletId: string, experienceId: string) => {
-    if (!confirm('Delete this bullet?')) return
+    setConfirmDialog({
+      title: 'Delete Bullet',
+      message: 'Are you sure you want to delete this bullet?',
+      onConfirm: async () => {
+        const { error } = await supabase
+          .from('experience_bullets')
+          .delete()
+          .eq('id', bulletId)
 
-    const { error } = await supabase
-      .from('experience_bullets')
-      .delete()
-      .eq('id', bulletId)
-
-    if (error) {
-      alert(`Failed to delete: ${error.message}`)
-    } else {
-      // Update local state
-      const updatedExperiences = experiences.map(exp => {
-        if (exp.id === experienceId) {
-          return {
-            ...exp,
-            bullets: exp.bullets?.filter((b: any) => b.id !== bulletId) || []
-          }
+        if (error) {
+          setToast({ message: `Failed to delete: ${error.message}`, type: 'error' })
+        } else {
+          // Update local state
+          const updatedExperiences = experiences.map(exp => {
+            if (exp.id === experienceId) {
+              return {
+                ...exp,
+                bullets: exp.bullets?.filter((b: any) => b.id !== bulletId) || []
+              }
+            }
+            return exp
+          })
+          onUpdate(updatedExperiences)
         }
-        return exp
-      })
-      onUpdate(updatedExperiences)
-    }
+      },
+    })
+    return
   }
 
   // Start editing a bullet
@@ -236,7 +254,7 @@ export function ExperienceSection({
   const saveEditBullet = async (bulletId: string, experienceId: string) => {
     const cleanedText = stripLeadingBulletChars(editingBulletText)
     if (!cleanedText) {
-      alert('Bullet text cannot be empty')
+      setToast({ message: 'Bullet text cannot be empty', type: 'info' })
       return
     }
 
@@ -246,7 +264,7 @@ export function ExperienceSection({
       .eq('id', bulletId)
 
     if (error) {
-      alert(`Failed to update: ${error.message}`)
+      setToast({ message: `Failed to update: ${error.message}`, type: 'error' })
     } else {
       // Update local state
       const updatedExperiences = experiences.map(exp => {
@@ -297,7 +315,7 @@ export function ExperienceSection({
     ])
 
     if (results.some(r => r.error)) {
-      alert('Failed to reorder bullets')
+      setToast({ message: 'Failed to reorder bullets', type: 'error' })
       return
     }
 
@@ -343,7 +361,7 @@ export function ExperienceSection({
       .single()
 
     if (error) {
-      alert(`Failed to add bullet: ${error.message}`)
+      setToast({ message: `Failed to add bullet: ${error.message}`, type: 'error' })
     } else if (data) {
       // Update local state — prepend new bullet and shift existing sort_orders
       const updatedExperiences = experiences.map(exp => {
@@ -494,7 +512,7 @@ export function ExperienceSection({
       .eq('id', bulletId)
 
     if (error) {
-      alert(`Failed to update: ${error.message}`)
+      setToast({ message: `Failed to update: ${error.message}`, type: 'error' })
     } else {
       const updatedExperiences = experiences.map(exp => {
         if (exp.id === experienceId) {
@@ -674,7 +692,7 @@ export function ExperienceSection({
       .single()
 
     if (error) {
-      alert(`Failed to add bullet: ${error.message}`)
+      setToast({ message: `Failed to add bullet: ${error.message}`, type: 'error' })
     } else if (data) {
       const updatedExperiences = experiences.map(e => {
         if (e.id === experienceId) {
@@ -721,7 +739,7 @@ export function ExperienceSection({
       .single()
 
     if (error) {
-      alert(`Failed to add bullet: ${error.message}`)
+      setToast({ message: `Failed to add bullet: ${error.message}`, type: 'error' })
     } else if (data) {
       const updatedExperiences = experiences.map(e => {
         if (e.id === experienceId) {
@@ -770,7 +788,7 @@ export function ExperienceSection({
       .select()
 
     if (error) {
-      alert(`Failed to add bullets: ${error.message}`)
+      setToast({ message: `Failed to add bullets: ${error.message}`, type: 'error' })
     } else if (data) {
       const updatedExperiences = experiences.map(e => {
         if (e.id === experienceId) {
@@ -860,7 +878,7 @@ export function ExperienceSection({
       .single()
 
     if (error) {
-      alert(`Failed to add bullet: ${error.message}`)
+      setToast({ message: `Failed to add bullet: ${error.message}`, type: 'error' })
     } else if (data) {
       const updatedExperiences = experiences.map(exp => {
         if (exp.id === experienceId) {
@@ -884,7 +902,7 @@ export function ExperienceSection({
     const orgField = isCivilian ? formExp.company_name : formExp.organization
 
     if (!formExp.job_title || !orgField) {
-      alert(`Please fill in Job Title and ${isCivilian ? 'Company Name' : 'Organization'}`)
+      setToast({ message: `Please fill in Job Title and ${isCivilian ? 'Company Name' : 'Organization'}`, type: 'info' })
       return
     }
 
@@ -932,7 +950,7 @@ export function ExperienceSection({
         handleCancelEdit()
       } else {
         console.error('Error updating experience:', error)
-        alert(`Failed to update experience: ${error.message}`)
+        setToast({ message: `Failed to update experience: ${error.message}`, type: 'error' })
       }
     } else {
       // Insert new experience
@@ -947,7 +965,7 @@ export function ExperienceSection({
         handleCancelEdit()
       } else if (error) {
         console.error('Error adding experience:', error)
-        alert(`Failed to add experience: ${error.message}`)
+        setToast({ message: `Failed to add experience: ${error.message}`, type: 'error' })
       }
     }
   }
@@ -985,7 +1003,7 @@ export function ExperienceSection({
       newExperiences[targetIndex] = { ...currentExp, sort_order: targetIndex }
       onUpdate(newExperiences)
     } else {
-      alert('Failed to reorder experiences')
+      setToast({ message: 'Failed to reorder experiences', type: 'error' })
     }
   }
 
@@ -1017,7 +1035,7 @@ export function ExperienceSection({
 
       if (error) {
         console.error('Error saving bullets:', error)
-        alert('Failed to save bullets')
+        setToast({ message: 'Failed to save bullets', type: 'error' })
         return
       }
 
@@ -1072,7 +1090,7 @@ export function ExperienceSection({
 
       if (expError || !formExperience) {
         console.error('Error creating experience:', expError)
-        alert(`Failed to create experience: ${expError?.message || 'Unknown error'}`)
+        setToast({ message: `Failed to create experience: ${expError?.message || 'Unknown error'}`, type: 'error' })
         return
       }
 
@@ -1089,7 +1107,7 @@ export function ExperienceSection({
 
       if (bulletError) {
         console.error('Error saving bullets:', bulletError)
-        alert('Failed to save bullets')
+        setToast({ message: 'Failed to save bullets', type: 'error' })
         return
       }
 
@@ -1115,6 +1133,10 @@ export function ExperienceSection({
     <CollapsibleSection
       title="Experience"
       icon="◫"
+      isOpen={isOpen}
+      onToggle={onToggle}
+      summary={summary}
+      hint={hint}
       actions={!adding && !editingId && (
         <button
           onClick={() => { setAdding(true); setFormExp(emptyExp) }}
@@ -2416,7 +2438,7 @@ export function ExperienceSection({
                   onClick={() => {
                     const parsed = parseBulkPaste(bulkPasteText)
                     if (parsed.length === 0) {
-                      alert('No bullets found. Enter one bullet per line.')
+                      setToast({ message: 'No bullets found. Enter one bullet per line.', type: 'info' })
                       return
                     }
                     setBulkPastePreview(parsed)
@@ -2453,6 +2475,18 @@ export function ExperienceSection({
           tier={(bulletTranslationUsage?.limit === 10 ? 'free' : bulletTranslationUsage?.limit === 50 ? 'core' : 'full') as any}
           limitType="tier"
           onContinue={handleTranslateWarningContinue}
+        />
+      )}
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {confirmDialog && (
+        <ConfirmModal
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant="danger"
+          confirmLabel="Delete"
+          onConfirm={() => { confirmDialog.onConfirm(); setConfirmDialog(null) }}
+          onCancel={() => setConfirmDialog(null)}
         />
       )}
     </CollapsibleSection>

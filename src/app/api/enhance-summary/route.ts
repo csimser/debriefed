@@ -6,6 +6,7 @@ import { logApiUsage } from '@/lib/usage-tracking'
 import { canUseFeature, incrementUsage, isAdmin, getUserEmail } from '@/lib/usage-service'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { translateTerm } from '@/lib/debriefed-token-saver/termLookup'
+import { dictionaryTranslate } from '@/lib/translation-engine'
 import { callWithEscalation, getModelString } from '@/lib/ai-model'
 import { captureFullTextOutput, type CaptureContext } from '@/lib/ai-translation-capture'
 
@@ -64,20 +65,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Pre-translate known military terms in the summary
-    const knownTranslations: string[] = []
+    // Pre-translate using shared engine (phrase-first + jargon + constants)
+    const { translated: preTranslated, matchedTerms } = await dictionaryTranslate(summary)
+    const knownTranslations: string[] = matchedTerms.map(mt => `"${mt.military}" → "${mt.civilian}"`)
+    // Also do word-level lookup for any the engine missed
     const words = summary.split(/\s+/)
     for (const word of words) {
       const cleaned = word.replace(/[^a-zA-Z0-9/-]/g, '')
       if (cleaned.length >= 2) {
         const translation = translateTerm(cleaned)
         if (translation) {
-          knownTranslations.push(`"${cleaned}" → "${translation}"`)
+          const entry = `"${cleaned}" → "${translation}"`
+          if (!knownTranslations.includes(entry)) knownTranslations.push(entry)
         }
       }
     }
     const termContext = knownTranslations.length > 0
-      ? `\nKnown translations (apply these): ${knownTranslations.join(', ')}`
+      ? `\nKnown translations (apply these): ${knownTranslations.join(', ')}\nPre-translated version: ${preTranslated}`
       : ''
 
     // Check if targeting defense/government industry

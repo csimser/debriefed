@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { withAISecurity, secureSystemPrompt, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
+import { dictionaryTranslate } from '@/lib/translation-engine'
 import { suggestVerbs } from '@/lib/debriefed-token-saver/verbSuggester'
 import { callWithEscalation, getModelString } from '@/lib/ai-model'
 import { captureFullTextOutput, type CaptureContext } from '@/lib/ai-translation-capture'
@@ -404,6 +405,15 @@ export const POST = withAISecurity<CoverLetterInput>(
         )
         .slice(0, 5) || []
     }
+
+    // Pre-translate achievements using shared engine to ensure no military jargon reaches AI
+    const translatedAchievements = await Promise.all(
+      achievements.map(async (a) => {
+        const { translated } = await dictionaryTranslate(a)
+        return translated
+      })
+    )
+    achievements = translatedAchievements
 
     const skillsList = skills?.slice(0, 10)?.join(', ') || ''
     const greeting = getGreeting(jobData.company, hiringManagerName)

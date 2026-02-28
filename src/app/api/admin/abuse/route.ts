@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { getFlaggedDuplicates } from '@/lib/ai-security'
+import { verifyAdmin } from '@/lib/admin-auth'
 
 // Use service role client to bypass RLS
 const serviceClient = createServiceClient(
@@ -11,23 +11,9 @@ const serviceClient = createServiceClient(
 
 export async function GET(request: NextRequest) {
   try {
-    // Auth check with regular client
-    const authClient = await createClient()
-    const { data: { user } } = await authClient.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Verify admin status
-    const { data: profile } = await serviceClient
-      .from('profiles')
-      .select('is_admin')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!profile?.is_admin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const auth = await verifyAdmin()
+    if ('error' in auth) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status })
     }
 
     // Get flagged duplicates

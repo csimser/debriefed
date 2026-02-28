@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { CareerToolsHub } from '@/components/career-tools/CareerToolsHub'
 import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
 import { EvalHistorySection } from '@/components/eval/EvalHistorySection'
+import { DictionaryIntroModal } from '@/components/dictionary/DictionaryIntroModal'
 import { checkLimit } from '@/lib/usage-service'
 
 export default async function CareerToolsPage() {
@@ -75,6 +76,19 @@ export default async function CareerToolsPage() {
           evalUploads={evalUploads || []}
         />
       </Suspense>
+
+      {(evalUploads?.length ?? 0) > 0 && (
+        <EvalHistorySection
+          uploads={evalUploads || []}
+          experiences={mappedExperiences}
+          userId={user?.id || ''}
+        />
+      )}
+
+      {/* Dictionary Intro Modal — shown on first visit to career tools */}
+      {user?.id && profile?.dictionary_intro_shown !== true && (
+        <DictionaryIntroModal userId={user.id} />
+      )}
     </div>
   )
 }

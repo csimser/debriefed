@@ -1,28 +1,17 @@
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { AdminLayout } from '@/components/admin/AdminLayout'
+import { verifyAdmin } from '@/lib/admin-auth'
 
 export default async function AdminRootLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const auth = await verifyAdmin()
 
-  if (!user) {
-    redirect('/login')
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('is_admin, email')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!profile?.is_admin) {
-    // Redirect to dashboard - toast would need to be handled client-side
+  if ('error' in auth) {
+    if (auth.status === 401) redirect('/login')
     redirect('/dashboard?error=access_denied')
   }
 
   return (
-    <AdminLayout adminEmail={profile.email || user.email}>
+    <AdminLayout adminEmail={auth.adminProfile.email}>
       {children}
     </AdminLayout>
   )

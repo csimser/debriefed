@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { ModalShell } from '@/components/ui/ModalShell'
 import { createClient } from '@/lib/supabase/client'
 
 interface BulletImportModalProps {
@@ -63,8 +64,8 @@ export function BulletImportModal({ bullets, experiences, userId, onClose, onImp
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+    <ModalShell isOpen={true} onClose={onClose} title="Import Bullets to Experience" maxWidth="max-w-2xl">
+      <Card className="w-full max-h-[80vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h2 className="font-heading text-lg font-bold uppercase tracking-wider">
@@ -153,6 +154,6 @@ export function BulletImportModal({ bullets, experiences, userId, onClose, onImp
           </Button>
         </div>
       </Card>
-    </div>
+    </ModalShell>
   )
 }

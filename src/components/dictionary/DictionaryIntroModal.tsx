@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { ModalShell } from '@/components/ui/ModalShell'
 import { createClient } from '@/lib/supabase/client'
 
 const LS_KEY = 'dictionary_intro_dismissed'
@@ -23,8 +24,6 @@ export function DictionaryIntroModal({ userId }: DictionaryIntroModalProps) {
       setDismissed(true)
     }
   }, [])
-
-  if (dismissed) return null
 
   const markShown = async () => {
     // localStorage fallback — survives even if DB update fails
@@ -57,8 +56,8 @@ export function DictionaryIntroModal({ userId }: DictionaryIntroModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-end md:items-center justify-center z-50">
-      <div className="bg-bg-card border-t md:border border-border rounded-t-2xl md:rounded-lg w-full md:max-w-lg shadow-xl md:mx-4">
+    <ModalShell isOpen={!dismissed} onClose={handleDismiss} title="Community Dictionary">
+      <div className="bg-bg-card border-t md:border border-border rounded-t-2xl md:rounded-lg w-full shadow-xl">
         {/* Mobile drag indicator */}
         <div className="md:hidden w-12 h-1 bg-border rounded-full mx-auto mt-3" />
 
@@ -113,6 +112,6 @@ export function DictionaryIntroModal({ userId }: DictionaryIntroModalProps) {
           </div>
         </div>
       </div>
-    </div>
+    </ModalShell>
   )
 }

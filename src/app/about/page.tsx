@@ -1,45 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import { MarketingNav } from '@/components/layout/MarketingNav'
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
-      {/* Status Bar */}
-      <div className="bg-bg-secondary border-b border-border px-8 py-2.5 flex items-center justify-between font-mono text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-status-green animate-pulse" />
-          <span className="text-status-green">SYSTEMS OPERATIONAL</span>
-        </div>
-        <div className="text-text-muted">
-          <span>v1.0</span>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="bg-bg-secondary border-b border-border px-4 md:px-8 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 py-4">
-          <div className="w-9 h-9 border-2 border-gold flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 text-gold">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <path d="M9 9h6M9 13h6M9 17h4"/>
-            </svg>
-          </div>
-          <span className="font-heading text-xl md:text-2xl font-bold tracking-wider uppercase">Debriefed</span>
-        </Link>
-
-        <div className="flex items-center gap-2 md:gap-3">
-          <Link href="/help" className="hidden md:block px-5 py-2.5 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text transition-colors">
-            Help
-          </Link>
-          <Link href="/login" className="hidden md:block px-5 py-2.5 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text border border-border hover:border-border-bright rounded transition-all">
-            Sign In
-          </Link>
-          <Link href="/signup" className="px-4 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
-            Begin Mission
-          </Link>
-        </div>
-      </nav>
+      <MarketingNav currentPage="about" />
 
       {/* Main Content */}
       <main className="flex-1 px-6 py-20">
@@ -78,7 +45,7 @@ export default function AboutPage() {
               <h2 className="text-2xl font-heading text-text mb-6">Why I Built This</h2>
 
               <p className="text-text-muted leading-relaxed text-base mb-4">
-                I'm a Senior Chief Damage Controlman, E-8, retiring in 2026. I've got an MBA, PMP, and a bunch of cyber certs. I've trained sailors, led DC teams, and stood plenty of watches. None of that matters if I can't explain it to someone who's never been on a ship.
+                I'm a Senior Chief Damage Controlman, E-8, transitioning after a 20-plus year career. I've got an MBA, PMP, and a bunch of cyber certs. I've trained sailors, led DC teams, and stood plenty of watches. None of that matters if I can't explain it to someone who's never been on a ship.
               </p>
 
               <p className="text-text-muted leading-relaxed text-base mb-4">
@@ -102,7 +69,7 @@ export default function AboutPage() {
                 <div className="bg-bg-tertiary border-l-2 border-gold p-6 rounded-r">
                   <h3 className="text-gold font-heading font-semibold mb-2">I'm going through this too.</h3>
                   <p className="text-text-muted text-sm leading-relaxed">
-                    This isn't some tech company trying to cash in on your transition. I'm 11 months out from retirement myself.
+                    This isn't some tech company trying to cash in on your transition. I built this during my own transition out of the military.
                   </p>
                 </div>
 
@@ -161,7 +128,8 @@ export default function AboutPage() {
           {/* Founder Card */}
           <div className="mt-16 p-8 bg-bg-secondary border border-border rounded-lg">
             <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-navy border-2 border-gold flex items-center justify-center">
+              {/* Replace /images/founder.jpg with the real founder photo */}
+              <div className="w-24 h-24 rounded-full bg-navy border-2 border-gold overflow-hidden flex items-center justify-center">
                 <span className="text-3xl font-heading font-bold text-gold">CS</span>
               </div>
               <div className="text-center md:text-left">
@@ -169,7 +137,7 @@ export default function AboutPage() {
                 <p className="text-gold font-mono text-sm">Founder, Senior Chief Petty Officer</p>
                 <p className="text-text-muted mt-2">
                   20+ years U.S. Navy • Damage Controlman • MBA, PMP<br/>
-                  Retiring in 2026 • Las Vegas
+                  20+ Year Navy Veteran • Las Vegas
                 </p>
               </div>
             </div>

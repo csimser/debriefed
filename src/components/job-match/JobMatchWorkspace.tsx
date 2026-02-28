@@ -18,6 +18,7 @@ import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import type { ExtractionResult, MatchResult, DictProfessionalSummary } from '@/lib/dictionary/types'
 import { TailoredPreviewModal, type PreviewChange } from './TailoredPreviewModal'
 import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { ScoreGauge } from './ScoreGauge'
 
 interface JobMatchWorkspaceProps {
   userId: string
@@ -382,9 +383,10 @@ export function JobMatchWorkspace({
   const [customKeywords, setCustomKeywords] = useState<string[]>([])
   const [manualKeyword, setManualKeyword] = useState('')
 
-  // Stepper state
-  const [currentStep, setCurrentStep] = useState(1)
-  const stepContainerRef = useRef<HTMLDivElement>(null)
+  // Resume dropdown state
+  const [isResumeDropdownOpen, setIsResumeDropdownOpen] = useState(false)
+  const resumeDropdownRef = useRef<HTMLDivElement>(null)
+  const extractDebounceRef = useRef<NodeJS.Timeout | null>(null)
 
   // Professional summary template state
   const [summaryTemplates, setSummaryTemplates] = useState<DictProfessionalSummary[]>([])
@@ -479,6 +481,50 @@ export function JobMatchWorkspace({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dictResult, selectedResume, hasPaidAccess, userProfile?.branch])
 
+  // Auto-extract keywords on paste (debounced)
+  useEffect(() => {
+    if (extractDebounceRef.current) clearTimeout(extractDebounceRef.current)
+    if (jobData.description.length < 100 || !selectedResumeId) return
+    extractDebounceRef.current = setTimeout(async () => {
+      try {
+        const extraction = await extractKeywords(jobData.description)
+        const profile = buildUserProfile(
+          userProfile || {},
+          userSkills,
+          userCertifications,
+          userEducation.map(e => ({ degree: e.degree_type ?? null, field_of_study: e.field_of_study ?? null, school: e.school_name ?? null })),
+          (selectedResume?.content?.experiences || []).map((e: any) => ({
+            title: e.job_title || e.civilian_title || null,
+            organization: e.organization || null,
+            bullets: e.bullets,
+            experience_bullets: e.experience_bullets,
+          })),
+        )
+        const match = await calculateMatch(extraction, profile)
+        setDictResult({ extraction, match })
+        const top12 = extraction.atsKeywords.slice(0, 12).map(kw => kw.keyword)
+        setSelectedKeywords(new Set(top12))
+        setAddressedGaps(new Set())
+        setCustomKeywords([])
+        setManualKeyword('')
+      } catch {}
+    }, 1500)
+    return () => { if (extractDebounceRef.current) clearTimeout(extractDebounceRef.current) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobData.description, selectedResumeId])
+
+  // Close resume dropdown on click outside
+  useEffect(() => {
+    if (!isResumeDropdownOpen) return
+    const handleClick = (e: MouseEvent) => {
+      if (resumeDropdownRef.current && !resumeDropdownRef.current.contains(e.target as Node)) {
+        setIsResumeDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [isResumeDropdownOpen])
+
   const handleAnalyze = async () => {
     if (!selectedResume || !jobData.description) {
       setError('Please select a resume and enter a job description')
@@ -540,7 +586,6 @@ export function JobMatchWorkspace({
         body: JSON.stringify({ feature: 'job_match_analysis' }),
       }).catch(() => {})
       setAnalyzing(false)
-      setCurrentStep(2)
       return
     }
 
@@ -588,7 +633,6 @@ export function JobMatchWorkspace({
           removedSkills: [],
           excludedBullets: new Set(),
         })
-        setCurrentStep(2)
         // Trigger post-action modal after results render
         setTimeout(() => triggerPostActionModal('job-match-complete'), 800)
 
@@ -968,9 +1012,8 @@ export function JobMatchWorkspace({
     setChangesSummary([])
   }, [selectedResume])
 
-  // Start a new analysis — reset stepper and all state
+  // Start a new analysis — reset all state
   const handleStartNewAnalysis = useCallback(() => {
-    setCurrentStep(1)
     setAnalysis(null)
     setDictResult(null)
     setTailoredResume(null)
@@ -995,11 +1038,6 @@ export function JobMatchWorkspace({
     setCopiedBulletKey(null)
     setDownloading(false)
   }, [])
-
-  // Scroll to top on step change
-  useEffect(() => {
-    stepContainerRef.current?.scrollTo(0, 0)
-  }, [currentStep])
 
   // Toggle a single ATS keyword selection
   const toggleKeyword = useCallback((keyword: string) => {
@@ -1407,8 +1445,6 @@ export function JobMatchWorkspace({
     (selectedResume?.content?.skills ?? []).map((s: any) => (s.name ?? '').toLowerCase())
   )
   const totalKeywordCount = (dictResult?.extraction.atsKeywords.length ?? 0) + customKeywords.length
-  const circumference = 283
-  const offset = circumference - (currentScore / 100) * circumference
   const hasResults = !!dictResult || !!analysis
 
   // Memoized data for filling summary template placeholders
@@ -1451,204 +1487,210 @@ export function JobMatchWorkspace({
     }
   }, [selectedResume, userProfile, userCertifications, selectedKeywords, dictResult, jobData.title, userEducation])
 
+
   return (
-    <div ref={stepContainerRef} className="h-full overflow-auto p-4 md:p-6 lg:p-8 animate-fade-in" style={{ paddingBottom: '64px' }}>
-      <div className="space-y-5 md:space-y-6">
-        {/* Page Header - responsive */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+    <div className="h-full overflow-auto p-4 md:p-6 lg:p-8 animate-fade-in">
+      <div className="max-w-4xl mx-auto space-y-6">
+
+        {/* Header row — title left, resume selector right */}
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="font-heading text-xl md:text-2xl font-bold uppercase tracking-wider flex items-center gap-2 md:gap-3">
+            <h1 className="font-heading text-xl md:text-2xl font-bold uppercase tracking-wider flex items-center gap-2">
               <span className="text-gold">◈</span> Job Match
             </h1>
-            <p className="text-text-muted text-sm mt-1">
-              Analyze how your resume matches a job posting
-            </p>
+            <p className="text-text-muted text-sm mt-1">Paste a job description to see how you match</p>
           </div>
+
+          {/* Resume selector — small dropdown */}
+          {resumes.length > 0 && (
+            <div className="relative flex-shrink-0" ref={resumeDropdownRef}>
+              <button
+                onClick={() => setIsResumeDropdownOpen(!isResumeDropdownOpen)}
+                className="flex items-center gap-2 px-3 py-2 bg-bg-tertiary border border-border rounded-lg hover:border-border-bright transition-colors max-w-[200px]"
+              >
+                <span className="text-gold text-xs">◫</span>
+                <span className="text-xs font-heading font-semibold truncate">{selectedResume?.name || 'Select resume'}</span>
+                <svg className={`w-3 h-3 text-text-muted flex-shrink-0 transition-transform ${isResumeDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {isResumeDropdownOpen && (
+                <div className="absolute right-0 top-full mt-1 w-64 bg-bg-card border border-border rounded-lg shadow-xl z-30 overflow-hidden">
+                  <div className="max-h-48 overflow-auto">
+                    {resumes.map((resume) => (
+                      <button
+                        key={resume.id}
+                        onClick={() => { setSelectedResumeId(resume.id); setIsResumeDropdownOpen(false) }}
+                        className={`w-full px-4 py-2.5 text-left transition-colors flex items-center gap-2 ${
+                          selectedResumeId === resume.id ? 'bg-gold-dim text-gold' : 'hover:bg-bg-tertiary'
+                        }`}
+                      >
+                        <span className="text-xs font-heading font-semibold truncate flex-1">{resume.name}</span>
+                        {selectedResumeId === resume.id && <span className="text-gold text-xs">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Usage Warning Banner (Step 1 only) */}
-        {currentStep === 1 && !hasPaidAccess && remaining <= 2 && remaining > 0 && (
-          <div className="flex items-center gap-3 p-4 bg-status-amber/10 border-l-4 border-status-amber rounded-r-lg">
+        {/* Usage Warning */}
+        {!hasPaidAccess && remaining <= 2 && remaining > 0 && (
+          <div className="flex items-center gap-3 p-3 bg-status-amber/10 border-l-4 border-status-amber rounded-r-lg">
             <svg className="w-5 h-5 text-status-amber flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
               <line x1="12" y1="9" x2="12" y2="13"/>
               <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
             <div className="flex-1">
-              <div className="font-heading text-sm font-semibold text-status-amber">
-                {remaining} Free {remaining === 1 ? 'Analysis' : 'Analyses'} Remaining
-              </div>
-              <div className="text-xs text-text-muted">
-                Upgrade for unlimited analyses and AI-powered resume rewrites.
-              </div>
+              <span className="text-sm font-semibold text-status-amber">{remaining} AI {remaining === 1 ? 'analysis' : 'analyses'} remaining</span>
+              <span className="text-xs text-text-muted ml-2">— dictionary match is always free</span>
             </div>
-            <UpgradeLink className="text-status-amber text-sm font-semibold hover:underline whitespace-nowrap">
-              Upgrade →
-            </UpgradeLink>
+            <UpgradeLink className="text-status-amber text-sm font-semibold hover:underline whitespace-nowrap">Upgrade →</UpgradeLink>
           </div>
         )}
 
-        {/* Step indicator moved to sticky footer */}
-
-        {/* ═══ STEP 1: Paste Job Description ═══ */}
-        {currentStep === 1 && (
-          <>
+        {/* ═══ JOB DESCRIPTION — primary input, dominant ═══ */}
         <Card className="p-4 md:p-6">
-          <h2 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 md:mb-6 flex items-center gap-2">
-            <span className="text-gold">◈</span> Job Posting Details
-          </h2>
+          <label className="block font-heading text-sm font-bold uppercase tracking-wider text-gold mb-3">
+            Paste Job Description
+          </label>
+          <textarea
+            name="job-description"
+            autoComplete="off"
+            rows={12}
+            value={jobData.description}
+            onChange={(e) => setJobData({ ...jobData, description: e.target.value })}
+            placeholder="Paste the full job description here — requirements, qualifications, responsibilities. The more detail, the better."
+            className="w-full min-h-[280px] bg-bg-secondary border border-border rounded-lg px-4 py-3 text-text placeholder:text-text-dim resize-y focus:border-gold focus:ring-1 focus:ring-gold/25 transition-colors text-sm"
+          />
+          {jobData.description.length > 0 && jobData.description.length < 100 && (
+            <p className="text-xs text-status-amber mt-2">Keep pasting — need at least 100 characters for analysis</p>
+          )}
+          {jobData.description.length >= 100 && !dictResult && !analyzing && (
+            <p className="text-xs text-text-dim mt-2">Extracting keywords...</p>
+          )}
 
-          {/* Stack vertically on mobile */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {/* Company Name */}
+          {/* Optional fields — below JD */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <Input
-              label="Company Name"
+              label="Company Name (optional)"
               autoComplete="organization"
               value={jobData.company}
               onChange={(e) => setJobData({ ...jobData, company: e.target.value })}
               placeholder="e.g., Acme Corporation"
             />
-
-            {/* Job Title */}
             <Input
-              label="Job Title"
+              label="Job Title (optional)"
               value={jobData.title}
               onChange={(e) => setJobData({ ...jobData, title: e.target.value })}
               placeholder="e.g., Operations Manager"
             />
           </div>
+          <p className="text-xs text-text-dim mt-2">Auto-extracted from job description when possible</p>
+        </Card>
 
-          {/* Job Description */}
-          <div className="mt-6">
-            <label className="block font-heading text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-              Job Description
-            </label>
-            <textarea
-              name="job-description"
-              autoComplete="off"
-              rows={10}
-              value={jobData.description}
-              onChange={(e) => setJobData({ ...jobData, description: e.target.value })}
-              placeholder="Paste the full job description here including requirements, qualifications, and responsibilities..."
-              className="w-full min-h-[240px] bg-bg-secondary border border-border rounded-md px-4 py-3 text-text placeholder:text-text-dim resize-y focus:border-gold focus:ring-1 focus:ring-gold/25 transition-colors"
-            />
-            <p className="text-xs text-text-dim mt-2">
-              Include the full job posting for best results. The more detail, the better the analysis.
-            </p>
-          </div>
-
-          {/* Resume Selector */}
-          <div className="mt-5 md:mt-6">
-            <label className="block font-heading text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-              Select Resume to Analyze
-            </label>
-            {resumes.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {resumes.map((resume) => (
-                  <button
-                    key={resume.id}
-                    onClick={() => setSelectedResumeId(resume.id)}
-                    className={`p-4 rounded-lg text-left transition-all border min-h-[60px] ${
-                      selectedResumeId === resume.id
-                        ? 'bg-gold-dim border-gold/30 ring-1 ring-gold/20'
-                        : 'bg-bg-tertiary hover:bg-bg-hover active:bg-bg-hover border-transparent hover:border-border'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                        selectedResumeId === resume.id ? 'bg-gold/20' : 'bg-bg-secondary'
-                      }`}>
-                        <span className={selectedResumeId === resume.id ? 'text-gold' : 'text-text-muted'}>◫</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-heading text-sm font-semibold truncate">{resume.name}</div>
-                        {selectedResumeId === resume.id && (
-                          <div className="text-xs text-gold">Selected</div>
-                        )}
-                      </div>
-                      {selectedResumeId === resume.id && (
-                        <svg className="w-5 h-5 text-gold flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <Card className="p-6 text-center bg-bg-tertiary">
-                <div className="text-3xl mb-3 text-text-dim">◫</div>
-                <p className="text-text-muted mb-3">No resumes found. Create one first.</p>
-                <Button size="sm" onClick={() => window.location.href = '/resumes'}>
-                  Create Resume
-                </Button>
-              </Card>
+        {/* ═══ Deep Analysis button — secondary, costs a credit ═══ */}
+        {dictResult && hasPaidAccess && !analysis && (
+          <div className="flex items-center justify-center gap-4">
+            <Button
+              variant="secondary"
+              onClick={handleAnalyze}
+              disabled={analyzing || remaining <= 0}
+            >
+              {analyzing ? (
+                <><svg className="w-4 h-4 mr-2 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>Running AI Analysis...</>
+              ) : (
+                <>Deep Analysis (uses 1 credit)</>
+              )}
+            </Button>
+            {remaining <= 0 && (
+              <span className="text-xs text-status-red">No credits remaining</span>
             )}
           </div>
-
-          {/* Error Display */}
-          {error && (
-            <div className="mt-6 bg-status-red-dim border border-status-red/20 rounded-md p-4">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-status-red flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                <p className="text-sm text-status-red">{error}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Analyze button removed — use sticky footer "Analyze →" on Step 1 */}
-        </Card>
-          </>
         )}
 
-        {/* ═══ STEP 2: Analysis Results ═══ */}
-        {currentStep === 2 && dictResult && (
-          <div className="space-y-5">
-            {/* Dictionary Match Score */}
-            <Card className="p-6">
-              <div className="flex flex-col md:flex-row md:items-center gap-6">
-                {/* Score Circle */}
-                <div className="flex flex-col items-center">
-                  <div className="relative w-28 h-28">
-                    <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                      <circle
-                        cx="50" cy="50" r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="8"
-                        className="text-border"
-                      />
-                      <circle
-                        cx="50" cy="50" r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        strokeDasharray={283}
-                        strokeDashoffset={283 - (adjustedDictScore / 100) * 283}
-                        className={getScoreColor(adjustedDictScore)}
-                        style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className={`font-mono text-3xl font-bold ${getScoreColor(adjustedDictScore)}`}>
-                        {adjustedDictScore}%
-                      </span>
-                    </div>
-                  </div>
-                  <div className={`text-sm font-semibold mt-2 ${getScoreColor(adjustedDictScore)}`}>
-                    {adjustedDictScore >= 80 ? 'Strong Match' : adjustedDictScore >= 60 ? 'Competitive' : 'Gaps to Address'}
-                  </div>
-                  {addressedGaps.size > 0 && adjustedDictScore > dictResult.match.overallScore && (
-                    <div className="text-xs text-status-green mt-1">
-                      {dictResult.match.overallScore}% → {adjustedDictScore}% (+{adjustedDictScore - dictResult.match.overallScore}%)
-                    </div>
-                  )}
-                </div>
+        {/* Error */}
+        {error && (
+          <div className="bg-status-red-dim border border-status-red/20 rounded-lg p-4 flex items-center gap-2">
+            <svg className="w-5 h-5 text-status-red flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <p className="text-sm text-status-red">{error}</p>
+          </div>
+        )}
 
-                {/* Category Breakdown */}
+        {/* No resume warning */}
+        {resumes.length === 0 && (
+          <Card className="p-6 text-center bg-bg-tertiary">
+            <div className="text-3xl mb-3 text-text-dim">◫</div>
+            <p className="text-text-muted mb-3">No resumes found. Create one first.</p>
+            <Button size="sm" onClick={() => window.location.href = '/resumes'}>Create Resume</Button>
+          </Card>
+        )}
+
+        {/* Loading State */}
+        {analyzing && (
+          <Card className="p-12">
+            <div className="text-center">
+              <div className="relative w-20 h-20 mx-auto mb-6">
+                <div className="absolute inset-0 border-4 border-gold/20 rounded-full" />
+                <div className="absolute inset-0 border-4 border-gold border-t-transparent rounded-full animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-3xl text-gold">◈</span>
+                </div>
+              </div>
+              <h3 className="font-heading text-lg font-bold uppercase tracking-wider mb-2">
+                Analyzing Your Match
+              </h3>
+              <p className="text-text-muted mb-6">
+                Evaluating skills, experience, education, and keywords...
+              </p>
+
+              <div className="max-w-xs mx-auto space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-6 h-6 rounded-full bg-gold/20 flex items-center justify-center">
+                    <span className="text-gold text-xs">✓</span>
+                  </div>
+                  <span className="text-text-muted">Parsing job requirements</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-6 h-6 rounded-full bg-gold/20 flex items-center justify-center animate-pulse">
+                    <span className="text-gold text-xs">◆</span>
+                  </div>
+                  <span className="text-text">Matching skills & experience</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-6 h-6 rounded-full bg-bg-tertiary flex items-center justify-center">
+                    <span className="text-text-dim text-xs">◇</span>
+                  </div>
+                  <span className="text-text-dim">Generating recommendations</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/* ═══ RESULTS — shown inline below input ═══ */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {hasResults && !analyzing && (
+          <div className="space-y-6">
+
+            {/* ── Score Gauge — dominant visual ── */}
+            <Card className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
+                {/* Score gauge */}
+                <ScoreGauge
+                  score={analysis ? currentScore : adjustedDictScore}
+                  label={analysis ? getMatchLabel(currentScore) : (adjustedDictScore >= 80 ? 'Strong Match' : adjustedDictScore >= 60 ? 'Competitive' : 'Gaps to Address')}
+                  previousScore={analysis ? originalScore ?? undefined : (addressedGaps.size > 0 ? dictResult!.match.overallScore : undefined)}
+                />
+
+                {/* Category Breakdown — dictionary path */}
+                {dictResult && !analysis && (
                 <div className="flex-1">
                   <h2 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
                     <span className="text-gold">◈</span> Dictionary Match Analysis
@@ -1681,10 +1723,42 @@ export function JobMatchWorkspace({
                     </div>
                   )}
                 </div>
+                )}
+
+                {/* Category Breakdown — AI path */}
+                {analysis && (
+                <div className="flex-1">
+                  <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">
+                    Category Scores
+                  </h3>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+                    {[
+                      { label: 'Skills', score: analysis.categoryScores?.skills || 0 },
+                      { label: 'Experience', score: analysis.categoryScores?.experience || 0 },
+                      { label: 'Keywords', score: analysis.categoryScores?.keywords || 0 },
+                      { label: 'Education', score: analysis.categoryScores?.education || 0 },
+                      { label: 'Certifications', score: analysis.categoryScores?.certifications || 0 },
+                      ...(analysis.categoryScores?.clearance !== null ? [{ label: 'Clearance', score: analysis.categoryScores?.clearance || 0 }] : []),
+                    ].map((cat) => (
+                      <div key={cat.label} className="flex items-center gap-3">
+                        <span className="text-sm text-text-muted w-24">{cat.label}</span>
+                        <div className="flex-1 h-2 bg-bg-tertiary rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${getScoreBgColor(cat.score)} transition-all duration-500`}
+                            style={{ width: `${cat.score}%` }}
+                          />
+                        </div>
+                        <span className="font-mono text-sm w-12 text-right">{cat.score}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                )}
               </div>
             </Card>
 
             {/* What You Have + Gaps */}
+            {dictResult && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* What You Have */}
               <Card className="p-6">
@@ -1822,9 +1896,10 @@ export function JobMatchWorkspace({
                 )}
               </Card>
             </div>
+            )}
 
             {/* ATS Keywords */}
-            {dictResult.extraction.atsKeywords.length > 0 && (
+            {dictResult && dictResult.extraction.atsKeywords.length > 0 && (
               <Card className="p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
                   <div>
@@ -2039,12 +2114,8 @@ export function JobMatchWorkspace({
               </Card>
             )}
 
-          </div>
-        )}
-
-        {/* ═══ STEP 3: Bullet Rewrite ═══ */}
-        {currentStep === 3 && (
-          <div className="space-y-5">
+            {/* ═══ Section: Bullet Rewrite ═══ */}
+            <div className="border-t border-border my-8" />
             <div>
               <h2 className="font-heading text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-1">
                 <span className="text-gold">◆</span> Rewrite Your Bullets
@@ -2118,202 +2189,133 @@ export function JobMatchWorkspace({
                   ).filter(Boolean)}
                 </div>
                 {!hasPaidAccess && (
-                  <div className="mt-4 p-3 rounded-lg bg-gold/5 border border-gold/20">
+                  <div className="mt-4 p-3 rounded-lg bg-gold/5 border border-gold/20 flex items-center gap-3">
+                    <svg className="w-4 h-4 text-gold flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
                     <p className="text-xs text-text-dim">
                       <UpgradeLink className="text-gold hover:text-gold-bright hover:underline font-semibold">Upgrade to Core</UpgradeLink>
-                      {' '}for AI-powered bullet rewrites tailored to this specific job posting.
+                      {' '}for AI-powered bullet rewrites with apply-to-resume functionality.
                     </p>
                   </div>
                 )}
               </Card>
             )}
-          </div>
-        )}
 
-        {/* Loading State (Step 1) */}
-        {currentStep === 1 && analyzing && (
-          <Card className="p-12">
-            <div className="text-center">
-              <div className="relative w-20 h-20 mx-auto mb-6">
-                <div className="absolute inset-0 border-4 border-gold/20 rounded-full" />
-                <div className="absolute inset-0 border-4 border-gold border-t-transparent rounded-full animate-spin" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl text-gold">◈</span>
-                </div>
-              </div>
-              <h3 className="font-heading text-lg font-bold uppercase tracking-wider mb-2">
-                Analyzing Your Match
-              </h3>
-              <p className="text-text-muted mb-6">
-                Evaluating skills, experience, education, and keywords...
-              </p>
-
-              <div className="max-w-xs mx-auto space-y-3">
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-6 h-6 rounded-full bg-gold/20 flex items-center justify-center">
-                    <span className="text-gold text-xs">✓</span>
-                  </div>
-                  <span className="text-text-muted">Parsing job requirements</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-6 h-6 rounded-full bg-gold/20 flex items-center justify-center animate-pulse">
-                    <span className="text-gold text-xs">◆</span>
-                  </div>
-                  <span className="text-text">Matching skills & experience</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-6 h-6 rounded-full bg-bg-tertiary flex items-center justify-center">
-                    <span className="text-text-dim text-xs">◇</span>
-                  </div>
-                  <span className="text-text-dim">Generating recommendations</span>
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* ═══ STEP 4: Preview Tailored Resume (Dictionary path) ═══ */}
-        {currentStep === 4 && dictResult && !analysis && selectedResume && tailoredResume && (
-          <>
-            <div>
-              <h2 className="font-heading text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-1">
-                <span className="text-gold">◫</span> Your Tailored Resume
-              </h2>
-              <p className="text-text-muted text-sm">
-                Skills section shows your selected ATS keywords. Applied bullets marked with ✦
-              </p>
-            </div>
-            <Card className="p-6 bg-bg-tertiary/30">
-              {/* Template Selector */}
-              <div className="flex items-center gap-4 mb-4">
-                <label className="text-xs text-text-muted uppercase tracking-wider font-semibold">Template:</label>
-                <select
-                  autoComplete="off"
-                  value={selectedTemplate}
-                  onChange={(e) => setSelectedTemplate(e.target.value as TemplateId)}
-                  className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-gold"
-                >
-                  {Object.values(TEMPLATES).map((t) => {
-                    const isLocked = !t.free && !hasPaidAccess
-                    return (
-                      <option key={t.id} value={t.id} disabled={isLocked}>
-                        {t.name} {isLocked ? '(CORE+)' : ''}
-                      </option>
-                    )
-                  })}
-                </select>
-              </div>
-
-              {/* Preview — renders from tailoredResume.content (skills already synced with selectedKeywords) */}
-              <div className="bg-bg-card rounded-lg shadow-lg overflow-hidden" style={{ maxHeight: '600px', overflow: 'auto' }}>
-                <ResumePreview
-                  template={selectedTemplate}
-                  resumeType="private"
-                  content={tailoredResume.content}
-                  highlightedTerms={[...selectedKeywords]}
-                />
-              </div>
-            </Card>
-          </>
-        )}
-
-        {/* Upgrade nudge (Step 2) */}
-        {currentStep === 2 && dictResult && !hasPaidAccess && !analyzing && !analysis && (
-          <Card className="p-5 bg-gradient-to-r from-gold/5 to-transparent border-gold/20">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-lg bg-gold/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-gold text-lg">&#10024;</span>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-text mb-1">Dictionary analysis complete!</p>
-                <p className="text-xs text-text-dim mt-1">
-                  <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">Upgrade to Core</UpgradeLink>
-                  {' '}for AI-powered insights, detailed scoring, and bullet rewrites.
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* ═══ AI ANALYSIS RESULTS ═══ */}
-        {currentStep >= 2 && analysis && !analyzing && (
-          <div className="space-y-6">
-
-            {/* Step 2: Score + Skills + Recommendations */}
-            {currentStep === 2 && (
+            {/* ═══ Preview Tailored Resume (Dictionary path) ═══ */}
+            {dictResult && !analysis && selectedResume && tailoredResume && (
               <>
-            {/* Match Score Card */}
-            <Card className="p-6">
-              <div className="flex flex-col md:flex-row md:items-center gap-6">
-                {/* Score Circle */}
-                <div className="flex flex-col items-center">
-                  <div className="relative w-32 h-32">
-                    <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                      <circle
-                        cx="50" cy="50" r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="8"
-                        className="text-border"
-                      />
-                      <circle
-                        cx="50" cy="50" r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="8"
-                        strokeLinecap="round"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={offset}
-                        className={getScoreColor(currentScore)}
-                        style={{ transition: 'stroke-dashoffset 0.5s ease' }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className={`font-mono text-4xl font-bold ${getScoreColor(currentScore)}`}>
-                        {currentScore}%
-                      </span>
-                    </div>
-                  </div>
-                  <div className={`text-sm font-semibold mt-2 ${getScoreColor(currentScore)}`}>
-                    {getMatchLabel(currentScore)}
-                  </div>
-                  {changesSummary.length > 0 && originalScore && currentScore > originalScore && (
-                    <div className="text-xs text-status-green mt-1">
-                      +{currentScore - originalScore}% from tailoring
-                    </div>
-                  )}
+                <div className="border-t border-border my-8" />
+                <div>
+                  <h2 className="font-heading text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-1">
+                    <span className="text-gold">◫</span> Your Tailored Resume
+                  </h2>
+                  <p className="text-text-muted text-sm">
+                    Skills section shows your selected ATS keywords. Applied bullets marked with ✦
+                  </p>
                 </div>
+                <Card className="p-6 bg-bg-tertiary/30">
+                  {/* Template Selector */}
+                  <div className="flex items-center gap-4 mb-4">
+                    <label className="text-xs text-text-muted uppercase tracking-wider font-semibold">Template:</label>
+                    <select
+                      autoComplete="off"
+                      value={selectedTemplate}
+                      onChange={(e) => setSelectedTemplate(e.target.value as TemplateId)}
+                      className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-gold"
+                    >
+                      {Object.values(TEMPLATES).map((t) => {
+                        const isLocked = !t.free && !hasPaidAccess
+                        return (
+                          <option key={t.id} value={t.id} disabled={isLocked}>
+                            {t.name} {isLocked ? '(CORE+)' : ''}
+                          </option>
+                        )
+                      })}
+                    </select>
+                  </div>
 
-                {/* Category Breakdown */}
-                <div className="flex-1">
-                  <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">
-                    Category Scores
-                  </h3>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-                    {[
-                      { label: 'Skills', score: analysis.categoryScores?.skills || 0 },
-                      { label: 'Experience', score: analysis.categoryScores?.experience || 0 },
-                      { label: 'Keywords', score: analysis.categoryScores?.keywords || 0 },
-                      { label: 'Education', score: analysis.categoryScores?.education || 0 },
-                      { label: 'Certifications', score: analysis.categoryScores?.certifications || 0 },
-                      ...(analysis.categoryScores?.clearance !== null ? [{ label: 'Clearance', score: analysis.categoryScores?.clearance || 0 }] : []),
-                    ].map((cat) => (
-                      <div key={cat.label} className="flex items-center gap-3">
-                        <span className="text-sm text-text-muted w-24">{cat.label}</span>
-                        <div className="flex-1 h-2 bg-bg-tertiary rounded-full overflow-hidden">
-                          <div
-                            className={`h-full ${getScoreBgColor(cat.score)} transition-all duration-500`}
-                            style={{ width: `${cat.score}%` }}
-                          />
+                  {/* Preview */}
+                  <div className="bg-bg-card rounded-lg shadow-lg overflow-hidden" style={{ maxHeight: '600px', overflow: 'auto' }}>
+                    <ResumePreview
+                      template={selectedTemplate}
+                      resumeType="private"
+                      content={tailoredResume.content}
+                      highlightedTerms={[...selectedKeywords]}
+                    />
+                  </div>
+                </Card>
+              </>
+            )}
+
+            {/* Blurred AI Preview (free users only, no AI analysis) */}
+            {dictResult && !hasPaidAccess && !analyzing && !analysis && (
+              <div className="relative">
+                {/* Blurred fake AI analysis */}
+                <Card className="p-6 select-none pointer-events-none" aria-hidden="true">
+                  <div className="blur-[6px] opacity-60">
+                    <div className="flex flex-col md:flex-row md:items-center gap-6 mb-6">
+                      <div className="flex flex-col items-center">
+                        <div className="w-24 h-24 rounded-full border-4 border-gold/40 flex items-center justify-center">
+                          <span className="font-heading text-3xl font-bold text-gold">78%</span>
                         </div>
-                        <span className="font-mono text-sm w-12 text-right">{cat.score}%</span>
+                        <span className="text-xs text-text-muted mt-2">Overall Match</span>
                       </div>
-                    ))}
+                      <div className="flex-1 space-y-2">
+                        {['Skills Match', 'Experience', 'Education', 'Keywords'].map((cat) => (
+                          <div key={cat} className="flex items-center gap-3">
+                            <span className="text-xs text-text-muted w-24">{cat}</span>
+                            <div className="flex-1 h-2 bg-bg-tertiary rounded-full overflow-hidden">
+                              <div className="h-full bg-gold rounded-full" style={{ width: `${60 + Math.random() * 30}%` }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 bg-bg-tertiary rounded-lg">
+                        <p className="text-xs font-semibold mb-2">Priority Actions</p>
+                        <div className="space-y-1.5">
+                          <div className="h-3 bg-bg-secondary rounded w-full" />
+                          <div className="h-3 bg-bg-secondary rounded w-4/5" />
+                          <div className="h-3 bg-bg-secondary rounded w-3/4" />
+                        </div>
+                      </div>
+                      <div className="p-3 bg-bg-tertiary rounded-lg">
+                        <p className="text-xs font-semibold mb-2">AI Recommendations</p>
+                        <div className="space-y-1.5">
+                          <div className="h-3 bg-bg-secondary rounded w-full" />
+                          <div className="h-3 bg-bg-secondary rounded w-5/6" />
+                          <div className="h-3 bg-bg-secondary rounded w-2/3" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Overlay CTA */}
+                <div className="absolute inset-0 flex items-center justify-center bg-bg-primary/40 rounded-xl">
+                  <div className="text-center px-6 py-5 bg-bg-secondary border border-gold/30 rounded-xl shadow-lg max-w-sm">
+                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-gold/20 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                      </svg>
+                    </div>
+                    <h3 className="font-heading text-base font-bold uppercase tracking-wider mb-1">Unlock AI Analysis</h3>
+                    <p className="text-xs text-text-muted mb-4">
+                      See skill gaps, get rewrite suggestions, and tailored recommendations to push your match score higher.
+                    </p>
+                    <Button onClick={openUpgradeModal} size="sm">
+                      View Plans
+                    </Button>
                   </div>
                 </div>
               </div>
-            </Card>
+            )}
 
+            {/* ═══ AI ANALYSIS RESULTS ═══ */}
+            {analysis && !analyzing && (
+              <>
             {/* Skills Match Card */}
             <Card className="p-6">
               <h2 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -2461,7 +2463,7 @@ export function JobMatchWorkspace({
               )}
             </Card>
 
-            {/* Upgrade Prompt for Free Users (Step 2) */}
+            {/* Upgrade Prompt for Free Users */}
             {!hasPaidAccess && (
               <Card className="p-6 bg-gradient-to-r from-gold/5 to-transparent border-gold/20">
                 <div className="flex items-center gap-6">
@@ -2483,12 +2485,9 @@ export function JobMatchWorkspace({
                 </div>
               </Card>
             )}
-              </>
-            )}
 
-            {/* Step 3: Bullet Rewrites */}
-            {currentStep === 3 && (
-              <>
+            {/* Section: Bullet Rewrites (AI) */}
+            <div className="border-t border-border my-8" />
             <div>
               <h2 className="font-heading text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-1">
                 <span className="text-gold">◆</span> Rewrite Your Bullets
@@ -2584,12 +2583,10 @@ export function JobMatchWorkspace({
               </Card>
             )}
 
-              </>
-            )}
-
-            {/* Step 4: Preview Tailored Resume (AI path) */}
-            {currentStep === 4 && tailoredResume && (
+            {/* Section: Preview Tailored Resume (AI path) */}
+            {tailoredResume && (
               <>
+            <div className="border-t border-border my-8" />
             <div>
               <h2 className="font-heading text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-1">
                 <span className="text-gold">◫</span> Your Tailored Resume
@@ -2655,10 +2652,24 @@ export function JobMatchWorkspace({
             </Card>
               </>
             )}
+              </>
+            )}
 
-            {/* Step 5: Export (AI path) */}
-            {currentStep === 5 && (
-              <>
+            {/* ═══ Apply Suggestions to Resume — gold CTA ═══ */}
+            {((analysis?.bulletSuggestions?.length ?? 0) > 0 || (dictResult && dictBulletTranslations.size > 0)) && (
+              <Card className="p-6 bg-gold/[0.03] border-gold/20">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-heading text-sm font-bold uppercase tracking-wider">Apply Suggestions to Resume</h3>
+                    <p className="text-xs text-text-muted mt-1">Review and apply all improvements at once</p>
+                  </div>
+                  <Button onClick={openApplyAllPreview}>
+                    Apply Suggestions to Resume
+                  </Button>
+                </div>
+              </Card>
+            )}
+
             {/* Changes Summary */}
             {changesSummary.length > 0 && (
               <Card className="p-6 bg-status-green/5 border-status-green/20">
@@ -2681,14 +2692,7 @@ export function JobMatchWorkspace({
               </Card>
             )}
 
-              </>
-            )}
-          </div>
-        )}
-
-        {/* ═══ STEP 5: Export (shared for both paths) ═══ */}
-        {currentStep === 5 && (
-          <div className="space-y-5">
+            {/* ═══ Export Section ═══ */}
             <Card className="p-8 text-center">
               <div className="text-4xl mb-4 text-gold">◈</div>
               <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-2">
@@ -2777,59 +2781,10 @@ export function JobMatchWorkspace({
                 Start a New Analysis
               </button>
             </div>
+
           </div>
         )}
 
-      </div>
-
-      {/* ═══ Sticky Footer Navigation — compact 48px bar ═══ */}
-      <div className="fixed bottom-16 md:bottom-0 left-0 right-0 bg-bg-primary border-t border-gold/20 z-30 flex items-center justify-between" style={{ height: '44px', padding: '0 24px' }}>
-        {/* Left: Back + dots + step label */}
-        <div className="flex items-center gap-3">
-          {currentStep > 1 && (
-            <button
-              onClick={() => setCurrentStep(currentStep - 1)}
-              className="text-sm text-text-muted hover:text-text transition-colors"
-            >
-              &#8592;
-            </button>
-          )}
-          <div className="flex items-center gap-1.5">
-            {[1, 2, 3, 4, 5].map(step => (
-              <div
-                key={step}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  step <= currentStep ? 'bg-gold' : 'bg-border'
-                }`}
-              />
-            ))}
-          </div>
-          <span className="text-xs text-text-dim">Step {currentStep} of 5</span>
-        </div>
-
-        {/* Right: Action button */}
-        {currentStep < 5 ? (
-          <Button
-            onClick={currentStep === 1 ? handleAnalyze : () => setCurrentStep(currentStep + 1)}
-            disabled={currentStep === 1 ? (analyzing || !selectedResumeId || !jobData.description) : false}
-            size="sm"
-          >
-            {currentStep === 1
-              ? (analyzing
-                  ? <><svg className="w-4 h-4 mr-1.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>Analyzing...</>
-                  : 'Analyze \u2192')
-              : currentStep === 2 ? 'Bullets \u2192'
-              : currentStep === 3 ? 'Preview \u2192'
-              : 'Download \u2192'}
-          </Button>
-        ) : (
-          <button
-            onClick={handleStartNewAnalysis}
-            className="px-4 py-2 text-sm font-semibold bg-gold text-bg-primary rounded-lg hover:bg-gold-bright transition-colors"
-          >
-            New Analysis
-          </button>
-        )}
       </div>
 
       {showLastUseWarning && (

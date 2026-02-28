@@ -4,11 +4,15 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { ModalShell } from '@/components/ui/ModalShell'
+import { useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { trackEvent } from '@/lib/analytics'
 
 export interface PostActionLink {
   label: string
   route: string
   featureCheck: string
+  remaining?: number
 }
 
 export interface PostActionModalProps {
@@ -36,6 +40,7 @@ export function PostActionModal({
   onFeedbackShown,
 }: PostActionModalProps) {
   const router = useRouter()
+  const { openUpgradeModal } = useUpgradeModal()
 
   // Feedback state
   const [rating, setRating] = useState(0)
@@ -45,13 +50,10 @@ export function PostActionModal({
   const [feedbackState, setFeedbackState] = useState<'idle' | 'expanded' | 'submitting' | 'submitted' | 'hidden'>('idle')
   const feedbackRef = useRef<HTMLDivElement>(null)
 
-  // Prevent body scroll when modal is open
+  // Track modal shown
   useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
+    trackEvent('post_action_modal_shown', { feature: featureContext })
+  }, [featureContext])
 
   // Notify provider that feedback section was rendered
   useEffect(() => {
@@ -71,6 +73,7 @@ export function PostActionModal({
   }, [feedbackState])
 
   const handlePrimaryCTA = () => {
+    trackEvent('post_action_cta_click', { feature: featureContext, cta: primaryCTA.featureCheck })
     onDismiss()
     router.push(primaryCTA.route)
   }
@@ -119,13 +122,9 @@ export function PostActionModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black/60 flex items-end md:items-center justify-center z-50"
-      onClick={onDismiss}
-    >
+    <ModalShell isOpen={true} onClose={onDismiss} title="Post Action" maxWidth="max-w-md" className="self-end md:self-center">
       <Card
-        className="relative w-full max-w-md p-6 md:p-8 rounded-t-2xl md:rounded-lg md:mx-4 safe-area-inset-bottom animate-post-action-in max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        className="relative w-full p-6 md:p-8 rounded-t-2xl md:rounded-lg md:mx-4 safe-area-inset-bottom animate-post-action-in max-h-[90vh] overflow-y-auto"
       >
         {/* Drag indicator for mobile */}
         <div className="md:hidden w-12 h-1 bg-border rounded-full mx-auto mb-4" />
@@ -159,24 +158,48 @@ export function PostActionModal({
         </p>
 
         {/* Primary CTA */}
-        <Button
-          className="w-full mb-4"
-          onClick={handlePrimaryCTA}
-        >
-          {primaryCTA.label}
-        </Button>
+        {primaryCTA.remaining !== undefined && primaryCTA.remaining <= 0 ? (
+          <div className="mb-4 p-3 bg-gold/10 border border-gold/30 rounded-lg text-center">
+            <p className="text-sm text-text-muted mb-2">
+              You&apos;ve used all your free {primaryCTA.featureCheck.replace(/_/g, ' ')}s.
+            </p>
+            <Button
+              className="w-full"
+              onClick={() => { onDismiss(); openUpgradeModal() }}
+            >
+              Upgrade to Core for more
+            </Button>
+          </div>
+        ) : (
+          <Button
+            className="w-full mb-4"
+            onClick={handlePrimaryCTA}
+          >
+            {primaryCTA.label}
+          </Button>
+        )}
 
         {/* Secondary Links */}
         {secondaryLinks.length > 0 && (
           <div className="space-y-2 mb-4">
             {secondaryLinks.map((link) => (
-              <button
-                key={link.route}
-                onClick={() => handleSecondaryLink(link.route)}
-                className="w-full text-sm text-text-muted hover:text-gold transition-colors py-1.5 text-center"
-              >
-                {link.label} →
-              </button>
+              link.remaining !== undefined && link.remaining <= 0 ? (
+                <button
+                  key={link.route}
+                  onClick={() => { onDismiss(); openUpgradeModal() }}
+                  className="w-full text-sm text-gold/70 hover:text-gold transition-colors py-1.5 text-center"
+                >
+                  {link.label} — upgrade to unlock →
+                </button>
+              ) : (
+                <button
+                  key={link.route}
+                  onClick={() => handleSecondaryLink(link.route)}
+                  className="w-full text-sm text-text-muted hover:text-gold transition-colors py-1.5 text-center"
+                >
+                  {link.label} →
+                </button>
+              )
             ))}
           </div>
         )}
@@ -184,7 +207,7 @@ export function PostActionModal({
         {/* Maybe Later */}
         <button
           onClick={onDismiss}
-          className="w-full text-xs text-text-dim hover:text-text-muted transition-colors py-2 text-center"
+          className="w-full text-sm text-text-muted hover:text-text border border-border hover:border-gold/30 rounded-lg py-2.5 text-center transition-colors"
         >
           Maybe later
         </button>
@@ -277,6 +300,6 @@ export function PostActionModal({
           </div>
         )}
       </Card>
-    </div>
+    </ModalShell>
   )
 }

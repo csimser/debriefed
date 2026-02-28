@@ -1,22 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { checkOnetHealth } from '@/lib/onet-api'
-
-// Helper to verify admin
-async function verifyAdmin(supabase: any) {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Unauthorized', status: 401 }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('is_admin, email')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!profile?.is_admin) return { error: 'Forbidden - Admin only', status: 403 }
-
-  return { user, adminProfile: profile }
-}
+import { verifyAdmin } from '@/lib/admin-auth'
 
 // Check Anthropic API status
 async function checkAnthropicStatus(): Promise<{ status: string; latency?: number }> {
@@ -71,9 +55,7 @@ async function checkOnetStatus(): Promise<{ status: string; latency?: number; me
 
 // POST - Run health checks
 export async function POST(request: NextRequest) {
-  const supabase = await createClient()
-
-  const auth = await verifyAdmin(supabase)
+  const auth = await verifyAdmin()
   if ('error' in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status })
   }

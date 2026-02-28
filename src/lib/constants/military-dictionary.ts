@@ -228,6 +228,82 @@ export const MILITARY_TO_CIVILIAN: Record<string, string> = {
   "mess": "leadership team",
   "billet": "position",
   "afloat": "field operations",
+
+  // Navy-specific
+  "comptuex": "multi-unit training exercise",
+  "cmdcm": "senior enlisted advisor",
+  "dlcpo": "division senior supervisor",
+  "3mc": "maintenance management coordinator",
+  "drb": "disciplinary review board",
+  "sme": "subject matter expert",
+  "tycom": "fleet regional command",
+  "csg": "carrier strike group",
+  "soy": "employee of the year",
+  "soq": "employee of the quarter",
+  "mwr": "employee wellness and recreation program",
+  "frontline leader": "hands-on supervisor",
+  "deck plate": "frontline",
+  "pt": "physical training",
+  "prt": "physical readiness test",
+  "wardroom": "management team",
+  "watch section": "shift team",
+  "duty section": "on-call team",
+
+  // Common terms
+  "leave": "paid time off",
+  "muster": "roll call",
+  "jag": "legal department",
+  "opsec": "operational security",
+  "orm": "operational risk management",
+  "contingency": "emergency response",
+  "personnel": "staff",
+  "overseas": "international location",
+  "joint duty": "inter-agency assignment",
+  "tour of duty": "assignment period",
+  "embarked": "deployed",
+  "taps": "transition assistance program",
+  "counseled": "provided performance guidance",
+  "passdown": "shift handover",
+  "sick bay": "medical clinic",
+}
+
+/** Extract just the first option from slash-separated alternatives */
+function firstOption(civilian: string): string {
+  return civilian.split(' / ')[0].trim()
+}
+
+/** Match the case pattern of the original text */
+function matchCase(original: string, replacement: string): string {
+  if (!original || !replacement) return replacement
+  if (original === original.toUpperCase() && original.length > 1) {
+    return replacement.toUpperCase()
+  }
+  if (original[0] === original[0].toUpperCase() && original.slice(1) !== original.slice(1).toUpperCase()) {
+    return replacement.charAt(0).toUpperCase() + replacement.slice(1)
+  }
+  if (original === original.toLowerCase()) {
+    return replacement.toLowerCase()
+  }
+  return replacement
+}
+
+/** Post-process translated text for natural readability */
+function postProcessTranslation(text: string): string {
+  let out = text
+  out = out.replace(/  +/g, ' ')
+  out = out.replace(/\ba (a|e|i|o|u)/gi, (match, vowel) => {
+    const aWord = match[0] === 'A' ? 'An' : 'an'
+    return `${aWord} ${vowel}`
+  })
+  out = out.replace(/\ban ([bcdfghjklmnpqrstvwxyz])/gi, (match, consonant) => {
+    const aWord = match[0] === 'A' ? 'A' : 'a'
+    return `${aWord} ${consonant}`
+  })
+  out = out.replace(/ 's\b/g, "'s")
+  out = out.replace(/,\s*,/g, ',')
+  out = out.replace(/\.\s*\./g, '.')
+  out = out.replace(/\s+([.,;:!?])/g, '$1')
+  return out.trim()
 }
 
 /**
@@ -245,19 +321,13 @@ export function translateMilitaryToCivilian(text: string): {
   const sortedTerms = Object.keys(MILITARY_TO_CIVILIAN).sort((a, b) => b.length - a.length)
 
   for (const militaryTerm of sortedTerms) {
-    const civilianTerm = MILITARY_TO_CIVILIAN[militaryTerm]
-    // Case-insensitive replacement with word boundaries
+    const civilianTerm = firstOption(MILITARY_TO_CIVILIAN[militaryTerm])
     const regex = new RegExp(`\\b${escapeRegex(militaryTerm)}\\b`, 'gi')
-    translated = translated.replace(regex, (match) => {
-      // Preserve original case pattern
-      if (match === match.toUpperCase()) {
-        return civilianTerm.toUpperCase()
-      } else if (match[0] === match[0].toUpperCase()) {
-        return civilianTerm.charAt(0).toUpperCase() + civilianTerm.slice(1)
-      }
-      return civilianTerm
-    })
+    translated = translated.replace(regex, (match) => matchCase(match, civilianTerm))
   }
+
+  // Post-process for natural readability
+  translated = postProcessTranslation(translated)
 
   // Check for common military patterns that might not be in dictionary
   const possibleMilitaryPatterns = [
@@ -270,13 +340,13 @@ export function translateMilitaryToCivilian(text: string): {
     /\bW-[1-5]\b/gi,    // Warrant officer ranks
   ]
 
+  const commonCivilianAcronyms = new Set(['CEO', 'CFO', 'CTO', 'COO', 'HR', 'IT', 'USA', 'PM', 'QA', 'ROI', 'KPI', 'SLA', 'API', 'SQL', 'PDF'])
+
   for (const pattern of possibleMilitaryPatterns) {
     const matches = translated.match(pattern)
     if (matches) {
       for (const match of matches) {
-        // Skip common civilian acronyms
-        const commonCivilianAcronyms = ['CEO', 'CFO', 'CTO', 'COO', 'HR', 'IT', 'USA', 'PM', 'QA', 'ROI', 'KPI', 'SLA', 'API', 'SQL', 'PDF']
-        if (!commonCivilianAcronyms.includes(match.toUpperCase()) && !unflaggedTerms.includes(match)) {
+        if (!commonCivilianAcronyms.has(match.toUpperCase()) && !unflaggedTerms.includes(match)) {
           unflaggedTerms.push(match)
         }
       }

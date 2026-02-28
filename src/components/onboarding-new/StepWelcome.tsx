@@ -9,16 +9,17 @@ interface StepWelcomeProps {
   updateData: (updates: Partial<OnboardingData>) => void
   onNext: () => void
   onSkip: () => void
+  jumpToStep: (step: number) => Promise<void>
   saving: boolean
   userId: string
   supabase: any
   loadRelatedData: () => Promise<void>
 }
 
-export function StepWelcome({ data, updateData, onNext, onSkip, saving, userId, supabase, loadRelatedData }: StepWelcomeProps) {
+export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, saving, userId, supabase, loadRelatedData }: StepWelcomeProps) {
   const [showResumeModal, setShowResumeModal] = useState(false)
-  const onNextRef = useRef(onNext)
-  onNextRef.current = onNext
+  const jumpToStepRef = useRef(jumpToStep)
+  jumpToStepRef.current = jumpToStep
   const [importing, setImporting] = useState(false)
   const [importSuccess, setImportSuccess] = useState(false)
   const [importError, setImportError] = useState('')
@@ -209,10 +210,10 @@ export function StepWelcome({ data, updateData, onNext, onSkip, saving, userId, 
       // 8. Refresh related-table data from DB so all steps see the imported data
       await loadRelatedData()
 
-      // 9. Show success banner, then advance to Contact step
+      // 9. Show success banner, then jump to Experience step (step 2)
       setImportSuccess(true)
       setTimeout(() => {
-        onNextRef.current()
+        jumpToStepRef.current(2)
       }, 1500)
     } catch (error) {
       console.error('Resume import error:', error)

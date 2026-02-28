@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import { verifyAdmin } from '@/lib/admin-auth'
 
 // Service role client bypasses RLS for admin queries
 const serviceClient = createServiceClient(
@@ -9,32 +9,14 @@ const serviceClient = createServiceClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Helper to verify admin
-async function verifyAdmin(authClient: any) {
-  const { data: { user } } = await authClient.auth.getUser()
-  if (!user) return { error: 'Unauthorized', status: 401 }
-
-  // Use service client to check admin status (bypasses RLS)
-  const { data: profile } = await serviceClient
-    .from('profiles')
-    .select('is_admin, email')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!profile?.is_admin) return { error: 'Forbidden - Admin only', status: 403 }
-
-  return { user, adminProfile: profile }
-}
-
 // POST - Create impersonation session
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const authClient = await createClient()
 
-  const auth = await verifyAdmin(authClient)
+  const auth = await verifyAdmin()
   if ('error' in auth) {
     return NextResponse.json({ error: auth.error }, { status: auth.status })
   }

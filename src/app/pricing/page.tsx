@@ -1,14 +1,74 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { PRICING_TIERS, getFormattedPrice, TierId } from '@/lib/pricing-config';
+import { MarketingNav } from '@/components/layout/MarketingNav';
+import { TestimonialsSection } from '@/components/testimonials/TestimonialsSection';
+import { trackEvent } from '@/lib/analytics';
+
+interface AuthState {
+  isLoggedIn: boolean
+  userName: string
+  currentTier: TierId | null
+  daysRemaining: number | null
+}
 
 function PricingContent() {
   const searchParams = useSearchParams();
   const paymentStatus = searchParams.get('payment');
   const [loading, setLoading] = useState<'core' | 'full' | 'eval_pack' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [auth, setAuth] = useState<AuthState>({
+    isLoggedIn: false,
+    userName: '',
+    currentTier: null,
+    daysRemaining: null,
+  });
+
+  const supabase = createClient();
+
+  // Track cancelled checkout
+  useEffect(() => {
+    if (paymentStatus === 'cancelled') {
+      trackEvent('stripe_checkout_cancel');
+    }
+  }, [paymentStatus]);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, tier, plan_expires_at')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile) {
+        let daysRemaining: number | null = null;
+        if (profile.plan_expires_at) {
+          const expires = new Date(profile.plan_expires_at);
+          const now = new Date();
+          if (expires > now) {
+            daysRemaining = Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+          }
+        }
+
+        setAuth({
+          isLoggedIn: true,
+          userName: profile.first_name || '',
+          currentTier: (profile.tier as TierId) || 'free',
+          daysRemaining,
+        });
+      }
+    }
+
+    checkAuth();
+  }, [supabase]);
 
   const handleCheckout = async (tier: 'core' | 'full' | 'eval_pack') => {
     setLoading(tier);
@@ -41,6 +101,25 @@ function PricingContent() {
     }
   };
 
+  const isCurrentTier = (tier: TierId) => auth.currentTier === tier;
+
+  const getTierCTA = (tier: TierId) => {
+    if (isCurrentTier(tier)) return 'Current Plan';
+    if (tier === 'free') return auth.isLoggedIn ? 'Current Plan' : 'Get Started Free';
+    if (loading === tier) return 'Processing...';
+    if (auth.isLoggedIn && auth.currentTier === 'free') return `Upgrade to ${tier === 'core' ? 'Core' : 'Full'}`;
+    if (auth.isLoggedIn && auth.currentTier === 'core' && tier === 'full') return 'Upgrade to Full';
+    return tier === 'core' ? 'Get Core' : 'Get Full';
+  };
+
+  const tierMessage = auth.isLoggedIn && auth.currentTier ? (() => {
+    const planNames: Record<string, string> = { free: 'Free', core: 'Core', full: 'Full Access' };
+    const name = planNames[auth.currentTier] || auth.currentTier;
+    if (auth.currentTier === 'free') return `You're on ${name} — upgrade for AI-powered features`;
+    if (auth.daysRemaining) return `You're on ${name} — ${auth.daysRemaining} days remaining`;
+    return `You're on ${name}`;
+  })() : null;
+
   return (
     <>
       {/* Payment Status Messages */}
@@ -63,6 +142,11 @@ function PricingContent() {
           <p className="text-base md:text-lg text-text-muted max-w-xl mx-auto">
             Start free, upgrade when you need more. No subscriptions - just straightforward access during your transition.
           </p>
+          {tierMessage && (
+            <div className="mt-4 inline-block bg-gold-dim border border-gold/30 rounded px-4 py-2">
+              <p className="text-sm text-gold font-medium">{tierMessage}</p>
+            </div>
+          )}
         </div>
 
         {error && (
@@ -74,7 +158,7 @@ function PricingContent() {
         {/* Pricing Grid - 3 Tiers */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {/* Free Tier */}
-          <div className="bg-bg-primary border border-border p-8 flex flex-col hover:border-border-bright transition-all">
+          <div className={`bg-bg-primary border p-8 flex flex-col hover:border-border-bright transition-all ${isCurrentTier('free') ? 'border-gold' : 'border-border'}`}>
             <div className="font-heading text-2xl font-bold uppercase mb-2">Free</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">Dictionary-powered resume tools</div>
             <div className="mb-6">
@@ -95,21 +179,27 @@ function PricingContent() {
               <PricingFeature label="Smart Apply" isLast />
             </ul>
             <p className="text-xs text-text-dim mb-4 text-center">*Daily rate limits apply</p>
-            <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
-              Get Started Free
-            </Link>
+            {isCurrentTier('free') ? (
+              <div className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-gold bg-gold-dim text-gold cursor-default">
+                Current Plan
+              </div>
+            ) : (
+              <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
+                Get Started Free
+              </Link>
+            )}
           </div>
 
           {/* Core Tier - Most Popular */}
-          <div className="bg-bg-primary border border-gold p-8 flex flex-col relative shadow-[0_0_40px_rgba(212,168,75,0.15)]">
+          <div className={`bg-bg-primary border p-8 flex flex-col relative ${isCurrentTier('core') ? 'border-gold shadow-[0_0_40px_rgba(212,168,75,0.15)]' : 'border-gold shadow-[0_0_40px_rgba(212,168,75,0.15)]'}`}>
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-bg-primary font-mono text-[10px] font-bold px-3 py-1 tracking-wider">
-              MOST POPULAR
+              {isCurrentTier('core') ? 'YOUR PLAN' : 'MOST POPULAR'}
             </div>
             <div className="font-heading text-2xl font-bold uppercase mb-2">Core</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">AI-powered tools to land the job</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$25</span>
-              <span className="text-sm text-text-muted ml-1">/ 30 days</span>
+              <span className="font-heading text-3xl font-bold text-gold">{getFormattedPrice('core')}</span>
+              <span className="text-sm text-text-muted ml-1">/ {PRICING_TIERS.core.duration} days</span>
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Resumes" limit="10 / 30 days" tooltip="5/day rate limit" />
@@ -126,25 +216,31 @@ function PricingContent() {
               <PricingFeature label="Resume Imports" limit="Unlimited" />
               <PricingFeature label="Smart Apply" isLast />
             </ul>
-            <button
-              onClick={() => handleCheckout('core')}
-              disabled={loading !== null}
-              className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading === 'core' ? 'Processing...' : 'Get Core'}
-            </button>
+            {isCurrentTier('core') ? (
+              <div className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-gold bg-gold-dim text-gold cursor-default">
+                Current Plan
+              </div>
+            ) : (
+              <button
+                onClick={() => handleCheckout('core')}
+                disabled={loading !== null}
+                className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {getTierCTA('core')}
+              </button>
+            )}
           </div>
 
           {/* Full Tier - Best Value */}
-          <div className="bg-bg-primary border border-border p-8 flex flex-col relative hover:border-border-bright transition-all">
+          <div className={`bg-bg-primary border p-8 flex flex-col relative hover:border-border-bright transition-all ${isCurrentTier('full') ? 'border-gold' : 'border-border'}`}>
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-bg-tertiary text-gold font-mono text-[10px] font-bold px-3 py-1 tracking-wider border border-gold">
-              BEST VALUE
+              {isCurrentTier('full') ? 'YOUR PLAN' : 'BEST VALUE'}
             </div>
             <div className="font-heading text-2xl font-bold uppercase mb-2">Full</div>
             <div className="text-sm text-text-muted mb-6 min-h-[40px]">Unlimited AI for serious job searches</div>
             <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">$50</span>
-              <span className="text-sm text-text-muted ml-1">/ 90 days</span>
+              <span className="font-heading text-3xl font-bold text-gold">{getFormattedPrice('full')}</span>
+              <span className="text-sm text-text-muted ml-1">/ {PRICING_TIERS.full.duration} days</span>
             </div>
             <ul className="flex-1 mb-8">
               <PricingFeature label="Resumes" limit="Unlimited" tooltip="7/day rate limit" />
@@ -161,13 +257,19 @@ function PricingContent() {
               <PricingFeature label="Downloads" limit="Unlimited" tooltip="10/day rate limit" />
               <PricingFeature label="Smart Apply" isLast />
             </ul>
-            <button
-              onClick={() => handleCheckout('full')}
-              disabled={loading !== null}
-              className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading === 'full' ? 'Processing...' : 'Get Full'}
-            </button>
+            {isCurrentTier('full') ? (
+              <div className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-gold bg-gold-dim text-gold cursor-default">
+                Current Plan
+              </div>
+            ) : (
+              <button
+                onClick={() => handleCheckout('full')}
+                disabled={loading !== null}
+                className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {getTierCTA('full')}
+              </button>
+            )}
           </div>
         </div>
 
@@ -197,6 +299,9 @@ function PricingContent() {
           All tiers include daily rate limits to ensure fair usage. Dictionary features are available on every plan.
         </p>
       </section>
+
+      {/* Testimonials */}
+      <TestimonialsSection />
     </>
   );
 }
@@ -270,43 +375,27 @@ function PricingLoadingFallback() {
 }
 
 export default function PricingPage() {
+  const [auth, setAuth] = useState<{ isLoggedIn: boolean; userName: string }>({ isLoggedIn: false, userName: '' });
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('user_id', user.id)
+          .single();
+        setAuth({ isLoggedIn: true, userName: profile?.first_name || '' });
+      }
+    }
+    checkAuth();
+  }, [supabase]);
+
   return (
     <div className="min-h-screen bg-bg-primary flex flex-col">
-      {/* Status Bar */}
-      <div className="bg-bg-secondary border-b border-border px-8 py-2.5 flex items-center justify-between font-mono text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-status-green animate-pulse" />
-          <span className="text-status-green">SYSTEMS OPERATIONAL</span>
-        </div>
-        <div className="text-text-muted">
-          <span>v1.0</span>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="bg-bg-secondary border-b border-border px-4 md:px-8 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 py-4">
-          <div className="w-9 h-9 border-2 border-gold flex items-center justify-center">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 text-gold">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <path d="M9 9h6M9 13h6M9 17h4"/>
-            </svg>
-          </div>
-          <span className="font-heading text-xl md:text-2xl font-bold tracking-wider uppercase">Debriefed</span>
-        </Link>
-
-        <div className="flex items-center gap-2 md:gap-3">
-          <Link href="/help" className="hidden md:block px-5 py-2.5 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text transition-colors">
-            Help
-          </Link>
-          <Link href="/login" className="px-3 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text border border-border hover:border-border-bright rounded transition-all">
-            Sign In
-          </Link>
-          <Link href="/signup" className="px-4 md:px-5 py-2.5 font-heading text-xs md:text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
-            Begin Mission
-          </Link>
-        </div>
-      </nav>
+      <MarketingNav currentPage="pricing" isLoggedIn={auth.isLoggedIn} userName={auth.userName} />
 
       <Suspense fallback={<PricingLoadingFallback />}>
         <PricingContent />

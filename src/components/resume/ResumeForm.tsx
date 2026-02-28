@@ -21,12 +21,14 @@ import { createClient } from '@/lib/supabase/client'
 import { getUserTier, isPaidTier } from '@/lib/tier-utils'
 import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
 import { BulletTemplateModal } from '@/components/profile/BulletTemplateModal'
+import { EvalUploadModal } from '@/components/profile/EvalUploadModal'
 
 interface ResumeFormProps {
   resumeId: string
   content: any
   resumeType: 'private' | 'federal'
   onChange: (content: any) => void
+  onSummarySaved?: () => void
   userProfile: any
   profileSummary?: string
   allSkills?: any[]
@@ -34,6 +36,40 @@ interface ResumeFormProps {
   bulletTranslationUsage?: number
   bulletTranslationLimit?: number
   userPlan?: string
+  isFirstResume?: boolean
+  openSection: string | null
+  onSectionToggle: (section: string) => void
+}
+
+// Helper to check section completeness
+export function isSectionComplete(content: any, section: string): boolean {
+  switch (section) {
+    case 'contact': return !!(content.contact?.first_name && content.contact?.email)
+    case 'target': return !!(content.target?.industry && content.target?.role)
+    case 'summary': return !!(content.summary && content.summary.trim().length > 20)
+    case 'experience': return !!(content.experiences?.length > 0 && content.experiences.some((e: any) => e.bullets?.length > 0))
+    case 'education': return !!(content.education?.length > 0)
+    case 'skills': return !!(content.skills?.length > 0)
+    default: return false
+  }
+}
+
+function getAutoExpandSections(content: any, isFirstResume: boolean): Set<string> {
+  if (isFirstResume) {
+    return new Set(['contact', 'target', 'experience'])
+  }
+  const sections = ['contact', 'target', 'summary', 'experience', 'education', 'skills']
+  for (const section of sections) {
+    if (!isSectionComplete(content, section)) {
+      return new Set([section, 'experience'])
+    }
+  }
+  return new Set(['experience'])
+}
+
+function getIncompleteCoreCount(content: any): number {
+  const core = ['target', 'summary', 'experience']
+  return core.filter(s => !isSectionComplete(content, s)).length
 }
 
 const TARGET_INDUSTRIES = [
@@ -83,7 +119,7 @@ const CLEARANCE_STATUS_OPTIONS = [
   { value: 'expired', label: 'Expired' },
 ]
 
-export function ResumeForm({ resumeId, content, resumeType, onChange, userProfile, profileSummary, allSkills = [], allCertifications = [], bulletTranslationUsage = 0, bulletTranslationLimit = 999, userPlan }: ResumeFormProps) {
+export function ResumeForm({ resumeId, content, resumeType, onChange, onSummarySaved, userProfile, profileSummary, allSkills = [], allCertifications = [], bulletTranslationUsage = 0, bulletTranslationLimit = 999, userPlan, isFirstResume = false, openSection, onSectionToggle }: ResumeFormProps) {
   const isFreeUser = !isPaidTier(getUserTier({ tier: userPlan }))
   const [localTranslationRemaining, setLocalTranslationRemaining] = useState(bulletTranslationLimit - bulletTranslationUsage)
   const bulletTranslationRemaining = localTranslationRemaining
@@ -162,6 +198,8 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
       <CollapsibleSection
         title="Contact Information"
         icon="◎"
+        isOpen={openSection === 'contact'}
+        onToggle={() => onSectionToggle('contact')}
         status={
           <span className={`text-xs ${content.contact?.first_name && content.contact?.email ? 'text-status-green' : 'text-status-amber'}`}>
             {content.contact?.first_name && content.contact?.email ? '✅ Complete' : 'Incomplete'}
@@ -225,6 +263,31 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
               autoComplete="url"
             />
           )}
+
+          {/* Sync from Profile */}
+          {userProfile && (
+            <div className="pt-2 border-t border-border mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const updated = { ...content.contact }
+                  if (userProfile.phone) updated.phone = userProfile.phone
+                  if (userProfile.city) updated.city = userProfile.city
+                  if (userProfile.state) updated.state = userProfile.state
+                  if (userProfile.zip) updated.zip = userProfile.zip
+                  if (userProfile.linkedin_url) updated.linkedin_url = userProfile.linkedin_url
+                  updateContent('contact', updated)
+                }}
+                className="flex items-center gap-1.5 text-xs text-gold hover:text-gold-bright transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Sync from Profile
+              </button>
+              <p className="text-[10px] text-text-dim mt-1">Pull latest phone, location, and LinkedIn from your profile</p>
+            </div>
+          )}
         </div>
       </CollapsibleSection>
 
@@ -232,6 +295,8 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
       <CollapsibleSection
         title="Target Role"
         icon="◎"
+        isOpen={openSection === 'target'}
+        onToggle={() => onSectionToggle('target')}
         status={
           <span className={`text-xs ${targetIndustry && targetRole ? 'text-status-green' : 'text-status-amber'}`}>
             {targetIndustry && targetRole ? '✅ Complete' : 'Incomplete'}
@@ -270,6 +335,8 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
       <CollapsibleSection
         title="Professional Summary"
         icon="◎"
+        isOpen={openSection === 'summary'}
+        onToggle={() => onSectionToggle('summary')}
         status={
           <span className={`text-xs ${content.summary ? 'text-status-green' : 'text-status-amber'}`}>
             {content.summary ? '✅ Complete' : 'Empty — add now'}
@@ -282,6 +349,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
         profileSummary={profileSummary}
         profile={profileDataForTemplates}
         onUpdate={(summary) => updateContent('summary', summary)}
+        onSummarySaved={onSummarySaved}
         userPlan={userPlan}
         targetIndustry={targetIndustry}
         targetRole={targetRole}
@@ -292,7 +360,8 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
       <CollapsibleSection
         title="Experience"
         icon="◫"
-        defaultOpen
+        isOpen={openSection === 'experience'}
+        onToggle={() => onSectionToggle('experience')}
         status={
           <span className="text-xs text-text-muted">
             {content.experiences?.length || 0} {content.experiences?.length === 1 ? 'entry' : 'entries'}
@@ -338,6 +407,8 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
       <CollapsibleSection
         title="Education"
         icon="◇"
+        isOpen={openSection === 'education'}
+        onToggle={() => onSectionToggle('education')}
         status={
           <span className={`text-xs ${content.education?.length > 0 ? 'text-status-green' : 'text-status-amber'}`}>
             {content.education?.length > 0 ? '✅ Complete' : 'Empty — add now'}
@@ -370,6 +441,8 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
       <CollapsibleSection
         title="Skills"
         icon="◆"
+        isOpen={openSection === 'skills'}
+        onToggle={() => onSectionToggle('skills')}
         status={
           <span className="text-xs text-text-muted">
             {(content.skills || []).length} skills
@@ -415,6 +488,8 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
       <CollapsibleSection
         title="Certifications"
         icon="✦"
+        isOpen={openSection === 'certifications'}
+        onToggle={() => onSectionToggle('certifications')}
         status={
           <span className="text-xs text-text-muted">
             {(content.certifications || []).length} certs
@@ -434,7 +509,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, userProfil
 
       {/* Federal Resume Extra Fields - Only for federal resumes */}
       {resumeType === 'federal' && (
-        <CollapsibleSection title="Federal Resume Details" icon="★">
+        <CollapsibleSection title="Federal Resume Details" icon="★" isOpen={openSection === 'federal'} onToggle={() => onSectionToggle('federal')}>
           <div className="p-4 bg-status-amber-dim border border-status-amber/20 rounded-lg mb-4">
             <p className="text-sm text-status-amber">
               Federal resumes require additional details. Make sure each experience includes hours/week, supervisor info, and salary.
@@ -539,22 +614,22 @@ function CollapsibleSection({
   children,
   badge,
   status,
-  defaultOpen = false,
+  isOpen = false,
+  onToggle,
 }: {
   title: string
   icon: string
   children: React.ReactNode
   badge?: React.ReactNode
   status?: React.ReactNode
-  defaultOpen?: boolean
+  isOpen?: boolean
+  onToggle?: () => void
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
-
   return (
     <div className="border border-border rounded-lg overflow-hidden">
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => onToggle?.()}
         className="w-full flex items-center justify-between px-4 py-3 bg-bg-secondary hover:bg-bg-tertiary transition-colors text-left"
       >
         <div className="flex items-center gap-2">
@@ -1407,6 +1482,8 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
   const [translatingPaste, setTranslatingPaste] = useState(false)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
+  const [showEvalUpload, setShowEvalUpload] = useState(false)
+  const [evalUserId, setEvalUserId] = useState<string>('')
   const [headerForm, setHeaderForm] = useState({
     job_title: experience.job_title || '',
     civilian_title: experience.civilian_title || '',
@@ -1415,6 +1492,26 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
     end_date: experience.end_date || '',
     is_current: experience.is_current || false,
   })
+
+  // Fetch userId for EvalUploadModal
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setEvalUserId(user.id)
+    })
+  }, [])
+
+  const handleEvalExtracted = (bullets: { original: string; translated: string; metrics: string[]; skills: string[] }[]) => {
+    const existingBullets = experience.bullets || []
+    const newBullets = bullets.map((b, i) => ({
+      original_text: b.original,
+      translated_text: b.translated,
+      status: 'accepted' as const,
+      sort_order: existingBullets.length + i,
+    }))
+    onChange({ ...experience, bullets: [...existingBullets, ...newBullets] })
+    setShowEvalUpload(false)
+  }
 
   const handleStartEdit = (bulletIdx: number, text: string) => {
     setEditingBulletIdx(bulletIdx)
@@ -1444,7 +1541,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
       id: `new-${Date.now()}`,
       original_text: '',
       translated_text: '',
-      status: 'pending',
+      status: 'accepted',
     }
     newBullets.unshift(newBullet)
     onChange({ ...experience, bullets: newBullets })
@@ -1585,7 +1682,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
       id: `eval-${Date.now()}`,
       original_text: '',
       translated_text: translatedText,
-      status: 'pending',
+      status: 'accepted',
     }
     newBullets.unshift(newBullet)
     onChange({ ...experience, bullets: newBullets })
@@ -1602,7 +1699,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
       id: `eval-${Date.now()}`,
       original_text: '',
       translated_text: translatedText,
-      status: 'pending',
+      status: 'accepted',
     }
     newBullets.unshift(newBullet)
     onChange({ ...experience, bullets: newBullets })
@@ -1620,7 +1717,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
       id: `dict-${Date.now()}`,
       original_text: '',
       translated_text: populatedText,
-      status: 'pending',
+      status: 'accepted',
     }
     newBullets.unshift(newBullet)
     onChange({ ...experience, bullets: newBullets })
@@ -1795,7 +1892,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
     const newBullets = [...(experience.bullets || [])]
     newBullets[bulletIdx] = {
       ...newBullets[bulletIdx],
-      status: 'pending',
+      status: 'accepted',
     }
     onChange({ ...experience, bullets: newBullets })
   }
@@ -1850,7 +1947,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
   const handleAcceptAll = () => {
     const newBullets = [...(experience.bullets || [])]
     newBullets.forEach((bullet, idx) => {
-      if (bullet.translated_text && bullet.status !== 'accepted' && bullet.status !== 'excluded') {
+      if (bullet.translated_text && bullet.status !== 'excluded' && bullet.status !== 'excluded') {
         newBullets[idx] = {
           ...bullet,
           status: 'accepted',
@@ -1864,7 +1961,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
   const handleExcludeAll = () => {
     const newBullets = [...(experience.bullets || [])]
     newBullets.forEach((bullet, idx) => {
-      if (bullet.status !== 'excluded' && bullet.status !== 'accepted') {
+      if (bullet.status !== 'excluded' && bullet.status !== 'excluded') {
         newBullets[idx] = {
           ...bullet,
           status: 'excluded',
@@ -2135,15 +2232,13 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   <span>Suggest Bullets</span>
                   <span className="text-[10px] text-status-green ml-auto">Free</span>
                 </button>
-                <a
-                  href="/profile"
-                  onClick={() => setShowMoreMenu(false)}
-                  className="w-full text-left px-3 py-2 text-xs hover:bg-bg-hover transition-colors flex items-center gap-2 no-underline text-text-muted"
+                <button
+                  onClick={() => { setShowEvalUpload(true); setShowMoreMenu(false) }}
+                  className="w-full text-left px-3 py-2 text-xs hover:bg-bg-hover transition-colors flex items-center gap-2"
                 >
                   <span>&#128196;</span>
-                  <span>Import Eval</span>
-                  <span className="text-[10px] text-text-dim ml-auto">On Profile</span>
-                </a>
+                  <span>Upload Eval</span>
+                </button>
                 <button
                   onClick={() => { if (!showSuggestions) setShowSuggestions(true); setShowPasteBox(true); setShowMoreMenu(false) }}
                   className="w-full text-left px-3 py-2 text-xs hover:bg-bg-hover transition-colors flex items-center gap-2"
@@ -2218,10 +2313,10 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                         </span>
                       )}
                     </div>
-                    <p className={bullet.status === 'accepted' ? 'text-status-green' : ''}>{bullet.translated_text}</p>
+                    <p>{bullet.translated_text}</p>
 
                     {/* Vague phrase warnings */}
-                    {bulletVagueFlags[bullet._idx]?.length > 0 && bullet.status !== 'accepted' && (
+                    {bulletVagueFlags[bullet._idx]?.length > 0 && bullet.status !== 'excluded' && (
                       <div className="mt-1 p-2 bg-status-amber/10 rounded text-xs">
                         <span className="font-medium text-status-amber">Vague phrases detected:</span>
                         {bulletVagueFlags[bullet._idx].map((flag, i) => (
@@ -2235,7 +2330,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                     )}
 
                     {/* Verb suggestions */}
-                    {bulletVerbSuggestions[bullet._idx]?.length > 0 && bullet.status !== 'accepted' && (
+                    {bulletVerbSuggestions[bullet._idx]?.length > 0 && bullet.status !== 'excluded' && (
                       <div className="mt-1 p-2 bg-gold/10 rounded text-xs">
                         <span className="font-medium text-gold">Stronger verb options:</span>
                         <span className="text-text-muted"> Replace &quot;{bulletVerbSuggestions[bullet._idx][0].current}&quot; with </span>
@@ -2303,7 +2398,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   )}
 
                   {/* Accept — for translated bullets not yet accepted */}
-                  {bullet.translated_text && bullet.status !== 'accepted' && (
+                  {bullet.translated_text && bullet.status !== 'excluded' && (
                     <Button size="sm" onClick={() => handleAcceptBullet(bullet._idx)}>
                       ✓ Accept
                     </Button>
@@ -2372,7 +2467,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                 </div>
 
                 {/* Suggest a correction — shown on dictionary-translated bullets */}
-                {bullet.translated_text && bulletSources[bullet._idx] === 'dictionary' && bullet.status !== 'accepted' && (
+                {bullet.translated_text && bulletSources[bullet._idx] === 'dictionary' && bullet.status !== 'excluded' && (
                   <div className="mt-1">
                     {correctionSuccess === bullet._idx ? (
                       <p className="text-xs text-status-green">Thanks! Every correction helps keep Debriefed free for all veterans.</p>
@@ -2728,6 +2823,15 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
         onClose={() => setShowTemplateModal(false)}
         onSelect={handleTemplateSelect}
       />
+
+      {showEvalUpload && evalUserId && (
+        <EvalUploadModal
+          isOpen={true}
+          onClose={() => setShowEvalUpload(false)}
+          onExtracted={handleEvalExtracted}
+          userId={evalUserId}
+        />
+      )}
     </Card>
   )
 }

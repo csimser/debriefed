@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { US_STATES } from '@/lib/constants/states'
 import { CivilianTitleSuggestions } from '@/components/profile/CivilianTitleSuggestions'
-import { EvalUploadModal } from '@/components/profile/EvalUploadModal'
 import { formatDateForDB, formatDateForInput } from '@/lib/military-titles'
 import { OnboardingData } from './NewOnboardingWizard'
+import { Toast } from '@/components/ui/Toast'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 
 interface Experience {
   id?: string
@@ -15,12 +15,9 @@ interface Experience {
   job_title: string
   civilian_title: string
   organization: string
-  city: string
-  state: string
   start_date: string
   end_date: string
   is_current: boolean
-  bullets: any[]
 }
 
 interface StepExperienceProps {
@@ -39,12 +36,9 @@ const emptyExperience: Experience = {
   job_title: '',
   civilian_title: '',
   organization: '',
-  city: '',
-  state: '',
   start_date: '',
   end_date: '',
   is_current: false,
-  bullets: [],
 }
 
 export function StepExperience({ data, updateData, onNext, onBack, onSkip, saving, userId, supabase }: StepExperienceProps) {
@@ -52,35 +46,9 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [formData, setFormData] = useState<Experience>(emptyExperience)
   const [savingExp, setSavingExp] = useState(false)
-  const [uploadingEval, setUploadingEval] = useState(false)
-  const [extractedBullets, setExtractedBullets] = useState<any[]>([])
-  const [evalType, setEvalType] = useState('fitrep')
-  const [showEvalUploadForExp, setShowEvalUploadForExp] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const EVAL_TYPES = [
-    { id: 'fitrep', name: 'FITREP', branch: 'Navy' },
-    { id: 'chiefeval', name: 'Chief Eval', branch: 'Navy E7-E9' },
-    { id: 'eval', name: 'EVAL', branch: 'Navy E1-E6' },
-    { id: 'ncoer', name: 'NCOER', branch: 'Army' },
-    { id: 'oer', name: 'OER', branch: 'Army/Navy' },
-    { id: 'epr', name: 'EPR', branch: 'Air Force' },
-    { id: 'award', name: 'Award/NAM', branch: 'All' },
-  ]
-
-  // Helper function to convert file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => {
-        const result = reader.result as string
-        // Remove the data:application/pdf;base64, prefix
-        resolve(result.split(',')[1])
-      }
-      reader.onerror = (error) => reject(error)
-    })
-  }
+  const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null)
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const validateForm = () => {
     if (!formData.job_title.trim()) return false
@@ -91,18 +59,14 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
 
   const handleSaveExperience = async () => {
     if (!validateForm()) {
-      alert('Please fill in Job Title, Organization, and Start Date')
+      setValidationError('Please fill in Job Title, Organization, and Start Date')
       return
     }
+    setValidationError(null)
 
     setSavingExp(true)
     try {
       const isCivilian = formData.employment_type === 'civilian'
-
-      // Generate location from city/state for backwards compatibility
-      const location = formData.city && formData.state
-        ? `${formData.city}, ${formData.state}`
-        : null
 
       const expData = {
         user_id: userId,
@@ -111,9 +75,6 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
         civilian_title: isCivilian ? formData.job_title : (formData.civilian_title || formData.job_title),
         organization: formData.organization,
         company_name: isCivilian ? formData.organization : null,
-        city: formData.city || null,
-        state: formData.state || null,
-        location,
         start_date: formatDateForDB(formData.start_date),
         end_date: formData.is_current ? null : formatDateForDB(formData.end_date),
         is_current: formData.is_current,
@@ -131,13 +92,12 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
 
         if (error) throw error
 
-        // Update local state
         const updatedExperiences = [...data.experiences]
         updatedExperiences[editingIndex] = { ...updatedExperiences[editingIndex], ...expData }
         updateData({ experiences: updatedExperiences })
       } else {
         // Insert new
-        const { data: insertedExp, error } = await supabase
+        const { error } = await supabase
           .from('experience')
           .insert(expData)
           .select()
@@ -145,24 +105,7 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
 
         if (error) throw error
 
-        // Insert bullets if we have any
-        if (insertedExp && extractedBullets.length > 0) {
-          const bulletsToInsert = extractedBullets
-            .filter(b => b.status === 'accepted')
-            .map((b, idx) => ({
-              experience_id: insertedExp.id,
-              original_text: b.original,
-              translated_text: b.translated,
-              sort_order: idx,
-              status: 'accepted',
-            }))
-
-          if (bulletsToInsert.length > 0) {
-            await supabase.from('experience_bullets').insert(bulletsToInsert)
-          }
-        }
-
-        // Reload experiences to get bullets
+        // Reload experiences
         const { data: freshExperiences } = await supabase
           .from('experience')
           .select('*, experience_bullets(*)')
@@ -179,12 +122,11 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
 
       // Reset form
       setFormData(emptyExperience)
-      setExtractedBullets([])
       setShowForm(false)
       setEditingIndex(null)
     } catch (error) {
       console.error('Error saving experience:', error)
-      alert('Failed to save experience. Please try again.')
+      setToast({ message: 'Failed to save experience. Please try again.', type: 'error' })
     } finally {
       setSavingExp(false)
     }
@@ -198,107 +140,41 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
       job_title: exp.job_title || '',
       civilian_title: exp.civilian_title || '',
       organization: exp.organization || '',
-      city: exp.city || '',
-      state: exp.state || '',
       start_date: formatDateForInput(exp.start_date),
       end_date: formatDateForInput(exp.end_date),
       is_current: exp.is_current || false,
-      bullets: exp.bullets || [],
     })
     setEditingIndex(index)
     setShowForm(true)
   }
 
-  const handleDeleteExperience = async (index: number) => {
+  const handleDeleteExperience = (index: number) => {
     const exp = data.experiences[index]
     if (!exp.id) return
 
-    if (!confirm('Delete this experience?')) return
+    setConfirmDialog({
+      title: 'Delete Experience',
+      message: 'Are you sure you want to delete this experience? This cannot be undone.',
+      onConfirm: async () => {
+        try {
+          const { error } = await supabase
+            .from('experience')
+            .delete()
+            .eq('id', exp.id)
 
-    try {
-      const { error } = await supabase
-        .from('experience')
-        .delete()
-        .eq('id', exp.id)
+          if (error) throw error
 
-      if (error) throw error
-
-      const updated = data.experiences.filter((_, i) => i !== index)
-      updateData({ experiences: updated })
-    } catch (error) {
-      console.error('Error deleting experience:', error)
-    }
-  }
-
-  const handleEvalUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploadingEval(true)
-    try {
-      // Convert file to base64
-      const base64 = await fileToBase64(file)
-
-      console.log('Sending raw file to Claude API:', file.name, 'type:', evalType, 'size:', base64.length)
-      console.log('Base64 starts with:', base64.substring(0, 20))
-
-      const response = await fetch('/api/parse-eval', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filename: file.name,
-          fileData: base64,
-          evalType: evalType,
-        }),
-      })
-
-      const result = await response.json()
-
-      if (result.error) {
-        throw new Error(result.error)
-      }
-
-      if (result.bullets && result.bullets.length > 0) {
-        setExtractedBullets(result.bullets.map((b: any, idx: number) => ({
-          id: `bullet-${idx}`,
-          original: b.original,
-          translated: b.translated,
-          status: 'accepted',
-        })))
-      }
-
-      // Auto-fill job title if detected
-      if (result.jobTitle && !formData.job_title) {
-        setFormData(prev => ({ ...prev, job_title: result.jobTitle }))
-      }
-
-      // Auto-fill dates if detected
-      if (result.evalPeriod) {
-        if (result.evalPeriod.startDate && !formData.start_date) {
-          setFormData(prev => ({ ...prev, start_date: result.evalPeriod.startDate }))
+          const updated = data.experiences.filter((_: any, i: number) => i !== index)
+          updateData({ experiences: updated })
+        } catch (error) {
+          console.error('Error deleting experience:', error)
+          setToast({ message: 'Failed to delete experience.', type: 'error' })
         }
-        if (result.evalPeriod.endDate && !formData.end_date) {
-          setFormData(prev => ({ ...prev, end_date: result.evalPeriod.endDate }))
-        }
-      }
-    } catch (error: any) {
-      console.error('Eval upload error:', error)
-      alert(error?.message || 'Failed to parse evaluation. Please try again.')
-    } finally {
-      setUploadingEval(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
-    }
+      },
+    })
   }
 
-  const toggleBulletStatus = (bulletId: string) => {
-    setExtractedBullets(prev => prev.map(b =>
-      b.id === bulletId
-        ? { ...b, status: b.status === 'accepted' ? 'excluded' : 'accepted' }
-        : b
-    ))
-  }
-
-  const inputClass = "w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
+  const inputClass = "w-full px-4 py-3.5 text-base md:py-3 md:text-sm bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
   const labelClass = "block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2"
 
   return (
@@ -309,14 +185,14 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
           Your Experience
         </h2>
         <p className="text-text-muted">
-          Add your work history - military and/or civilian
+          Add your work history — military and/or civilian
         </p>
       </div>
 
       {/* Existing Experiences List */}
       {data.experiences.length > 0 && !showForm && (
         <div className="space-y-4 mb-6">
-          {data.experiences.map((exp, idx) => (
+          {data.experiences.map((exp: any, idx: number) => (
             <Card key={exp.id || idx} className="p-4 bg-bg-card">
               <div className="flex justify-between items-start">
                 <div>
@@ -332,22 +208,6 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
                   <div className="text-text-dim text-xs mt-1">
                     {exp.start_date?.substring(0, 7)} - {exp.is_current ? 'Present' : exp.end_date?.substring(0, 7) || 'N/A'}
                   </div>
-                  {exp.bullets?.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      <div className="text-xs text-status-green">
-                        {exp.bullets.length} bullet{exp.bullets.length !== 1 ? 's' : ''} added
-                      </div>
-                      {exp.bullets.slice(0, 3).map((bullet: any, bIdx: number) => (
-                        <div key={bIdx} className="flex items-start gap-1.5 text-xs text-text-muted">
-                          <span className="text-gold mt-0.5 flex-shrink-0">&#8226;</span>
-                          <span className="line-clamp-1">{bullet.translated_text || bullet.original_text}</span>
-                        </div>
-                      ))}
-                      {exp.bullets.length > 3 && (
-                        <div className="text-xs text-text-dim ml-4">+{exp.bullets.length - 3} more</div>
-                      )}
-                    </div>
-                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" variant="ghost" onClick={() => handleEditExperience(idx)}>
@@ -358,19 +218,6 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
                   </Button>
                 </div>
               </div>
-              {exp.id && (
-                <div className="mt-3 pt-3 border-t border-border/50 flex items-center gap-2">
-                  <button
-                    onClick={() => setShowEvalUploadForExp(exp.id)}
-                    className="flex items-center gap-1 px-2 py-1 bg-status-green/20 text-status-green border border-status-green/30 rounded hover:bg-status-green/30 transition-colors text-xs"
-                  >
-                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    Import Eval
-                  </button>
-                </div>
-              )}
             </Card>
           ))}
 
@@ -477,36 +324,6 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
             </div>
           )}
 
-          {/* Location */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>City</label>
-              <input
-                type="text"
-                name="city"
-                autoComplete="address-level2"
-                value={formData.city}
-                onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                placeholder="e.g., San Diego"
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>State</label>
-              <select
-                value={formData.state}
-                onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                autoComplete="address-level1"
-                className={inputClass}
-              >
-                <option value="">Select State</option>
-                {US_STATES.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           {/* Dates */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -548,95 +365,12 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
             </div>
           </div>
 
-          {/* Eval Upload Section */}
-          <div className="pt-4 border-t border-border">
-            <label className={labelClass}>
-              Upload Evaluation (Optional)
-            </label>
-            <p className="text-xs text-text-dim mb-3">
-              Upload an eval, NCOER, EPR, fitrep, or award to extract achievement bullets automatically
-            </p>
-
-            {/* Eval Type Selector */}
-            <div className="grid grid-cols-4 gap-2 mb-4">
-              {EVAL_TYPES.map((type) => (
-                <button
-                  key={type.id}
-                  type="button"
-                  onClick={() => setEvalType(type.id)}
-                  className={`p-2 rounded text-xs text-left transition-all ${
-                    evalType === type.id
-                      ? 'bg-gold/20 border border-gold/30 text-gold'
-                      : 'bg-bg-tertiary hover:bg-bg-hover border border-transparent text-text-muted'
-                  }`}
-                >
-                  <div className="font-semibold">{type.name}</div>
-                  <div className="text-[10px] opacity-70">{type.branch}</div>
-                </button>
-              ))}
+          {/* Validation Error */}
+          {validationError && (
+            <div className="p-3 bg-status-red/10 border border-status-red/30 rounded text-status-red text-sm">
+              {validationError}
             </div>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              name="eval-file"
-              accept=".pdf,.png,.jpg,.jpeg"
-              onChange={handleEvalUpload}
-              className="hidden"
-            />
-
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploadingEval}
-              className="w-full py-3 border border-dashed border-border rounded-lg text-text-muted hover:border-gold hover:text-gold transition-colors flex items-center justify-center gap-2"
-            >
-              {uploadingEval ? (
-                <>
-                  <span className="animate-spin">&#8635;</span>
-                  Extracting bullets...
-                </>
-              ) : (
-                <>
-                  <span>&#128196;</span>
-                  Upload {EVAL_TYPES.find(t => t.id === evalType)?.name || 'Evaluation'}
-                </>
-              )}
-            </button>
-
-            {/* Extracted Bullets */}
-            {extractedBullets.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <p className="text-xs text-gold font-semibold uppercase">
-                  Extracted Bullets ({extractedBullets.filter(b => b.status === 'accepted').length} selected)
-                </p>
-                {extractedBullets.map((bullet) => (
-                  <div
-                    key={bullet.id}
-                    onClick={() => toggleBulletStatus(bullet.id)}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                      bullet.status === 'accepted'
-                        ? 'bg-status-green/10 border-status-green/30'
-                        : 'bg-bg-tertiary border-border opacity-60'
-                    }`}
-                  >
-                    <div className="flex items-start gap-2">
-                      <span className={bullet.status === 'accepted' ? 'text-status-green' : 'text-text-dim'}>
-                        {bullet.status === 'accepted' ? '✓' : '○'}
-                      </span>
-                      <span className="text-sm text-text-muted flex-1">
-                        {bullet.translated}
-                      </span>
-                    </div>
-                    {bullet.original !== bullet.translated && (
-                      <p className="text-xs text-text-dim mt-1 ml-6">
-                        Original: {bullet.original}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Form Actions */}
           <div className="flex gap-3">
@@ -648,7 +382,6 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
               onClick={() => {
                 setShowForm(false)
                 setFormData(emptyExperience)
-                setExtractedBullets([])
                 setEditingIndex(null)
               }}
             >
@@ -657,6 +390,13 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
           </div>
         </div>
       )}
+
+      {/* Tip */}
+      <div className="mt-4 p-3 bg-bg-tertiary rounded-lg border border-border">
+        <p className="text-xs text-text-dim">
+          You can add eval uploads, bullet points, and location details later from your profile page.
+        </p>
+      </div>
 
       {/* Navigation */}
       <div className="flex justify-between mt-8">
@@ -678,41 +418,15 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
         </button>
       </div>
 
-      {/* Eval Upload Modal for saved experiences */}
-      {showEvalUploadForExp && (
-        <EvalUploadModal
-          isOpen={true}
-          onClose={() => setShowEvalUploadForExp(null)}
-          onExtracted={() => {}}
-          onBulletsSaved={async () => {
-            // Refresh experiences to show new bullets
-            const { data: freshExperiences } = await supabase
-              .from('experience')
-              .select('*, experience_bullets(*)')
-              .eq('user_id', userId)
-              .order('sort_order')
-
-            if (freshExperiences) {
-              updateData({
-                experiences: freshExperiences.map((e: any) => ({
-                  ...e,
-                  bullets: e.experience_bullets || []
-                }))
-              })
-            }
-            setShowEvalUploadForExp(null)
-          }}
-          userId={userId}
-          experiences={data.experiences
-            .filter((exp: any) => exp.id)
-            .map((exp: any) => ({
-              id: exp.id,
-              job_title: exp.job_title,
-              organization: exp.organization,
-              start_date: exp.start_date,
-              end_date: exp.end_date,
-            }))}
-          defaultExperienceId={showEvalUploadForExp}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {confirmDialog && (
+        <ConfirmModal
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant="danger"
+          confirmLabel="Delete"
+          onConfirm={() => { confirmDialog.onConfirm(); setConfirmDialog(null) }}
+          onCancel={() => setConfirmDialog(null)}
         />
       )}
     </div>

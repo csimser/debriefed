@@ -19,7 +19,13 @@ export function CommunityMissionWidget() {
     getSidebarCommunityData().then(setData).catch(() => {})
   }, [])
 
-  if (!data) return null
+  if (!data) return (
+    <div className="p-5 border border-gold/20 bg-gold/[0.04] rounded-xl space-y-3 animate-pulse">
+      <div className="h-4 bg-bg-tertiary rounded w-32" />
+      <div className="h-3 bg-bg-tertiary rounded w-48" />
+      <div className="h-3 bg-bg-tertiary rounded w-24" />
+    </div>
+  )
 
   const badge = BADGE_TIERS.find(t => data.userSubmissions >= t.min) || BADGE_TIERS[BADGE_TIERS.length - 1]
   const isMaxTier = !badge.nextLabel
@@ -36,7 +42,11 @@ export function CommunityMissionWidget() {
         <span className="font-heading uppercase tracking-widest text-xs font-bold text-gold">Help the Mission</span>
       </div>
 
-      <div className="text-sm text-text-muted">Know a military term that needs translating?</div>
+      <div className="text-sm text-text-muted">
+        {data.userSubmissions === 0
+          ? 'Every translation you submit helps a fellow veteran land a job. Start your first one.'
+          : 'Know a military term that needs translating?'}
+      </div>
 
       <Link
         href="/career-tools?tool=community"

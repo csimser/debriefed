@@ -1,51 +1,58 @@
 'use client'
 
-import { useState, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
-import { BRANCHES, getRankFromPaygrade, getValidPaygradesForBranch } from '@/lib/constants/military'
 
 function SignupForm() {
   const searchParams = useSearchParams()
-  void searchParams // preserve Suspense boundary
+  const planIntent = searchParams.get('plan')
 
   const [formData, setFormData] = useState({
     email: '',
     firstName: '',
     lastName: '',
-    branch: '',
-    paygrade: '',
-  })
-  const [optIns, setOptIns] = useState({
-    employerSharing: false,
-    marketing: false,
   })
   const [otpCode, setOtpCode] = useState('')
   const [otpSent, setOtpSent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const [resending, setResending] = useState(false)
   const submittingRef = useRef(false)
   const router = useRouter()
   const supabase = createClient()
 
-  const validPaygrades = getValidPaygradesForBranch(formData.branch)
+  // Cooldown timer for resend
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [resendCooldown])
 
-  const handleBranchChange = (branch: string) => {
-    setFormData(prev => ({
-      ...prev,
-      branch,
-      paygrade: branch && prev.paygrade && !getValidPaygradesForBranch(branch).map(pg => pg.value).includes(prev.paygrade)
-        ? ''
-        : prev.paygrade
-    }))
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || resending) return
+    setResending(true)
+    setError('')
+    try {
+      await supabase.auth.signInWithOtp({
+        email: formData.email,
+        options: { shouldCreateUser: false },
+      })
+      setResendCooldown(60)
+    } catch {
+      setError('Failed to resend code. Please try again.')
+    } finally {
+      setResending(false)
+    }
   }
 
   const validateCommonFields = (): boolean => {
-    if (!formData.email || !formData.firstName || !formData.lastName || !formData.branch || !formData.paygrade) {
+    if (!formData.email || !formData.firstName || !formData.lastName) {
       setError('Please fill in all required fields')
       return false
     }
@@ -75,10 +82,6 @@ function SignupForm() {
           email: formData.email,
           firstName: formData.firstName,
           lastName: formData.lastName,
-          branch: formData.branch,
-          paygrade: formData.paygrade,
-          employerSharingOptIn: optIns.employerSharing,
-          marketingOptIn: optIns.marketing,
         }),
       })
 
@@ -103,6 +106,7 @@ function SignupForm() {
 
       // Always transition to the verify screen with a generic message
       setOtpSent(true)
+      setResendCooldown(60)
       submittingRef.current = false
       setLoading(false)
     } catch {
@@ -147,8 +151,9 @@ function SignupForm() {
       body: JSON.stringify({}),
     }).catch(() => {})
 
-    // Redirect to onboarding
-    router.push('/onboarding')
+    // Redirect to onboarding, preserving plan intent
+    const onboardingUrl = planIntent ? `/onboarding?plan=${planIntent}` : '/onboarding'
+    router.push(onboardingUrl)
     router.refresh()
   }
 
@@ -191,7 +196,16 @@ function SignupForm() {
 
           <button
             type="button"
-            onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); submittingRef.current = false }}
+            onClick={handleResendOtp}
+            disabled={resending || resendCooldown > 0}
+            className="w-full text-sm text-text-muted hover:text-gold disabled:opacity-50 transition-colors"
+          >
+            {resending ? 'Resending...' : resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend code'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setOtpSent(false); setOtpCode(''); setError(''); setResendCooldown(0); submittingRef.current = false }}
             className="w-full text-sm text-text-muted hover:text-gold transition-colors"
           >
             ← Back to signup
@@ -260,89 +274,6 @@ function SignupForm() {
           No password needed — we&apos;ll send a 6-digit code to verify your email.
         </p>
 
-        <div className="space-y-2">
-          <label className="block font-heading text-xs font-semibold uppercase tracking-wider text-text-muted">Branch</label>
-          <select
-            name="branch"
-            value={formData.branch}
-            onChange={(e) => handleBranchChange(e.target.value)}
-            className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text"
-            required
-            autoComplete="off"
-          >
-            <option value="">Select Branch</option>
-            {BRANCHES.map((b) => (
-              <option key={b.value} value={b.value}>{b.label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block font-heading text-xs font-semibold uppercase tracking-wider text-text-muted">Paygrade</label>
-          <select
-            name="paygrade"
-            value={formData.paygrade}
-            onChange={(e) => setFormData({ ...formData, paygrade: e.target.value })}
-            className="w-full bg-bg-secondary border border-border rounded-md px-4 py-3 text-text"
-            required
-            autoComplete="off"
-          >
-            <option value="">Select Paygrade</option>
-            {validPaygrades.map((p) => (
-              <option key={p.value} value={p.value}>{p.label}</option>
-            ))}
-          </select>
-          <p className="text-xs text-text-muted italic">
-            If not currently serving, please select the highest rank/paygrade attained.
-          </p>
-        </div>
-
-        {formData.branch && formData.paygrade && (
-          <div className="bg-bg-tertiary rounded-md p-3">
-            <p className="text-sm text-text-muted">
-              Rank: <span className="text-text font-medium">{getRankFromPaygrade(formData.branch, formData.paygrade)}</span>
-            </p>
-          </div>
-        )}
-
-        {/* Opt-in Checkboxes */}
-        <div className="space-y-4 pt-2 border-t border-border">
-          <label className="flex items-start gap-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              name="employer-sharing"
-              checked={optIns.employerSharing}
-              onChange={(e) => setOptIns(prev => ({ ...prev, employerSharing: e.target.checked }))}
-              className="mt-0.5 rounded border-border"
-            />
-            <div>
-              <span className="text-sm text-text group-hover:text-gold transition-colors font-medium">
-                It&apos;s OK to share my profile with SkillBridge organizations and employers
-              </span>
-              <p className="text-xs text-text-muted mt-0.5">
-                Your name, email address, skills, certifications, clearance level, and target role may be shared with vetted employers and SkillBridge host companies actively hiring veterans. You can opt out anytime in Settings.
-              </p>
-            </div>
-          </label>
-          <label className="flex items-start gap-3 cursor-pointer group">
-            <input
-              type="checkbox"
-              name="marketing"
-              checked={optIns.marketing}
-              onChange={(e) => setOptIns(prev => ({ ...prev, marketing: e.target.checked }))}
-              className="mt-0.5 rounded border-border"
-            />
-            <div>
-              <span className="text-sm text-text group-hover:text-gold transition-colors font-medium">
-                It&apos;s OK to send me updates about Debriefed and career resources
-              </span>
-              <p className="text-xs text-text-muted mt-0.5">
-                We&apos;ll occasionally email you about new features, career tips, and transition resources. No spam, ever. Unsubscribe anytime.
-              </p>
-            </div>
-          </label>
-        </div>
-
         {error && (
           <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
             <p className="text-sm text-status-red">{error}</p>
@@ -375,8 +306,6 @@ function SignupFormLoading() {
             <div className="h-12 bg-bg-tertiary rounded"></div>
             <div className="h-12 bg-bg-tertiary rounded"></div>
           </div>
-          <div className="h-12 bg-bg-tertiary rounded"></div>
-          <div className="h-12 bg-bg-tertiary rounded"></div>
           <div className="h-12 bg-bg-tertiary rounded"></div>
           <div className="h-12 bg-bg-tertiary rounded"></div>
         </div>

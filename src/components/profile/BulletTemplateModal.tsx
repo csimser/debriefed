@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
+import { ModalShell } from '@/components/ui/ModalShell'
 
 interface BulletTemplateModalProps {
   isOpen: boolean
@@ -256,10 +257,8 @@ export function BulletTemplateModal({ isOpen, onClose, onSelect }: BulletTemplat
     onClose()
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <ModalShell isOpen={isOpen} onClose={onClose} title="Bullet Templates" maxWidth="max-w-2xl">
       <Card className="w-full max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
         {/* Header */}
         <div className="p-4 pb-3 border-b border-border flex-shrink-0">
@@ -285,7 +284,7 @@ export function BulletTemplateModal({ isOpen, onClose, onSelect }: BulletTemplat
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search templates... (e.g., budget, training, safety)"
-              className="w-full pl-10 pr-4 py-2.5 bg-bg-secondary border border-border rounded text-sm text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
+              className="w-full pl-10 pr-4 py-2.5 bg-bg-secondary border border-border rounded text-base md:text-sm text-text placeholder:text-text-dim focus:border-gold focus:ring-1 focus:ring-gold/25"
               autoFocus
               autoComplete="off"
             />
@@ -363,7 +362,7 @@ export function BulletTemplateModal({ isOpen, onClose, onSelect }: BulletTemplat
           )}
         </div>
       </Card>
-    </div>
+    </ModalShell>
   )
 }
 

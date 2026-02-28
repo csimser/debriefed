@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { ModalShell } from '@/components/ui/ModalShell'
 import { DEGREE_TYPES, matchDegreeType } from '@/lib/constants/education'
 import { UpgradeLink } from '@/components/modals/UpgradeModal'
 
@@ -97,8 +98,6 @@ export function ResumeImportModal({
 
   // Success state
   const [importSummary, setImportSummary] = useState('')
-
-  if (!isOpen) return null
 
   const hasExistingData = existingExperiences.length > 0 || existingSkills.length > 0
 
@@ -390,8 +389,8 @@ export function ResumeImportModal({
   const inputClass = "w-full px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-bg-card border border-border rounded-lg w-full max-w-3xl max-h-[90vh] flex flex-col shadow-xl">
+    <ModalShell isOpen={isOpen} onClose={handleClose} title="Import Resume" maxWidth="max-w-2xl" backdrop="bg-black/70">
+      <div className="bg-bg-card border border-border rounded-lg w-full max-h-[90vh] flex flex-col shadow-xl">
         {/* Header */}
         <div className="p-6 border-b border-border">
           <div className="flex items-center justify-between">
@@ -527,7 +526,7 @@ export function ResumeImportModal({
                     onChange={(e) => setPasteText(e.target.value)}
                     placeholder="Paste your full resume text here..."
                     rows={12}
-                    className="w-full px-4 py-3 bg-bg-secondary border border-border rounded-lg text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-y"
+                    className="w-full px-4 py-3 bg-bg-secondary border border-border rounded-lg text-base md:text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-y"
                     autoComplete="off"
                   />
                   <p className="text-xs text-text-dim mt-2">
@@ -1014,7 +1013,7 @@ export function ResumeImportModal({
           </div>
         )}
       </div>
-    </div>
+    </ModalShell>
   )
 }
 
@@ -1031,7 +1030,7 @@ function AddInlineInput({ placeholder, onAdd }: { placeholder: string; onAdd: (v
   return (
     <div className="flex gap-2">
       <input
-        className="flex-1 px-3 py-1.5 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
+        className="flex-1 px-3 py-2.5 bg-bg-secondary border border-border rounded text-base md:py-1.5 md:text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
