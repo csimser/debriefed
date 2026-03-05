@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
+import { trackEvent } from '@/lib/analytics'
 import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
 import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
 import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
@@ -578,6 +579,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
         setError(data.error)
       } else {
         setResults(data)
+        trackEvent('feature_used', { feature: 'linkedin' })
         // Trigger post-action modal after results render
         setTimeout(() => triggerPostActionModal('linkedin-complete'), 800)
       }
@@ -604,10 +606,10 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     // Collect recommended keywords from LinkedIn + ATS dictionaries for user's industry
     const allRecommended = new Set<string>()
     linkedinKeywords
-      .filter(lk => !targetIndustry || lk.industry.toLowerCase().includes(targetIndustry))
+      .filter(lk => !targetIndustry || lk.industry?.toLowerCase().includes(targetIndustry))
       .forEach(lk => { lk.linkedin_keywords.forEach(kw => allRecommended.add(kw.toLowerCase())) })
     atsKeywords
-      .filter(ak => !targetIndustry || ak.industry.toLowerCase().includes(targetIndustry))
+      .filter(ak => !targetIndustry || ak.industry?.toLowerCase().includes(targetIndustry))
       .forEach(ak => { ak.keywords.forEach(kw => allRecommended.add(kw.toLowerCase())) })
 
     const found: string[] = []

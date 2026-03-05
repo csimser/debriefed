@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
 import { GovComputerBanner } from '@/components/layout/GovComputerBanner'
+import { trackEvent } from '@/lib/analytics'
 
 // ── Email typo detection ────────────────────────────────────────────
 const COMMON_TYPOS: Record<string, string> = {
@@ -66,6 +67,15 @@ function SignupForm() {
   const verifyingRef = useRef(false)
   const router = useRouter()
   const supabase = createClient()
+
+  // Track signup page view on mount
+  useEffect(() => {
+    trackEvent('signup_started', {
+      plan_intent: planIntent || 'none',
+      source: searchParams.get('source') || 'direct',
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Cooldown timer for resend
   useEffect(() => {
@@ -206,6 +216,12 @@ function SignupForm() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     }).catch(() => {})
+
+    trackEvent('signup_completed', {
+      method: 'otp',
+      plan_intent: planIntent || 'none',
+      source: searchParams.get('source') || 'direct',
+    })
 
     // Redirect to onboarding, preserving plan intent
     const onboardingUrl = planIntent ? `/onboarding?plan=${planIntent}` : '/onboarding'
@@ -357,8 +373,17 @@ function SignupForm() {
           </div>
         )}
 
+        <div className="p-3 rounded border border-white/5 bg-white/[0.02]">
+          <p className="text-white/60 text-xs font-body italic">
+            &ldquo;Translated my 11B experience into a PM resume in 20 minutes.&rdquo;
+          </p>
+          <p className="text-white/30 text-xs mt-1 font-heading uppercase tracking-wider">
+            &mdash; SSG, U.S. Army
+          </p>
+        </div>
+
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Creating Account...' : hasPlanIntent ? 'Get Started — Complete Payment Next' : 'Start Building My Resume'}
+          {loading ? 'Creating Account...' : hasPlanIntent ? 'Get Started — Complete Payment Next' : 'Create Free Account — No Card Needed'}
         </Button>
       </form>
 

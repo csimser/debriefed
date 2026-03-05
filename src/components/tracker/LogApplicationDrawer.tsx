@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { Toast } from '@/components/ui/Toast'
 
 interface Resume {
   id: string
@@ -49,6 +50,8 @@ export function LogApplicationDrawer({
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showSuccess, setShowSuccess] = useState(false)
   const [form, setForm] = useState({
     company_name: '',
     job_title: '',
@@ -85,6 +88,8 @@ export function LogApplicationDrawer({
       })
     }
     setConfirmDelete(false)
+    setError(null)
+    setShowSuccess(false)
   }, [editingApplication, isOpen])
 
   // Lock body scroll when open
@@ -109,6 +114,7 @@ export function LogApplicationDrawer({
     if (!form.company_name.trim() || !form.job_title.trim()) return
 
     setSaving(true)
+    setError(null)
     try {
       await onSave({
         company_name: form.company_name.trim(),
@@ -119,7 +125,10 @@ export function LogApplicationDrawer({
         notes: form.notes.trim() || null,
         salary_offered: form.salary_offered ? parseInt(form.salary_offered, 10) : null,
       })
-      onClose()
+      setShowSuccess(true)
+      setTimeout(() => onClose(), 800)
+    } catch {
+      setError('Failed to save — please try again.')
     } finally {
       setSaving(false)
     }
@@ -132,9 +141,12 @@ export function LogApplicationDrawer({
       return
     }
     setDeleting(true)
+    setError(null)
     try {
       await onDelete(editingApplication.id)
       onClose()
+    } catch {
+      setError('Failed to delete — please try again.')
     } finally {
       setDeleting(false)
     }
@@ -284,6 +296,13 @@ export function LogApplicationDrawer({
             />
           </div>
 
+          {/* Error */}
+          {error && (
+            <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
+              <p className="text-sm text-status-red">{error}</p>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="flex items-center gap-3 pt-2">
             <button
@@ -317,6 +336,15 @@ export function LogApplicationDrawer({
           )}
         </form>
       </div>
+
+      {showSuccess && (
+        <Toast
+          message={isEditing ? 'Application updated' : 'Application logged'}
+          type="success"
+          duration={2000}
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
     </>
   )
 }

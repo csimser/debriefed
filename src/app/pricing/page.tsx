@@ -30,6 +30,15 @@ function PricingContent() {
 
   const supabase = createClient();
 
+  // Track pricing page view
+  useEffect(() => {
+    trackEvent('pricing_page_viewed', {
+      source: searchParams.get('source') || 'direct',
+      from: searchParams.get('from') || null,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Track cancelled checkout
   useEffect(() => {
     if (paymentStatus === 'cancelled') {
@@ -73,6 +82,7 @@ function PricingContent() {
   const handleCheckout = async (tier: 'core' | 'full' | 'eval_pack') => {
     setLoading(tier);
     setError(null);
+    trackEvent('checkout_started', { tier, current_tier: auth.currentTier || 'anonymous' });
 
     try {
       const response = await fetch('/api/stripe/create-checkout', {

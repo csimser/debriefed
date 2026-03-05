@@ -178,6 +178,12 @@ function LoginForm() {
           {error && (
             <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
               <p className="text-sm text-status-red">{error}</p>
+              <p className="text-xs text-text-dim mt-2">
+                Don&apos;t have an account?{' '}
+                <Link href={planIntent ? `/signup?plan=${planIntent}` : '/signup'} className="text-gold hover:text-gold-bright">
+                  Create one free
+                </Link>
+              </p>
             </div>
           )}
 

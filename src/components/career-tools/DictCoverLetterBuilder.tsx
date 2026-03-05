@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
+import { trackEvent } from '@/lib/analytics'
 import { formatPhoneForDisplay } from '@/lib/formatPhone'
 import { fillTemplate } from '@/lib/dictionary/templateFiller'
 import { polishCoverLetter } from '@/lib/dictionary/outputPolisher'
@@ -511,6 +512,7 @@ export function DictCoverLetterBuilder({
         setError(data.error || `Server error (${res.status}). Please try again.`)
       } else if (data.coverLetter) {
         setEditorText(data.coverLetter)
+        trackEvent('feature_used', { feature: 'cover_letter', is_regenerate: isRegenerate })
         if (data.validationIssues) {
           setValidationWarnings(data.validationIssues)
         }

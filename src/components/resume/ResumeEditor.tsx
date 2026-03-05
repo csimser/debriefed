@@ -13,6 +13,7 @@ import { VersionHistoryPanel } from './VersionHistoryPanel'
 import { estimateFederalOverflow } from '@/lib/resume/federalTrimmer'
 
 import { AutosaveIndicator } from '@/components/AutosaveIndicator'
+import { trackEvent } from '@/lib/analytics'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
@@ -482,32 +483,32 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     const newContent = buildInitialContent(profileData)
 
     try {
-      const { data, error } = await supabase
-        .from('resumes')
-        .insert({
-          user_id: userId,
+      const res = await fetch('/api/resume/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: trimmed,
           template: 'classic_professional',
           resume_type: 'private',
           content: newContent,
-        })
-        .select()
-        .single()
+        }),
+      })
 
-      if (error) {
-        console.error('Create resume error details:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint,
-        })
-        alert(`Failed to create resume: ${error.message || error.code || 'Permission denied'}`)
+      const result = await res.json()
+
+      if (!res.ok) {
+        if (res.status === 403 && result.limitReached) {
+          handleLimitReached(result.error, userPlan)
+        } else {
+          alert(`Failed to create resume: ${result.error || 'Unknown error'}`)
+        }
         return
       }
 
-      if (data) {
-        setResumes([data, ...resumes])
-        setSelectedId(data.id)
+      if (result.data) {
+        setResumes([result.data, ...resumes])
+        setSelectedId(result.data.id)
+        trackEvent('feature_used', { feature: 'resume_created', template: result.data.template, resume_type: result.data.resume_type })
       }
     } catch (err: any) {
       console.error('Create resume exception:', err)
@@ -521,6 +522,38 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
 
     if (selectedId === deletedId) {
       setSelectedId(updatedResumes[0]?.id || null)
+    }
+  }
+
+  const handleTypeSwitch = async (newType: 'private' | 'federal') => {
+    if (!selectedId || currentResume.resume_type === newType) return
+
+    try {
+      const res = await fetch('/api/resume/switch-type', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resumeId: selectedId, newType }),
+      })
+
+      const result = await res.json()
+
+      if (!res.ok) {
+        if (res.status === 403 && result.limitReached) {
+          handleLimitReached(result.error, userPlan)
+        } else {
+          alert(result.error || 'Failed to switch resume type')
+        }
+        return
+      }
+
+      setCurrentResume(prev => ({
+        ...prev,
+        resume_type: newType,
+        template: newType === 'federal' ? 'federal' as TemplateId : (prev.template === 'federal' ? 'classic_professional' as TemplateId : prev.template),
+      }))
+    } catch (err: any) {
+      console.error('Type switch error:', err)
+      alert('Failed to switch resume type')
     }
   }
 
@@ -641,11 +674,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
           {/* Type toggle */}
           <div className="hidden sm:flex bg-bg-tertiary rounded-lg p-0.5 flex-shrink-0">
             <button
-              onClick={() => setCurrentResume(prev => ({
-                ...prev,
-                resume_type: 'private',
-                template: prev.template === 'federal' ? 'classic_professional' : prev.template,
-              }))}
+              onClick={() => handleTypeSwitch('private')}
               className={`px-2.5 py-1 rounded-md text-[10px] font-heading uppercase tracking-wider transition-all ${
                 currentResume.resume_type === 'private'
                   ? 'bg-gold text-bg-primary'
@@ -655,11 +684,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
               Private
             </button>
             <button
-              onClick={() => setCurrentResume(prev => ({
-                ...prev,
-                resume_type: 'federal',
-                template: 'federal' as TemplateId,
-              }))}
+              onClick={() => handleTypeSwitch('federal')}
               className={`px-2.5 py-1 rounded-md text-[10px] font-heading uppercase tracking-wider transition-all ${
                 currentResume.resume_type === 'federal'
                   ? 'bg-gold text-bg-primary'
@@ -751,11 +776,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
               <div className="sm:hidden mb-4">
                 <div className="flex bg-bg-tertiary rounded-lg p-0.5">
                   <button
-                    onClick={() => setCurrentResume(prev => ({
-                      ...prev,
-                      resume_type: 'private',
-                      template: prev.template === 'federal' ? 'classic_professional' : prev.template,
-                    }))}
+                    onClick={() => handleTypeSwitch('private')}
                     className={`flex-1 px-3 py-1.5 rounded-md text-xs font-heading uppercase tracking-wider transition-all ${
                       currentResume.resume_type === 'private'
                         ? 'bg-gold text-bg-primary'
@@ -765,11 +786,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                     Private
                   </button>
                   <button
-                    onClick={() => setCurrentResume(prev => ({
-                      ...prev,
-                      resume_type: 'federal',
-                      template: 'federal' as TemplateId,
-                    }))}
+                    onClick={() => handleTypeSwitch('federal')}
                     className={`flex-1 px-3 py-1.5 rounded-md text-xs font-heading uppercase tracking-wider transition-all ${
                       currentResume.resume_type === 'federal'
                         ? 'bg-gold text-bg-primary'

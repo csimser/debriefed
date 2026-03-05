@@ -113,6 +113,17 @@ export async function POST(request: NextRequest) {
 
     const { linkedInData, targetCriteria, hasPaidAccess } = await request.json()
 
+    // If requesting paid recommendations, enforce linkedin_recommendations limit
+    if (hasPaidAccess && !isAdmin(userEmail)) {
+      const recoCheck = await canUseFeature(user.id, 'linkedin_recommendations')
+      if (!recoCheck.allowed) {
+        return NextResponse.json({
+          error: recoCheck.reason || 'LinkedIn recommendations limit reached. Upgrade your plan for more.',
+          limitReached: true,
+        }, { status: 403 })
+      }
+    }
+
     if (!linkedInData || !targetCriteria) {
       return NextResponse.json({ error: 'Missing required data' }, { status: 400 })
     }
@@ -412,6 +423,9 @@ RULES:
         await logApiUsage(user.id, 'analyze-linkedin', tokensUsed, PRIMARY_MODEL)
         if (hasValidAnalysis) {
           await incrementUsage(user.id, 'linkedin_profile_analysis')
+          if (hasPaidAccess) {
+            await incrementUsage(user.id, 'linkedin_recommendations')
+          }
         }
       } catch (err) {
         console.error('Post-response usage tracking failed:', err)

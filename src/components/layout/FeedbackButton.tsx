@@ -165,8 +165,12 @@ export function FeedbackButton({ userId, userEmail }: FeedbackButtonProps = {}) 
                     </div>
                   </div>
 
-                  {/* Email (if not logged in) */}
-                  {!userId && (
+                  {/* Email: show field if not logged in, show "Sending as" if logged in */}
+                  {userId && userEmail ? (
+                    <p className="text-xs text-text-dim">
+                      Sending as <span className="text-text-muted">{userEmail}</span>
+                    </p>
+                  ) : !userId ? (
                     <div>
                       <label className="block text-xs text-text-muted uppercase mb-2">
                         Email (optional)
@@ -180,7 +184,7 @@ export function FeedbackButton({ userId, userEmail }: FeedbackButtonProps = {}) 
                         autoComplete="email"
                       />
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Message */}
                   <div>
@@ -190,6 +194,12 @@ export function FeedbackButton({ userId, userEmail }: FeedbackButtonProps = {}) 
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && message.length >= 10) {
+                          e.preventDefault()
+                          handleSubmit(e as unknown as React.FormEvent)
+                        }
+                      }}
                       placeholder={
                         category === 'bug'
                           ? 'Describe the bug and how to reproduce it...'
@@ -206,7 +216,7 @@ export function FeedbackButton({ userId, userEmail }: FeedbackButtonProps = {}) 
                     />
                     <div className="flex justify-between mt-1">
                       <span className="text-xs text-text-dim">
-                        Minimum 10 characters
+                        Min 10 chars · Cmd+Enter to send
                       </span>
                       <span className={`text-xs ${message.length > 4500 ? 'text-status-amber' : 'text-text-dim'}`}>
                         {message.length}/5000

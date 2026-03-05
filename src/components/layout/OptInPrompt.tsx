@@ -10,11 +10,20 @@ interface OptInPromptProps {
   dismissCount: number
 }
 
+const DISMISS_KEY = 'optin_dismiss_until'
+
 export function OptInPrompt({ userId, dismissCount: initialDismissCount }: OptInPromptProps) {
   const [employerOptIn, setEmployerOptIn] = useState(false)
   const [marketingOptIn, setMarketingOptIn] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [dismissed, setDismissed] = useState(initialDismissCount >= 3)
+  const [dismissed, setDismissed] = useState(() => {
+    if (initialDismissCount >= 3) return true
+    try {
+      const until = localStorage.getItem(DISMISS_KEY)
+      if (until && Date.now() < parseInt(until, 10)) return true
+    } catch {}
+    return false
+  })
   const supabase = createClient()
 
   if (dismissed) return null
@@ -32,15 +41,11 @@ export function OptInPrompt({ userId, dismissCount: initialDismissCount }: OptIn
     setDismissed(true)
   }
 
-  const handleDismiss = async () => {
-    const newCount = initialDismissCount + 1
-    await supabase
-      .from('profiles')
-      .update({
-        opt_in_dismiss_count: newCount,
-        opt_in_prompted_at: new Date().toISOString(),
-      })
-      .eq('user_id', userId)
+  const handleDismiss = () => {
+    try {
+      // Defer for 7 days via localStorage (no DB call needed)
+      localStorage.setItem(DISMISS_KEY, String(Date.now() + 7 * 24 * 60 * 60 * 1000))
+    } catch {}
     setDismissed(true)
   }
 

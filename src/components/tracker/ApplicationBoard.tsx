@@ -87,7 +87,6 @@ export function ApplicationBoard({ initialApplications, resumes }: ApplicationBo
         setApplications(prev =>
           prev.map(a => a.id === editingApp.id ? { ...application, resume_name: resumeName } : a)
         )
-        setToast({ message: 'Application updated', type: 'success' })
       } else {
         // Create new
         const res = await fetch('/api/applications', {
@@ -103,10 +102,9 @@ export function ApplicationBoard({ initialApplications, resumes }: ApplicationBo
           : null
 
         setApplications(prev => [{ ...application, resume_name: resumeName }, ...prev])
-        setToast({ message: 'Application logged', type: 'success' })
       }
-    } catch {
-      setToast({ message: 'Something went wrong', type: 'error' })
+    } catch (err) {
+      throw err
     }
   }
 
@@ -116,8 +114,8 @@ export function ApplicationBoard({ initialApplications, resumes }: ApplicationBo
       if (!res.ok) throw new Error('Failed to delete')
       setApplications(prev => prev.filter(a => a.id !== id))
       setToast({ message: 'Application deleted', type: 'success' })
-    } catch {
-      setToast({ message: 'Failed to delete', type: 'error' })
+    } catch (err) {
+      throw err
     }
   }
 

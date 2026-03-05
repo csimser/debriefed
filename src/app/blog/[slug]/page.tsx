@@ -2,9 +2,11 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
 import { getPostBySlug, getAllPosts, getRelatedPosts, CATEGORY_LABELS } from '@/lib/mdx'
 import { PostCard } from '@/components/blog/PostCard'
 import { mdxComponents } from '@/components/blog/MdxComponents'
+import { BlogPostTracker } from '@/components/blog/BlogPostTracker'
 import { MarketingNav } from '@/components/layout/MarketingNav'
 
 interface Props {
@@ -68,6 +70,7 @@ export default async function BlogPostPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <div className="min-h-screen bg-bg-primary flex flex-col">
         <MarketingNav />
+        <BlogPostTracker slug={post.slug} category={post.category} />
 
         <main>
           {/* Post header */}
@@ -113,8 +116,8 @@ export default async function BlogPostPage({ params }: Props) {
               prose-li:text-text-muted
               prose-blockquote:border-l-gold prose-blockquote:bg-gold-dim prose-blockquote:text-text-muted
               prose-code:text-gold prose-code:bg-bg-secondary prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono
-              prose-hr:border-border">
-              <MDXRemote source={post.content} components={mdxComponents} />
+              prose-hr:border-border prose-table:w-full prose-thead:border-b prose-thead:border-border prose-th:text-text prose-th:font-heading prose-th:uppercase prose-th:tracking-wider prose-th:text-xs prose-th:py-3 prose-th:px-4 prose-th:text-left prose-td:text-text-muted prose-td:py-3 prose-td:px-4 prose-td:border-b prose-td:border-border">
+              <MDXRemote source={post.content} components={mdxComponents} options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }} />
             </article>
 
             {/* CTA block */}

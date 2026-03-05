@@ -1,5 +1,6 @@
 import type { MDXComponents } from 'mdx/types'
 import Link from 'next/link'
+import { TrackedPostCTA } from './TrackedPostCTA'
 
 // Callout boxes
 function Callout({
@@ -77,7 +78,7 @@ function StatBlock({
   )
 }
 
-// CTA button inside post
+// CTA button inside post (server-side fallback, used if TrackedPostCTA import fails)
 function PostCTA({
   href,
   children,
@@ -101,7 +102,7 @@ export const mdxComponents: MDXComponents = {
   Callout,
   TranslationExample,
   StatBlock,
-  PostCTA,
+  PostCTA: TrackedPostCTA,
   // Style table
   table: (props) => (
     <div className="overflow-x-auto my-6 not-prose">

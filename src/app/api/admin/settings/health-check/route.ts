@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { checkOnetHealth } from '@/lib/onet-api'
 import { verifyAdmin } from '@/lib/admin-auth'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // Check Anthropic API status
 async function checkAnthropicStatus(): Promise<{ status: string; latency?: number }> {
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save to admin_settings
+    const supabase = createAdminClient()
     await supabase
       .from('admin_settings')
       .upsert({

@@ -5,7 +5,7 @@
  * If real DB only has short values, the column MIGHT be VARCHAR (risky).
  */
 const SUPABASE_URL = 'https://zsnncxizrtcmzcuizexk.supabase.co';
-const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpzbm5jeGl6cnRjbXpjdWl6ZXhrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2ODU4NDQ4MCwiZXhwIjoyMDg0MTYwNDgwfQ.lKrMhxRzYDwOXgQaNRsUEzvjJRrPwq6BizxhcW7sqgk';
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Columns we need to verify: table.column → our max length in seed data
 const CHECKS = [

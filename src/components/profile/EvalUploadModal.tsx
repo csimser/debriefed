@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getUserTier, isPaidTier } from '@/lib/tier-utils'
+import { trackEvent } from '@/lib/analytics'
 import { UpgradeLink } from '@/components/modals/UpgradeModal'
 
 interface ExtractedBullet {
@@ -32,14 +33,14 @@ interface EvalUploadModalProps {
 }
 
 const EVAL_TYPES = [
-  { value: 'fitrep', label: 'FITREP (Navy Officer)' },
-  { value: 'chiefeval', label: 'CHIEFEVAL (Navy E7-E9)' },
-  { value: 'eval', label: 'EVAL (Navy E1-E6)' },
-  { value: 'ncoer', label: 'NCOER (Army NCO)' },
-  { value: 'oer', label: 'OER (Army Officer)' },
-  { value: 'epr', label: 'EPR (Air Force Enlisted)' },
-  { value: 'opr', label: 'OPR (Air Force Officer)' },
-  { value: 'other', label: 'Other' },
+  { value: 'fitrep', label: 'FITREP — Navy Officer' },
+  { value: 'chiefeval', label: 'CHIEFEVAL — Navy Chief (E7–E9)' },
+  { value: 'eval', label: 'EVAL — Navy Enlisted (E1–E6)' },
+  { value: 'ncoer', label: 'NCOER — Army NCO' },
+  { value: 'oer', label: 'OER — Army Officer' },
+  { value: 'epr', label: 'EPR — Air Force Enlisted' },
+  { value: 'opr', label: 'OPR — Air Force Officer' },
+  { value: 'other', label: 'Other Evaluation' },
 ]
 
 export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, userId, experiences = [], defaultExperienceId, userPlan, evalRemaining, evalLimit }: EvalUploadModalProps) {
@@ -136,6 +137,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
       experienceId: matchedExp,
     }))
     setBulletItems(bullets)
+    trackEvent('feature_used', { feature: 'eval_parsed', bullet_count: bullets.length })
     setEvalPeriod(data.evalPeriod || { startDate: null, endDate: null })
     setDetectedJobTitle(data.jobTitle || null)
     setStep('review')

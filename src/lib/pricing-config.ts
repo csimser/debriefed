@@ -70,8 +70,8 @@ export const PRICING_TIERS: Record<TierId, PricingTier> = {
       resume_imports: 3,
       eval_uploads: 1,
       bullet_translations: 999,
-      job_match_analysis: 1,
-      cover_letters: 1,
+      job_match_analysis: 3,
+      cover_letters: 3,
       ai_summaries: 1,
       linkedin_headline: 1,
       linkedin_summary: 0,
@@ -191,8 +191,8 @@ export const DAILY_RATE_LIMITS: Record<'free' | 'core' | 'full', TierLimits> = {
     resume_imports: 3,
     eval_uploads: 1,
     bullet_translations: 20,
-    job_match_analysis: 1,
-    cover_letters: 1,
+    job_match_analysis: 3,
+    cover_letters: 3,
     ai_summaries: 1,
     linkedin_headline: 1,
     linkedin_summary: 0,
@@ -234,12 +234,6 @@ export const DAILY_RATE_LIMITS: Record<'free' | 'core' | 'full', TierLimits> = {
     cover_letter_exports: 999,
   },
 };
-
-// Admin emails that bypass all limits
-export const ADMIN_BYPASS_EMAILS = [
-  'admin@debriefed.io',
-  'thecoinlockersales@gmail.com',
-];
 
 // Feature display names for UI
 export const FEATURE_DISPLAY_NAMES: Record<FeatureName, string> = {

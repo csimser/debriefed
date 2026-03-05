@@ -69,7 +69,8 @@
       "Bash(npx next dev -p 3001 2>&1 | head -15)",
       "Bash(npx next dev -p 3001 2>&1 | head -5)",
       "WebSearch",
-      "WebFetch(domain:empireresume.com)"
+      "WebFetch(domain:empireresume.com)",
+      "WebFetch(domain:localhost)"
     ]
   }
 }

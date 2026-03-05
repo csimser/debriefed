@@ -687,7 +687,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             </select>
           </div>
           <div>
-            <label className={labelClass}>ZIP Code</label>
+            <label className={labelClass}>ZIP Code <span className="text-text-dim font-normal">(Optional)</span></label>
             <input
               type="text"
               name="zip-code"
@@ -699,7 +699,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             />
           </div>
           <div>
-            <label className={labelClass}>LinkedIn URL</label>
+            <label className={labelClass}>LinkedIn URL <span className="text-text-dim font-normal">(Optional)</span></label>
             <input
               type="url"
               name="linkedin-url"
@@ -776,7 +776,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             />
           </div>
           <div>
-            <label className={labelClass}>Years of Service</label>
+            <label className={labelClass}>Years of Service <span className="text-text-dim font-normal">(Optional)</span></label>
             <input
               type="number"
               name="years-of-service"
@@ -790,7 +790,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             />
           </div>
           <div>
-            <label className={labelClass}>Security Clearance</label>
+            <label className={labelClass}>Security Clearance <span className="text-text-dim font-normal">(Optional)</span></label>
             <select
               value={profile.clearance}
               onChange={(e) => updateField('clearance', e.target.value)}
@@ -803,7 +803,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
             </select>
           </div>
           <div>
-            <label className={labelClass}>EAS / EAOS</label>
+            <label className={labelClass}>EAS / EAOS <span className="text-text-dim font-normal">(Optional)</span></label>
             <input
               type="date"
               name="eas-date"
@@ -861,7 +861,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Target Industry</label>
+            <label className={labelClass}>Target Industry <span className="text-text-dim font-normal">(Optional)</span></label>
             <input
               type="text"
               name="target-industry"

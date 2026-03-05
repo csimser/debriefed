@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { getUserTier, isPaidTier } from '@/lib/tier-utils'
+import { trackEvent } from '@/lib/analytics'
 import { TEMPLATES, TemplateId } from '@/lib/templates'
 import { ResumePreview } from '@/components/resume/ResumePreview'
 import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
@@ -568,28 +569,6 @@ export function JobMatchWorkspace({
       // Non-blocking — continue to AI analysis even if dictionary fails
     }
 
-    // Free tier: dictionary-only analysis, skip AI
-    if (!hasPaidAccess) {
-      // Initialize tailoredResume so free tier can apply bullet translations
-      if (selectedResume) {
-        setTailoredResume({
-          content: JSON.parse(JSON.stringify(selectedResume.content)),
-          appliedBullets: new Set(),
-          addedSkills: [],
-          removedSkills: [],
-          excludedBullets: new Set(),
-        })
-      }
-      // Track dictionary-only job match usage
-      fetch('/api/track-usage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feature: 'job_match_analysis' }),
-      }).catch(() => {})
-      setAnalyzing(false)
-      return
-    }
-
     if (remaining <= 0) {
       setError('You have reached your analysis limit. Upgrade for more.')
       setAnalyzing(false)
@@ -627,6 +606,7 @@ export function JobMatchWorkspace({
       } else {
         setAnalysis(data.analysis)
         setOriginalScore(data.analysis.overallScore)
+        trackEvent('feature_used', { feature: 'job_match', score: data.analysis.overallScore })
         setTailoredResume({
           content: JSON.parse(JSON.stringify(selectedResume.content)),
           appliedBullets: new Set(),
@@ -1393,19 +1373,21 @@ export function JobMatchWorkspace({
       const jobTitle = jobData.title?.replace(/[^a-zA-Z0-9\s]/g, '').trim() || 'Tailored'
       const newName = `${selectedResume.name} - ${jobTitle}`
 
-      const supabase = createClient()
-      const { error: insertError } = await supabase
-        .from('resumes')
-        .insert({
-          user_id: userId,
+      const res = await fetch('/api/resume/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           name: newName,
-          title: newName,
-          content: contentWithExclusions,
-          resume_type: 'private',
           template: selectedTemplate,
-        })
+          resume_type: 'private',
+          content: contentWithExclusions,
+        }),
+      })
 
-      if (insertError) throw insertError
+      const result = await res.json()
+      if (!res.ok) {
+        throw new Error(result.error || 'Failed to save resume')
+      }
 
       alert(`Saved as "${newName}". View it on your Resumes page.`)
     } catch (err: any) {
@@ -1564,9 +1546,12 @@ export function JobMatchWorkspace({
             rows={12}
             value={jobData.description}
             onChange={(e) => setJobData({ ...jobData, description: e.target.value })}
-            placeholder="Paste the full job description here — requirements, qualifications, responsibilities. The more detail, the better."
+            placeholder="Paste the full job posting here — include requirements, qualifications, and responsibilities. The more detail you include, the better your match analysis will be."
             className="w-full min-h-[280px] bg-bg-secondary border border-border rounded-lg px-4 py-3 text-text placeholder:text-text-dim resize-y focus:border-gold focus:ring-1 focus:ring-gold/25 transition-colors text-sm"
           />
+          {jobData.description.length === 0 && (
+            <p className="text-xs text-text-dim mt-2">Tip: Include the full posting for best results (minimum 100 characters)</p>
+          )}
           {jobData.description.length > 0 && jobData.description.length < 100 && (
             <p className="text-xs text-status-amber mt-2">Keep pasting — need at least 100 characters for analysis</p>
           )}
@@ -1594,7 +1579,7 @@ export function JobMatchWorkspace({
         </Card>
 
         {/* ═══ Deep Analysis button — secondary, costs a credit ═══ */}
-        {dictResult && hasPaidAccess && !analysis && (
+        {dictResult && remaining > 0 && !analysis && (
           <div className="flex items-center justify-center gap-4">
             <Button
               variant="secondary"
@@ -2249,8 +2234,8 @@ export function JobMatchWorkspace({
               </>
             )}
 
-            {/* Blurred AI Preview (free users only, no AI analysis) */}
-            {dictResult && !hasPaidAccess && !analyzing && !analysis && (
+            {/* Blurred AI Preview (free users with no credits remaining) */}
+            {dictResult && !hasPaidAccess && !analyzing && !analysis && remaining <= 0 && (
               <div className="relative">
                 {/* Blurred fake AI analysis */}
                 <Card className="p-6 select-none pointer-events-none" aria-hidden="true">

@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debriefed — Animated Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DEBRIEFED — 30-SECOND CINEMATIC AD DEMO
+   Pure CSS animation · No JS libraries · Self-contained
+   ============================================================ */
+
+/* --- Reset & Base --- */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:        #0a0c0f;
+  --card:      #1a1f2a;
+  --card-light:#232a38;
+  --gold:      #d4a84b;
+  --gold-dim:  rgba(212,168,75,0.12);
+  --gold-glow: rgba(212,168,75,0.35);
+  --text:      #e8eaed;
+  --text-muted:#8b919e;
+  --text-dim:  #5a6070;
+  --red:       #ef4444;
+  --red-dim:   rgba(239,68,68,0.15);
+  --green:     #22c55e;
+  --green-dim: rgba(34,197,94,0.15);
+  --border:    #2a3040;
+  --font-h:    'Rajdhani', sans-serif;
+  --font-b:    'Inter', -apple-system, sans-serif;
+  --dur:       30s;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  font-family: var(--font-b);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Canvas --- */
+.canvas {
+  position: relative;
+  width: 1080px; height: 1080px;
+  margin: 0 auto;
+  background: var(--bg);
+  overflow: hidden;
+  animation: masterLoop var(--dur) linear infinite;
+}
+
+/* Widescreen variant class */
+.canvas.wide {
+  width: 1920px; height: 1080px;
+}
+
+/* Every animated element starts invisible */
+.canvas > * { opacity: 0; }
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+.abs-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+}
+.abs-full { position: absolute; inset: 0; }
+.flex-col-center {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+/* ============================================================
+   SCENE 1 — COLD OPEN (0.0s – 1.5s)
+   ============================================================ */
+.s1-wordmark {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -55%);
+  font-family: var(--font-h);
+  font-weight: 700; font-size: 72px;
+  letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--gold);
+  animation: fadeInPlace 0.8s ease-out 0.2s forwards, fadeOutPlace 0.3s ease-in 1.3s forwards;
+}
+.s1-tagline {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, 30px);
+  font-family: var(--font-h);
+  font-weight: 500; font-size: 20px;
+  letter-spacing: 0.5em; text-transform: uppercase;
+  color: var(--text-muted);
+  animation: fadeInPlace 0.6s ease-out 0.7s forwards, fadeOutPlace 0.3s ease-in 1.3s forwards;
+}
+/* Gold glow behind wordmark */
+.s1-glow {
+  position: absolute; top: 50%; left: 50%;
+  width: 500px; height: 120px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse, var(--gold-glow) 0%, transparent 70%);
+  filter: blur(40px);
+  animation: fadeInPlace 1s ease-out 0.3s forwards, fadeOutPlace 0.4s ease-in 1.3s forwards;
+}
+
+/* ============================================================
+   SCENE 2 — THE PROBLEM (1.5s – 3.0s)
+   ============================================================ */
+.s2-card {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 820px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 48px 56px;
+  animation: fadeScaleIn 0.5s ease-out 1.5s forwards, fadeOutPlace 0.3s ease-in 4.3s forwards;
+}
+.s2-label {
+  font-family: var(--font-h);
+  font-size: 13px; font-weight: 600;
+  letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 20px;
+  opacity: 1;
+}
+.s2-miltext {
+  font-family: var(--font-b);
+  font-size: 20px; font-weight: 400;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.6;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid var(--gold);
+  width: 0;
+  max-width: 100%;
+  animation: typewriterMil 1.8s steps(76,end) 1.8s forwards, blinkCursor 0.5s step-end 1.8s 4;
+}
+
+/* ============================================================
+   SCENE 3 — THE PAIN (3.0s – 4.5s)
+   ============================================================ */
+.s3-xicon {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-460px, -65px);
+  width: 36px; height: 36px;
+  animation: fadeInPlace 0.2s ease-out 3.5s forwards,
+             pulseOnce 0.4s ease-out 3.6s forwards,
+             fadeOutPlace 0.3s ease-in 4.3s forwards;
+}
+.s3-xicon svg { width: 36px; height: 36px; }
+.s3-xicon circle { fill: var(--red-dim); }
+.s3-xicon line { stroke: var(--red); stroke-width: 2.5; stroke-linecap: round; }
+
+.s3-paintext {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, 60px);
+  font-family: var(--font-b);
+  font-size: 15px; color: var(--red);
+  letter-spacing: 0.05em;
+  opacity: 0;
+  animation: fadeInPlace 0.4s ease-out 3.8s forwards, fadeOutPlace 0.3s ease-in 4.3s forwards;
+}
+
+/* Pulse keyframe fix */
+@keyframes pulseOnce {
+  0%   { transform: translate(-460px, -65px) scale(1); }
+  50%  { transform: translate(-460px, -65px) scale(1.3); }
+  100% { transform: translate(-460px, -65px) scale(1); }
+}
+
+/* ============================================================
+   SCENE 4 — DEBRIEFED ACTIVATES (4.5s – 6.0s)
+   ============================================================ */
+.s4-container {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 820px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 48px 56px;
+  animation: fadeScaleIn 0.3s ease-out 4.5s forwards, fadeOutPlace 0.3s ease-in 9.8s forwards;
+}
+.s4-logo {
+  position: absolute; top: -52px; left: 0;
+  display: flex; align-items: center; gap: 12px;
+  animation: fadeInPlace 0.3s ease-out 4.5s forwards, fadeOutPlace 0.3s ease-in 9.8s forwards;
+}
+.s4-logo-box {
+  width: 36px; height: 36px;
+  background: var(--gold);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-h); font-weight: 700;
+  font-size: 22px; color: var(--bg);
+}
+.s4-logo-text {
+  font-family: var(--font-h); font-weight: 700;
+  font-size: 16px; color: var(--gold);
+  letter-spacing: 0.25em; text-transform: uppercase;
+}
+.s4-miltext {
+  font-family: var(--font-b);
+  font-size: 20px; font-weight: 400;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.6;
+  transition: color 0.6s;
+  animation: ghostText 0.5s ease-out 6.0s forwards;
+}
+
+/* Gold scan bar */
+.s4-scanbar {
+  position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%;
+  background: linear-gradient(180deg, transparent, var(--gold), var(--gold), transparent);
+  box-shadow: 0 0 20px var(--gold-glow), 0 0 60px var(--gold-dim);
+  border-radius: 2px;
+  opacity: 0;
+  animation: fadeInPlace 0.1s ease-out 4.8s forwards, scanAcross 1.2s ease-in-out 4.8s forwards;
+}
+/* Sound-wave pulses on the scan bar */
+.s4-scanbar::before, .s4-scanbar::after {
+  content: '';
+  position: absolute; top: 50%;
+  width: 30px; height: 80%;
+  transform: translateY(-50%);
+  border-radius: 50%;
+}
+.s4-scanbar::before {
+  left: -15px;
+  background: radial-gradient(ellipse, var(--gold-glow) 0%, transparent 70%);
+  animation: scanPulse 0.3s ease-out 4.8s 4;
+}
+.s4-scanbar::after {
+  left: 4px;
+  background: radial-gradient(ellipse, var(--gold-glow) 0%, transparent 70%);
+  animation: scanPulse 0.3s ease-out 4.95s 4;
+}
+
+/* ============================================================
+   SCENE 5 — TRANSLATION REVEALED (6.0s – 9.0s)
+   ============================================================ */
+.s5-civtext {
+  font-family: var(--font-b);
+  font-size: 21px; font-weight: 500;
+  color: var(--text);
+  line-height: 1.6;
+  margin-top: 24px;
+  overflow: hidden;
+  white-space: normal;
+  border-left: 3px solid var(--gold);
+  padding-left: 20px;
+  opacity: 0;
+  animation: fadeSlideUp 0.6s ease-out 6.3s forwards;
+}
+
+/* ============================================================
+   SCENE 6 — VICTORY MOMENT (9.0s – 10.5s)
+   ============================================================ */
+.s6-container {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+  animation: fadeScaleIn 0.3s ease-out 9.2s forwards, fadeOutPlace 0.4s ease-in 10.2s forwards;
+}
+.s6-check {
+  width: 80px; height: 80px; margin: 0 auto 20px;
+}
+.s6-check circle {
+  fill: none; stroke: var(--green); stroke-width: 2.5;
+  stroke-dasharray: 220; stroke-dashoffset: 220;
+  animation: drawCircle 0.5s ease-out 9.3s forwards;
+}
+.s6-check polyline {
+  fill: none; stroke: var(--green); stroke-width: 3;
+  stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 40; stroke-dashoffset: 40;
+  animation: drawCheck 0.3s ease-out 9.7s forwards;
+}
+.s6-stamp {
+  font-family: var(--font-h);
+  font-weight: 700; font-size: 36px;
+  letter-spacing: 0.4em; text-transform: uppercase;
+  color: var(--green);
+  border: 3px solid var(--green);
+  padding: 8px 32px;
+  display: inline-block;
+  transform: scale(1.3) rotate(-3deg);
+  opacity: 0;
+  animation: stampIn 0.4s cubic-bezier(0.34,1.56,0.64,1) 9.5s forwards;
+}
+
+/* Gold particles */
+.s6-particle {
+  position: absolute; top: 50%; left: 50%;
+  width: 8px; height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  opacity: 0;
+}
+.s6-particle:nth-child(3) { animation: particleBurst 0.7s ease-out 9.6s forwards; --px: -60px; --py: -80px; }
+.s6-particle:nth-child(4) { animation: particleBurst 0.7s ease-out 9.65s forwards; --px: 70px; --py: -60px; }
+.s6-particle:nth-child(5) { animation: particleBurst 0.7s ease-out 9.7s forwards; --px: 90px; --py: 20px; }
+.s6-particle:nth-child(6) { animation: particleBurst 0.7s ease-out 9.75s forwards; --px: -80px; --py: 40px; }
+.s6-particle:nth-child(7) { animation: particleBurst 0.7s ease-out 9.68s forwards; --px: 40px; --py: 70px; }
+.s6-particle:nth-child(8) { animation: particleBurst 0.7s ease-out 9.72s forwards; --px: -50px; --py: -30px; }
+.s6-particle:nth-child(9) { animation: particleBurst 0.7s ease-out 9.63s forwards; --px: 20px; --py: -90px; }
+.s6-particle:nth-child(10){ animation: particleBurst 0.7s ease-out 9.78s forwards; --px: -30px; --py: 80px; }
+
+/* ============================================================
+   SCENE 7 — FEATURE SHOWCASE (10.5s – 14.0s)
+   ============================================================ */
+.s7-cards {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  display: flex; gap: 28px;
+  animation: fadeOutPlace 0.4s ease-in 13.6s forwards;
+}
+.s7-cards > * { opacity: 0; }
+.s7-card {
+  width: 260px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 36px 28px;
+  text-align: center;
+}
+.s7-card:nth-child(1) { animation: cardSlideIn 0.6s ease-out 10.7s forwards; }
+.s7-card:nth-child(2) { animation: cardSlideIn 0.6s ease-out 11.5s forwards; }
+.s7-card:nth-child(3) { animation: cardSlideIn 0.6s ease-out 12.3s forwards; }
+.s7-card-icon {
+  width: 56px; height: 56px;
+  background: var(--gold-dim);
+  border-radius: 12px;
+  margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+}
+.s7-card-title {
+  font-family: var(--font-h);
+  font-weight: 700; font-size: 20px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text); margin-bottom: 8px;
+}
+.s7-card-desc {
+  font-size: 14px; color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ============================================================
+   SCENE 8 — SOCIAL PROOF (14.0s – 17.0s)
+   ============================================================ */
+.s8-container {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+  animation: fadeInPlace 0.4s ease-out 14.2s forwards, fadeOutPlace 0.4s ease-in 16.6s forwards;
+}
+.s8-number {
+  font-family: var(--font-h);
+  font-weight: 700; font-size: 120px;
+  color: var(--gold);
+  line-height: 1;
+}
+.s8-label {
+  font-family: var(--font-b);
+  font-size: 22px; color: var(--text-muted);
+  margin-top: 8px; margin-bottom: 32px;
+}
+.s8-stars {
+  display: flex; gap: 8px; justify-content: center;
+}
+.s8-star {
+  font-size: 32px;
+  opacity: 0;
+  filter: grayscale(1);
+}
+.s8-star:nth-child(1) { animation: starFill 0.3s ease-out 15.0s forwards; }
+.s8-star:nth-child(2) { animation: starFill 0.3s ease-out 15.2s forwards; }
+.s8-star:nth-child(3) { animation: starFill 0.3s ease-out 15.4s forwards; }
+.s8-star:nth-child(4) { animation: starFill 0.3s ease-out 15.6s forwards; }
+.s8-star:nth-child(5) { animation: starFill 0.3s ease-out 15.8s forwards; }
+
+/* ============================================================
+   SCENE 9 — PRICING MOMENT (17.0s – 20.0s)
+   ============================================================ */
+.s9-container {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  display: flex; align-items: center; gap: 0;
+  width: 800px;
+  animation: fadeInPlace 0.4s ease-out 17.0s forwards, fadeOutPlace 0.3s ease-in 19.6s forwards;
+}
+.s9-left, .s9-right {
+  flex: 1;
+  padding: 40px;
+  text-align: center;
+}
+.s9-left {
+  background: var(--card);
+  border-radius: 10px 0 0 10px;
+  border: 1px solid var(--border);
+  border-right: none;
+}
+.s9-right {
+  background: linear-gradient(135deg, var(--card) 0%, rgba(212,168,75,0.08) 100%);
+  border-radius: 0 10px 10px 0;
+  border: 1px solid var(--gold-glow);
+}
+.s9-label-old {
+  font-family: var(--font-h);
+  font-size: 14px; font-weight: 600;
+  letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+}
+.s9-label-new {
+  font-family: var(--font-h);
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.s9-price-old {
+  font-family: var(--font-h);
+  font-size: 64px; font-weight: 700;
+  color: var(--text-dim);
+  text-decoration: line-through;
+  text-decoration-color: var(--red);
+  text-decoration-thickness: 3px;
+  position: relative;
+}
+.s9-price-new {
+  font-family: var(--font-h);
+  font-size: 72px; font-weight: 700;
+  color: var(--gold);
+}
+.s9-divider {
+  width: 50px; height: 50px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-dim); font-size: 20px;
+  z-index: 2; margin: 0 -25px;
+  flex-shrink: 0;
+}
+.s9-bottom {
+  font-family: var(--font-h);
+  font-size: 18px; font-weight: 600;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 16px;
+}
+.s9-bottom-full {
+  position: absolute; bottom: -50px; left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-h);
+  font-size: 20px; font-weight: 600;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   SCENE 10 — SCREEN RECORDING MOCKUP (20.0s – 24.0s)
+   ============================================================ */
+.s10-browser {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 800px; height: 520px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  animation: fadeScaleIn 0.4s ease-out 20.0s forwards, fadeOutPlace 0.4s ease-in 23.6s forwards;
+}
+.s10-chrome {
+  height: 40px;
+  background: #12151c;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 16px; gap: 8px;
+}
+.s10-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.s10-dot:nth-child(1) { background: #ef4444; }
+.s10-dot:nth-child(2) { background: #f59e0b; }
+.s10-dot:nth-child(3) { background: #22c55e; }
+.s10-urlbar {
+  flex: 1; height: 24px; margin-left: 16px;
+  background: var(--bg); border-radius: 4px;
+  display: flex; align-items: center;
+  padding: 0 12px;
+  font-size: 12px; color: var(--text-dim);
+  font-family: var(--font-b);
+}
+.s10-body {
+  display: flex; height: calc(100% - 40px);
+}
+/* Left panel — form */
+.s10-form {
+  width: 320px;
+  background: #0e1117;
+  border-right: 1px solid var(--border);
+  padding: 24px;
+  overflow: hidden;
+}
+.s10-form-title {
+  font-family: var(--font-h);
+  font-size: 14px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+.s10-field {
+  margin-bottom: 14px;
+}
+.s10-field-label {
+  font-size: 10px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.15em;
+  margin-bottom: 4px;
+  font-family: var(--font-h); font-weight: 600;
+}
+.s10-field-input {
+  height: 32px; width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.s10-field-fill {
+  height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--gold-dim), transparent);
+  border-right: 2px solid var(--gold);
+  animation: fieldFill 0.8s ease-out forwards;
+}
+.s10-field:nth-child(2) .s10-field-fill { animation-delay: 20.6s; }
+.s10-field:nth-child(3) .s10-field-fill { animation-delay: 21.0s; }
+.s10-field:nth-child(4) .s10-field-fill { animation-delay: 21.4s; }
+.s10-field:nth-child(5) .s10-field-fill { animation-delay: 21.8s; }
+.s10-field:nth-child(6) .s10-field-fill { animation-delay: 22.2s; }
+
+/* Right panel — resume preview */
+.s10-preview {
+  flex: 1;
+  background: #f5f5f0;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.s10-resume-header {
+  border-bottom: 2px solid #1a1f2a;
+  padding-bottom: 12px; margin-bottom: 16px;
+}
+.s10-resume-name {
+  font-family: var(--font-h);
+  font-size: 22px; font-weight: 700;
+  color: #1a1f2a;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.s10-resume-contact {
+  font-size: 10px; color: #6b7280;
+  margin-top: 4px;
+}
+.s10-resume-header {
+  opacity: 0;
+  animation: fadeSlideUp 0.4s ease-out 20.6s forwards;
+}
+.s10-resume-section {
+  margin-bottom: 14px;
+  opacity: 0;
+}
+.s10-resume-section:nth-child(2) { animation: fadeSlideUp 0.4s ease-out 21.0s forwards; }
+.s10-resume-section:nth-child(3) { animation: fadeSlideUp 0.4s ease-out 21.5s forwards; }
+.s10-resume-section:nth-child(4) { animation: fadeSlideUp 0.4s ease-out 22.0s forwards; }
+.s10-resume-section:nth-child(5) { animation: fadeSlideUp 0.4s ease-out 22.5s forwards; }
+
+.s10-section-title {
+  font-family: var(--font-h);
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.2em;
+  color: #1a1f2a;
+  border-bottom: 1px solid #d1d5db;
+  padding-bottom: 4px; margin-bottom: 8px;
+}
+.s10-section-line {
+  height: 8px; margin-bottom: 6px;
+  border-radius: 2px;
+  background: #d1d5db;
+}
+.s10-section-line.short { width: 60%; }
+.s10-section-line.med   { width: 80%; }
+.s10-section-line.long  { width: 95%; }
+.s10-section-line.gold-fill {
+  background: linear-gradient(90deg, var(--gold) 0%, #e8d5a0 100%);
+  opacity: 0.5;
+}
+
+/* ============================================================
+   SCENE 11 — CTA BUILD (24.0s – 27.0s)
+   ============================================================ */
+.s11-container {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+  animation: fadeInPlace 0.5s ease-out 24.0s forwards, fadeOutPlace 0.5s ease-in 26.6s forwards;
+}
+.s11-headline {
+  font-family: var(--font-h);
+  font-weight: 700; font-size: 56px;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 28px;
+}
+.s11-url {
+  font-family: var(--font-b);
+  font-size: 28px; font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid var(--gold);
+  display: inline-block;
+  width: 0;
+  animation: typewriterUrl 1.0s steps(18) 24.6s forwards, blinkCursor 0.5s step-end 24.6s 4;
+}
+.s11-subtext {
+  font-family: var(--font-b);
+  font-size: 18px; color: var(--text-muted);
+  margin-top: 24px;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  animation: fadeInPlace 0.5s ease-out 25.4s forwards;
+}
+
+/* ============================================================
+   SCENE 12 — LOGO HOLD + LOOP (27.0s – 30.0s)
+   ============================================================ */
+.s12-wordmark {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -55%);
+  font-family: var(--font-h);
+  font-weight: 700; font-size: 72px;
+  letter-spacing: 0.35em; text-transform: uppercase;
+  color: var(--gold);
+  animation: fadeInPlace 0.5s ease-out 27.0s forwards, fadeOutPlace 0.8s ease-in 29.2s forwards;
+}
+.s12-tagline {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, 30px);
+  font-family: var(--font-h);
+  font-weight: 500; font-size: 20px;
+  letter-spacing: 0.5em; text-transform: uppercase;
+  color: var(--text-muted);
+  animation: fadeInPlace 0.5s ease-out 27.3s forwards, fadeOutPlace 0.8s ease-in 29.2s forwards;
+}
+.s12-glow {
+  position: absolute; top: 50%; left: 50%;
+  width: 500px; height: 120px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse, var(--gold-glow) 0%, transparent 70%);
+  filter: blur(40px);
+  animation: fadeInPlace 0.6s ease-out 27.0s forwards, fadeOutPlace 0.8s ease-in 29.2s forwards;
+}
+
+/* ============================================================
+   KEYFRAMES
+   ============================================================ */
+
+/* Whole-canvas reset for loop */
+@keyframes masterLoop {
+  0%, 100% { opacity: 1; }
+}
+
+/* Fade in (stays in place) */
+@keyframes fadeInPlace {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Fade out */
+@keyframes fadeOutPlace {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Fade + scale */
+@keyframes fadeScaleIn {
+  from { opacity: 0; transform: translate(-50%,-50%) scale(0.95); }
+  to   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+}
+
+/* Fade + slide up */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Typewriter — military text (76 chars at ~10px per char avg for Inter 20px) */
+@keyframes typewriterMil {
+  from { width: 0; }
+  to   { width: 710px; }
+}
+
+@keyframes typewriterUrl {
+  from { width: 0; }
+  to   { width: 10em; }
+}
+
+@keyframes blinkCursor {
+  50% { border-color: transparent; }
+}
+
+/* Ghost the military text */
+@keyframes ghostText {
+  to { color: rgba(255,255,255,0.15); }
+}
+
+/* Scan bar sweeps left → right */
+@keyframes scanAcross {
+  from { left: 0; opacity: 1; }
+  to   { left: 100%; opacity: 0; }
+}
+
+/* Scan bar pulse */
+@keyframes scanPulse {
+  0%   { opacity: 0; transform: translateY(-50%) scaleX(1); }
+  50%  { opacity: 1; transform: translateY(-50%) scaleX(1.5); }
+  100% { opacity: 0; transform: translateY(-50%) scaleX(1); }
+}
+
+/* X icon pulse — see inline definition above */
+
+/* Checkmark circle draw */
+@keyframes drawCircle {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes drawCheck {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Stamp in */
+@keyframes stampIn {
+  0%   { transform: scale(1.3) rotate(-5deg); opacity: 0; }
+  60%  { transform: scale(1.05) rotate(1deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Gold particle burst */
+@keyframes particleBurst {
+  0%   { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--px), var(--py)) scale(0.3); }
+}
+
+/* Feature cards slide in */
+@keyframes cardSlideIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Star fill */
+@keyframes starFill {
+  from { opacity: 0; filter: grayscale(1); transform: scale(0.5); }
+  to   { opacity: 1; filter: grayscale(0); transform: scale(1); }
+}
+
+/* Form field fill */
+@keyframes fieldFill {
+  from { width: 0; }
+  to   { width: 75%; }
+}
+
+/* ============================================================
+   REDUCED MOTION — static fallback
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+  }
+  /* Show a static summary instead */
+  .canvas > * { opacity: 1 !important; }
+  .reduced-motion-notice {
+    display: flex !important;
+  }
+  .canvas > *:not(.reduced-motion-notice) {
+    display: none !important;
+  }
+}
+
+.reduced-motion-notice {
+  display: none;
+  position: absolute; inset: 0;
+  flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; gap: 24px;
+  opacity: 1 !important;
+}
+.reduced-motion-notice h1 {
+  font-family: var(--font-h);
+  font-size: 52px; font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.3em; text-transform: uppercase;
+}
+.reduced-motion-notice p {
+  font-family: var(--font-h);
+  font-size: 18px; color: var(--text-muted);
+  letter-spacing: 0.4em; text-transform: uppercase;
+}
+.reduced-motion-notice .cta {
+  font-family: var(--font-b);
+  font-size: 16px; color: var(--text);
+  margin-top: 16px;
+}
+
+/* ============================================================
+   VERSION SELECTOR (not part of the ad)
+   ============================================================ */
+.version-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: #12151c;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; padding: 10px 20px;
+  z-index: 999;
+  font-family: var(--font-h);
+}
+.version-bar button {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 6px 20px;
+  border-radius: 6px;
+  font-family: var(--font-h);
+  font-size: 13px; font-weight: 600;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.version-bar button:hover, .version-bar button.active {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.version-bar span {
+  font-size: 12px; color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+.canvas-wrap {
+  display: flex; align-items: center; justify-content: center;
+  min-height: calc(100vh - 45px);
+  padding-top: 45px;
+}
+</style>
+</head>
+<body>
+
+<!-- Version selector bar -->
+<div class="version-bar">
+  <span>FORMAT:</span>
+  <button class="active" onclick="setVersion('square')">1080 × 1080 (Square)</button>
+  <button onclick="setVersion('wide')">1920 × 1080 (Widescreen)</button>
+  <span style="margin-left:24px; color:var(--text-dim)">30s loop · pure CSS</span>
+</div>
+
+<div class="canvas-wrap">
+<div class="canvas" id="canvas">
+
+  <!-- ========== Reduced motion static fallback ========== -->
+  <div class="reduced-motion-notice">
+    <h1>Debriefed</h1>
+    <p>Your Service. Translated.</p>
+    <div class="cta">Military-to-civilian resume translation<br>getdebriefed.co</div>
+  </div>
+
+  <!-- ========== SCENE 1: Cold Open (0.0–1.5s) ========== -->
+  <div class="s1-glow"></div>
+  <div class="s1-wordmark">Debriefed</div>
+  <div class="s1-tagline">Your Service. Translated.</div>
+
+  <!-- Scene 1 fade out at 1.3s handled by animation -->
+
+  <!-- ========== SCENE 2: The Problem (1.5–3.0s) ========== -->
+  <div class="s2-card">
+    <div class="s2-label">Your evaluation says:</div>
+    <div class="s2-miltext">Served as NCOIC of 12-vehicle motor pool; conducted PMCS IAW TM 9-2320-272-10</div>
+  </div>
+
+  <!-- ========== SCENE 3: The Pain (3.0–4.5s) ========== -->
+  <div class="s3-xicon">
+    <svg viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="18"/>
+      <line x1="14" y1="14" x2="26" y2="26"/>
+      <line x1="26" y1="14" x2="14" y2="26"/>
+    </svg>
+  </div>
+  <div class="s3-paintext">Civilian hiring managers don't speak this language.</div>
+
+  <!-- ========== SCENE 4: Debriefed Activates (4.5–6.0s) ========== -->
+  <div class="s4-container">
+    <div class="s4-logo">
+      <div class="s4-logo-box">D</div>
+      <div class="s4-logo-text">Debriefed</div>
+    </div>
+    <div class="s4-miltext">Served as NCOIC of 12-vehicle motor pool; conducted PMCS IAW TM 9-2320-272-10</div>
+    <div class="s4-scanbar"></div>
+
+    <!-- ========== SCENE 5: Translation Revealed (6.0–9.0s) ========== -->
+    <div class="s5-civtext">
+      Supervised maintenance operations for 12-vehicle fleet — ensured 96% mission-capable rate through preventive maintenance protocols
+    </div>
+  </div>
+
+  <!-- ========== SCENE 6: Victory Moment (9.0–10.5s) ========== -->
+  <div class="s6-container">
+    <svg class="s6-check" viewBox="0 0 80 80">
+      <circle cx="40" cy="40" r="35"/>
+      <polyline points="24,42 35,53 56,30"/>
+    </svg>
+    <div class="s6-stamp">Translated</div>
+    <div class="s6-particle"></div>
+    <div class="s6-particle"></div>
+    <div class="s6-particle"></div>
+    <div class="s6-particle"></div>
+    <div class="s6-particle"></div>
+    <div class="s6-particle"></div>
+    <div class="s6-particle"></div>
+    <div class="s6-particle"></div>
+  </div>
+
+  <!-- ========== SCENE 7: Feature Showcase (10.5–14.0s) ========== -->
+  <div class="s7-cards">
+    <div class="s7-card">
+      <div class="s7-card-icon">
+        <svg width="28" height="28" fill="none" stroke="#d4a84b" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg>
+      </div>
+      <div class="s7-card-title">6 Resume Templates</div>
+      <div class="s7-card-desc">Private sector &amp; federal formats</div>
+    </div>
+    <div class="s7-card">
+      <div class="s7-card-icon">
+        <svg width="28" height="28" fill="none" stroke="#d4a84b" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+      </div>
+      <div class="s7-card-title">Job Match Analysis</div>
+      <div class="s7-card-desc">Keyword gap scoring</div>
+    </div>
+    <div class="s7-card">
+      <div class="s7-card-icon">
+        <svg width="28" height="28" fill="none" stroke="#d4a84b" stroke-width="1.8" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+      </div>
+      <div class="s7-card-title">LinkedIn Optimizer</div>
+      <div class="s7-card-desc">Profile translation</div>
+    </div>
+  </div>
+
+  <!-- ========== SCENE 8: Social Proof (14.0–17.0s) ========== -->
+  <div class="s8-container">
+    <div class="s8-number">500+</div>
+    <div class="s8-label">veterans have translated their service</div>
+    <div class="s8-stars">
+      <span class="s8-star">&#11088;</span>
+      <span class="s8-star">&#11088;</span>
+      <span class="s8-star">&#11088;</span>
+      <span class="s8-star">&#11088;</span>
+      <span class="s8-star">&#11088;</span>
+    </div>
+  </div>
+
+  <!-- ========== SCENE 9: Pricing Moment (17.0–20.0s) ========== -->
+  <div class="s9-container">
+    <div class="s9-left">
+      <div class="s9-label-old">Professional Writer</div>
+      <div class="s9-price-old">$600</div>
+    </div>
+    <div class="s9-divider">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+    <div class="s9-right">
+      <div class="s9-label-new">Debriefed</div>
+      <div class="s9-price-new">$25</div>
+    </div>
+    <div class="s9-bottom-full">Same result. 1/24th the cost.</div>
+  </div>
+
+  <!-- ========== SCENE 10: Screen Recording Mockup (20.0–24.0s) ========== -->
+  <div class="s10-browser">
+    <div class="s10-chrome">
+      <div class="s10-dot"></div>
+      <div class="s10-dot"></div>
+      <div class="s10-dot"></div>
+      <div class="s10-urlbar">getdebriefed.co/resumes</div>
+    </div>
+    <div class="s10-body">
+      <div class="s10-form">
+        <div class="s10-form-title">Resume Builder</div>
+        <div class="s10-field">
+          <div class="s10-field-label">Full Name</div>
+          <div class="s10-field-input"><div class="s10-field-fill"></div></div>
+        </div>
+        <div class="s10-field">
+          <div class="s10-field-label">Target Role</div>
+          <div class="s10-field-input"><div class="s10-field-fill"></div></div>
+        </div>
+        <div class="s10-field">
+          <div class="s10-field-label">Branch</div>
+          <div class="s10-field-input"><div class="s10-field-fill"></div></div>
+        </div>
+        <div class="s10-field">
+          <div class="s10-field-label">MOS / Rating</div>
+          <div class="s10-field-input"><div class="s10-field-fill"></div></div>
+        </div>
+        <div class="s10-field">
+          <div class="s10-field-label">Years of Service</div>
+          <div class="s10-field-input"><div class="s10-field-fill"></div></div>
+        </div>
+        <div class="s10-field">
+          <div class="s10-field-label">Security Clearance</div>
+          <div class="s10-field-input"><div class="s10-field-fill"></div></div>
+        </div>
+      </div>
+      <div class="s10-preview">
+        <div class="s10-resume-header">
+          <div class="s10-resume-name">James Mitchell</div>
+          <div class="s10-resume-contact">james.mitchell@email.com | (555) 123-4567 | San Diego, CA</div>
+        </div>
+        <div class="s10-resume-section">
+          <div class="s10-section-title">Professional Summary</div>
+          <div class="s10-section-line long"></div>
+          <div class="s10-section-line med"></div>
+          <div class="s10-section-line short"></div>
+        </div>
+        <div class="s10-resume-section">
+          <div class="s10-section-title">Experience</div>
+          <div class="s10-section-line long gold-fill"></div>
+          <div class="s10-section-line med"></div>
+          <div class="s10-section-line long gold-fill"></div>
+          <div class="s10-section-line short"></div>
+        </div>
+        <div class="s10-resume-section">
+          <div class="s10-section-title">Education &amp; Training</div>
+          <div class="s10-section-line med"></div>
+          <div class="s10-section-line short"></div>
+        </div>
+        <div class="s10-resume-section">
+          <div class="s10-section-title">Certifications</div>
+          <div class="s10-section-line short"></div>
+          <div class="s10-section-line short"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SCENE 11: CTA Build (24.0–27.0s) ========== -->
+  <div class="s11-container">
+    <div class="s11-headline">Free for Veterans</div>
+    <div class="s11-url">getdebriefed.co</div>
+    <div class="s11-subtext">No credit card. No subscription. No catch.</div>
+  </div>
+
+  <!-- ========== SCENE 12: Logo Hold + Loop (27.0–30.0s) ========== -->
+  <div class="s12-glow"></div>
+  <div class="s12-wordmark">Debriefed</div>
+  <div class="s12-tagline">Your Service. Translated.</div>
+
+</div><!-- /.canvas -->
+</div><!-- /.canvas-wrap -->
+
+<script>
+// Version toggle (square vs widescreen)
+function setVersion(mode) {
+  const canvas = document.getElementById('canvas');
+  const buttons = document.querySelectorAll('.version-bar button');
+  buttons.forEach(b => b.classList.remove('active'));
+
+  if (mode === 'wide') {
+    canvas.classList.add('wide');
+    buttons[1].classList.add('active');
+  } else {
+    canvas.classList.remove('wide');
+    buttons[0].classList.add('active');
+  }
+
+  // Force restart all animations by re-triggering
+  canvas.style.animation = 'none';
+  canvas.offsetHeight; // force reflow
+  canvas.style.animation = '';
+}
+
+// Auto-scale canvas to fit viewport
+function scaleCanvas() {
+  const canvas = document.getElementById('canvas');
+  const wrap = document.querySelector('.canvas-wrap');
+  const cw = canvas.classList.contains('wide') ? 1920 : 1080;
+  const ch = 1080;
+  const ww = wrap.clientWidth;
+  const wh = wrap.clientHeight;
+  const scale = Math.min(ww / cw, wh / ch, 1);
+  canvas.style.transform = `scale(${scale})`;
+  canvas.style.transformOrigin = 'center center';
+}
+
+window.addEventListener('resize', scaleCanvas);
+window.addEventListener('load', scaleCanvas);
+
+// Observe class changes for wide/square toggle
+new MutationObserver(scaleCanvas).observe(
+  document.getElementById('canvas'),
+  { attributes: true, attributeFilter: ['class'] }
+);
+</script>
+</body>
+</html>

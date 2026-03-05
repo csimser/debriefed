@@ -12,30 +12,18 @@ const supabaseAdmin = createAdminClient(
 );
 
 export async function POST(request: NextRequest) {
-  console.log('[create-checkout] Route hit');
-  console.log('[create-checkout] STRIPE env vars:', {
-    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY ? `${process.env.STRIPE_SECRET_KEY.slice(0, 7)}...${process.env.STRIPE_SECRET_KEY.slice(-4)}` : 'NOT SET',
-    STRIPE_CORE_PRICE_ID: process.env.STRIPE_CORE_PRICE_ID || 'NOT SET',
-    STRIPE_FULL_PRICE_ID: process.env.STRIPE_FULL_PRICE_ID || 'NOT SET',
-    STRIPE_EVAL_PACK_PRICE_ID: process.env.STRIPE_EVAL_PACK_PRICE_ID || 'NOT SET',
-    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET ? `${process.env.STRIPE_WEBHOOK_SECRET.slice(0, 6)}...` : 'NOT SET',
-    PAYMENTS_ENABLED: process.env.NEXT_PUBLIC_PAYMENTS_ENABLED ?? '(not set, defaults to true)',
-  });
-
   const supabase = await createClient();
 
   // Verify user is authenticated
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  console.log('[create-checkout] Auth:', user ? `user=${user.id}` : 'NO USER');
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     const body = await request.json();
-    console.log('[create-checkout] Request body:', JSON.stringify(body));
     const { tier } = body as { tier: 'core' | 'full' | 'eval_pack' };
 
     // Validate tier

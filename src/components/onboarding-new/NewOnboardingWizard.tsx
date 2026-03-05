@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { trackEvent } from '@/lib/analytics'
 import { ProgressBar, STEPS } from './ProgressBar'
 import { StepWelcome } from './StepWelcome'
 import { StepQuickProfile } from './StepQuickProfile'
@@ -154,8 +155,8 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
   const saveProgress = useCallback(async (nextStep: number) => {
     setSaving(true)
     try {
-      // Build profile payload (only profile fields, not related tables)
-      const profilePayload = {
+      // Build profile payload — include ALL profile fields so nothing is lost
+      const profilePayload: Record<string, any> = {
         phone: data.phone || null,
         city: data.city || null,
         state: data.state || null,
@@ -175,19 +176,27 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
         updated_at: new Date().toISOString(),
       }
 
-      const { error } = await supabase
+      // Include name/email if present (preserves signup data, recovers if lost)
+      if (data.first_name) profilePayload.first_name = data.first_name
+      if (data.last_name) profilePayload.last_name = data.last_name
+      if (data.email) profilePayload.email = data.email
+
+      const { data: rows, error } = await supabase
         .from('profiles')
         .update(profilePayload)
         .eq('user_id', userId)
+        .select('user_id')
 
       if (error) {
-        console.error('Error saving progress:', error)
+        console.error('[onboarding] saveProgress error:', error)
+      } else if (!rows || rows.length === 0) {
+        console.error('[onboarding] saveProgress: update matched 0 rows for user_id', userId)
       } else {
         setShowSaved(true)
         setTimeout(() => setShowSaved(false), 2000)
       }
     } catch (error) {
-      console.error('Error saving progress:', error)
+      console.error('[onboarding] saveProgress exception:', error)
     } finally {
       setSaving(false)
     }
@@ -196,10 +205,15 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
   const handleNext = useCallback(async () => {
     if (step < STEPS.length - 1) {
       await saveProgress(step + 1)
+      trackEvent('onboarding_step_completed', {
+        step,
+        step_name: STEPS[step]?.label || `step_${step}`,
+        plan_intent: planIntent || 'none',
+      })
       setStep(step + 1)
       window.scrollTo(0, 0)
     }
-  }, [step, saveProgress])
+  }, [step, saveProgress, planIntent])
 
   const handleBack = useCallback(() => {
     if (step > 0) {
@@ -210,67 +224,115 @@ export function NewOnboardingWizard({ userId, currentStep, existingProfile, user
 
   const handleSkip = useCallback(async () => {
     setSaving(true)
+    trackEvent('onboarding_skipped', {
+      step,
+      step_name: STEPS[step]?.label || `step_${step}`,
+      plan_intent: planIntent || 'none',
+    })
     try {
-      const { error } = await supabase
+      // Persist any data entered so far before skipping
+      const skipPayload: Record<string, any> = {
+        phone: data.phone || null,
+        city: data.city || null,
+        state: data.state || null,
+        linkedin_url: data.linkedin_url || null,
+        branch: data.branch || null,
+        rank: data.rank || null,
+        paygrade: data.paygrade || null,
+        rating_mos: data.rating_mos || null,
+        years_of_service: data.years_of_service ? parseInt(data.years_of_service) : null,
+        clearance: data.clearance || null,
+        eas_date: data.eas_date || null,
+        target_industry: data.target_industry || null,
+        target_role: data.target_role || null,
+        job_search_timeline: data.job_search_timeline || null,
+        professional_summary: data.professional_summary || null,
+        onboarding_completed: true,
+        onboarding_skipped: true,
+        onboarding_step: STEPS.length,
+        updated_at: new Date().toISOString(),
+      }
+
+      if (data.first_name) skipPayload.first_name = data.first_name
+      if (data.last_name) skipPayload.last_name = data.last_name
+      if (data.email) skipPayload.email = data.email
+
+      const { data: rows, error } = await supabase
         .from('profiles')
-        .update({
-          onboarding_completed: true,
-          onboarding_skipped: true,
-          onboarding_step: STEPS.length,
-          updated_at: new Date().toISOString(),
-        })
+        .update(skipPayload)
         .eq('user_id', userId)
+        .select('user_id')
 
       if (error) {
-        console.error('Error skipping onboarding:', error)
+        console.error('[onboarding] handleSkip error:', error)
         return
+      }
+      if (!rows || rows.length === 0) {
+        console.error('[onboarding] handleSkip: update matched 0 rows for user_id', userId)
       }
 
       const dashboardUrl = planIntent ? `/dashboard?plan=${planIntent}` : '/dashboard'
       router.push(dashboardUrl)
     } catch (error) {
-      console.error('Error skipping onboarding:', error)
+      console.error('[onboarding] handleSkip exception:', error)
     } finally {
       setSaving(false)
     }
-  }, [supabase, userId, router, planIntent])
+  }, [data, supabase, userId, router, planIntent, step])
 
   const handleComplete = useCallback(async () => {
     setSaving(true)
+    trackEvent('onboarding_completed', {
+      has_experience: data.experiences.length > 0,
+      has_branch: !!data.branch,
+      has_mos: !!data.rating_mos,
+      has_target_role: !!data.target_role,
+      plan_intent: planIntent || 'none',
+    })
     try {
-      const { error } = await supabase
+      const completePayload: Record<string, any> = {
+        phone: data.phone || null,
+        city: data.city || null,
+        state: data.state || null,
+        linkedin_url: data.linkedin_url || null,
+        branch: data.branch || null,
+        rank: data.rank || null,
+        paygrade: data.paygrade || null,
+        rating_mos: data.rating_mos || null,
+        years_of_service: data.years_of_service ? parseInt(data.years_of_service) : null,
+        clearance: data.clearance || null,
+        eas_date: data.eas_date || null,
+        target_industry: data.target_industry || null,
+        target_role: data.target_role || null,
+        job_search_timeline: data.job_search_timeline || null,
+        professional_summary: data.professional_summary || null,
+        onboarding_completed: true,
+        onboarding_step: STEPS.length,
+        updated_at: new Date().toISOString(),
+      }
+
+      // Include name/email if present (preserves signup data, recovers if lost)
+      if (data.first_name) completePayload.first_name = data.first_name
+      if (data.last_name) completePayload.last_name = data.last_name
+      if (data.email) completePayload.email = data.email
+
+      const { data: rows, error } = await supabase
         .from('profiles')
-        .update({
-          phone: data.phone || null,
-          city: data.city || null,
-          state: data.state || null,
-          linkedin_url: data.linkedin_url || null,
-          branch: data.branch || null,
-          rank: data.rank || null,
-          paygrade: data.paygrade || null,
-          rating_mos: data.rating_mos || null,
-          years_of_service: data.years_of_service ? parseInt(data.years_of_service) : null,
-          clearance: data.clearance || null,
-          eas_date: data.eas_date || null,
-          target_industry: data.target_industry || null,
-          target_role: data.target_role || null,
-          job_search_timeline: data.job_search_timeline || null,
-          professional_summary: data.professional_summary || null,
-          onboarding_completed: true,
-          onboarding_step: STEPS.length,
-          updated_at: new Date().toISOString(),
-        })
+        .update(completePayload)
         .eq('user_id', userId)
+        .select('user_id')
 
       if (error) {
-        console.error('Error completing onboarding:', error)
+        console.error('[onboarding] handleComplete error:', error)
+      } else if (!rows || rows.length === 0) {
+        console.error('[onboarding] handleComplete: update matched 0 rows for user_id', userId)
       }
     } catch (error) {
-      console.error('Error completing onboarding:', error)
+      console.error('[onboarding] handleComplete exception:', error)
     } finally {
       setSaving(false)
     }
-  }, [data, supabase, userId])
+  }, [data, supabase, userId, planIntent])
 
   // Jump to a specific step (for resume import)
   const jumpToStep = useCallback(async (targetStep: number) => {

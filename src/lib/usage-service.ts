@@ -6,11 +6,11 @@ import { createClient as createAdminSupabase } from '@supabase/supabase-js';
 import {
   PRICING_TIERS,
   DAILY_RATE_LIMITS,
-  ADMIN_BYPASS_EMAILS,
   TierId,
   FeatureName,
   FEATURE_DISPLAY_NAMES,
 } from '@/lib/pricing-config';
+import { ADMIN_BYPASS_EMAILS } from '@/lib/admin-config.server';
 
 // Admin client for write operations — does NOT depend on cookies/request context
 // Safe to use inside after() callbacks
