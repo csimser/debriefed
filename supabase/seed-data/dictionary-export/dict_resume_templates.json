@@ -1,0 +1,257 @@
+[
+  {
+    "id": "6d1b8ba1-3d94-4300-bda4-3aee315fe4b7",
+    "template_name": "Standard Private Sector",
+    "template_type": "private",
+    "description": "Clean single-column ATS-optimized resume",
+    "sections": [
+      {
+        "name": "header",
+        "fields": [
+          "full_name",
+          "email",
+          "phone",
+          "city_state",
+          "linkedin_url"
+        ],
+        "required": true
+      },
+      {
+        "name": "professional_summary",
+        "notes": "3-4 sentences. No military jargon. Lead with years of experience and target role.",
+        "required": true,
+        "max_lines": 4
+      },
+      {
+        "name": "core_competencies",
+        "notes": "Use keywords from job posting. Mix hard and soft skills.",
+        "format": "3-column grid",
+        "required": true,
+        "max_items": 12
+      },
+      {
+        "name": "professional_experience",
+        "notes": "Civilian titles first. Quantify every bullet. Action verb + task + result.",
+        "format": "reverse_chronological",
+        "required": true,
+        "bullets_per_role": "4-6"
+      },
+      {
+        "name": "education",
+        "fields": [
+          "degree",
+          "school",
+          "graduation_year",
+          "gpa_if_above_3.5"
+        ],
+        "required": true
+      },
+      {
+        "name": "certifications",
+        "format": "single_line_each",
+        "required": false
+      },
+      {
+        "name": "technical_skills",
+        "format": "comma_separated_by_category",
+        "required": false
+      },
+      {
+        "name": "volunteer",
+        "required": false
+      }
+    ],
+    "formatting": {
+      "font": "Calibri or Arial",
+      "size": "10-11pt body, 12-14pt name",
+      "margins": "0.5-1 inch",
+      "max_pages": 2,
+      "line_spacing": 1.15
+    },
+    "ats_optimized": true,
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "821c9236-8232-4272-9715-1c34366bd544",
+    "template_name": "Federal Resume (USAJOBS)",
+    "template_type": "federal",
+    "description": "OPM-compliant federal resume format",
+    "sections": [
+      {
+        "name": "header",
+        "fields": [
+          "full_name",
+          "email",
+          "phone",
+          "full_address",
+          "citizenship",
+          "veterans_preference",
+          "clearance_level",
+          "federal_status"
+        ],
+        "required": true
+      },
+      {
+        "name": "objective",
+        "fields": [
+          "announcement_number",
+          "job_title",
+          "grade_level"
+        ],
+        "required": false
+      },
+      {
+        "name": "professional_experience",
+        "notes": "Extremely detailed. Include hours/week. Describe scope and complexity. Reference KSAs from announcement.",
+        "format": "reverse_chronological",
+        "required": true,
+        "fields_per_role": [
+          "job_title",
+          "employer",
+          "address",
+          "start_date",
+          "end_date",
+          "hours_per_week",
+          "salary",
+          "supervisor_name",
+          "supervisor_phone",
+          "may_contact"
+        ],
+        "bullets_per_role": "8-15"
+      },
+      {
+        "name": "education",
+        "fields": [
+          "degree",
+          "school",
+          "city_state",
+          "graduation_date",
+          "gpa",
+          "credits_earned",
+          "relevant_coursework"
+        ],
+        "required": true
+      },
+      {
+        "name": "certifications_licenses",
+        "fields": [
+          "name",
+          "issuer",
+          "date",
+          "expiration",
+          "credential_id"
+        ],
+        "required": false
+      },
+      {
+        "name": "training",
+        "fields": [
+          "course_name",
+          "provider",
+          "date",
+          "hours"
+        ],
+        "required": false
+      },
+      {
+        "name": "awards",
+        "fields": [
+          "award_name",
+          "issuer",
+          "date",
+          "description"
+        ],
+        "required": false
+      },
+      {
+        "name": "volunteer",
+        "required": false
+      },
+      {
+        "name": "languages",
+        "fields": [
+          "language",
+          "proficiency"
+        ],
+        "required": false
+      },
+      {
+        "name": "affiliations",
+        "required": false
+      }
+    ],
+    "formatting": {
+      "font": "Times New Roman or Arial",
+      "size": "11-12pt",
+      "notes": "No page limit for federal. More detail is better. Include ALL relevant experience.",
+      "margins": "1 inch",
+      "max_pages": "5-7 for senior",
+      "line_spacing": 1
+    },
+    "ats_optimized": true,
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "9f9c7452-39cc-49eb-b603-ba955bc1d643",
+    "template_name": "Executive Transition",
+    "template_type": "private",
+    "description": "For O-5+ and E-8+ transitioning to senior civilian roles",
+    "sections": [
+      {
+        "name": "header",
+        "fields": [
+          "full_name",
+          "email",
+          "phone",
+          "city_state",
+          "linkedin_url"
+        ],
+        "required": true
+      },
+      {
+        "name": "executive_summary",
+        "notes": "Strategic leader positioning. Focus on scope: budget, personnel, organizational impact.",
+        "required": true,
+        "max_lines": 5
+      },
+      {
+        "name": "core_competencies",
+        "format": "3-column grid",
+        "required": true,
+        "max_items": 15
+      },
+      {
+        "name": "professional_experience",
+        "notes": "Emphasize P&L equivalent, strategic decisions, organizational transformation. Show progressively increasing scope.",
+        "format": "reverse_chronological",
+        "required": true,
+        "bullets_per_role": "5-8"
+      },
+      {
+        "name": "education",
+        "required": true
+      },
+      {
+        "name": "certifications",
+        "required": false
+      },
+      {
+        "name": "board_affiliations",
+        "required": false
+      },
+      {
+        "name": "publications_speaking",
+        "required": false
+      }
+    ],
+    "formatting": {
+      "font": "Garamond or Calibri",
+      "size": "10-11pt body, 14-16pt name",
+      "margins": "0.75 inch",
+      "max_pages": 2,
+      "line_spacing": 1.15
+    },
+    "ats_optimized": true,
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  }
+]

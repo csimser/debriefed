@@ -1,0 +1,218 @@
+[
+  {
+    "id": "0b75075f-6b28-4ea4-a201-e1e540dee6d7",
+    "section": "headline",
+    "template_name": "Healthcare",
+    "target_role": "Medical Professional",
+    "target_industry": "healthcare",
+    "template_text": "{{civilian_title}} | {{certification}} | {{years}}+ Years Clinical Experience | {{specialty}}",
+    "placeholders": {
+      "optional": [
+        "specialty"
+      ],
+      "required": [
+        "civilian_title",
+        "years",
+        "certification"
+      ]
+    },
+    "tips": "Lead with civilian medical title and certifications. Patient volume is a strong metric.",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "4d0dac4e-1499-4f5b-9bb8-97e4227d9f70",
+    "section": "headline",
+    "template_name": "PM Defense",
+    "target_role": "Project Manager",
+    "target_industry": "defense",
+    "template_text": "{{civilian_title}} | {{certification}} | {{clearance}} | {{years}}+ Years {{specialty}}",
+    "placeholders": {
+      "optional": [
+        "certification",
+        "clearance",
+        "specialty"
+      ],
+      "required": [
+        "civilian_title",
+        "years"
+      ]
+    },
+    "tips": "Keep under 120 characters. Lead with your target role, not military rank. Include clearance if relevant.",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "4e3e7ba1-8351-4f76-8dbb-d92e18bf883c",
+    "section": "headline",
+    "template_name": "Federal Career",
+    "target_role": "Federal Employee",
+    "target_industry": "federal",
+    "template_text": "{{civilian_title}} | {{clearance}} | {{degree}} | Veterans Preference Eligible",
+    "placeholders": {
+      "optional": [
+        "clearance",
+        "degree"
+      ],
+      "required": [
+        "civilian_title"
+      ]
+    },
+    "tips": "Include Veterans Preference status. Federal hiring managers look for this.",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "5c89c30a-a498-4b2e-b600-7b3ca3b40510",
+    "section": "about",
+    "template_name": "Veteran Transition General",
+    "target_role": null,
+    "target_industry": "general",
+    "template_text": "{{years}}+-year {{branch}} veteran transitioning to {{target_industry}}. I bring {{key_skill_1}}, {{key_skill_2}}, and {{key_skill_3}} honed through {{experience_summary}}.\\n\\nKey accomplishments:\\n• {{achievement_1}}\\n• {{achievement_2}}\\n• {{achievement_3}}\\n\\nCertifications: {{certifications}}\\nClearance: {{clearance}}\\nSeeking: {{target_role}} roles in {{target_location}}",
+    "placeholders": {
+      "optional": [
+        "experience_summary",
+        "achievement_1",
+        "achievement_2",
+        "achievement_3",
+        "certifications",
+        "clearance",
+        "target_role",
+        "target_location"
+      ],
+      "required": [
+        "years",
+        "branch",
+        "target_industry",
+        "key_skill_1",
+        "key_skill_2",
+        "key_skill_3"
+      ]
+    },
+    "tips": "Keep under 2600 characters. First 3 lines show in preview, make them count. Use civilian language throughout. Include keywords for your target role.",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "729d1df5-2a8b-43d8-b6f2-74d09cb21a71",
+    "section": "skills",
+    "template_name": "Top Skills by Industry",
+    "target_role": null,
+    "target_industry": "general",
+    "template_text": "{{skill_list}}",
+    "placeholders": {
+      "note": "Use dict_mos_to_civilian key_skills and supplement with industry keywords"
+    },
+    "tips": "LinkedIn allows 50 skills. Lead with your top 5 most relevant to target role. Get endorsements for these 5 first. Remove military-only skills that dont translate.",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "83eede39-272b-43da-a552-ed625d087c0f",
+    "section": "headline",
+    "template_name": "Cybersecurity",
+    "target_role": "Cybersecurity Analyst",
+    "target_industry": "cybersecurity",
+    "template_text": "{{civilian_title}} | {{top_cert}} | {{clearance}} | Protecting Critical Infrastructure",
+    "placeholders": {
+      "optional": [
+        "clearance"
+      ],
+      "required": [
+        "civilian_title",
+        "top_cert"
+      ]
+    },
+    "tips": "Highlight your top certification (CISSP, CEH, etc.). Clearance is a major differentiator.",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "cf4a8359-1cc0-4873-81c9-29e5e7fa3c9c",
+    "section": "about",
+    "template_name": "Technical Veteran",
+    "target_role": null,
+    "target_industry": "technology",
+    "template_text": "Technology professional with {{years}}+ years of experience managing and securing enterprise systems in mission-critical environments. {{branch}} veteran bringing {{key_skill_1}} and {{key_skill_2}} expertise to the {{target_industry}} sector.\\n\\nI have led teams of up to {{team_size}} across {{scope}}, delivering {{quantified_result}}.\\n\\nCore Competencies: {{skills_list}}\\nCertifications: {{certifications}}\\n\\nOpen to: {{target_role}} opportunities in {{target_location}}",
+    "placeholders": {
+      "optional": [
+        "target_industry",
+        "team_size",
+        "scope",
+        "quantified_result",
+        "skills_list",
+        "certifications",
+        "target_role",
+        "target_location"
+      ],
+      "required": [
+        "years",
+        "branch",
+        "key_skill_1",
+        "key_skill_2"
+      ]
+    },
+    "tips": "Lead with civilian identity, not military. Technical recruiters search for specific skills and certs.",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "dda8fa70-0089-4572-b44c-00d0de3b8220",
+    "section": "experience",
+    "template_name": "Military Experience Block",
+    "target_role": null,
+    "target_industry": "general",
+    "template_text": "{{civilian_equivalent_title}} | {{branch}}, {{command}}\\n{{start_date}} - {{end_date}} | {{location}}\\n\\n{{summary}}\\n\\n• {{bullet_1}}\\n• {{bullet_2}}\\n• {{bullet_3}}\\n• {{bullet_4}}",
+    "placeholders": {
+      "optional": [
+        "command",
+        "location",
+        "summary",
+        "bullet_1",
+        "bullet_2",
+        "bullet_3",
+        "bullet_4"
+      ],
+      "required": [
+        "civilian_equivalent_title",
+        "branch",
+        "start_date",
+        "end_date"
+      ]
+    },
+    "tips": "Use civilian title first, military context second. Each bullet should have a metric. Company = Branch of Service. Title = Civilian equivalent role. Do NOT use rank as your title.",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "e5b8117f-25d1-460e-82e6-28fb491264e1",
+    "section": "headline",
+    "template_name": "IT Professional",
+    "target_role": "IT Manager",
+    "target_industry": "technology",
+    "template_text": "{{civilian_title}} | {{top_cert}} | {{years}}+ Years Enterprise IT | {{specialty}}",
+    "placeholders": {
+      "optional": [
+        "top_cert",
+        "specialty"
+      ],
+      "required": [
+        "civilian_title",
+        "years"
+      ]
+    },
+    "tips": "Use civilian titles recruiters search for. Avoid military jargon entirely.",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "e8f07617-8b0d-4187-be75-c4ca50ccfbb7",
+    "section": "headline",
+    "template_name": "Operations Manager",
+    "target_role": "Operations Manager",
+    "target_industry": "general",
+    "template_text": "{{civilian_title}} | {{degree}} | {{years}}+ Years Leading High-Performance Teams",
+    "placeholders": {
+      "optional": [
+        "degree"
+      ],
+      "required": [
+        "civilian_title",
+        "years"
+      ]
+    },
+    "tips": "Emphasize leadership scope and results. Operations is a universal transferable skill.",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  }
+]

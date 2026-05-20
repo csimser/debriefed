@@ -1,0 +1,1109 @@
+[
+  {
+    "id": "01199d97-00d9-49ae-8c01-4a9d63000326",
+    "cert_keyword": "AWS Certified",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "AWS certifications available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "03837c31-b9f5-4c12-bee7-c68a49d56fc2",
+    "cert_keyword": "Journeyman Electrician",
+    "funding_program_code": "USMAP",
+    "branch": "uscg",
+    "notes": "Log hours as MK or ET through USMAP",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "03da73b7-37ac-4559-b783-0f48fa995066",
+    "cert_keyword": "Azure certifications",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Azure fundamentals and admin certs funded",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "045d10a8-5962-4eab-91e8-0b3aecc8ac0c",
+    "cert_keyword": "SAFe",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "SAFe training through GI Bill approved providers",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "077b6630-3107-440e-ac85-2b500f1d5c29",
+    "cert_keyword": "CompTIA PenTest+",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "0d312318-a97d-4cbb-a2b2-8f39762afd8c",
+    "cert_keyword": "OSCP",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Check VET TEC approved provider list for OffSec courses",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "1203f2c8-d51c-41a5-930e-4da3e143e37c",
+    "cert_keyword": "Python",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Some O2O tracks include Python training",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "1248db70-d82d-4ea0-930d-b395baa16ef8",
+    "cert_keyword": "Journeyman Electrician",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "Electrical apprenticeship programs covered by GI Bill",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "12985bf7-72c3-4c6e-9984-2ce4190063a6",
+    "cert_keyword": "SQL",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Data analytics bootcamps through VET TEC cover SQL",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "17533811-df9d-4ae4-aaf5-9800555d7ea8",
+    "cert_keyword": "CEH",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Available through VET TEC training providers",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "183df1c1-7835-49e1-8416-4bd9097c6cc2",
+    "cert_keyword": "CASP+",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 17-series and 25D",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "1dc0e748-38a1-4216-bb59-7632a5d084b6",
+    "cert_keyword": "CEH",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for CTN and cyber-related ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "269df371-9568-4dd8-b41c-27ac98638b00",
+    "cert_keyword": "CompTIA CySA+",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for IT, CTN, and cybersecurity-related ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "29514cb0-ff56-40c8-99d4-88c60a6499a8",
+    "cert_keyword": "CompTIA Network+",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 25-series and 17-series MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "29a07d0a-2f23-48b3-80be-71208f38bbac",
+    "cert_keyword": "BLS",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 68-series MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "29de45f7-5b23-4ff2-8c6a-ccd36ccc631f",
+    "cert_keyword": "CCNA",
+    "funding_program_code": "USAF_COOL",
+    "branch": "usaf",
+    "notes": "Funded for 3D series AFSCs",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "2b48dd8c-be82-4914-9fcb-eb76a07f6f0a",
+    "cert_keyword": "CCNP",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for senior 25-series",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "2be3b736-d7ff-485a-9cf4-b4c28647e7d5",
+    "cert_keyword": "Journeyman Welder",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "Welding certification programs covered by GI Bill",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "2c0aa259-bc73-4fc8-a00f-6552ee8e3e76",
+    "cert_keyword": "CompTIA Network+",
+    "funding_program_code": "USMC_COOL",
+    "branch": "usmc",
+    "notes": "Funded for 06xx MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "322adc35-d1c1-4718-85e6-5b74b361b89c",
+    "cert_keyword": "CEH",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "324e21be-1c8a-4ab3-9df3-bfbfa3ef3227",
+    "cert_keyword": "CompTIA CySA+",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "3468bc6e-562d-43ae-82d5-b9cb5bd15261",
+    "cert_keyword": "A&P Mechanic",
+    "funding_program_code": "USAF_COOL",
+    "branch": "usaf",
+    "notes": "Funded for 2A-series AFSCs",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "39490606-0354-4a71-9ac1-6e35081ed67a",
+    "cert_keyword": "Journeyman Plumber",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "Plumbing apprenticeship programs covered by GI Bill",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "3c58f185-007d-4c39-b321-c541169f9525",
+    "cert_keyword": "GIAC certifications",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Some GIAC certs funded for 17C. Check specific cert availability",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "3df7e047-f623-40f4-9854-ea04fc82493f",
+    "cert_keyword": "CISM",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "3f857022-2268-4d32-854a-1349080e980d",
+    "cert_keyword": "ITIL",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 25-series MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "45467336-e7c1-45c8-baac-d99eeeb1fdc5",
+    "cert_keyword": "CompTIA Security+",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Available through multiple VET TEC providers",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "476110b5-bb60-4881-aff9-251f47e069ea",
+    "cert_keyword": "CompTIA PenTest+",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 17C MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "4830213f-fd56-43ef-8130-505f14e2f5fe",
+    "cert_keyword": "ITIL",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "ITIL Foundation available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "4985a903-2881-483c-907e-8454ecf5c680",
+    "cert_keyword": "CompTIA A+",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for most IT-related ratings (IT, CTN, CTM, CTR, ET, FC)",
+    "direct_link": "https://www.cool.osd.mil/navy/search/CERT_COMP_A2B.htm",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "4a800be7-40c7-43c6-b4f4-c998336bce2f",
+    "cert_keyword": "CEH",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 17C MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "4ad7cc8b-8c6f-4b78-9f41-bde877db57fe",
+    "cert_keyword": "CompTIA A+",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 25-series and 17-series MOS",
+    "direct_link": "https://www.cool.osd.mil/army/",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "4b75553c-3001-43d3-8cbd-622bdb56450f",
+    "cert_keyword": "Journeyman Plumber",
+    "funding_program_code": "USMAP",
+    "branch": "navy",
+    "notes": "Log hours as UT through USMAP",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "4c21b66f-3e2c-4269-b474-464fb46884a4",
+    "cert_keyword": "A&P Mechanic",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 15-series aviation MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "4e829972-a41b-4e5f-8789-de7bb87e089a",
+    "cert_keyword": "Salesforce",
+    "funding_program_code": "SKILLBRIDGE",
+    "branch": null,
+    "notes": "Salesforce VetForce SkillBridge program available",
+    "direct_link": "https://veterans.force.com/s/skillbridge",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "50d6b09a-b934-4f04-940e-a4a804b5bcf2",
+    "cert_keyword": "CompTIA Security+",
+    "funding_program_code": "USAF_COOL",
+    "branch": "usaf",
+    "notes": "Funded for most AFSCs. DoD 8570/8140 requirement",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "52c401da-848d-4091-a863-ca9dcb592cd7",
+    "cert_keyword": "CompTIA Network+",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Available through O2O — free training and exam",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "52c7cd08-c183-485b-9ba6-a7210f85a3fd",
+    "cert_keyword": "GIAC certifications",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "SANS courses eligible through GI Bill at SANS.edu",
+    "direct_link": "https://www.sans.edu",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "566f25b0-f06e-46a7-9d8a-ad154eef8efc",
+    "cert_keyword": "PMP",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for multiple MOS. Highly recommended for E-7+ transitioning",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "58745213-b336-47e9-b9f9-c4c830314b66",
+    "cert_keyword": "HVAC Certification",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for relevant MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "58f99b77-33ec-4045-ae2d-c7705781df84",
+    "cert_keyword": "ServiceNow",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "ServiceNow training through some VET TEC providers",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "5a2ce7f5-9ab7-477e-8265-7ba6c3fc15db",
+    "cert_keyword": "CSP",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "Safety degree programs that lead to CSP eligibility covered by GI Bill",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "5a8512ef-b993-4cb1-988c-f951fbf35e1e",
+    "cert_keyword": "CompTIA Security+",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for most ratings. Required for DoD 8570/8140 IAT Level II",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "5b1285d3-1263-45df-bc41-003f5acef82a",
+    "cert_keyword": "CISSP",
+    "funding_program_code": "USAF_COOL",
+    "branch": "usaf",
+    "notes": "Funded for 17S, 1D and senior cyber AFSCs",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "5deab11a-9cd3-457f-bfcb-a42a6e1dd276",
+    "cert_keyword": "GIAC certifications",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Some GIAC certs funded for CTN rating. Verify specific cert on COOL site",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "6045b2fc-3cca-4706-ab6a-a4dcd7bc342a",
+    "cert_keyword": "AWS Certified",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "AWS training programs available through GI Bill",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "6070b15a-59d9-47e8-92c8-dd9e3456e2c5",
+    "cert_keyword": "CCNA",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for IT, ET, and networking-related ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "65452fcb-eeb6-4be4-9572-72ed3be9ec94",
+    "cert_keyword": "CompTIA CySA+",
+    "funding_program_code": "USAF_COOL",
+    "branch": "usaf",
+    "notes": "Funded for 1D and cyber-related AFSCs",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "6579e761-d92e-4e95-952e-96e5df83928a",
+    "cert_keyword": "GIAC certifications",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "SANS.edu is a VET TEC approved provider",
+    "direct_link": "https://www.sans.edu",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "674673d1-7aa6-4d18-87c8-b5069dcea9da",
+    "cert_keyword": "CISSP",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for senior IT/CTN ratings. DoD 8570 IAM Level III",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "69507fe0-3a14-49c5-ade5-30e346c1f980",
+    "cert_keyword": "AWS Certified",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "AWS Cloud Practitioner and Solutions Architect funded for IT ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "6a39aad9-94fb-41df-87df-1f323af00258",
+    "cert_keyword": "Lean Six Sigma",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded under Credentialing Assistance",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "6a4aea59-f0e2-40ec-9b4a-942268eccf58",
+    "cert_keyword": "CCNA",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 25-series MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "6adc9a86-f22d-4386-a3cb-9c677aa3200d",
+    "cert_keyword": "Tableau",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Data analytics bootcamps through VET TEC often include Tableau training",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "6cc33af0-8041-4453-95ce-1195ca90d66b",
+    "cert_keyword": "PMP",
+    "funding_program_code": "USAF_COOL",
+    "branch": "usaf",
+    "notes": "Funded for multiple AFSCs",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "6cf68a27-3c31-4f32-9cfe-4e668fbfc8cb",
+    "cert_keyword": "CSM",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Scrum Master certification available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "6d5c0ba3-b6ad-43dc-9d06-8a0a21b71b0e",
+    "cert_keyword": "CCNA",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "CCNA available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "6e748de9-3cec-4e44-aaa9-fbed1eca4f27",
+    "cert_keyword": "Lean Six Sigma",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Green Belt and Black Belt funded for multiple ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "72babaf8-4bb7-4a67-8207-1aef7187b177",
+    "cert_keyword": "OSHA 30",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 12-series and safety-related MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "73115f02-17e2-48ee-8b99-c91b915da63e",
+    "cert_keyword": "A&P Mechanic",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for AD, AM, AE, and aviation maintenance ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "74ce798a-da14-4494-89b6-594a5d7d8883",
+    "cert_keyword": "AWS Certified",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for IT-related MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "74d837fe-c111-433f-9ccf-a3915c1355fb",
+    "cert_keyword": "HAZWOPER",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 74D CBRN MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "76fb5d9f-d4fc-4f01-8669-149f1b5165d5",
+    "cert_keyword": "CASP+",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for senior IT/cyber ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "77091b02-6175-44be-ae16-eb2f4f9b0add",
+    "cert_keyword": "ServiceNow",
+    "funding_program_code": "SKILLBRIDGE",
+    "branch": null,
+    "notes": "ServiceNow has SkillBridge partnerships",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "7b57cfe3-261b-4e50-b562-85ad194bd933",
+    "cert_keyword": "CompTIA Security+",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for most MOS. DoD 8570/8140 requirement",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "7e07f88f-6027-414d-9d22-0a4f63ce33af",
+    "cert_keyword": "Journeyman Welder",
+    "funding_program_code": "USMAP",
+    "branch": "navy",
+    "notes": "Log hours as HT or SW through USMAP",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "80656d7f-f482-4a71-b577-36e7ddc749dd",
+    "cert_keyword": "A&P Mechanic",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "A&P programs at FAA-approved schools covered by GI Bill",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "84b8a5c0-8be3-4c4a-8889-9640b6548692",
+    "cert_keyword": "CSM",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "May be funded under Credentialing Assistance",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "85482387-5094-4888-a69d-f3910cf1ce15",
+    "cert_keyword": "Python",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Coding bootcamps through VET TEC cover Python",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "8925de7d-2dba-4a0b-933d-f450a19ad0e7",
+    "cert_keyword": "CDL",
+    "funding_program_code": "VRE",
+    "branch": null,
+    "notes": "VR&E may fund CDL training as part of rehabilitation plan",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "8dcf4fb1-e0dc-46c0-9435-93be0ef0a93d",
+    "cert_keyword": "CISM",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for senior IT management ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "8e3e0f27-43b9-43f4-abbd-6eceafa58950",
+    "cert_keyword": "CDL",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 88M and transportation MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "8eacba68-fcca-4128-8969-f48d7e879a1a",
+    "cert_keyword": "CompTIA Security+",
+    "funding_program_code": "USMC_COOL",
+    "branch": "usmc",
+    "notes": "Funded for most MOS. DoD 8570/8140 requirement",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "904fe22e-8bef-4d2c-aed5-2ba34ca0f3f8",
+    "cert_keyword": "PMP",
+    "funding_program_code": "USMC_COOL",
+    "branch": "usmc",
+    "notes": "Funded for multiple MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "908ea9d9-d2f5-4364-acb0-688c3494c5f7",
+    "cert_keyword": "OSHA 30",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for DC, HT, and construction-related ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "92831807-6415-4be7-9952-19bfb91e7983",
+    "cert_keyword": "CCNA",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Cisco training through VET TEC providers",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "9314d127-5973-4871-85e9-0afef64d7b22",
+    "cert_keyword": "HAZWOPER",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for DC and environmental-related ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "95dbd17f-febb-4eec-ad04-f0a3fcf7ed2e",
+    "cert_keyword": "HVAC Certification",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "HVAC programs covered by GI Bill",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "96e7d31d-e555-4cae-b80b-e59e3e37a39f",
+    "cert_keyword": "SAFe",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "SAFe Agilist available through O2O at some locations",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "97233113-855f-4f10-8732-df463dd3e977",
+    "cert_keyword": "PMP",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "PMP is a flagship O2O certification track — free training and exam",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "97e957e1-a4bb-4643-ba66-c1ebeda3bfdf",
+    "cert_keyword": "CompTIA Security+",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Available through O2O — free training and exam",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "a2f067ec-15d5-4bf0-8688-3dca19662672",
+    "cert_keyword": "Azure certifications",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Microsoft Azure certs available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "a3ae32a5-8503-45e5-8cfd-b5bc8e3b5b93",
+    "cert_keyword": "NREMT",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "EMT/Paramedic programs covered by GI Bill",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "a4a32c9a-08ab-4353-a75c-f404a5df6ff6",
+    "cert_keyword": "NREMT",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for HM rating. Military bridge pathway available",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "b233c50e-9eea-49dd-8fe8-1bf462c69ab5",
+    "cert_keyword": "Python",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "Coding bootcamps covered by GI Bill (verify VA approval)",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "b2ea781f-7c3a-436a-ab87-b94c17b98b8a",
+    "cert_keyword": "CompTIA A+",
+    "funding_program_code": "USAF_COOL",
+    "branch": "usaf",
+    "notes": "Funded for 3D and 1D series AFSCs",
+    "direct_link": "https://www.cool.osd.mil/usaf/",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "b3d74210-13b9-4cf5-8662-26585f16869e",
+    "cert_keyword": "CISM",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 17A and senior cyber roles",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "b52b539e-f889-4b8b-872c-b62d8adadd95",
+    "cert_keyword": "CISSP",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Available through O2O — free training and exam voucher",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "b626f07f-15ed-48a4-8984-106f2b262dff",
+    "cert_keyword": "CAPM",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded as entry-level PM cert",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "b8479a78-fe6e-49b0-b3ea-a04c49d15e9d",
+    "cert_keyword": "CompTIA A+",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Available through Onward to Opportunity — free for eligible participants",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "b8c82632-1f5b-41df-9bdc-3d585633fe2a",
+    "cert_keyword": "CDL",
+    "funding_program_code": "USMC_COOL",
+    "branch": "usmc",
+    "notes": "Funded for motor transport MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "b9c952ab-565b-410b-98f5-f71d841b9ee1",
+    "cert_keyword": "CISSP",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "CISSP boot camps at some VA-approved training providers",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "bcad6779-d34b-4b38-97ee-22e28a668d16",
+    "cert_keyword": "CCNP",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for senior IT/networking ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "c3be54ad-3991-44b9-a62c-b872474767b0",
+    "cert_keyword": "PMP",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for multiple ratings including senior leadership",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "c56ff4f4-91c9-48ec-8599-b0e573a810f4",
+    "cert_keyword": "PMP",
+    "funding_program_code": "VRE",
+    "branch": null,
+    "notes": "VR&E may fund PMP training as part of rehabilitation plan",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "c95f6789-6a14-43fa-986a-95af929b7408",
+    "cert_keyword": "CDL",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "CDL training programs covered by GI Bill",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "ca3720bc-1b10-4768-a082-ef3c40aaa83d",
+    "cert_keyword": "Salesforce",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Salesforce admin training through VET TEC providers",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "ca37b3e9-d280-474b-aad7-95191764d79e",
+    "cert_keyword": "CAPM",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "ccaaf65a-3dc2-4ee6-b76b-29b255bfccba",
+    "cert_keyword": "BLS",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for HM rating",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "cdc40c04-86aa-474b-8045-a84a55973db6",
+    "cert_keyword": "AWS Certified",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Multiple VET TEC providers offer AWS training",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "cf8f26f4-f4ad-4b16-9142-d5cfe0e0a4e0",
+    "cert_keyword": "CompTIA Network+",
+    "funding_program_code": "USAF_COOL",
+    "branch": "usaf",
+    "notes": "Funded for 3D and 1D series AFSCs",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "d15a9a1d-43d5-45df-ad70-5352f353d4d0",
+    "cert_keyword": "OSCP",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "OffSec courses may be eligible through GI Bill. Verify with VA",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "d4d0a4b3-4445-40d3-91fb-b40715c4ee9d",
+    "cert_keyword": "ITIL",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for IT ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "d5075fe8-74a2-4c63-bb11-08cbe940afae",
+    "cert_keyword": "CompTIA A+",
+    "funding_program_code": "USMC_COOL",
+    "branch": "usmc",
+    "notes": "Funded for 06xx MOS",
+    "direct_link": "https://www.cool.osd.mil/usmc/",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "d5574301-66db-4d7d-848f-104b196077f8",
+    "cert_keyword": "NREMT",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 68W. Military bridge pathway available",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "d68f96d4-fe61-4417-aa64-70b4d7499ca5",
+    "cert_keyword": "CompTIA Network+",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for IT, CTN, CTM, ET, FC, and related ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "d6c88018-62e9-4156-9e03-43f50bb9923b",
+    "cert_keyword": "HVAC Certification",
+    "funding_program_code": "USMAP",
+    "branch": "navy",
+    "notes": "Log hours as UT, MM, or EN through USMAP",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "d7519b28-e42f-4b3a-a0c4-8d9c7ad97fa7",
+    "cert_keyword": "CASP+",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "dd7af8d9-241a-4f94-85e4-30aa1245c736",
+    "cert_keyword": "CompTIA CySA+",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 17C and 25D MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "e77d447e-e59b-428d-bdda-a7189f1e65d1",
+    "cert_keyword": "CAPM",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded as entry-level PM cert",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "e7df39b9-abe7-4323-83e7-0afce883f107",
+    "cert_keyword": "Tableau",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Data analytics tracks through O2O may include Tableau",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "e98113e0-e8df-48c2-a3d5-fd49532ee07a",
+    "cert_keyword": "Azure certifications",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for IT-related MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "e9ae83d9-7f09-4709-bf33-d061521b9080",
+    "cert_keyword": "CISSP",
+    "funding_program_code": "ARMY_CA",
+    "branch": "army",
+    "notes": "Funded for 17A, 17C, 25D and senior cyber MOS",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "eb856bb9-b921-45dc-8a4f-1da63b8f04ee",
+    "cert_keyword": "Journeyman Electrician",
+    "funding_program_code": "USMAP",
+    "branch": "navy",
+    "notes": "Log hours as EM or CE through USMAP to earn DoL Journeyman certificate",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "ef9b3f09-b5db-41ab-98e8-be27126f707e",
+    "cert_keyword": "Salesforce",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Salesforce admin certification available through O2O at some locations",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "f1c622c5-7ead-4d66-a18f-923a21b179c3",
+    "cert_keyword": "Lean Six Sigma",
+    "funding_program_code": "O2O",
+    "branch": null,
+    "notes": "Six Sigma Green Belt available through O2O",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "f2772b19-82c2-4201-bccd-b0f17c4f0c3a",
+    "cert_keyword": "Azure certifications",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Multiple VET TEC providers offer Azure training",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "f4024e5c-5175-4872-8679-25bc9b2dabc7",
+    "cert_keyword": "PMP",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "PMP boot camps available through GI Bill approved providers",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "f5e76802-562b-4819-9b30-053ff1531d3f",
+    "cert_keyword": "SQL",
+    "funding_program_code": "GI_BILL_33",
+    "branch": null,
+    "notes": "Data analytics programs covered by GI Bill",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "f793b77b-8d5b-41a9-83f0-8041ae880246",
+    "cert_keyword": "CompTIA PenTest+",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for CTN and cybersecurity ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "f7eaecd0-de0d-45aa-86d9-4682ee49e5c1",
+    "cert_keyword": "CompTIA A+",
+    "funding_program_code": "VET_TEC",
+    "branch": null,
+    "notes": "Available through VET TEC approved training providers",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "f8dd6192-52a6-4cda-9945-5ba5caeb8d98",
+    "cert_keyword": "CDL",
+    "funding_program_code": "NAVY_COOL",
+    "branch": "navy",
+    "notes": "Funded for EO and construction-related ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "fe11079f-ffd2-42a2-a1e5-c2f55be05460",
+    "cert_keyword": "CompTIA Security+",
+    "funding_program_code": "USCG_COOL",
+    "branch": "uscg",
+    "notes": "Funded for IT and related ratings",
+    "direct_link": null,
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  }
+]

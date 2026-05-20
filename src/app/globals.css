@@ -1,0 +1,562 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Source+Sans+3:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Lato:wght@400;500;700&family=Merriweather:wght@400;700;900&family=Open+Sans:wght@400;500;600;700&family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&family=Cormorant+Garamond:wght@400;600;700&family=Nunito+Sans:wght@400;500;600;700&family=Bitter:wght@400;500;700&family=Karla:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Debriefed CSS custom properties */
+:root {
+  --color-primary: #d4a84b;
+  --color-primary-hover: #e4bc5e;
+  --color-primary-foreground: #0a0c0f;
+  --color-primary-dim: rgba(212, 168, 75, 0.12);
+  --color-secondary: #1a365d;
+  --color-secondary-hover: #2c5282;
+  --color-secondary-foreground: #e8eaed;
+  --color-accent: #d4a84b;
+  --color-background: #0a0c0f;
+  --color-foreground: #e8eaed;
+  --color-muted: #0f1218;
+  --color-muted-foreground: #8b919e;
+  --color-card: #1a1f2a;
+  --color-card-foreground: #e8eaed;
+  --color-border: #2a3040;
+  --color-border-bright: #3d4760;
+  --color-sidebar: #0f1218;
+  --color-sidebar-foreground: #e8eaed;
+  --color-sidebar-tertiary: #161a22;
+  --color-hover: #232a38;
+  --color-success: #22c55e;
+  --color-success-dim: rgba(34, 197, 94, 0.12);
+  --color-warning: #f59e0b;
+  --color-warning-dim: rgba(245, 158, 11, 0.12);
+  --color-destructive: #ef4444;
+  --color-destructive-dim: rgba(239, 68, 68, 0.12);
+  --color-info: #3b82f6;
+  --color-info-dim: rgba(59, 130, 246, 0.12);
+  --color-text-dim: #5a6070;
+  --color-input: #0f1218;
+  --color-input-border: #2a3040;
+  --color-input-focus: #d4a84b;
+  --color-section-accent: #d4a84b;
+  --color-info-bg: #0f1218;
+  --font-heading: 'Rajdhani', sans-serif;
+  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-nav: 'Rajdhani', sans-serif;
+  --radius: 0.375rem;
+  --card-shadow: none;
+}
+
+/* Light theme overrides — warm cream/parchment */
+[data-theme="light"] {
+  --color-primary: #b8922e;
+  --color-primary-hover: #a07d1f;
+  --color-primary-foreground: #faf7f2;
+  --color-primary-dim: rgba(184, 146, 46, 0.12);
+  --color-secondary: #1a365d;
+  --color-secondary-hover: #2c5282;
+  --color-secondary-foreground: #1c1a17;
+  --color-accent: #b8922e;
+  --color-background: #f5f0e8;
+  --color-foreground: #1c1a17;
+  --color-muted: #ede8df;
+  --color-muted-foreground: #6b6359;
+  --color-card: #faf7f2;
+  --color-card-foreground: #1c1a17;
+  --color-border: #d4cfc6;
+  --color-border-bright: #c4bfb5;
+  --color-sidebar: #ede8df;
+  --color-sidebar-foreground: #1c1a17;
+  --color-sidebar-tertiary: #e8e3da;
+  --color-hover: #e2ddd4;
+  --color-success: #16a34a;
+  --color-success-dim: rgba(22, 163, 74, 0.10);
+  --color-warning: #d97706;
+  --color-warning-dim: rgba(217, 119, 6, 0.10);
+  --color-destructive: #dc2626;
+  --color-destructive-dim: rgba(220, 38, 38, 0.10);
+  --color-info: #2563eb;
+  --color-info-dim: rgba(37, 99, 235, 0.10);
+  --color-text-dim: #8a7f74;
+  --color-input: #faf7f2;
+  --color-input-border: #d4cfc6;
+  --color-input-focus: #b8922e;
+  --color-section-accent: #b8922e;
+  --color-info-bg: #ede8df;
+  --card-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #ede8df;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #c4bfb5;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Card shadow */
+.bg-bg-card {
+  box-shadow: var(--card-shadow);
+}
+
+/* Prevent iOS zoom on input focus */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--color-primary-dim);
+}
+
+input, textarea, select {
+  background: var(--color-input);
+  border: 1px solid var(--color-input-border);
+  color: var(--color-foreground);
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--color-input-focus);
+  box-shadow: 0 0 0 2px var(--color-primary-dim);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-text-dim);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes postActionIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-post-action-in {
+  animation: postActionIn 0.25s ease-out forwards;
+}
+
+
+/* Responsive Typography */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 1.75rem !important;
+  }
+
+  h2 {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* Hide on mobile */
+.hide-mobile {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none;
+  }
+}
+
+/* Show on mobile */
+.show-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .show-mobile {
+    display: block;
+  }
+}
+
+/* ===========================
+   MOBILE OPTIMIZATION STYLES
+   =========================== */
+
+/* Touch-friendly targets - 44px minimum */
+@media (max-width: 768px) {
+  button,
+  a,
+  [role="button"],
+  .touch-target {
+    min-height: 44px;
+  }
+
+  /* Increase vertical spacing between interactive elements */
+  .space-y-1 > * + * {
+    margin-top: 0.5rem;
+  }
+
+  .space-y-2 > * + * {
+    margin-top: 0.75rem;
+  }
+
+  .space-y-4 > * + * {
+    margin-top: 1.25rem;
+  }
+}
+
+/* Mobile-specific padding and margins */
+@media (max-width: 768px) {
+  .mobile-p {
+    padding: 1rem;
+  }
+
+  .mobile-px {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .mobile-py {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+}
+
+/* Form field mobile enhancements */
+@media (max-width: 768px) {
+  input, textarea, select {
+    padding: 14px 16px;
+    border-radius: 8px;
+  }
+
+  /* Stack form labels above inputs */
+  .form-group label {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Full-width buttons on mobile */
+  .mobile-full-width {
+    width: 100%;
+  }
+}
+
+/* Mobile modal styles - full screen drawer */
+@media (max-width: 768px) {
+  .modal-mobile {
+    position: fixed;
+    inset: 0;
+    margin: 0;
+    border-radius: 0;
+    max-width: 100%;
+    max-height: 100%;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .modal-mobile-drawer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    margin: 0;
+    border-radius: 1rem 1rem 0 0;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+
+/* Prevent horizontal overflow */
+html, body {
+  overflow-x: hidden;
+}
+
+.overflow-x-hidden {
+  overflow-x: hidden;
+}
+
+/* Better text readability on mobile */
+@media (max-width: 640px) {
+  p, li, td, th {
+    font-size: 0.9375rem; /* 15px */
+    line-height: 1.6;
+  }
+
+  .text-sm {
+    font-size: 0.875rem; /* 14px */
+  }
+
+  .text-xs {
+    font-size: 0.8125rem; /* 13px */
+  }
+}
+
+/* Card touch-friendly padding on mobile */
+@media (max-width: 768px) {
+  .card-mobile {
+    padding: 1.25rem;
+  }
+}
+
+/* Pinch zoom for PDF preview */
+.pinch-zoom {
+  touch-action: pinch-zoom pan-x pan-y;
+}
+
+/* Mobile-friendly scrollable container */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Toast checkmark draw animation */
+@keyframes checkDraw {
+  from { stroke-dashoffset: 24; }
+  to { stroke-dashoffset: 0; }
+}
+
+.animate-check {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: checkDraw 0.3s ease-out 0.1s forwards;
+}
+
+@keyframes successPop {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-success-pop {
+  animation: successPop 0.3s ease-out forwards;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.25s ease-out forwards;
+}
+
+/* Confetti celebration animation */
+@keyframes confetti-fall {
+  0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -10px;
+  width: 10px;
+  height: 10px;
+  animation: confetti-fall 2.5s ease-in forwards;
+}
+
+/* ===========================
+   DOPAMINE REWARD ANIMATIONS
+   =========================== */
+
+/* Score gauge — victory pulse glow behind gauge on high scores */
+@keyframes victoryPulse {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1.2); opacity: 0; }
+}
+
+.animate-victory-pulse {
+  animation: victoryPulse 0.8s ease-out forwards;
+}
+
+/* Score gauge — "STRONG MATCH" badge stamps in */
+@keyframes stampIn {
+  0% { transform: translateX(-50%) scale(0) rotate(-10deg); opacity: 0; }
+  60% { transform: translateX(-50%) scale(1.15) rotate(2deg); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 1; }
+}
+
+.animate-stamp-in {
+  animation: stampIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Score improvement delta floats up into view */
+@keyframes deltaFloat {
+  0% { transform: translateY(4px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-delta-float {
+  animation: deltaFloat 0.6s ease-out forwards;
+}
+
+/* Download celebration — checkmark circle scales in */
+@keyframes celebrationPop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-celebration-pop {
+  animation: celebrationPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Download celebration — gold shimmer sweep */
+@keyframes shimmerSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer-sweep {
+  animation: shimmerSweep 0.8s ease-out 0.3s forwards;
+}
+
+/* Download celebration — text fades up */
+@keyframes celebrationTextIn {
+  0% { transform: translateY(8px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-celebration-text {
+  animation: celebrationTextIn 0.4s ease-out forwards;
+}
+
+/* Dashboard stats — number count-up finish pulse */
+@keyframes statPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.animate-stat-pulse {
+  animation: statPulse 0.3s ease-out;
+}
+
+/* Stagger entrance for dashboard sections */
+@keyframes staggerSlideIn {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-stagger-in {
+  opacity: 0;
+  animation: staggerSlideIn 0.4s ease-out forwards;
+}
+
+/* Gold confetti particle for download celebration */
+@keyframes goldParticle {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-60px) scale(0); opacity: 0; }
+}
+
+.animate-gold-particle {
+  animation: goldParticle 0.8s ease-out forwards;
+}
+
+/* Template selector — gold ring expand on selection */
+@keyframes templateSelectRing {
+  0% { box-shadow: 0 0 0 0 rgba(212,168,75,0.6); }
+  50% { box-shadow: 0 0 0 4px rgba(212,168,75,1); }
+  100% { box-shadow: 0 0 0 6px rgba(212,168,75,0); }
+}
+
+/* ===========================
+   REDUCED MOTION — disable dopamine animations
+   =========================== */
+@media (prefers-reduced-motion: reduce) {
+  .animate-victory-pulse,
+  .animate-stamp-in,
+  .animate-delta-float,
+  .animate-celebration-pop,
+  .animate-shimmer-sweep,
+  .animate-celebration-text,
+  .animate-stat-pulse,
+  .animate-stagger-in,
+  .animate-gold-particle,
+  .animate-fade-in,
+  .animate-success-pop,
+  .animate-slide-in-right,
+  .animate-post-action-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Kill all remaining custom animations */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: max(0px)) {
+  .safe-area-inset-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .safe-area-inset-top {
+    padding-top: max(1rem, env(safe-area-inset-top));
+  }
+}

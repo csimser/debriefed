@@ -1,0 +1,204 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "branch": "Coast Guard",
+    "code_type": "Rating",
+    "description": "Coast Guard Rating to O*NET civilian occupation crosswalk",
+    "source": "O*NET Military Crosswalk + manual additions",
+    "last_updated": "2025-01-27"
+  },
+
+  "ratings": {
+    "AET": {
+      "title": "Aviation Electrical Technician",
+      "onet_codes": ["49-2091.00", "49-2094.00"],
+      "civilian_titles": ["Avionics Technician", "Aircraft Electrician", "Aviation Electronics Technician", "A&P Mechanic"],
+      "industries": ["Aviation", "Aerospace", "Defense"]
+    },
+    "AMT": {
+      "title": "Aviation Maintenance Technician",
+      "onet_codes": ["49-3011.00", "49-2091.00"],
+      "civilian_titles": ["Aircraft Mechanic", "A&P Mechanic", "Aviation Maintenance Technician", "Helicopter Mechanic"],
+      "industries": ["Aviation", "Aerospace", "Emergency Services"]
+    },
+    "AST": {
+      "title": "Aviation Survival Technician",
+      "onet_codes": ["29-2041.00", "53-2012.00", "33-2011.01"],
+      "civilian_titles": ["Search and Rescue Technician", "Paramedic", "Flight Medic", "Emergency Medical Technician", "SAR Swimmer"],
+      "industries": ["Emergency Services", "Aviation", "Healthcare", "Oil & Gas"]
+    },
+    "BM": {
+      "title": "Boatswain's Mate",
+      "onet_codes": ["53-5011.00", "53-5021.00", "47-4061.00"],
+      "civilian_titles": ["Deck Officer", "Boat Captain", "Marina Manager", "Deck Supervisor", "Cargo Operations Manager", "Vessel Master"],
+      "industries": ["Maritime", "Shipping", "Logistics", "Oil & Gas"]
+    },
+    "CS": {
+      "title": "Culinary Specialist",
+      "onet_codes": ["35-2014.00", "35-1011.00", "11-9051.00"],
+      "civilian_titles": ["Chef", "Kitchen Manager", "Food Service Director", "Executive Chef", "Catering Manager"],
+      "industries": ["Food Service", "Hospitality", "Healthcare", "Corporate"]
+    },
+    "DC": {
+      "title": "Damage Controlman",
+      "onet_codes": ["33-2011.00", "47-2152.00", "33-2021.00"],
+      "civilian_titles": ["Firefighter", "Plumber", "Pipefitter", "HAZMAT Technician", "Safety Manager", "Fire Inspector", "Industrial Firefighter"],
+      "industries": ["Fire Service", "Construction", "Oil & Gas", "Manufacturing", "Facilities"]
+    },
+    "EM": {
+      "title": "Electrician's Mate",
+      "onet_codes": ["49-9051.00", "51-8013.00", "47-2111.00"],
+      "civilian_titles": ["Industrial Electrician", "Power Plant Operator", "Marine Electrician", "Electrical Technician", "Maintenance Electrician"],
+      "industries": ["Utilities", "Manufacturing", "Maritime", "Facilities"]
+    },
+    "ET": {
+      "title": "Electronics Technician",
+      "onet_codes": ["49-2022.00", "17-3023.00", "49-2094.00"],
+      "civilian_titles": ["Electronics Technician", "Radar Technician", "Communications Technician", "Field Service Engineer", "Marine Electronics Technician"],
+      "industries": ["Telecommunications", "Electronics", "Maritime", "Defense"]
+    },
+    "GM": {
+      "title": "Gunner's Mate",
+      "onet_codes": ["55-3011.00", "49-9099.00", "33-3051.00"],
+      "civilian_titles": ["Weapons Specialist", "Armorer", "Security Specialist", "Firearms Instructor", "Weapons Technician"],
+      "industries": ["Security", "Law Enforcement", "Defense"]
+    },
+    "HS": {
+      "title": "Health Services Technician",
+      "onet_codes": ["29-2042.00", "29-2041.00", "29-2061.00"],
+      "civilian_titles": ["EMT", "Paramedic", "Medical Assistant", "LPN/LVN", "Healthcare Technician", "Medical Technician"],
+      "industries": ["Healthcare", "Emergency Services", "Hospitals"]
+    },
+    "IS": {
+      "title": "Intelligence Specialist",
+      "onet_codes": ["33-3021.06", "13-1199.02"],
+      "civilian_titles": ["Intelligence Analyst", "Research Analyst", "Threat Analyst", "Security Analyst", "Criminal Analyst"],
+      "industries": ["Intelligence", "Law Enforcement", "Security", "Government"]
+    },
+    "IT": {
+      "title": "Information Systems Technician",
+      "onet_codes": ["15-1232.00", "15-1231.00", "15-1212.00"],
+      "civilian_titles": ["Network Administrator", "Systems Administrator", "IT Specialist", "Cybersecurity Specialist", "Help Desk Technician"],
+      "industries": ["Technology", "Government", "Any Industry"]
+    },
+    "ME": {
+      "title": "Maritime Enforcement Specialist",
+      "onet_codes": ["33-3051.00", "33-3031.00", "33-9032.00"],
+      "civilian_titles": ["Law Enforcement Officer", "Security Specialist", "Customs Officer", "Border Patrol Agent", "Federal Agent"],
+      "industries": ["Law Enforcement", "Security", "Government", "Customs"]
+    },
+    "MK": {
+      "title": "Machinery Technician",
+      "onet_codes": ["49-3031.00", "51-8013.00", "49-9041.00"],
+      "civilian_titles": ["Marine Mechanic", "Diesel Mechanic", "Industrial Mechanic", "Power Plant Operator", "Engine Room Operator"],
+      "industries": ["Maritime", "Energy", "Manufacturing", "Transportation"]
+    },
+    "MST": {
+      "title": "Marine Science Technician",
+      "onet_codes": ["19-4091.00", "19-2041.00", "33-3051.00"],
+      "civilian_titles": ["Environmental Scientist", "Marine Inspector", "Environmental Health Specialist", "Safety Inspector", "Pollution Response Specialist"],
+      "industries": ["Environmental", "Government", "Maritime", "Oil & Gas"]
+    },
+    "OS": {
+      "title": "Operations Specialist",
+      "onet_codes": ["43-5031.00", "53-5021.00", "53-2022.00"],
+      "civilian_titles": ["Operations Coordinator", "Dispatcher", "Vessel Traffic Controller", "Radar Operator", "Maritime Operations Specialist"],
+      "industries": ["Maritime", "Transportation", "Logistics", "Government"]
+    },
+    "PA": {
+      "title": "Public Affairs Specialist",
+      "onet_codes": ["27-3031.00", "11-2031.00", "27-3022.00"],
+      "civilian_titles": ["Public Relations Specialist", "Communications Manager", "Media Relations Specialist", "Marketing Specialist", "Journalist"],
+      "industries": ["Public Relations", "Marketing", "Media", "Government"]
+    },
+    "SK": {
+      "title": "Storekeeper",
+      "onet_codes": ["43-5071.00", "13-1081.00", "43-5061.00"],
+      "civilian_titles": ["Supply Chain Specialist", "Inventory Manager", "Purchasing Agent", "Logistics Coordinator", "Warehouse Manager"],
+      "industries": ["Logistics", "Retail", "Manufacturing", "Government"]
+    },
+    "YN": {
+      "title": "Yeoman",
+      "onet_codes": ["43-6014.00", "43-6011.00", "43-4161.00"],
+      "civilian_titles": ["Administrative Assistant", "Executive Assistant", "Office Manager", "HR Assistant", "Legal Secretary"],
+      "industries": ["Any Industry", "Government", "Legal"]
+    },
+    "MLE": {
+      "title": "Maritime Law Enforcement Specialist",
+      "onet_codes": ["33-3051.00", "33-3031.00"],
+      "civilian_titles": ["Law Enforcement Officer", "Federal Agent", "Customs Officer", "Security Specialist", "Investigator"],
+      "industries": ["Law Enforcement", "Government", "Security"]
+    }
+  },
+
+  "officer_designators": {
+    "AVIA": {
+      "title": "Aviation",
+      "civilian_titles": ["Pilot", "Aviation Manager", "Flight Operations Director", "Chief Pilot"],
+      "industries": ["Aviation", "Corporate", "Government"]
+    },
+    "ENGR": {
+      "title": "Engineering",
+      "civilian_titles": ["Engineering Manager", "Marine Engineer", "Operations Manager", "Facilities Director"],
+      "industries": ["Maritime", "Engineering", "Manufacturing"]
+    },
+    "OPS": {
+      "title": "Operations",
+      "civilian_titles": ["Operations Manager", "Program Manager", "Director of Operations", "General Manager"],
+      "industries": ["Any Industry", "Maritime", "Logistics"]
+    },
+    "INTEL": {
+      "title": "Intelligence",
+      "civilian_titles": ["Intelligence Manager", "Security Director", "Chief Security Officer", "Risk Manager"],
+      "industries": ["Intelligence", "Security", "Government", "Finance"]
+    },
+    "LAW": {
+      "title": "Legal",
+      "civilian_titles": ["Attorney", "Legal Counsel", "Compliance Officer", "Legal Manager"],
+      "industries": ["Legal", "Government", "Corporate"]
+    },
+    "MOPS": {
+      "title": "Marine Operations",
+      "civilian_titles": ["Port Captain", "Fleet Manager", "Marine Operations Manager", "Vessel Operations Director"],
+      "industries": ["Maritime", "Shipping", "Oil & Gas"]
+    }
+  },
+
+  "warrant_officer_specialties": {
+    "BOSN": {
+      "title": "Boatswain",
+      "civilian_titles": ["Marine Superintendent", "Deck Operations Manager", "Port Captain", "Fleet Manager"],
+      "industries": ["Maritime", "Shipping", "Oil & Gas"]
+    },
+    "MACH": {
+      "title": "Machinery Technician",
+      "civilian_titles": ["Chief Engineer", "Marine Engineer", "Plant Manager", "Maintenance Director"],
+      "industries": ["Maritime", "Manufacturing", "Energy"]
+    },
+    "ELC": {
+      "title": "Electronics",
+      "civilian_titles": ["Electronics Manager", "Communications Director", "Technical Manager", "Systems Manager"],
+      "industries": ["Electronics", "Telecommunications", "Technology"]
+    },
+    "INV": {
+      "title": "Investigator",
+      "civilian_titles": ["Special Agent", "Criminal Investigator", "Fraud Investigator", "Security Investigator"],
+      "industries": ["Law Enforcement", "Security", "Insurance", "Government"]
+    },
+    "AERO": {
+      "title": "Aerographer",
+      "civilian_titles": ["Meteorologist", "Weather Forecaster", "Environmental Scientist", "Climate Analyst"],
+      "industries": ["Weather Services", "Aviation", "Government", "Energy"]
+    },
+    "DIVER": {
+      "title": "Diver",
+      "civilian_titles": ["Commercial Diver", "Diving Supervisor", "Underwater Welder", "Salvage Diver"],
+      "industries": ["Oil & Gas", "Construction", "Salvage", "Marine"]
+    },
+    "IST": {
+      "title": "Intelligence Systems Technician",
+      "civilian_titles": ["Intelligence Systems Manager", "IT Security Manager", "Systems Administrator"],
+      "industries": ["Intelligence", "Technology", "Government"]
+    }
+  }
+}

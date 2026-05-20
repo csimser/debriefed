@@ -1,0 +1,45 @@
+[
+  {
+    "id": "406595fd-afdd-42e8-ba66-715e2f55d91e",
+    "key": "announcement",
+    "value": {
+      "type": "info",
+      "enabled": false,
+      "message": ""
+    },
+    "updated_at": "2026-01-19T07:11:01.068682+00:00"
+  },
+  {
+    "id": "69d45e84-f5d4-4bb9-a5d3-b5e84e5cfb6f",
+    "key": "feature_flags",
+    "value": {
+      "job_match": true,
+      "eval_upload": true,
+      "cover_letter": true,
+      "federal_resume": true,
+      "resume_builder": true,
+      "maintenance_mode": false,
+      "linkedin_generator": true
+    },
+    "updated_at": "2026-01-19T07:11:01.068682+00:00"
+  },
+  {
+    "id": "b942bfb8-6109-41c4-8e6b-d24ae193c76c",
+    "key": "external_api_status",
+    "value": {
+      "onet": {
+        "status": "operational",
+        "last_check": null
+      },
+      "anthropic": {
+        "status": "operational",
+        "last_check": null
+      },
+      "career_onestop": {
+        "status": "operational",
+        "last_check": null
+      }
+    },
+    "updated_at": "2026-01-19T07:11:01.068682+00:00"
+  }
+]

@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "Master index for all military-to-civilian occupation crosswalks",
+    "usage": "Use this to route lookups to the correct branch-specific crosswalk file",
+    "files": {
+      "navy": "navy-rating-crosswalk.json",
+      "army": "army-mos-crosswalk.json",
+      "air_force": "airforce-afsc-crosswalk.json",
+      "marines": "marines-mos-crosswalk.json",
+      "coast_guard": "coastguard-rating-crosswalk.json",
+      "space_force": "spaceforce-specialty-crosswalk.json"
+    },
+    "last_updated": "2025-01-27"
+  },
+
+  "branch_detection": {
+    "code_patterns": {
+      "navy": {
+        "pattern": "2-3 letter rating code (e.g., DC, IT, HM, CTN)",
+        "examples": ["DC", "IT", "HM", "CTN", "BM", "EM", "ET", "FC", "GM", "LS", "MA", "MM", "OS", "QM", "YN"]
+      },
+      "army": {
+        "pattern": "2 digits + 1 letter (e.g., 11B, 25B, 68W)",
+        "examples": ["11B", "25B", "68W", "35F", "42A", "88M", "91B", "92Y", "17C", "12B"]
+      },
+      "air_force": {
+        "pattern": "1 digit + 1 letter + 1-3 digits + 1 letter (e.g., 1A0X1, 3D0X2)",
+        "examples": ["1A0X1", "3D0X2", "2A5X1", "3E7X1", "4N0X1", "1B4X1", "3P0X1", "2T3X1"]
+      },
+      "space_force": {
+        "pattern": "Same as Air Force AFSC format - context needed to distinguish",
+        "note": "Space Force inherited AFSC format from Air Force. Disambiguate by asking user or checking space-related codes.",
+        "space_related_codes": ["1C6X1", "1C6X2", "5S0X1", "5C0X1", "1N7X1"],
+        "examples": ["1C6X1", "5S0X1", "5C0X1", "1N7X1", "3D0X2", "1B4X1"]
+      },
+      "marines": {
+        "pattern": "4 digits (e.g., 0311, 0621, 6531)",
+        "examples": ["0311", "0621", "0111", "0231", "1371", "3043", "5811", "6531", "7251", "8411"]
+      },
+      "coast_guard": {
+        "pattern": "2-3 letter rating (e.g., BM, MK, AST, MST)",
+        "examples": ["BM", "MK", "AST", "MST", "ME", "OS", "ET", "IT", "HS", "YN"]
+      }
+    }
+  },
+
+  "lookup_logic": {
+    "description": "JavaScript/TypeScript logic to determine branch from code",
+    "code": "function detectBranch(code) {\n  const normalized = code.toUpperCase().trim();\n  \n  // Air Force AFSC: digit + letter + digits + letter (e.g., 1A0X1)\n  if (/^\\d[A-Z]\\d+X?\\d*$/.test(normalized)) {\n    return 'air_force';\n  }\n  \n  // Army MOS: 2 digits + letter (e.g., 11B, 25B)\n  if (/^\\d{2}[A-Z]\\d?$/.test(normalized)) {\n    return 'army';\n  }\n  \n  // Marines MOS: 4 digits (e.g., 0311)\n  if (/^\\d{4}$/.test(normalized)) {\n    return 'marines';\n  }\n  \n  // Navy/Coast Guard: 2-3 letters (e.g., DC, IT, CTN)\n  // Disambiguate by checking both crosswalks\n  if (/^[A-Z]{2,4}$/.test(normalized)) {\n    return 'navy_or_coastguard'; // Check both files\n  }\n  \n  return 'unknown';\n}"
+  },
+
+  "universal_civilian_industries": [
+    "Technology",
+    "Healthcare",
+    "Government",
+    "Defense",
+    "Security",
+    "Manufacturing",
+    "Logistics",
+    "Construction",
+    "Finance",
+    "Education",
+    "Transportation",
+    "Energy",
+    "Consulting"
+  ],
+
+  "high_demand_transitions": {
+    "cybersecurity": ["CTN", "17C", "1B4X1", "0689", "25D"],
+    "project_management": ["Any E-7+", "Any Officer"],
+    "healthcare": ["HM", "68W", "4N0X1", "HS"],
+    "it_support": ["IT", "25B", "3D0X2", "0651"],
+    "logistics": ["LS", "92A", "2S0X1", "0431"],
+    "firefighting": ["DC", "12M", "3E7X1", "7051"],
+    "law_enforcement": ["MA", "31B", "3P0X1", "5811", "ME"],
+    "aviation_maintenance": ["AD", "AM", "15T", "2A5X1", "6116", "AMT"],
+    "electronics": ["ET", "94E", "2A0X1", "2862"],
+    "space_operations": ["1C6X1", "5S0X1", "1C6X2", "5C0X1", "1N7X1"]
+  }
+}

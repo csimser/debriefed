@@ -1,0 +1,311 @@
+[
+  {
+    "id": "0e649c10-cee7-4075-be55-19254c91a2b0",
+    "program_name": "United Services Military Apprenticeship Program",
+    "program_code": "USMAP",
+    "description": "Allows active duty to earn Department of Labor apprenticeship certifications while performing regular military duties. No additional training required — your job IS the training.",
+    "eligibility": "Active duty Navy, Marine Corps, and Coast Guard. Must be in an eligible rating/MOS.",
+    "branches": [
+      "navy",
+      "usmc",
+      "uscg"
+    ],
+    "status_required": "active_duty",
+    "website_url": "https://usmap.osd.mil/",
+    "how_to_apply": "Register on USMAP website. Select apprenticeship trade matching your rating. Log hours as you work. Receive DoL Journeyman certificate upon completion.",
+    "key_benefits": [
+      "Earn DoL apprenticeship certificate",
+      "No additional training — log hours from regular duties",
+      "Recognized nationwide by employers",
+      "Free",
+      "Multiple trades available per rating"
+    ],
+    "limitations": "Must complete required hours (typically 2,000-8,000 depending on trade). Only Navy, USMC, and USCG currently participate.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "1783ecc5-622c-48e4-bce8-1fd47061858d",
+    "program_name": "DoD SkillBridge",
+    "program_code": "SKILLBRIDGE",
+    "description": "Allows active duty service members to participate in civilian job training, internships, or apprenticeships during their last 180 days of service while still receiving military pay and benefits.",
+    "eligibility": "Active duty within last 180 days of service. Command approval required. Must have honorable service.",
+    "branches": null,
+    "status_required": "active_duty",
+    "website_url": "https://skillbridge.osd.mil/",
+    "how_to_apply": "Find approved SkillBridge program. Get command approval. Participate while drawing full military pay/benefits. Many programs lead directly to job offers.",
+    "key_benefits": [
+      "Continue receiving military pay and benefits",
+      "Real-world civilian work experience",
+      "Many programs lead to direct hire",
+      "Up to 180 days (6 months)",
+      "Hundreds of approved employers"
+    ],
+    "limitations": "Command approval required. Must be within 180 days of separation. Not all commands approve. Mission requirements may limit availability.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "2ff54b76-dff6-410a-ab8a-2791128f59ce",
+    "program_name": "Coast Guard COOL",
+    "program_code": "USCG_COOL",
+    "description": "Coast Guard COOL funds certifications for active duty Coast Guard members.",
+    "eligibility": "Active duty Coast Guard. Must be in a rating eligible for the requested credential.",
+    "branches": [
+      "uscg"
+    ],
+    "status_required": "active_duty",
+    "website_url": "https://www.cool.osd.mil/uscg/",
+    "how_to_apply": "Log into USCG COOL with CAC. Search by rating. Select credential. Submit request.",
+    "key_benefits": [
+      "Covers exam fees",
+      "Covers prep materials",
+      "No payback obligation"
+    ],
+    "limitations": "Must be active duty Coast Guard.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "38493997-ccc0-4526-81c5-a01fcc45423d",
+    "program_name": "Air Force COOL",
+    "program_code": "USAF_COOL",
+    "description": "Air Force COOL funds certifications and licenses for active duty Airmen and Guardians. Covers exam fees and prep materials.",
+    "eligibility": "Active duty Air Force and Space Force. Must be in an AFSC eligible for the requested credential.",
+    "branches": [
+      "usaf",
+      "ussf"
+    ],
+    "status_required": "active_duty",
+    "website_url": "https://www.cool.osd.mil/usaf/",
+    "how_to_apply": "Access AF COOL through the AFVEC portal. Search by AFSC. Select credential. Submit funding request through supervisor.",
+    "key_benefits": [
+      "Covers exam fees",
+      "Covers prep materials and courses",
+      "Multiple certifications allowed",
+      "No payback obligation"
+    ],
+    "limitations": "Must be active duty. AFSC must be eligible for requested credential.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "42022d2f-3e76-4f7d-9551-f3b812334f92",
+    "program_name": "Navy Credentialing Opportunities On-Line",
+    "program_code": "NAVY_COOL",
+    "description": "Navy COOL funds industry certifications and licenses for active duty Sailors. Covers exam fees, prep materials, and some training costs.",
+    "eligibility": "Active duty Navy enlisted and officers. Must be in a rating/designator eligible for the requested credential.",
+    "branches": [
+      "navy"
+    ],
+    "status_required": "active_duty",
+    "website_url": "https://www.cool.osd.mil/navy/",
+    "how_to_apply": "Log into Navy COOL website with CAC. Search for your rating. Select credential. Submit funding request through the portal. Command approval required.",
+    "key_benefits": [
+      "Pays exam fees up to $2,000",
+      "Covers prep materials",
+      "Covers practice exams",
+      "Multiple certifications allowed",
+      "No payback obligation"
+    ],
+    "limitations": "Must be active duty. Credential must be related to your rating or career goals. Some certifications have waiting lists.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "48d6149f-6e48-438b-80c9-50c86aec1c46",
+    "program_name": "Veteran Readiness and Employment (VR&E / Chapter 31)",
+    "program_code": "VRE",
+    "description": "VA program for veterans with service-connected disabilities. Covers training, education, certifications, tools, and job placement support.",
+    "eligibility": "Veterans with service-connected disability rating (typically 10%+) and an employment barrier. Active duty with expected medical separation also eligible.",
+    "branches": null,
+    "status_required": "veteran",
+    "website_url": "https://www.va.gov/careers-employment/vocational-rehabilitation/",
+    "how_to_apply": "Apply through VA.gov. Meet with VR&E counselor. Develop individualized rehabilitation plan.",
+    "key_benefits": [
+      "Covers tuition, fees, books, supplies",
+      "Covers certification exam fees",
+      "Provides tools and equipment needed for employment",
+      "Monthly subsistence allowance",
+      "Job placement assistance",
+      "Can be used after GI Bill is exhausted"
+    ],
+    "limitations": "Must have service-connected disability and employment barrier. Counselor determines eligibility. 48-month entitlement limit.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "5e5ea7ab-027d-4961-b8e0-4f3d00004156",
+    "program_name": "Defense Activity for Non-Traditional Education Support",
+    "program_code": "DANTES",
+    "description": "Funds CLEP and DSST exams for active duty military. Earn college credits for knowledge gained through military experience — for free.",
+    "eligibility": "Active duty military (all branches). Some benefits extend to eligible family members.",
+    "branches": null,
+    "status_required": "active_duty",
+    "website_url": "https://www.dantes.mil/",
+    "how_to_apply": "Visit your base Education Center. Register for CLEP/DSST exam. Take exam at approved testing center on base.",
+    "key_benefits": [
+      "CLEP and DSST exams are free for active duty",
+      "Earn college credits without taking classes",
+      "Credits accepted at most colleges",
+      "Can earn up to 30+ credits",
+      "Multiple subjects available"
+    ],
+    "limitations": "Active duty only for free exams. Veterans pay $90 per CLEP exam. Not all colleges accept all CLEP credits — verify first.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "7a472030-c926-4965-b5b3-96a75ea197e6",
+    "program_name": "Army Credentialing Assistance",
+    "program_code": "ARMY_CA",
+    "description": "Army CA (formerly Army COOL) funds industry certifications and licenses for active duty Soldiers. Up to $4,000 per fiscal year.",
+    "eligibility": "Active duty Army enlisted and officers. Must have commander approval.",
+    "branches": [
+      "army"
+    ],
+    "status_required": "active_duty",
+    "website_url": "https://www.cool.osd.mil/army/",
+    "how_to_apply": "Access Army COOL/CA through ArmyIgnitED portal. Select credential. Get commander approval. Submit voucher request.",
+    "key_benefits": [
+      "Up to $4,000 per fiscal year",
+      "Covers exam fees",
+      "Covers prep courses",
+      "Multiple certs per year allowed",
+      "No payback obligation"
+    ],
+    "limitations": "Annual funding cap of $4,000. Must be active duty. Commander approval required.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "7dcfb38a-e064-4535-bfc9-aaa362683b7b",
+    "program_name": "Veteran Employment Through Technology Education Courses",
+    "program_code": "VET_TEC",
+    "description": "VA program that pays for high-tech training programs WITHOUT using your GI Bill benefits. Covers coding bootcamps, cybersecurity training, IT courses, and more. Includes housing allowance during training.",
+    "eligibility": "Veterans with at least one day of unexpired GI Bill benefits (does not consume your GI Bill). Must be accepted into a VA-approved VET TEC program.",
+    "branches": null,
+    "status_required": "veteran",
+    "website_url": "https://www.va.gov/education/about-gi-bill-benefits/how-to-use-benefits/vettec-high-tech-program/",
+    "how_to_apply": "Apply through VA.gov for VET TEC. Separately apply to a VA-approved training provider. VA matches you with provider.",
+    "key_benefits": [
+      "Does NOT use your GI Bill months",
+      "Full tuition coverage",
+      "Housing allowance during training",
+      "Covers cybersecurity, coding, data, IT training",
+      "Programs range from weeks to months"
+    ],
+    "limitations": "Must have at least 1 day of GI Bill eligibility remaining (but does not consume it). Limited approved providers. Competitive — apply early.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "83d21675-ba57-4e88-9959-045e138778fb",
+    "program_name": "Post-9/11 GI Bill (Chapter 33)",
+    "program_code": "GI_BILL_33",
+    "description": "Covers tuition, fees, housing allowance, and books for degree programs, vocational training, and some certification programs. The most comprehensive education benefit.",
+    "eligibility": "Veterans with at least 90 days of active duty service after 9/10/2001. Benefits scale based on time served (40%-100%). Dependents may use transferred benefits.",
+    "branches": null,
+    "status_required": "veteran",
+    "website_url": "https://www.va.gov/education/about-gi-bill-benefits/post-9-11/",
+    "how_to_apply": "Apply through VA.gov. Obtain Certificate of Eligibility (COE). Enroll in VA-approved program. School certifies enrollment.",
+    "key_benefits": [
+      "Full tuition at public schools (or Yellow Ribbon at private)",
+      "Monthly housing allowance (BAH E-5 rate)",
+      "Book stipend up to $1,000/year",
+      "Up to 36 months of benefits",
+      "Transferable to dependents"
+    ],
+    "limitations": "36 months of benefits total. Must be VA-approved program. Housing allowance based on school zip code. Cannot use simultaneously with other VA education benefits.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "900db661-8618-4b84-86b5-3d741247610a",
+    "program_name": "Marine Corps COOL",
+    "program_code": "USMC_COOL",
+    "description": "Marine Corps COOL funds certifications and licenses for active duty Marines. Covers exam fees and some prep materials.",
+    "eligibility": "Active duty Marines. Must be in an MOS eligible for the requested credential.",
+    "branches": [
+      "usmc"
+    ],
+    "status_required": "active_duty",
+    "website_url": "https://www.cool.osd.mil/usmc/",
+    "how_to_apply": "Log into USMC COOL with CAC. Search by MOS. Select credential. Submit funding request.",
+    "key_benefits": [
+      "Covers exam fees",
+      "Covers some prep materials",
+      "Multiple certifications allowed",
+      "No payback obligation"
+    ],
+    "limitations": "Must be active duty. Credential must relate to MOS or transition goals.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "be8d85a7-6ea0-4531-8b7c-307c7edd06ac",
+    "program_name": "Federal Pell Grant",
+    "program_code": "PELL_GRANT",
+    "description": "Federal grant for undergraduate education based on financial need. Can be used alongside GI Bill. Does not need to be repaid.",
+    "eligibility": "Must demonstrate financial need via FAFSA. Available to undergraduate students who have not earned a bachelor's degree.",
+    "branches": null,
+    "status_required": "all",
+    "website_url": "https://studentaid.gov/understand-aid/types/grants/pell",
+    "how_to_apply": "Complete FAFSA at studentaid.gov. School determines eligibility and applies grant to tuition.",
+    "key_benefits": [
+      "Up to $7,395/year (2024-2025)",
+      "Can be combined with GI Bill",
+      "Does not need to be repaid",
+      "Pocket the difference if GI Bill covers tuition"
+    ],
+    "limitations": "Based on financial need. Only for undergraduate programs. Must complete FAFSA annually.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "e1d9a25c-3c25-4b64-ac26-06a36eea30fb",
+    "program_name": "Onward to Opportunity (O2O)",
+    "program_code": "O2O",
+    "description": "Free career training and industry certification program through Syracuse University IVMF. Covers training and exam costs for in-demand certifications across IT, cybersecurity, project management, and more.",
+    "eligibility": "Active duty service members (any branch, E-1 through O-6), veterans (within 1 year of separation), and military spouses.",
+    "branches": null,
+    "status_required": "all",
+    "website_url": "https://ivmf.syracuse.edu/programs/career-training/",
+    "how_to_apply": "Apply online at ivmf.syracuse.edu. Select certification track. Complete online coursework. Take certification exam (paid by program).",
+    "key_benefits": [
+      "100% free — training AND exam fees covered",
+      "Self-paced online learning",
+      "Career coaching included",
+      "Available to active duty, veterans, and spouses",
+      "Covers PMP, CISSP, AWS, CompTIA, Scrum, and many more"
+    ],
+    "limitations": "Must apply and be accepted. Limited seats per cohort. Veterans must be within 1 year of separation (some exceptions). Active duty needs command approval.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "ea1804ae-a845-49c8-8a0e-18861e3148b2",
+    "program_name": "Montgomery GI Bill (Chapter 30)",
+    "program_code": "GI_BILL_30",
+    "description": "Monthly education benefit for veterans who opted in during service. Fixed monthly payment regardless of tuition cost.",
+    "eligibility": "Veterans who elected and paid into MGIB during service ($100/month for 12 months). Must have honorable discharge.",
+    "branches": null,
+    "status_required": "veteran",
+    "website_url": "https://www.va.gov/education/about-gi-bill-benefits/montgomery-active-duty/",
+    "how_to_apply": "Apply through VA.gov. Monthly payments sent directly to veteran.",
+    "key_benefits": [
+      "Fixed monthly payment (~$2,200/month full-time)",
+      "36 months of benefits",
+      "Can be used for degree programs, vocational, flight training"
+    ],
+    "limitations": "Lower benefit than Post-9/11 in most cases. Can convert to Post-9/11 if eligible.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  },
+  {
+    "id": "fef417d3-63d4-488c-b5ef-668fdeba058f",
+    "program_name": "Workforce Innovation and Opportunity Act (WIOA)",
+    "program_code": "WIOA",
+    "description": "Federal job training program available through American Job Centers. Can fund certifications, training programs, and career services for eligible veterans.",
+    "eligibility": "Veterans receive priority of service at American Job Centers. Must be registered with local workforce center.",
+    "branches": null,
+    "status_required": "veteran",
+    "website_url": "https://www.careeronestop.org/LocalHelp/AmericanJobCenters/american-job-centers.aspx",
+    "how_to_apply": "Visit local American Job Center. Register as veteran (priority service). Work with career counselor to identify approved training programs.",
+    "key_benefits": [
+      "Veterans get priority of service",
+      "Can fund certification exams",
+      "Can fund training programs",
+      "Career counseling included",
+      "Job placement assistance"
+    ],
+    "limitations": "Funding varies by state and local area. Must work through American Job Center. Some programs have waiting lists.",
+    "created_at": "2026-02-15T17:49:31.380721+00:00"
+  }
+]

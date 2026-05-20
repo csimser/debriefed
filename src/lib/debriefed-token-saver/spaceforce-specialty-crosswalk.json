@@ -1,0 +1,223 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "branch": "Space Force",
+    "code_type": "Specialty Code (similar to AFSC)",
+    "description": "Space Force specialty codes to O*NET civilian occupation crosswalk",
+    "note": "Space Force established Dec 2019, inherited many codes from Air Force space operations",
+    "source": "O*NET Military Crosswalk + manual additions",
+    "last_updated": "2025-01-27"
+  },
+
+  "specialty_codes": {
+    "1C6X1": {
+      "title": "Space Systems Operations",
+      "onet_codes": ["17-3023.00", "15-1211.00", "15-1299.00"],
+      "civilian_titles": ["Satellite Operator", "Space Systems Analyst", "Mission Operations Specialist", "Spacecraft Controller", "Satellite Systems Engineer", "Ground Systems Operator"],
+      "industries": ["Aerospace", "Space", "Defense", "Telecommunications", "Government"]
+    },
+    "1N7X1": {
+      "title": "Space Intelligence Specialist",
+      "onet_codes": ["33-3021.06", "15-2041.00"],
+      "civilian_titles": ["Space Intelligence Analyst", "Threat Analyst", "ISR Analyst", "Defense Analyst", "Space Domain Awareness Analyst"],
+      "industries": ["Intelligence", "Aerospace", "Defense", "Government"]
+    },
+    "3D0X2": {
+      "title": "Cyber Systems Operations",
+      "onet_codes": ["15-1231.00", "15-1232.00", "15-1212.00"],
+      "civilian_titles": ["Systems Administrator", "Network Administrator", "IT Specialist", "Cybersecurity Specialist", "Cloud Systems Administrator"],
+      "industries": ["Technology", "Aerospace", "Government", "Any Industry"]
+    },
+    "3D0X3": {
+      "title": "Cyber Surety",
+      "onet_codes": ["15-1212.00", "15-1299.09"],
+      "civilian_titles": ["Information Security Analyst", "Security Administrator", "Compliance Analyst", "IT Auditor", "Cybersecurity Engineer"],
+      "industries": ["Technology", "Aerospace", "Finance", "Government"]
+    },
+    "3D1X2": {
+      "title": "Cyber Transport Systems",
+      "onet_codes": ["15-1231.00", "15-1232.00"],
+      "civilian_titles": ["Network Administrator", "Network Engineer", "Systems Administrator", "Communications Specialist", "Infrastructure Engineer"],
+      "industries": ["Technology", "Telecommunications", "Aerospace"]
+    },
+    "5C0X1": {
+      "title": "Command and Control Battle Management Operations",
+      "onet_codes": ["15-1211.00", "17-3023.00", "43-5031.00"],
+      "civilian_titles": ["Operations Center Manager", "Command Center Operator", "Battle Management Specialist", "Space Operations Controller", "Mission Director"],
+      "industries": ["Defense", "Aerospace", "Government", "Emergency Management"]
+    },
+    "5S0X1": {
+      "title": "Space Systems Operations",
+      "onet_codes": ["17-3023.00", "15-1211.00", "49-2091.00"],
+      "civilian_titles": ["Satellite Operations Specialist", "Space Systems Operator", "Mission Control Specialist", "Ground Station Operator", "Spacecraft Operations Engineer"],
+      "industries": ["Aerospace", "Space", "Telecommunications", "Defense"]
+    },
+    "1C6X2": {
+      "title": "Space Surveillance and Control",
+      "onet_codes": ["17-3023.00", "15-2041.00"],
+      "civilian_titles": ["Space Surveillance Analyst", "Orbital Analyst", "Space Tracking Specialist", "Space Domain Awareness Operator", "Conjunction Assessment Analyst"],
+      "industries": ["Aerospace", "Defense", "Government", "Space"]
+    },
+    "1W0X1": {
+      "title": "Weather",
+      "onet_codes": ["19-2021.00", "19-2099.01"],
+      "civilian_titles": ["Meteorologist", "Weather Forecaster", "Atmospheric Scientist", "Space Weather Analyst", "Environmental Scientist"],
+      "industries": ["Weather Services", "Aerospace", "Aviation", "Government", "Energy"]
+    },
+    "3E0X2": {
+      "title": "Electrical Power Production",
+      "onet_codes": ["51-8013.00", "49-9051.00"],
+      "civilian_titles": ["Power Plant Operator", "Electrical Power Specialist", "Generator Technician", "Utilities Technician"],
+      "industries": ["Utilities", "Energy", "Aerospace", "Facilities"]
+    },
+    "3F0X1": {
+      "title": "Personnel",
+      "onet_codes": ["13-1071.00", "43-4161.00"],
+      "civilian_titles": ["HR Specialist", "Personnel Specialist", "HR Generalist", "Benefits Administrator", "Talent Acquisition Specialist"],
+      "industries": ["Human Resources", "Any Industry"]
+    },
+    "3F5X1": {
+      "title": "Administration",
+      "onet_codes": ["43-6014.00", "43-6011.00"],
+      "civilian_titles": ["Administrative Assistant", "Executive Assistant", "Office Manager", "Administrative Coordinator", "Program Assistant"],
+      "industries": ["Any Industry"]
+    },
+    "6F0X1": {
+      "title": "Financial Management",
+      "onet_codes": ["13-2011.00", "43-3031.00"],
+      "civilian_titles": ["Financial Analyst", "Accountant", "Budget Analyst", "Financial Manager", "Cost Analyst"],
+      "industries": ["Finance", "Accounting", "Government", "Aerospace"]
+    },
+    "2S0X1": {
+      "title": "Material Management",
+      "onet_codes": ["43-5071.00", "13-1081.00"],
+      "civilian_titles": ["Supply Chain Specialist", "Inventory Manager", "Materials Manager", "Logistics Coordinator", "Procurement Specialist"],
+      "industries": ["Logistics", "Aerospace", "Manufacturing"]
+    },
+    "6C0X1": {
+      "title": "Contracting",
+      "onet_codes": ["13-1023.00", "13-1021.00"],
+      "civilian_titles": ["Contract Specialist", "Procurement Specialist", "Contracting Officer", "Acquisitions Specialist", "Contract Manager"],
+      "industries": ["Government", "Defense", "Aerospace", "Procurement"]
+    },
+    "1N0X1": {
+      "title": "All Source Intelligence Analyst",
+      "onet_codes": ["33-3021.06", "13-1199.02"],
+      "civilian_titles": ["Intelligence Analyst", "All-Source Analyst", "Threat Analyst", "Research Analyst", "Defense Intelligence Analyst"],
+      "industries": ["Intelligence", "Defense", "Aerospace", "Consulting"]
+    },
+    "1N2X1": {
+      "title": "Signals Intelligence Analyst",
+      "onet_codes": ["33-3021.06", "15-1299.09"],
+      "civilian_titles": ["SIGINT Analyst", "Signals Analyst", "Communications Analyst", "Electronic Intelligence Analyst"],
+      "industries": ["Intelligence", "Defense", "Aerospace", "Technology"]
+    },
+    "1N4X1": {
+      "title": "Fusion Analyst",
+      "onet_codes": ["33-3021.06", "15-2041.00"],
+      "civilian_titles": ["Fusion Analyst", "Intelligence Analyst", "Data Analyst", "Space Domain Analyst", "Multi-INT Analyst"],
+      "industries": ["Intelligence", "Defense", "Aerospace", "Technology"]
+    },
+    "1B4X1": {
+      "title": "Cyber Warfare Operations",
+      "onet_codes": ["15-1212.00", "15-1299.09"],
+      "civilian_titles": ["Cybersecurity Specialist", "Cyber Operations Specialist", "Penetration Tester", "Red Team Operator", "Offensive Security Analyst"],
+      "industries": ["Cybersecurity", "Defense", "Aerospace", "Technology"]
+    },
+    "3D0X4": {
+      "title": "Computer Systems Programming",
+      "onet_codes": ["15-1252.00", "15-1251.00"],
+      "civilian_titles": ["Software Developer", "Programmer", "Application Developer", "Software Engineer", "Systems Developer"],
+      "industries": ["Technology", "Aerospace", "Defense"]
+    },
+    "5R0X1": {
+      "title": "Chaplain Assistant",
+      "onet_codes": ["21-2099.00", "43-9061.00"],
+      "civilian_titles": ["Religious Program Coordinator", "Administrative Assistant", "Community Outreach Coordinator", "Chaplain Services Specialist"],
+      "industries": ["Religious Organizations", "Non-Profit", "Government"]
+    },
+    "3P0X1": {
+      "title": "Security Forces",
+      "onet_codes": ["33-3051.00", "33-9032.00"],
+      "civilian_titles": ["Security Officer", "Police Officer", "Security Manager", "Loss Prevention Specialist", "Federal Protective Officer"],
+      "industries": ["Security", "Law Enforcement", "Government", "Aerospace"]
+    },
+    "8R000": {
+      "title": "Recruiter",
+      "onet_codes": ["13-1071.00", "41-3099.00"],
+      "civilian_titles": ["Recruiter", "Talent Acquisition Specialist", "HR Recruiter", "Staffing Specialist", "Technical Recruiter"],
+      "industries": ["Human Resources", "Staffing", "Aerospace", "Technology"]
+    },
+    "8B000": {
+      "title": "Military Training Instructor",
+      "onet_codes": ["25-3099.00", "25-3021.00"],
+      "civilian_titles": ["Training Instructor", "Corporate Trainer", "Leadership Trainer", "Technical Trainer", "Instructional Specialist"],
+      "industries": ["Training", "Education", "Aerospace", "Corporate"]
+    },
+    "9S100": {
+      "title": "Technical Applications Specialist",
+      "onet_codes": ["15-1299.00", "15-2041.00", "17-2199.00"],
+      "civilian_titles": ["Data Scientist", "Technical Analyst", "Systems Analyst", "Research Scientist", "Operations Research Analyst"],
+      "industries": ["Technology", "Aerospace", "Defense", "Research"]
+    }
+  },
+
+  "emerging_space_roles": {
+    "description": "New civilian space industry roles Space Force veterans are well-positioned for",
+    "roles": {
+      "satellite_constellation_operator": {
+        "description": "Managing large satellite constellations (Starlink, OneWeb, etc.)",
+        "relevant_codes": ["1C6X1", "5S0X1", "1C6X2"],
+        "civilian_titles": ["Constellation Manager", "Fleet Operations Specialist", "Satellite Network Controller"],
+        "industries": ["SpaceX", "OneWeb", "Amazon Kuiper", "Telecommunications"]
+      },
+      "space_traffic_management": {
+        "description": "Tracking and deconflicting orbital objects",
+        "relevant_codes": ["1C6X2", "5C0X1"],
+        "civilian_titles": ["Space Traffic Coordinator", "Orbital Safety Analyst", "Conjunction Assessment Specialist"],
+        "industries": ["FAA", "Space Companies", "Defense Contractors"]
+      },
+      "launch_operations": {
+        "description": "Supporting commercial launch operations",
+        "relevant_codes": ["1C6X1", "5S0X1"],
+        "civilian_titles": ["Launch Controller", "Range Safety Officer", "Launch Operations Specialist"],
+        "industries": ["SpaceX", "ULA", "Rocket Lab", "Blue Origin"]
+      },
+      "ground_systems_engineer": {
+        "description": "Maintaining satellite ground infrastructure",
+        "relevant_codes": ["3D1X2", "3D0X2", "1C6X1"],
+        "civilian_titles": ["Ground Systems Engineer", "Satellite Ground Station Technician", "SATCOM Engineer"],
+        "industries": ["Defense Contractors", "Telecommunications", "Space Companies"]
+      },
+      "space_cybersecurity": {
+        "description": "Protecting space assets and ground systems",
+        "relevant_codes": ["1B4X1", "3D0X3", "3D0X2"],
+        "civilian_titles": ["Space Systems Cybersecurity Engineer", "Satellite Security Analyst", "Space Cyber Operations Specialist"],
+        "industries": ["Defense", "Aerospace", "Telecommunications"]
+      }
+    }
+  },
+
+  "commercial_space_employers": [
+    "SpaceX",
+    "Blue Origin",
+    "United Launch Alliance (ULA)",
+    "Northrop Grumman",
+    "Lockheed Martin Space",
+    "Boeing Space",
+    "L3Harris",
+    "Ball Aerospace",
+    "Maxar Technologies",
+    "Planet Labs",
+    "Rocket Lab",
+    "Sierra Space",
+    "Relativity Space",
+    "Astroscale",
+    "Spire Global",
+    "Iridium",
+    "SES",
+    "Intelsat",
+    "Viasat",
+    "Amazon Project Kuiper"
+  ]
+}

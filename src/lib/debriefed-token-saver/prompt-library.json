@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "description": "Token-optimized prompts for Debriefed AI features",
+    "principles": [
+      "Use JSON output only - no prose",
+      "2-3 examples beat long explanations",
+      "Keep system prompts under 300 tokens",
+      "Batch operations when possible",
+      "Use Haiku for simple tasks, Sonnet for complex"
+    ],
+    "last_updated": "2025-01-27"
+  },
+
+  "bullet_rewrite": {
+    "model": "haiku",
+    "description": "Rewrite military bullet to civilian language",
+    "system_prompt": "You rewrite military resume bullets into civilian language. Output JSON only.",
+    "user_template": "Rewrite for {{target_role}} role:\n\nOriginal: {{bullet}}\n\nOutput format:\n{\"rewritten\": \"...\", \"action_verb\": \"...\", \"skills\": []}",
+    "examples": [
+      {
+        "input": "Led 15-person damage control team during INSURV, achieving zero discrepancies across 47 inspection items",
+        "output": {
+          "rewritten": "Led 15-member emergency response team through comprehensive compliance audit, achieving 100% pass rate across 47 evaluation criteria",
+          "action_verb": "Led",
+          "skills": ["Team Leadership", "Compliance", "Emergency Response", "Quality Assurance"]
+        }
+      },
+      {
+        "input": "Managed $2.3M OPTAR budget for 3M maintenance program supporting 200+ equipment items",
+        "output": {
+          "rewritten": "Managed $2.3M operational budget for preventive maintenance program covering 200+ equipment assets",
+          "action_verb": "Managed",
+          "skills": ["Budget Management", "Preventive Maintenance", "Asset Management"]
+        }
+      }
+    ],
+    "max_tokens": 200,
+    "temperature": 0.3
+  },
+
+  "bullet_batch_rewrite": {
+    "model": "haiku",
+    "description": "Rewrite multiple bullets in single call",
+    "system_prompt": "Rewrite military resume bullets to civilian language. JSON array output only.",
+    "user_template": "Target role: {{target_role}}\n\nBullets:\n{{bullets_numbered}}\n\nOutput: [{\"id\": 1, \"rewritten\": \"...\", \"skills\": []}, ...]",
+    "max_bullets_per_call": 5,
+    "max_tokens": 600,
+    "temperature": 0.3
+  },
+
+  "job_analysis": {
+    "model": "sonnet",
+    "description": "Analyze job posting and extract requirements",
+    "system_prompt": "Extract job requirements. JSON only. No explanations.",
+    "user_template": "Analyze this job posting:\n\n{{job_description}}\n\nOutput:\n{\n  \"title\": \"\",\n  \"company\": \"\",\n  \"hard_skills\": [],\n  \"soft_skills\": [],\n  \"certifications\": [],\n  \"experience_years\": \"\",\n  \"education\": \"\",\n  \"keywords\": [],\n  \"deal_breakers\": []\n}",
+    "max_tokens": 400,
+    "temperature": 0.2
+  },
+
+  "skill_gap_analysis": {
+    "model": "haiku",
+    "description": "Compare user skills to job requirements",
+    "system_prompt": "Compare skills. Output match percentages and gaps. JSON only.",
+    "user_template": "Job requires: {{job_skills}}\n\nUser has: {{user_skills}}\n\nOutput:\n{\n  \"match_percentage\": 0,\n  \"matched_skills\": [],\n  \"missing_skills\": [],\n  \"partial_matches\": [{\"user_skill\": \"\", \"job_skill\": \"\", \"relevance\": \"\"}],\n  \"recommendations\": []\n}",
+    "max_tokens": 350,
+    "temperature": 0.2
+  },
+
+  "cover_letter": {
+    "model": "sonnet",
+    "description": "Generate tailored cover letter",
+    "system_prompt": "Write professional cover letters. No AI-sounding phrases. Direct and confident tone. 3 paragraphs max.",
+    "user_template": "Write a cover letter.\n\nApplicant: {{name}}\nTarget: {{job_title}} at {{company}}\nKey qualifications: {{top_3_qualifications}}\nRelevant experience: {{relevant_experience}}\nWhy this company: {{company_connection}}\n\nOutput the cover letter text only. No JSON. No explanations.",
+    "banned_phrases": [
+      "I am writing to express my interest",
+      "I am excited to apply",
+      "I believe I would be a great fit",
+      "Thank you for considering my application",
+      "I am confident that",
+      "unique opportunity",
+      "fast-paced environment",
+      "team player",
+      "think outside the box",
+      "hit the ground running",
+      "leverage my skills",
+      "passionate about"
+    ],
+    "max_tokens": 500,
+    "temperature": 0.5
+  },
+
+  "linkedin_optimize": {
+    "model": "sonnet",
+    "description": "Optimize LinkedIn profile sections",
+    "system_prompt": "Optimize LinkedIn content. Professional but personable. Include keywords naturally. JSON output.",
+    "user_template": "Optimize for {{target_role}}:\n\nCurrent headline: {{headline}}\nCurrent about: {{about}}\nExperience: {{experience_summary}}\n\nOutput:\n{\n  \"headline\": \"...\",\n  \"about\": \"...\",\n  \"skills_to_add\": [],\n  \"keywords_used\": []\n}",
+    "max_tokens": 600,
+    "temperature": 0.5
+  },
+
+  "experience_summary": {
+    "model": "haiku",
+    "description": "Generate brief experience summary from bullets",
+    "system_prompt": "Summarize experience in 2-3 sentences. Professional tone. JSON output.",
+    "user_template": "Summarize this role:\n\nTitle: {{title}}\nOrg: {{organization}}\nBullets: {{bullets}}\n\nOutput: {\"summary\": \"...\"}",
+    "max_tokens": 150,
+    "temperature": 0.4
+  },
+
+  "eval_extraction": {
+    "model": "sonnet",
+    "description": "Extract accomplishments from military evaluation",
+    "system_prompt": "Extract quantified accomplishments from military evaluations. Convert to civilian resume bullets. JSON array output.",
+    "user_template": "Extract accomplishments:\n\n{{eval_text}}\n\nOutput:\n[\n  {\n    \"original\": \"...\",\n    \"civilian_bullet\": \"...\",\n    \"metrics\": [],\n    \"skills\": []\n  }\n]",
+    "max_tokens": 800,
+    "temperature": 0.3
+  },
+
+  "federal_resume_block": {
+    "model": "sonnet",
+    "description": "Expand bullet into federal resume format",
+    "system_prompt": "Expand accomplishments into federal resume style. Include context, action, result. 4-6 sentences. Professional narrative format.",
+    "user_template": "Expand for federal resume (GS-{{grade_level}}):\n\nBullet: {{bullet}}\nJob series: {{job_series}}\n\nOutput: {\"expanded\": \"...\", \"keywords\": []}",
+    "max_tokens": 300,
+    "temperature": 0.4
+  },
+
+  "mos_to_civilian": {
+    "model": "haiku",
+    "description": "Translate MOS/NEC/AFSC to civilian job titles - USE ONET LOOKUP FIRST",
+    "note": "Check O*NET crosswalk database before calling AI. Only use AI for codes not in database.",
+    "system_prompt": "Translate military job codes to civilian equivalents. JSON only.",
+    "user_template": "Translate {{branch}} {{code}} ({{title}}):\n\nOutput:\n{\n  \"civilian_titles\": [],\n  \"industries\": [],\n  \"transferable_skills\": [],\n  \"certifications_to_pursue\": []\n}",
+    "max_tokens": 250,
+    "temperature": 0.3
+  },
+
+  "resume_import_parse": {
+    "model": "sonnet",
+    "description": "Parse imported resume into structured data",
+    "system_prompt": "Parse resume text into structured JSON. Extract all sections accurately.",
+    "user_template": "Parse this resume:\n\n{{resume_text}}\n\nOutput:\n{\n  \"contact\": {\"name\": \"\", \"email\": \"\", \"phone\": \"\", \"location\": \"\"},\n  \"summary\": \"\",\n  \"experience\": [{\"title\": \"\", \"company\": \"\", \"dates\": \"\", \"bullets\": []}],\n  \"education\": [{\"degree\": \"\", \"school\": \"\", \"year\": \"\"}],\n  \"certifications\": [],\n  \"skills\": []\n}",
+    "max_tokens": 1000,
+    "temperature": 0.2
+  },
+
+  "keyword_injection": {
+    "model": "haiku",
+    "description": "Add missing keywords to bullet naturally",
+    "system_prompt": "Add keywords to resume bullet naturally. Don't force. If can't add naturally, return original. JSON only.",
+    "user_template": "Add keywords if natural:\n\nBullet: {{bullet}}\nKeywords to add: {{keywords}}\n\nOutput: {\"modified\": \"...\", \"keywords_added\": [], \"keywords_skipped\": []}",
+    "max_tokens": 200,
+    "temperature": 0.3
+  },
+
+  "interview_prep": {
+    "model": "sonnet",
+    "description": "Generate interview questions and STAR responses",
+    "system_prompt": "Generate likely interview questions and STAR-format response frameworks. JSON output.",
+    "user_template": "Job: {{job_title}} at {{company}}\nCandidate background: {{background_summary}}\n\nOutput:\n{\n  \"behavioral_questions\": [\n    {\"question\": \"\", \"star_framework\": {\"situation\": \"\", \"task\": \"\", \"action\": \"\", \"result\": \"\"}}\n  ],\n  \"technical_questions\": [],\n  \"questions_to_ask\": []\n}",
+    "max_tokens": 800,
+    "temperature": 0.5
+  }
+}

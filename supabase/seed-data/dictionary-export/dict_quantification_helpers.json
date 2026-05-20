@@ -1,0 +1,304 @@
+[
+  {
+    "id": "12aac810-cfa3-455c-ab1b-b12ae29dc90a",
+    "vague_phrase": "conducted investigations",
+    "quantified_alternatives": [
+      "Conducted {{X}} investigations, achieving {{Y}}% resolution rate",
+      "Investigated {{X}} incidents using {{method}}, identifying root causes and implementing {{Y}} corrective actions",
+      "Led {{X}} investigative cases with findings resulting in ${{Y}} in recovered assets/savings",
+      "Completed {{X}} investigations averaging {{Y}}-day turnaround with {{Z}}% case closure rate"
+    ],
+    "category": "compliance",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "36816979-ac71-4ce6-a7f1-456b31311a0e",
+    "vague_phrase": "ensured compliance",
+    "quantified_alternatives": [
+      "Maintained {{X}}% compliance across {{Y}} regulatory areas over {{Z}} years",
+      "Achieved zero deficiencies across {{X}} inspection areas during {{Y}} external audits",
+      "Ensured {{X}}% compliance with {{Y}} regulations for {{Z}}-person organization",
+      "Passed {{X}} consecutive audits with zero findings spanning {{Y}}-year period"
+    ],
+    "category": "compliance",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "3fad26d2-1d89-4096-9010-89a1c35fa34b",
+    "vague_phrase": "led a team",
+    "quantified_alternatives": [
+      "Led a team of {{X}} personnel",
+      "Directed {{X}}-member cross-functional team",
+      "Supervised {{X}} direct reports across {{Y}} functional areas",
+      "Managed team of {{X}} including {{Y}} supervisors and {{Z}} technicians"
+    ],
+    "category": "leadership",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "417e3004-96a9-4665-8132-5e4cb23d1f56",
+    "vague_phrase": "trained personnel",
+    "quantified_alternatives": [
+      "Trained {{X}} personnel across {{Y}} courses with {{Z}}% pass rate",
+      "Developed and delivered training to {{X}} employees, improving competency scores by {{Y}}%",
+      "Instructed {{X}} classes to {{Y}} total students, maintaining {{Z}}/5.0 instructor rating",
+      "Certified {{X}} personnel in {{Y}} skill areas within {{Z}}-day timeline"
+    ],
+    "category": "training",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "550152f2-1e1d-407d-9a7e-aa63b5ad97d7",
+    "vague_phrase": "completed inspections",
+    "quantified_alternatives": [
+      "Passed X inspections with zero deficiencies",
+      "Achieved X% compliance rate across Y inspection areas",
+      "Led organization through X major inspections scoring Y"
+    ],
+    "category": "compliance",
+    "tips": "Include number of inspections and results",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "5813dd3a-1a2b-4e5e-9031-d97243623517",
+    "vague_phrase": "reduced costs",
+    "quantified_alternatives": [
+      "Reduced operational costs by X% saving $Y annually",
+      "Cut waste by X% through process improvement",
+      "Identified $X in cost savings through Y initiative"
+    ],
+    "category": "financial",
+    "tips": "Use both percentage and dollar amount",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "7e9fae5c-fb85-4abf-8f8c-e1c327fc468f",
+    "vague_phrase": "saved money",
+    "quantified_alternatives": [
+      "Identified cost savings of ${{X}} annually through {{method}}",
+      "Reduced expenditures by {{X}}% (${{Y}}) through strategic {{method}}",
+      "Negotiated contracts saving ${{X}} over {{Y}}-year period",
+      "Generated ${{X}} in savings through {{Y}}% reduction in {{category}} spending"
+    ],
+    "category": "financial",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "8018eab3-4d3a-4c67-8cfa-dd8dad11990a",
+    "vague_phrase": "managed budget",
+    "quantified_alternatives": [
+      "Managed $X annual operating budget",
+      "Controlled $X in procurement spending",
+      "Administered $X budget with zero audit findings"
+    ],
+    "category": "financial",
+    "tips": "Always use dollar amounts",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "81e23bb9-e7ca-4b42-8842-aff2f43b7eaa",
+    "vague_phrase": "improved readiness",
+    "quantified_alternatives": [
+      "Increased operational readiness from X% to Y%",
+      "Improved equipment availability rate to X%",
+      "Achieved X% mission capable rate, exceeding Y% standard"
+    ],
+    "category": "operations",
+    "tips": "Use before/after percentages when possible",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "85d35fe6-8a5e-4987-8031-df09937165fe",
+    "vague_phrase": "maintained equipment",
+    "quantified_alternatives": [
+      "Maintained {{X}} equipment items valued at ${{Y}} with {{Z}}% operational availability",
+      "Managed preventive maintenance program for {{X}} assets, achieving {{Y}}% on-time completion",
+      "Serviced {{X}} systems with zero unscheduled downtime over {{Y}}-month period",
+      "Administered maintenance program covering {{X}} line items valued at ${{Y}}, reducing failures by {{Z}}%"
+    ],
+    "category": "technical",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "88fcf675-79db-479d-9e50-a5bb8467485f",
+    "vague_phrase": "completed projects",
+    "quantified_alternatives": [
+      "Delivered {{X}} projects valued at ${{Y}} on time and within budget",
+      "Completed {{X}} projects with {{Y}}% on-time delivery rate",
+      "Managed portfolio of {{X}} concurrent projects totaling ${{Y}}",
+      "Executed {{X}} projects from initiation to closeout, averaging {{Y}} days under schedule"
+    ],
+    "category": "operations",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "89ad5d04-00b0-4444-9086-80ca132dff75",
+    "vague_phrase": "improved processes",
+    "quantified_alternatives": [
+      "Streamlined X process reducing time by Y%",
+      "Eliminated X bottlenecks saving Y hours monthly",
+      "Automated X task reducing processing time from Y to Z"
+    ],
+    "category": "administrative",
+    "tips": "Show time or efficiency gain with before/after",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "9ae778b4-5fa2-41f8-b483-39eb0d02d434",
+    "vague_phrase": "processed requests",
+    "quantified_alternatives": [
+      "Processed X requests per month with Y% accuracy",
+      "Managed X transactions valued at $Y",
+      "Handled X cases with Z-hour average turnaround"
+    ],
+    "category": "administrative",
+    "tips": "Include volume, accuracy, and/or speed",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "b74146db-0cb7-44a6-a89e-93ac30de7eda",
+    "vague_phrase": "managed personnel",
+    "quantified_alternatives": [
+      "Managed a team of X personnel",
+      "Supervised X direct reports across Y departments",
+      "Led X-person cross-functional team"
+    ],
+    "category": "leadership",
+    "tips": "Always include the specific number of people managed",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "cfae763b-4fe6-4f61-8baf-12316c496960",
+    "vague_phrase": "handled sensitive information",
+    "quantified_alternatives": [
+      "Managed {{X}} classified documents with zero security incidents over {{Y}} years",
+      "Administered security program for {{X}} cleared personnel with {{Y}}% compliance rate",
+      "Processed {{X}} security clearance actions per {{period}} with {{Y}}-day average turnaround",
+      "Maintained accountability of {{X}} controlled items with zero discrepancies across {{Y}} audits"
+    ],
+    "category": "security",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "d0412ada-27bc-4964-b1ba-95ca90c351d5",
+    "vague_phrase": "supported operations",
+    "quantified_alternatives": [
+      "Provided support for X simultaneous operations",
+      "Enabled Y missions supporting Z personnel",
+      "Sustained operations across X locations serving Y users"
+    ],
+    "category": "operations",
+    "tips": "Quantify scope: how many operations, people, locations",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "d2092324-9c1a-478a-a4f5-30c4df2184ef",
+    "vague_phrase": "trained personnel",
+    "quantified_alternatives": [
+      "Trained X personnel achieving Y% qualification rate",
+      "Developed training program for X students with Z% pass rate",
+      "Instructed X classes reaching Y total students"
+    ],
+    "category": "training",
+    "tips": "Include number trained and pass/qual rate",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "d3f638f5-3720-43c3-8e54-877bd93b66ae",
+    "vague_phrase": "managed inventory",
+    "quantified_alternatives": [
+      "Managed {{X}} line items valued at ${{Y}} with {{Z}}% accuracy",
+      "Maintained inventory of {{X}} items across {{Y}} locations with zero discrepancies",
+      "Reduced excess inventory by {{X}}% while maintaining {{Y}}% fill rate",
+      "Processed {{X}} transactions per {{period}} with {{Y}}% first-pass accuracy"
+    ],
+    "category": "logistics",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "d4b7daf1-5a02-4551-96a3-810dc2f3ee45",
+    "vague_phrase": "managed safety program",
+    "quantified_alternatives": [
+      "Directed safety program for {{X}}-person organization with {{Y}} consecutive incident-free days",
+      "Conducted {{X}} safety inspections per {{period}}, identifying and mitigating {{Y}} hazards",
+      "Reduced workplace incidents by {{X}}% through {{Y}} program implementation",
+      "Maintained zero lost-time injuries across {{X}} personnel over {{Y}}-month period"
+    ],
+    "category": "safety",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "da5bb897-7da6-4e37-bd3c-ac967b8166b1",
+    "vague_phrase": "provided customer service",
+    "quantified_alternatives": [
+      "Served {{X}} clients/customers per {{period}} with {{Y}}/5.0 satisfaction rating",
+      "Resolved {{X}} customer inquiries per {{period}} with {{Y}}% first-contact resolution",
+      "Managed relationships with {{X}} client departments, maintaining {{Y}}% retention rate",
+      "Processed {{X}} service requests per {{period}} with average {{Y}}-hour response time"
+    ],
+    "category": "operations",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "db2f04e4-28c3-40d6-9c84-41322868ceee",
+    "vague_phrase": "improved processes",
+    "quantified_alternatives": [
+      "Improved {{process}} efficiency by {{X}}%",
+      "Redesigned {{process}}, reducing cycle time from {{X}} to {{Y}} days",
+      "Streamlined {{process}}, eliminating {{X}} redundant steps and saving {{Y}} hours per week",
+      "Optimized {{process}} workflow, increasing throughput by {{X}}% and reducing errors by {{Y}}%"
+    ],
+    "category": "operations",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "e0259a3b-5f77-463f-9424-c81d767224fe",
+    "vague_phrase": "responsible for budget",
+    "quantified_alternatives": [
+      "Managed ${{X}} annual operating budget",
+      "Administered ${{X}} budget with {{Y}}% variance from plan",
+      "Held P&L responsibility for ${{X}} in annual expenditures",
+      "Controlled ${{X}} in procurement spending across {{Y}} cost centers"
+    ],
+    "category": "financial",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "eb4e5e61-f7a9-4d5d-819d-61bf41dc805f",
+    "vague_phrase": "handled communications",
+    "quantified_alternatives": [
+      "Prepared {{X}} executive communications per {{period}} for senior leadership review",
+      "Authored {{X}} technical reports and {{Y}} presentations per quarter",
+      "Drafted {{X}} policy documents adopted by {{Y}}-person organization",
+      "Produced {{X}} analytical briefs supporting ${{Y}} in resource allocation decisions"
+    ],
+    "category": "communication",
+    "tips": null,
+    "created_at": "2026-02-15T17:48:35.249974+00:00"
+  },
+  {
+    "id": "f49adb56-98dd-4b9e-904f-43d9ad7ec42e",
+    "vague_phrase": "responsible for equipment",
+    "quantified_alternatives": [
+      "Maintained X equipment items valued at $Y",
+      "Ensured 100% accountability of $X in assets",
+      "Managed inventory of X items worth $Y with zero discrepancies"
+    ],
+    "category": "technical",
+    "tips": "Include both count and dollar value",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  }
+]

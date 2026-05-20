@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /resumes
+Disallow: /profile
+Disallow: /settings
+Disallow: /onboarding
+Disallow: /career-tools
+Disallow: /job-match
+
+# Update this to your deployed domain before publishing.
+Sitemap: https://example.com/sitemap.xml

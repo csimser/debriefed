@@ -1,0 +1,440 @@
+[
+  {
+    "id": "1e959073-ca58-4678-80e1-ce705f3ec94d",
+    "military_experience": "equipment_maintenance",
+    "target_industry": "technology",
+    "framed_description": "Managed lifecycle maintenance for 200+ IT assets including servers, network equipment, and end-user devices",
+    "keywords": [
+      "lifecycle maintenance",
+      "IT assets",
+      "servers",
+      "network equipment"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "2459f94c-5e34-4482-91a8-ef44b4c3f56c",
+    "military_experience": "budget_management",
+    "target_industry": "general",
+    "framed_description": "Managed $2M annual operating budget with full P&L accountability and quarterly variance reporting",
+    "keywords": [
+      "P&L",
+      "variance reporting",
+      "operating budget"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "2da8702c-1f6a-4bf1-993b-fa72269a2a77",
+    "military_experience": "inspection_results",
+    "target_industry": "defense",
+    "framed_description": "Led organization through comprehensive DoD readiness assessment, achieving zero deficiencies across all inspection areas",
+    "keywords": [
+      "DoD",
+      "readiness assessment",
+      "zero deficiencies"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "35922c23-8e4a-49c2-b659-c5184cb707ae",
+    "military_experience": "security_clearance",
+    "target_industry": "defense",
+    "framed_description": "Maintains active {{clearance}} security clearance with demonstrated ability to handle classified programs and sensitive compartmented information",
+    "keywords": [
+      "security clearance",
+      "classified",
+      "SCI"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "3cee9b6f-033b-460a-9aa6-54ed56b2339d",
+    "military_experience": "security_clearance",
+    "target_industry": "consulting",
+    "framed_description": "Holds active {{clearance}} security clearance, enabling immediate engagement on classified government consulting contracts",
+    "keywords": [
+      "security clearance",
+      "government consulting",
+      "classified"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "3d395a94-f22c-4386-be1d-485be196ed9d",
+    "military_experience": "training_delivery",
+    "target_industry": "federal",
+    "framed_description": "Delivered annual mandatory training to 300+ federal employees, ensuring 100% compliance with OPM and agency-specific requirements",
+    "keywords": [
+      "mandatory training",
+      "OPM",
+      "compliance"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "3d771a48-6081-4ad9-8378-719066db3ae4",
+    "military_experience": "emergency_response",
+    "target_industry": "general",
+    "framed_description": "Led enterprise emergency response program including crisis management, business continuity, and disaster recovery planning",
+    "keywords": [
+      "crisis management",
+      "business continuity",
+      "disaster recovery"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "4a53b325-9bda-46b5-b146-d8ec722ff84f",
+    "military_experience": "training_delivery",
+    "target_industry": "technology",
+    "framed_description": "Designed and executed technical training programs for 300+ users, reducing support tickets by 40% through improved user proficiency",
+    "keywords": [
+      "technical training",
+      "user proficiency",
+      "support tickets"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "4bdbc468-1ffa-4785-83cc-7294d5f10ecf",
+    "military_experience": "inspection_results",
+    "target_industry": "healthcare",
+    "framed_description": "Led department through Joint Commission accreditation survey, achieving full compliance with zero conditions of participation findings",
+    "keywords": [
+      "Joint Commission",
+      "accreditation",
+      "conditions of participation"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "5cfe9fd7-c913-4cf5-99a0-ab508243d7c8",
+    "military_experience": "team_leadership",
+    "target_industry": "financial",
+    "framed_description": "Managed 50-person operations team with fiduciary responsibility for $5M+ in organizational assets",
+    "keywords": [
+      "fiduciary",
+      "operations",
+      "assets"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "685ffeae-2001-4197-b277-18cafac3ed20",
+    "military_experience": "inspection_results",
+    "target_industry": "federal",
+    "framed_description": "Guided organization through IG audit, achieving zero findings and commendation for best practices in compliance management",
+    "keywords": [
+      "IG audit",
+      "zero findings",
+      "compliance management"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "760c0d5f-0774-4989-9487-d54a7e6111b1",
+    "military_experience": "emergency_response",
+    "target_industry": "healthcare",
+    "framed_description": "Coordinated emergency preparedness program including mass casualty triage, evacuation procedures, and disaster response for healthcare facility",
+    "keywords": [
+      "emergency preparedness",
+      "triage",
+      "evacuation",
+      "disaster response"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "7feff4d3-ca74-456b-8be1-6a928963566e",
+    "military_experience": "inspection_results",
+    "target_industry": "manufacturing",
+    "framed_description": "Prepared facility for ISO 9001 certification audit, achieving zero nonconformities across all quality management areas",
+    "keywords": [
+      "ISO 9001",
+      "certification audit",
+      "nonconformities",
+      "quality management"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "8515dd3f-f6ca-44cc-b3b4-d162f008ef55",
+    "military_experience": "team_leadership",
+    "target_industry": "consulting",
+    "framed_description": "Led 50-person multidisciplinary team through complex organizational transformations, delivering measurable improvements in operational efficiency",
+    "keywords": [
+      "multidisciplinary",
+      "organizational transformation",
+      "operational efficiency"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "8c81de8b-52df-49e3-ae02-f33a1d2e44c6",
+    "military_experience": "emergency_response",
+    "target_industry": "safety",
+    "framed_description": "Directed facility emergency response program including fire suppression, HAZMAT response, and mass casualty management for 300+ personnel",
+    "keywords": [
+      "emergency response",
+      "HAZMAT",
+      "fire suppression",
+      "mass casualty"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "8ffc1671-44e2-4dc3-811a-cfa34f6e6a6c",
+    "military_experience": "equipment_maintenance",
+    "target_industry": "healthcare",
+    "framed_description": "Oversaw maintenance program for 200+ biomedical and facility systems, ensuring FDA and Joint Commission compliance",
+    "keywords": [
+      "biomedical",
+      "FDA",
+      "Joint Commission"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "904cc5ab-9d06-44de-b0d7-5e91af665f1f",
+    "military_experience": "equipment_maintenance",
+    "target_industry": "manufacturing",
+    "framed_description": "Administered maintenance program for 200+ production assets using CMMS, reducing unplanned downtime by 30%",
+    "keywords": [
+      "production assets",
+      "CMMS",
+      "unplanned downtime"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "971d11b1-904b-4dde-a4b7-1ebd65edf9dd",
+    "military_experience": "training_delivery",
+    "target_industry": "general",
+    "framed_description": "Created and facilitated professional development training for 300+ employees, improving team performance metrics by 25%",
+    "keywords": [
+      "professional development",
+      "performance metrics",
+      "facilitated"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "9d00b296-c512-4621-b9b2-d67ad19efdf0",
+    "military_experience": "security_clearance",
+    "target_industry": "federal",
+    "framed_description": "Active {{clearance}} security clearance. Background investigation current. Eligible for immediate onboarding to classified programs",
+    "keywords": [
+      "security clearance",
+      "background investigation",
+      "classified programs"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "a5edb187-1c3f-455a-9d57-34c35b824b4f",
+    "military_experience": "budget_management",
+    "target_industry": "technology",
+    "framed_description": "Managed $2M technology budget including infrastructure, licensing, and capital expenditure planning",
+    "keywords": [
+      "infrastructure",
+      "licensing",
+      "capital expenditure"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "a7215809-9d7d-4788-ab45-14da8d14232c",
+    "military_experience": "emergency_response",
+    "target_industry": "defense",
+    "framed_description": "Led emergency response operations including firefighting, CBRN defense, and damage control for naval vessel with 300+ crew",
+    "keywords": [
+      "emergency response",
+      "CBRN",
+      "damage control"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "ab8ba395-3c88-4064-b6b3-111b142befae",
+    "military_experience": "team_leadership",
+    "target_industry": "manufacturing",
+    "framed_description": "Directed 50-member production and maintenance team, maintaining 98%+ equipment availability and zero safety incidents",
+    "keywords": [
+      "production",
+      "equipment availability",
+      "safety"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "ae082772-aae0-4555-82bb-78beaee17846",
+    "military_experience": "budget_management",
+    "target_industry": "federal",
+    "framed_description": "Managed $2M appropriated funds in compliance with FAR/DFAR procurement regulations and fiscal year constraints",
+    "keywords": [
+      "appropriated funds",
+      "FAR",
+      "DFAR",
+      "procurement"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "b33737c5-9c43-49ea-a31f-edafe2bd6e57",
+    "military_experience": "team_leadership",
+    "target_industry": "defense",
+    "framed_description": "Directed 50-member cross-functional team executing mission-critical operations in support of national security objectives",
+    "keywords": [
+      "cross-functional",
+      "mission-critical",
+      "national security"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "b4f8f90f-7f4d-48d0-b1f9-8aa55ab36276",
+    "military_experience": "security_clearance",
+    "target_industry": "technology",
+    "framed_description": "Active {{clearance}} security clearance holder with experience in secure development environments and classified network administration",
+    "keywords": [
+      "security clearance",
+      "classified network",
+      "secure development"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "be675a19-2e0f-4362-8e00-89f1fa5a1dfd",
+    "military_experience": "training_delivery",
+    "target_industry": "healthcare",
+    "framed_description": "Administered mandatory safety and compliance training to 300+ clinical and administrative staff, maintaining Joint Commission readiness",
+    "keywords": [
+      "compliance training",
+      "clinical staff",
+      "Joint Commission"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "ca3ace4c-c777-496a-84ed-e650c82596f4",
+    "military_experience": "emergency_response",
+    "target_industry": "federal",
+    "framed_description": "Managed comprehensive emergency management program including COOP, disaster preparedness, and incident command for federal facility",
+    "keywords": [
+      "emergency management",
+      "COOP",
+      "incident command",
+      "disaster preparedness"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "d287b43c-4b16-441d-994b-96f971b964a2",
+    "military_experience": "team_leadership",
+    "target_industry": "technology",
+    "framed_description": "Managed 50-person technical operations team, driving process optimization and system reliability across distributed environments",
+    "keywords": [
+      "technical operations",
+      "process optimization",
+      "distributed"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "d65c3291-c470-46b4-8a57-5b882897fb36",
+    "military_experience": "inspection_results",
+    "target_industry": "general",
+    "framed_description": "Prepared organization for external regulatory audit, achieving zero deficiencies and establishing new compliance benchmark",
+    "keywords": [
+      "regulatory audit",
+      "zero deficiencies",
+      "compliance benchmark"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "d8e75548-1b6e-4481-9782-550905bf216b",
+    "military_experience": "equipment_maintenance",
+    "target_industry": "defense",
+    "framed_description": "Managed preventive and corrective maintenance program for 200+ defense systems valued at $50M, achieving 98% operational availability",
+    "keywords": [
+      "defense systems",
+      "operational availability",
+      "preventive maintenance"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "db1060ef-f245-4dfd-8c15-33d25813eba2",
+    "military_experience": "budget_management",
+    "target_industry": "defense",
+    "framed_description": "Administered $2M annual operating budget aligned with DoD acquisition and fiscal regulations",
+    "keywords": [
+      "DoD",
+      "acquisition",
+      "fiscal"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "de3220e2-f05b-4eed-8573-5100be84df2c",
+    "military_experience": "team_leadership",
+    "target_industry": "federal",
+    "framed_description": "Supervised 50 employees across multiple organizational units, ensuring compliance with agency directives and achieving performance objectives",
+    "keywords": [
+      "supervised",
+      "compliance",
+      "agency directives"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "e1578f89-ebf8-4711-a60a-db83fc2fc488",
+    "military_experience": "team_leadership",
+    "target_industry": "healthcare",
+    "framed_description": "Led 50-member clinical and support team ensuring patient safety standards and operational excellence",
+    "keywords": [
+      "patient safety",
+      "clinical",
+      "operational excellence"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "e36fee9f-1af4-4caf-99a9-dbdc99ae6025",
+    "military_experience": "budget_management",
+    "target_industry": "consulting",
+    "framed_description": "Managed $2M program budget with earned value tracking and client-facing financial reporting",
+    "keywords": [
+      "earned value",
+      "program budget",
+      "financial reporting"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "ea139703-c9ec-4cfb-90d9-a3bb76da579e",
+    "military_experience": "equipment_maintenance",
+    "target_industry": "federal",
+    "framed_description": "Managed property accountability and maintenance for 200+ government-furnished equipment items valued at $50M per DPAS requirements",
+    "keywords": [
+      "property accountability",
+      "government-furnished",
+      "DPAS"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "fdbdef34-167b-4f97-85c7-f3f0f6d5446d",
+    "military_experience": "training_delivery",
+    "target_industry": "defense",
+    "framed_description": "Developed and delivered mission-essential training to 300+ personnel, achieving DoD readiness certification standards",
+    "keywords": [
+      "mission-essential",
+      "readiness",
+      "certification"
+    ],
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  }
+]

@@ -1,0 +1,1859 @@
+[
+  {
+    "id": "01682b6a-e87b-447d-a2d4-26cfc9f827a2",
+    "gap_keyword": "SAFe",
+    "gap_category": "certification",
+    "recommendation_type": "training",
+    "recommendation": "SAFe (Scaled Agile Framework) is increasingly required for defense PM roles. Your Agile and large-team experience is directly relevant. SAFe Agilist is the leadership-level cert.",
+    "related_certs": [
+      "PMP",
+      "CSM",
+      "PMI-ACP"
+    ],
+    "related_skills": [
+      "Agile",
+      "Lean",
+      "Program Management"
+    ],
+    "free_resource_url": "https://www.scaledagile.com/training/",
+    "resource_name": "Scaled Agile",
+    "estimated_time": "2-4 day course",
+    "estimated_cost": "$995-1,895",
+    "veteran_discount": true,
+    "veteran_discount_notes": "Some SAFe training providers offer veteran pricing",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "01a473bb-0302-49fd-bc44-9a411746265d",
+    "gap_keyword": "Jira",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Free Jira training at Atlassian University. Similar concept to military task tracking systems. Free cloud version available for small teams to practice.",
+    "related_certs": null,
+    "related_skills": [
+      "Project Tracking",
+      "Agile",
+      "Sprint Planning"
+    ],
+    "free_resource_url": "https://university.atlassian.com",
+    "resource_name": "Atlassian University",
+    "estimated_time": "4-8 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "0389fe74-7242-4c8f-8b4f-632deb95db20",
+    "gap_keyword": "Kanban",
+    "gap_category": "methodology",
+    "recommendation_type": "add_skill",
+    "recommendation": "Kanban uses visual boards to track work flow. If you used any task tracking board or status board, you have used Kanban concepts.",
+    "related_certs": null,
+    "related_skills": [
+      "Visual Management",
+      "Workflow",
+      "WIP Limits"
+    ],
+    "free_resource_url": "https://kanbanize.com/kanban-resources/getting-started/what-is-kanban",
+    "resource_name": "Kanbanize",
+    "estimated_time": "1-2 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "0607fb0e-eb9f-4c6c-b78a-e6e34062bc6e",
+    "gap_keyword": "Splunk",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Free Splunk training and certification available. Free Splunk instance for practice. Your log analysis or security monitoring experience is directly relevant.",
+    "related_certs": [
+      "Security+",
+      "CySA+"
+    ],
+    "related_skills": [
+      "SIEM",
+      "Log Analysis",
+      "Security Monitoring"
+    ],
+    "free_resource_url": "https://education.splunk.com",
+    "resource_name": "Splunk Education",
+    "estimated_time": "20-40 hours",
+    "estimated_cost": "Free (Fundamentals)",
+    "veteran_discount": true,
+    "veteran_discount_notes": "Splunk offers military/veteran training programs",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "0a13d5cb-19fa-4463-b188-3c6df6cc6796",
+    "gap_keyword": "CAPM",
+    "gap_category": "certification",
+    "recommendation_type": "quick_win",
+    "recommendation": "CAPM is the entry-level PM cert if you do not yet qualify for PMP. Only requires 23 hours of PM education.",
+    "related_certs": [
+      "PMP"
+    ],
+    "related_skills": [
+      "Project Management"
+    ],
+    "free_resource_url": "https://www.pmi.org/certifications/certified-associate-capm",
+    "resource_name": "PMI CAPM",
+    "estimated_time": "1-2 months study",
+    "estimated_cost": "$300 exam (PMI member)",
+    "veteran_discount": true,
+    "veteran_discount_notes": "PMI offers military discount",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "1111e0b1-847c-4d4d-89b4-1a9b5971a2cd",
+    "gap_keyword": "CSP",
+    "gap_category": "certification",
+    "recommendation_type": "long_term",
+    "recommendation": "Certified Safety Professional requires 4-year degree + experience. Your military safety management experience counts toward the experience requirement.",
+    "related_certs": [
+      "OSHA 30",
+      "ASP"
+    ],
+    "related_skills": [
+      "Safety Management",
+      "Risk Assessment",
+      "Regulatory Compliance"
+    ],
+    "free_resource_url": "https://www.bcsp.org/csp/",
+    "resource_name": "BCSP CSP",
+    "estimated_time": "3-6 months study after ASP",
+    "estimated_cost": "$300 exam",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "153b531d-d8d5-453a-874a-024d529e19fc",
+    "gap_keyword": "Wireshark",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Free and open source network analyzer. If you did any network troubleshooting in the military, Wireshark is the civilian standard.",
+    "related_certs": [
+      "Network+",
+      "Security+"
+    ],
+    "related_skills": [
+      "Network Analysis",
+      "Packet Capture",
+      "Troubleshooting"
+    ],
+    "free_resource_url": "https://www.wireshark.org/#learnWS",
+    "resource_name": "Wireshark Wiki",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "1a8ec752-dc82-40cc-8e9e-ec93ab40e041",
+    "gap_keyword": "SharePoint",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Microsoft collaboration platform. Free training on Microsoft Learn. If you used any military knowledge management portal, SharePoint is similar.",
+    "related_certs": null,
+    "related_skills": [
+      "Document Management",
+      "Collaboration",
+      "Intranet"
+    ],
+    "free_resource_url": "https://learn.microsoft.com",
+    "resource_name": "Microsoft Learn",
+    "estimated_time": "4-8 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "1b489294-49a4-4aae-b8b6-88c7988eda4e",
+    "gap_keyword": "HBSS",
+    "gap_category": "tool",
+    "recommendation_type": "equivalent",
+    "recommendation": "HBSS (Host Based Security System) is the military endpoint security platform. Civilian equivalent is McAfee/Trellix ePO. Your HBSS experience translates directly.",
+    "related_certs": [
+      "Security+"
+    ],
+    "related_skills": [
+      "Endpoint Security",
+      "Host Intrusion Prevention",
+      "Policy Management"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "1eb2f844-4321-4942-8e81-f45008b494b4",
+    "gap_keyword": "SQL",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Database query language used everywhere. Free courses available. If you managed any database or tracking system, SQL is the foundation.",
+    "related_certs": null,
+    "related_skills": [
+      "Database",
+      "Data Analysis",
+      "Reporting"
+    ],
+    "free_resource_url": "https://www.freecodecamp.org/learn/relational-database/",
+    "resource_name": "freeCodeCamp",
+    "estimated_time": "20-40 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "20c9af0c-ba80-4ed2-ba80-8d1e8d4f0b34",
+    "gap_keyword": "CSM",
+    "gap_category": "certification",
+    "recommendation_type": "quick_win",
+    "recommendation": "Certified ScrumMaster is a 2-day course. Your military experience with iterative planning and team leadership maps directly to Scrum.",
+    "related_certs": [
+      "PMP",
+      "PMI-ACP",
+      "SAFe Agilist"
+    ],
+    "related_skills": [
+      "Agile",
+      "Scrum",
+      "Sprint Planning"
+    ],
+    "free_resource_url": "https://www.scrumalliance.org/get-certified/scrum-master-track/certified-scrummaster",
+    "resource_name": "Scrum Alliance CSM",
+    "estimated_time": "2 days + exam",
+    "estimated_cost": "$1,000-1,500 (includes course)",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "21e66efb-c8b4-4268-9a8e-533035f89291",
+    "gap_keyword": "ITIL",
+    "gap_category": "certification",
+    "recommendation_type": "quick_win",
+    "recommendation": "ITIL 4 Foundation covers IT service management. Your military operations and maintenance management experience maps directly to ITIL concepts.",
+    "related_certs": [
+      "CompTIA A+",
+      "PMP"
+    ],
+    "related_skills": [
+      "IT Service Management",
+      "Incident Management",
+      "Change Management"
+    ],
+    "free_resource_url": "https://www.axelos.com/certifications/itil-service-management",
+    "resource_name": "AXELOS ITIL",
+    "estimated_time": "2-4 weeks study",
+    "estimated_cost": "$395 exam",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "23ac872e-375e-49c8-a813-d2e4c6ef7afe",
+    "gap_keyword": "CASP+",
+    "gap_category": "certification",
+    "recommendation_type": "equivalent",
+    "recommendation": "Your Security+ and CySA+ combined with years of experience cover CASP+ domains. Consider pursuing if targeting senior security architect roles.",
+    "related_certs": [
+      "Security+",
+      "CySA+",
+      "CISSP"
+    ],
+    "related_skills": [
+      "Security Architecture",
+      "Risk Management",
+      "Enterprise Security"
+    ],
+    "free_resource_url": "https://www.comptia.org/certifications/comptia-advanced-security-practitioner",
+    "resource_name": "CompTIA CASP+",
+    "estimated_time": "2-4 months study",
+    "estimated_cost": "$494 exam",
+    "veteran_discount": true,
+    "veteran_discount_notes": "CompTIA offers military spouse and veteran pricing",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "25e66783-02e9-4f69-af49-b363afc5d265",
+    "gap_keyword": "ServiceNow",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Enterprise IT service management platform. Free training and simulator available. Your military ticketing/maintenance tracking experience is relevant.",
+    "related_certs": null,
+    "related_skills": [
+      "ITSM",
+      "Ticketing",
+      "Workflow Management",
+      "ITIL"
+    ],
+    "free_resource_url": "https://nowlearning.servicenow.com",
+    "resource_name": "ServiceNow Now Learning",
+    "estimated_time": "20-40 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": true,
+    "veteran_discount_notes": "ServiceNow has a veteran hiring program and free training",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "29b66a2a-3c19-4f2e-bfe8-2b26fc083c58",
+    "gap_keyword": "Negotiation",
+    "gap_category": "soft_skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you coordinated resources between departments, managed vendor relationships, or resolved conflicts, you have negotiation experience. Military resource competition requires constant negotiation.",
+    "related_certs": null,
+    "related_skills": [
+      "Conflict Resolution",
+      "Resource Management",
+      "Stakeholder Management"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "2e652ed4-d3a7-4376-a7ed-a980ba4c2c52",
+    "gap_keyword": "Public speaking",
+    "gap_category": "soft_skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you briefed leadership, conducted training, or led meetings, you have public speaking experience. Military briefing experience is often more rigorous than civilian presentation skills.",
+    "related_certs": null,
+    "related_skills": [
+      "Presentations",
+      "Briefing",
+      "Communication"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "2f770e96-c71b-4d8f-afa7-827b80ed618e",
+    "gap_keyword": "NIST RMF",
+    "gap_category": "methodology",
+    "recommendation_type": "equivalent",
+    "recommendation": "If you worked in military cybersecurity (DIACAP, ACAS, STIGs, eMASS), you have worked with RMF concepts. Military uses RMF. Just make sure to use the term \"NIST Risk Management Framework\" on your resume.",
+    "related_certs": [
+      "Security+",
+      "CISSP",
+      "CISM"
+    ],
+    "related_skills": [
+      "Risk Management",
+      "Security Assessment",
+      "ATO",
+      "Compliance"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "33c1b544-f58d-42c4-93fc-fd39bfae2d93",
+    "gap_keyword": "AWS Certified",
+    "gap_category": "certification",
+    "recommendation_type": "training",
+    "recommendation": "Start with AWS Cloud Practitioner (foundational) or Solutions Architect Associate. Your infrastructure experience translates well to cloud.",
+    "related_certs": [
+      "CompTIA Cloud+",
+      "Azure certifications"
+    ],
+    "related_skills": [
+      "Cloud Computing",
+      "Infrastructure",
+      "Networking"
+    ],
+    "free_resource_url": "https://aws.amazon.com/training/",
+    "resource_name": "AWS Training",
+    "estimated_time": "CCP: 1-2 months / SAA: 2-4 months",
+    "estimated_cost": "CCP: $100 / SAA: $150 exam",
+    "veteran_discount": true,
+    "veteran_discount_notes": "AWS offers free re/Start program for military and veterans",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "3c4012c4-ded7-4514-bb19-c1d6920763c0",
+    "gap_keyword": "CISSP",
+    "gap_category": "certification",
+    "recommendation_type": "equivalent",
+    "recommendation": "Your Security+, CySA+, or CASP+ demonstrate similar cybersecurity competency. Highlight these as equivalent experience in your cover letter. CISSP requires 5 years experience — your military service counts.",
+    "related_certs": [
+      "Security+",
+      "CySA+",
+      "CASP+",
+      "PenTest+",
+      "CISM"
+    ],
+    "related_skills": [
+      "Information Security",
+      "Risk Management",
+      "Security Architecture"
+    ],
+    "free_resource_url": "https://www.isc2.org/certifications/cissp",
+    "resource_name": "ISC2 CISSP",
+    "estimated_time": "3-6 months study",
+    "estimated_cost": "$749 exam",
+    "veteran_discount": true,
+    "veteran_discount_notes": "ISC2 offers military/veteran discounts and workforce programs",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "45c3b771-57f7-4345-9a6f-884c21dd838a",
+    "gap_keyword": "SAP",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Enterprise resource planning system. Free learning hub available. Your military logistics/supply chain experience maps to SAP modules.",
+    "related_certs": null,
+    "related_skills": [
+      "ERP",
+      "Supply Chain",
+      "Finance",
+      "Procurement"
+    ],
+    "free_resource_url": "https://learning.sap.com",
+    "resource_name": "SAP Learning",
+    "estimated_time": "20-40 hours",
+    "estimated_cost": "Free (some courses)",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "460787f4-fd97-45ba-9874-d8dc5825ebd4",
+    "gap_keyword": "CMMS experience",
+    "gap_category": "skill",
+    "recommendation_type": "equivalent",
+    "recommendation": "If you used 3M/OMMS-NG (Navy), GCSS-Army, or NALCOMIS (aviation), you used a CMMS. These are equivalent to civilian systems like Maximo, SAP PM, or Fiix. Say \"CMMS\" on your resume.",
+    "related_certs": null,
+    "related_skills": [
+      "Preventive Maintenance",
+      "Work Order Management",
+      "Asset Tracking"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "46476af6-f791-4ab3-951a-2bf1c87062d5",
+    "gap_keyword": "FEMA ICS",
+    "gap_category": "skill",
+    "recommendation_type": "equivalent",
+    "recommendation": "If you participated in military emergency response, you operated under Incident Command System principles. ICS-100, 200, 700, and 800 are free online and validate what you already know.",
+    "related_certs": null,
+    "related_skills": [
+      "Emergency Management",
+      "Incident Command",
+      "Disaster Response"
+    ],
+    "free_resource_url": "https://training.fema.gov/is/",
+    "resource_name": "FEMA EMI",
+    "estimated_time": "4-8 hours per course",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "4cc97d4e-57b6-447d-b461-72bd9bf2b88d",
+    "gap_keyword": "Executive presence",
+    "gap_category": "soft_skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you briefed flag/general officers or senior executives, you have executive presence. Military bearing and communication discipline translate directly to boardroom presence.",
+    "related_certs": null,
+    "related_skills": [
+      "Leadership",
+      "Communication",
+      "Briefing"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "4cd442b3-0585-4a94-ac7f-1ef71669eb84",
+    "gap_keyword": "Tableau",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Data visualization platform. Free Tableau Public version and extensive free training. Your briefing and data presentation experience is relevant.",
+    "related_certs": null,
+    "related_skills": [
+      "Data Visualization",
+      "Business Intelligence",
+      "Analytics"
+    ],
+    "free_resource_url": "https://www.tableau.com/learn",
+    "resource_name": "Tableau Learning",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free (Public version)",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "51b77687-098d-4714-8a10-02cbc5499535",
+    "gap_keyword": "Linux",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Free and open source OS. Foundation for cybersecurity, cloud, and DevOps roles. If you used any military Unix systems, Linux is similar.",
+    "related_certs": [
+      "CompTIA Linux+",
+      "RHCSA"
+    ],
+    "related_skills": [
+      "System Administration",
+      "Command Line",
+      "Shell Scripting"
+    ],
+    "free_resource_url": "https://www.freecodecamp.org/news/linux-command-line-tutorial/",
+    "resource_name": "freeCodeCamp",
+    "estimated_time": "20-40 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "528e9d91-2595-4516-9e3d-814deb619715",
+    "gap_keyword": "CCNP",
+    "gap_category": "certification",
+    "recommendation_type": "long_term",
+    "recommendation": "CCNP builds on CCNA. Your enterprise network experience from military service is a strong foundation. Requires CCNA or equivalent experience.",
+    "related_certs": [
+      "CCNA",
+      "CompTIA Network+"
+    ],
+    "related_skills": [
+      "Advanced Routing",
+      "Network Architecture",
+      "Network Security"
+    ],
+    "free_resource_url": "https://www.cisco.com/site/us/en/learn/training-certifications/certifications/professional/ccnp-enterprise/index.html",
+    "resource_name": "Cisco CCNP",
+    "estimated_time": "4-8 months study",
+    "estimated_cost": "$330 per exam (2 exams)",
+    "veteran_discount": true,
+    "veteran_discount_notes": "Cisco NetAcad offers military programs",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "537306f1-64f2-4bed-8e76-d4be211d7711",
+    "gap_keyword": "Data Analysis",
+    "gap_category": "skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you tracked readiness metrics, maintenance data, personnel statistics, or budget reports, you performed data analysis. Add this skill and learn Excel/Power BI to formalize it.",
+    "related_certs": null,
+    "related_skills": [
+      "Reporting",
+      "Metrics",
+      "Analytics",
+      "Excel"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "54a2aaed-3eab-485c-a5e3-37dccb194c25",
+    "gap_keyword": "ERP experience",
+    "gap_category": "skill",
+    "recommendation_type": "equivalent",
+    "recommendation": "If you used military supply/logistics systems (Navy ERP, GCSS-Army, DLA systems), you used ERP platforms. Say \"ERP\" on your resume — it is the same concept.",
+    "related_certs": null,
+    "related_skills": [
+      "Supply Chain",
+      "Logistics",
+      "Procurement",
+      "Inventory Management"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "5783997e-fb6a-4a5b-a1cb-72baf869ba7b",
+    "gap_keyword": "Root Cause Analysis",
+    "gap_category": "skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you conducted AARs, mishap investigations, or equipment failure analysis, you performed root cause analysis. Add this to your skills — it is highly valued.",
+    "related_certs": [
+      "Lean Six Sigma"
+    ],
+    "related_skills": [
+      "Problem Solving",
+      "Investigation",
+      "Process Improvement"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "5cc51453-19e2-4aa0-a9f4-e1b82055d374",
+    "gap_keyword": "Workday",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "HR and finance cloud platform. If you managed personnel or payroll systems in the military, concepts are similar.",
+    "related_certs": null,
+    "related_skills": [
+      "HRIS",
+      "Payroll",
+      "Human Resources"
+    ],
+    "free_resource_url": "https://community.workday.com",
+    "resource_name": "Workday Community",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Varies",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "5e6883be-462c-43c5-8512-a4c73cd46f3e",
+    "gap_keyword": "Agile",
+    "gap_category": "methodology",
+    "recommendation_type": "add_skill",
+    "recommendation": "Your military experience with iterative mission planning, AARs, and adapting to changing conditions IS Agile in practice. Add \"Agile Methodology\" to your skills. Consider CSM cert for formal validation.",
+    "related_certs": [
+      "PMP",
+      "CSM",
+      "SAFe"
+    ],
+    "related_skills": [
+      "Sprint Planning",
+      "Scrum",
+      "Iterative Development"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "5e753b68-d851-41cc-96a5-bff82044ad5b",
+    "gap_keyword": "Smartsheet",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Spreadsheet-based project management. If you are comfortable with Excel, Smartsheet is an easy transition.",
+    "related_certs": null,
+    "related_skills": [
+      "Project Management",
+      "Spreadsheets",
+      "Reporting"
+    ],
+    "free_resource_url": "https://www.smartsheet.com/learning-center",
+    "resource_name": "Smartsheet Learning",
+    "estimated_time": "2-4 hours",
+    "estimated_cost": "Free training",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "5ec77d97-447f-4828-a89b-36f7098a5b54",
+    "gap_keyword": "HAZWOPER",
+    "gap_category": "certification",
+    "recommendation_type": "equivalent",
+    "recommendation": "If you handled HAZMAT in the military (DC, CBRN, environmental), you likely have equivalent training. May need 8-hour refresher for civilian certification.",
+    "related_certs": null,
+    "related_skills": [
+      "HAZMAT",
+      "Emergency Response",
+      "Decontamination"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": "8-hour refresher",
+    "estimated_cost": "$150-200",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "60595d45-a733-4720-90ee-239e7e2c243f",
+    "gap_keyword": "Change Management",
+    "gap_category": "skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you led organizational transitions, implemented new processes, or managed personnel through deployments/restructures, you practiced change management. Add it.",
+    "related_certs": [
+      "PMP"
+    ],
+    "related_skills": [
+      "Organizational Development",
+      "Process Implementation",
+      "Communication"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "61556a26-9b6f-4edf-a649-9bff19bd2e36",
+    "gap_keyword": "OSHA 30",
+    "gap_category": "certification",
+    "recommendation_type": "quick_win",
+    "recommendation": "OSHA 30-hour course is available online. Your military safety experience exceeds most civilian safety training.",
+    "related_certs": [
+      "OSHA 10"
+    ],
+    "related_skills": [
+      "Safety Management",
+      "OSHA Compliance",
+      "Hazard Identification"
+    ],
+    "free_resource_url": "https://www.osha.com/courses/30-hour-general-industry",
+    "resource_name": "OSHA Education Center",
+    "estimated_time": "30 hours (self-paced)",
+    "estimated_cost": "$189",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "623ace19-a1f8-44dc-a124-dfd96cc74f2f",
+    "gap_keyword": "Bachelor's degree",
+    "gap_category": "education",
+    "recommendation_type": "long_term",
+    "recommendation": "Many employers accept equivalent experience in lieu of a degree. Your {{years}} years of military experience + certifications often equals or exceeds a bachelor's. Some employers accept CLEP credits. Check if the JD says \"or equivalent experience.\"",
+    "related_certs": null,
+    "related_skills": null,
+    "free_resource_url": "https://clep.collegeboard.org",
+    "resource_name": "CLEP Exams",
+    "estimated_time": "Varies",
+    "estimated_cost": "$90 per exam (free for military)",
+    "veteran_discount": true,
+    "veteran_discount_notes": "CLEP exams are free for active duty military through DANTES",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "6679384c-2187-41cd-89a0-b9129e2dbc95",
+    "gap_keyword": "CompTIA A+",
+    "gap_category": "certification",
+    "recommendation_type": "quick_win",
+    "recommendation": "Entry-level IT cert. If you have any hands-on IT experience from the military, A+ is achievable in 4-6 weeks of study.",
+    "related_certs": null,
+    "related_skills": [
+      "Hardware",
+      "Troubleshooting",
+      "Operating Systems",
+      "Help Desk"
+    ],
+    "free_resource_url": "https://www.comptia.org/certifications/a",
+    "resource_name": "CompTIA A+",
+    "estimated_time": "4-8 weeks study",
+    "estimated_cost": "$358 per exam (2 exams)",
+    "veteran_discount": true,
+    "veteran_discount_notes": "CompTIA offers military/veteran pricing at 50% discount",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "66b71c15-f2f0-4951-b299-6a98dbd17871",
+    "gap_keyword": "MS Project",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Free tutorials on Microsoft Learn. If you managed schedules or Gantt charts in the military, MS Project will feel familiar.",
+    "related_certs": null,
+    "related_skills": [
+      "Project Scheduling",
+      "Gantt Charts",
+      "Resource Management"
+    ],
+    "free_resource_url": "https://learn.microsoft.com",
+    "resource_name": "Microsoft Learn",
+    "estimated_time": "4-8 hours",
+    "estimated_cost": "Free training / $30/mo for tool",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "6d0f056e-4235-4267-b295-b43cb72d0c1a",
+    "gap_keyword": "Monday.com",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Free version available. Intuitive project management platform. Very learnable in a few hours.",
+    "related_certs": null,
+    "related_skills": [
+      "Project Management",
+      "Task Tracking",
+      "Workflow Automation"
+    ],
+    "free_resource_url": "https://monday.com/blog/project-management/getting-started/",
+    "resource_name": "Monday.com Resources",
+    "estimated_time": "2-4 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "6dfe61b2-802a-488b-828f-ce64bf197b9b",
+    "gap_keyword": "GIAC certifications",
+    "gap_category": "certification",
+    "recommendation_type": "long_term",
+    "recommendation": "GIAC certs (GSEC, GCIH, GCIA, etc.) are gold standard in cybersecurity. Your military cyber experience is relevant foundation. SANS courses are expensive but top quality.",
+    "related_certs": [
+      "Security+",
+      "CySA+",
+      "PenTest+"
+    ],
+    "related_skills": [
+      "Incident Response",
+      "Network Defense",
+      "Forensics"
+    ],
+    "free_resource_url": "https://www.giac.org/certifications/",
+    "resource_name": "GIAC/SANS",
+    "estimated_time": "1-3 months per cert",
+    "estimated_cost": "$2,499+ per course",
+    "veteran_discount": true,
+    "veteran_discount_notes": "SANS offers military discount and VET TEC programs through SANS.edu",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "6e2c0b56-3ce0-4f64-b3a7-423857b981ff",
+    "gap_keyword": "CompTIA Network+",
+    "gap_category": "certification",
+    "recommendation_type": "quick_win",
+    "recommendation": "If you worked with any military communication or network systems, you already know most of this material. Strong foundation cert.",
+    "related_certs": [
+      "CompTIA A+"
+    ],
+    "related_skills": [
+      "Networking",
+      "TCP/IP",
+      "Troubleshooting"
+    ],
+    "free_resource_url": "https://www.comptia.org/certifications/network",
+    "resource_name": "CompTIA Network+",
+    "estimated_time": "4-8 weeks study",
+    "estimated_cost": "$358 exam",
+    "veteran_discount": true,
+    "veteran_discount_notes": "CompTIA offers military/veteran pricing at 50% discount",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "751378eb-0794-4d54-b9ec-2cd1efdd9106",
+    "gap_keyword": "Excel Advanced",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Advanced Excel (pivot tables, VLOOKUP, macros). Free training on Microsoft Learn. Your military reporting experience is a strong foundation.",
+    "related_certs": null,
+    "related_skills": [
+      "Data Analysis",
+      "Reporting",
+      "Spreadsheets"
+    ],
+    "free_resource_url": "https://learn.microsoft.com",
+    "resource_name": "Microsoft Learn",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "7b5e801c-e63c-44a5-8060-d043bf76bf15",
+    "gap_keyword": "Kubernetes",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Container orchestration platform. Free training at kubernetes.io. Growing requirement for cloud and DevOps roles.",
+    "related_certs": [
+      "AWS",
+      "Azure",
+      "CKA"
+    ],
+    "related_skills": [
+      "Container Orchestration",
+      "Cloud",
+      "DevOps"
+    ],
+    "free_resource_url": "https://kubernetes.io/training/",
+    "resource_name": "Kubernetes Training",
+    "estimated_time": "20-40 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "7e9c2dce-64ea-4dcb-84f6-15b98506eab9",
+    "gap_keyword": "Nessus",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Vulnerability scanner. Free Nessus Essentials version available. Your STIG/vulnerability scanning experience is equivalent.",
+    "related_certs": [
+      "Security+",
+      "CySA+",
+      "PenTest+"
+    ],
+    "related_skills": [
+      "Vulnerability Assessment",
+      "Scanning",
+      "Compliance"
+    ],
+    "free_resource_url": "https://www.tenable.com/products/nessus/nessus-essentials",
+    "resource_name": "Tenable Nessus Essentials",
+    "estimated_time": "4-8 hours",
+    "estimated_cost": "Free (Essentials)",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "870f2ec8-cc40-4b79-a922-81314ef3f952",
+    "gap_keyword": "DoD Acquisition",
+    "gap_category": "skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you participated in equipment procurement, program reviews, or milestone decisions, you have DoD acquisition experience. Familiarize yourself with the 5000 series if targeting acquisition roles.",
+    "related_certs": [
+      "PMP",
+      "DAWIA"
+    ],
+    "related_skills": [
+      "Program Management",
+      "Procurement",
+      "Contracts"
+    ],
+    "free_resource_url": "https://aaf.dau.edu",
+    "resource_name": "Defense Acquisition University (free)",
+    "estimated_time": "10-40 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": true,
+    "veteran_discount_notes": "DAU courses are free for military and government civilians",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "883c148d-0afe-40d8-acec-24b51d9af294",
+    "gap_keyword": "Confluence",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Atlassian wiki/documentation tool. If you wrote SOPs, instructions, or maintained any documentation system, Confluence is similar.",
+    "related_certs": null,
+    "related_skills": [
+      "Documentation",
+      "Knowledge Management",
+      "Technical Writing"
+    ],
+    "free_resource_url": "https://university.atlassian.com",
+    "resource_name": "Atlassian University",
+    "estimated_time": "2-4 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "8866db0e-c27a-4864-9f98-b04cf72ad3db",
+    "gap_keyword": "Docker",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Container platform. Free to use. Free training available. Foundational for modern DevOps and cloud roles.",
+    "related_certs": null,
+    "related_skills": [
+      "Containers",
+      "DevOps",
+      "Microservices"
+    ],
+    "free_resource_url": "https://docs.docker.com/get-started/",
+    "resource_name": "Docker Docs",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "8e3613fe-2270-4ab7-8d62-98d8fdb2eb3d",
+    "gap_keyword": "BLS",
+    "gap_category": "certification",
+    "recommendation_type": "quick_win",
+    "recommendation": "Basic Life Support is a 1-day course. Most military medical personnel already have this or equivalent training.",
+    "related_certs": [
+      "ACLS",
+      "PALS",
+      "TCCC"
+    ],
+    "related_skills": [
+      "CPR",
+      "First Aid",
+      "Emergency Response"
+    ],
+    "free_resource_url": "https://cpr.heart.org/en/cpr-courses-and-kits/healthcare-professional/basic-life-support-bls",
+    "resource_name": "AHA BLS",
+    "estimated_time": "1 day",
+    "estimated_cost": "$65-80",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "90f9d046-f7f3-4713-9091-1508ab975308",
+    "gap_keyword": "Git/GitHub",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Version control system used by every software team. Free. Essential for any technical role.",
+    "related_certs": null,
+    "related_skills": [
+      "Version Control",
+      "Collaboration",
+      "Software Development"
+    ],
+    "free_resource_url": "https://docs.github.com/en/get-started",
+    "resource_name": "GitHub Docs",
+    "estimated_time": "4-8 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "911245fc-b6ac-4f12-9d41-03d6864c318a",
+    "gap_keyword": "DevOps",
+    "gap_category": "methodology",
+    "recommendation_type": "training",
+    "recommendation": "DevOps combines development and operations. Your military ops tempo and systems management experience is a foundation. Focus on learning the specific tools (Docker, Jenkins, Git).",
+    "related_certs": [
+      "AWS",
+      "Azure",
+      "CompTIA Linux+"
+    ],
+    "related_skills": [
+      "CI/CD",
+      "Automation",
+      "Infrastructure as Code",
+      "Monitoring"
+    ],
+    "free_resource_url": "https://www.freecodecamp.org/news/devops-engineering-course-for-beginners/",
+    "resource_name": "freeCodeCamp",
+    "estimated_time": "40-60 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "97cbc1bb-3464-4fcd-9c22-c081ec8fc576",
+    "gap_keyword": "Power BI",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Microsoft data visualization tool. Free desktop version. Integrates with Excel, which you likely already know.",
+    "related_certs": null,
+    "related_skills": [
+      "Data Visualization",
+      "Business Intelligence",
+      "Excel"
+    ],
+    "free_resource_url": "https://learn.microsoft.com/en-us/power-bi/",
+    "resource_name": "Microsoft Learn",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free (Desktop)",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "a189c11a-36b2-43c3-8306-df8b2fd0020a",
+    "gap_keyword": "Waterfall",
+    "gap_category": "methodology",
+    "recommendation_type": "add_skill",
+    "recommendation": "Traditional sequential project management. Military planning processes (MDMP, naval planning process) follow waterfall methodology. Add this to your skills.",
+    "related_certs": [
+      "PMP"
+    ],
+    "related_skills": [
+      "Sequential Planning",
+      "Phase Gates",
+      "Requirements Documentation"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "a31be120-c6a0-47ea-8e4b-1939877b6fe8",
+    "gap_keyword": "Elastic/ELK Stack",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Open source SIEM alternative. Free training available. If you have Splunk experience, ELK concepts are similar.",
+    "related_certs": [
+      "Security+",
+      "CySA+"
+    ],
+    "related_skills": [
+      "SIEM",
+      "Log Management",
+      "Data Analytics"
+    ],
+    "free_resource_url": "https://www.elastic.co/training/free",
+    "resource_name": "Elastic Training",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "a4cf8d69-8f69-43f3-a533-98546adb79cd",
+    "gap_keyword": "Salesforce",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "CRM platform. Free Trailhead training is excellent. Salesforce Admin cert is achievable in 2-3 months and highly marketable.",
+    "related_certs": null,
+    "related_skills": [
+      "CRM",
+      "Sales Operations",
+      "Reporting"
+    ],
+    "free_resource_url": "https://trailhead.salesforce.com",
+    "resource_name": "Salesforce Trailhead",
+    "estimated_time": "40-80 hours",
+    "estimated_cost": "Free (Trailhead) / $200 exam",
+    "veteran_discount": true,
+    "veteran_discount_notes": "Salesforce has dedicated veteran hiring programs (VetForce)",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "a84ad302-6522-4e90-bf00-f42e44c5985f",
+    "gap_keyword": "Oracle",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Enterprise database and ERP platform. Free Oracle Academy training available. Your data management experience is relevant.",
+    "related_certs": null,
+    "related_skills": [
+      "Database",
+      "ERP",
+      "Supply Chain"
+    ],
+    "free_resource_url": "https://academy.oracle.com",
+    "resource_name": "Oracle Academy",
+    "estimated_time": "20-40 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "a8b20c6b-6df8-41ac-8658-60dedfa4bb54",
+    "gap_keyword": "Stakeholder Management",
+    "gap_category": "skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you briefed senior leadership, coordinated with external agencies, or managed competing priorities from multiple departments, you managed stakeholders. Add this skill.",
+    "related_certs": [
+      "PMP"
+    ],
+    "related_skills": [
+      "Communication",
+      "Relationship Management",
+      "Negotiation"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "abaf337e-c4e9-444e-befe-9726b8bb6318",
+    "gap_keyword": "Jenkins",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "CI/CD automation server. Free and open source. Your process automation experience is a foundation.",
+    "related_certs": null,
+    "related_skills": [
+      "CI/CD",
+      "DevOps",
+      "Automation"
+    ],
+    "free_resource_url": "https://www.jenkins.io/doc/tutorials/",
+    "resource_name": "Jenkins Tutorials",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "ac15c9c3-5984-4ce5-9344-7947dad88f19",
+    "gap_keyword": "Earned Value Management",
+    "gap_category": "skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "Your PMP certification covers EVM fundamentals. If you tracked project budgets, schedules, and performance metrics, you used EVM concepts. Add \"Earned Value Management\" to your skills.",
+    "related_certs": [
+      "PMP",
+      "CAPM"
+    ],
+    "related_skills": [
+      "Project Management",
+      "Budget Tracking",
+      "Schedule Management"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "ac893e16-c130-402f-8494-549838b26cc2",
+    "gap_keyword": "Asana",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Free version available. Similar to Jira but simpler. If you know any task management tool, Asana takes 1-2 hours to learn.",
+    "related_certs": null,
+    "related_skills": [
+      "Task Management",
+      "Project Tracking"
+    ],
+    "free_resource_url": "https://academy.asana.com",
+    "resource_name": "Asana Academy",
+    "estimated_time": "2-4 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "aca90fc1-5130-4940-a038-cf2ae76a6c21",
+    "gap_keyword": "Azure certifications",
+    "gap_category": "certification",
+    "recommendation_type": "training",
+    "recommendation": "Start with AZ-900 (fundamentals) then AZ-104 (administrator). Free training on Microsoft Learn. Your military IT experience maps directly.",
+    "related_certs": [
+      "CompTIA Cloud+",
+      "AWS certifications"
+    ],
+    "related_skills": [
+      "Cloud Computing",
+      "System Administration",
+      "Active Directory"
+    ],
+    "free_resource_url": "https://learn.microsoft.com/en-us/certifications/",
+    "resource_name": "Microsoft Learn",
+    "estimated_time": "AZ-900: 2-4 weeks / AZ-104: 2-3 months",
+    "estimated_cost": "AZ-900: $99 / AZ-104: $165",
+    "veteran_discount": true,
+    "veteran_discount_notes": "Microsoft offers free certification exams for eligible veterans through MSFT Software & Systems Academy",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "b11336f8-024c-44d5-9502-ea858b4ae66f",
+    "gap_keyword": "Python",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Most in-demand programming language. Free courses everywhere. Useful for automation, data analysis, and cybersecurity scripting.",
+    "related_certs": null,
+    "related_skills": [
+      "Programming",
+      "Automation",
+      "Data Analysis",
+      "Scripting"
+    ],
+    "free_resource_url": "https://www.freecodecamp.org/learn/",
+    "resource_name": "freeCodeCamp",
+    "estimated_time": "40-80 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "b2bb7397-785b-4d9f-9ba5-b02b9def4fcf",
+    "gap_keyword": "Customer service",
+    "gap_category": "soft_skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "Your experience serving fellow service members, working with external agencies, and supporting mission requirements IS customer service in a different context. Frame it that way.",
+    "related_certs": null,
+    "related_skills": [
+      "Client Relations",
+      "Support",
+      "Service Delivery"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "bc0e05cf-822c-4dd8-a1f1-f9bebabe984b",
+    "gap_keyword": "ACAS",
+    "gap_category": "tool",
+    "recommendation_type": "equivalent",
+    "recommendation": "ACAS is the military/DoD vulnerability scanning platform. Civilian equivalent is Nessus/Tenable.sc. Your ACAS experience directly translates — just say \"Tenable/Nessus\" on your resume.",
+    "related_certs": [
+      "Security+",
+      "CySA+"
+    ],
+    "related_skills": [
+      "Vulnerability Scanning",
+      "Compliance Scanning",
+      "STIG"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "becc85ac-006e-4fb8-872d-94f48eaf917b",
+    "gap_keyword": "Lean Six Sigma",
+    "gap_category": "certification",
+    "recommendation_type": "quick_win",
+    "recommendation": "Your military process improvement experience maps directly to Lean Six Sigma. Yellow Belt is free online, Green Belt is a strong resume addition.",
+    "related_certs": [
+      "PMP"
+    ],
+    "related_skills": [
+      "Process Improvement",
+      "Data Analysis",
+      "Quality Management"
+    ],
+    "free_resource_url": "https://www.sixsigmaonline.org/",
+    "resource_name": "Six Sigma Online",
+    "estimated_time": "Yellow: 1-2 weeks / Green: 2-3 months",
+    "estimated_cost": "Yellow: Free / Green: $200-400",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "c03f66d6-f6fd-40b1-a013-0ab0c2dbefb6",
+    "gap_keyword": "Burp Suite",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Web application security testing tool. Free Community Edition available. Your pen testing experience is relevant foundation.",
+    "related_certs": [
+      "PenTest+",
+      "CEH",
+      "OSCP"
+    ],
+    "related_skills": [
+      "Web App Security",
+      "Penetration Testing"
+    ],
+    "free_resource_url": "https://portswigger.net/web-security",
+    "resource_name": "PortSwigger Web Security Academy",
+    "estimated_time": "20-40 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "c1ba9d09-7724-4227-a575-9e1f5a29341f",
+    "gap_keyword": "Master's degree",
+    "gap_category": "education",
+    "recommendation_type": "long_term",
+    "recommendation": "If you have a bachelor's, GI Bill covers master's programs. Many universities offer accelerated programs for veterans. Online programs from reputable schools (WGU, SNHU, ASU Online) are veteran-friendly.",
+    "related_certs": null,
+    "related_skills": null,
+    "free_resource_url": "https://www.va.gov/education/about-gi-bill-benefits/",
+    "resource_name": "VA GI Bill",
+    "estimated_time": "18-24 months",
+    "estimated_cost": "GI Bill covers full tuition",
+    "veteran_discount": true,
+    "veteran_discount_notes": "GI Bill and Yellow Ribbon programs cover most master's programs",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "c43b294a-d540-4d2d-85e4-d140b1683bdb",
+    "gap_keyword": "NREMT",
+    "gap_category": "certification",
+    "recommendation_type": "equivalent",
+    "recommendation": "If you were a combat medic (68W) or Corpsman (HM), your training likely exceeds civilian EMT standards. Check your state for military-to-EMT bridge programs.",
+    "related_certs": [
+      "TCCC",
+      "ACLS"
+    ],
+    "related_skills": [
+      "Emergency Medicine",
+      "Patient Care",
+      "Trauma"
+    ],
+    "free_resource_url": "https://www.nremt.org/rwd/public/document/military",
+    "resource_name": "NREMT Military",
+    "estimated_time": "1-2 months (bridge)",
+    "estimated_cost": "$80 exam",
+    "veteran_discount": true,
+    "veteran_discount_notes": "NREMT has specific military pathway with reduced requirements",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "c6fb3ac0-2c1e-435e-b083-27bb721a16a0",
+    "gap_keyword": "Ansible",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Automation and configuration management tool. Free and open source. Your maintenance and system management experience translates.",
+    "related_certs": null,
+    "related_skills": [
+      "Automation",
+      "Configuration Management",
+      "DevOps"
+    ],
+    "free_resource_url": "https://www.redhat.com/en/topics/automation/learning-ansible-tutorial",
+    "resource_name": "Red Hat Ansible",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "cae2f3db-c053-4f4c-8e47-29205f22144f",
+    "gap_keyword": "Terraform",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Infrastructure as Code tool. Free training from HashiCorp. Your infrastructure management experience is relevant foundation.",
+    "related_certs": [
+      "AWS",
+      "Azure"
+    ],
+    "related_skills": [
+      "Infrastructure as Code",
+      "Cloud",
+      "Automation"
+    ],
+    "free_resource_url": "https://learn.hashicorp.com/terraform",
+    "resource_name": "HashiCorp Learn",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "cb3725a9-2299-42ff-9b21-e67dc8230315",
+    "gap_keyword": "Scrum",
+    "gap_category": "methodology",
+    "recommendation_type": "add_skill",
+    "recommendation": "Scrum is a specific Agile framework with sprints, standups, and retrospectives. If you ran daily briefs, weekly planning cycles, and AARs — that is essentially Scrum.",
+    "related_certs": [
+      "CSM",
+      "PSM"
+    ],
+    "related_skills": [
+      "Sprint Planning",
+      "Daily Standups",
+      "Retrospectives"
+    ],
+    "free_resource_url": "https://www.scrum.org/resources/what-scrum-module",
+    "resource_name": "Scrum.org",
+    "estimated_time": "2-4 hours to learn / 2 days for CSM",
+    "estimated_cost": "Free overview / $1,200 CSM",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "cc23efbb-3d59-4b52-b39c-db1b3705993f",
+    "gap_keyword": "Technical Writing",
+    "gap_category": "skill",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you wrote SOPs, maintenance procedures, technical manuals, naval messages, or operations orders, you have technical writing experience. Add it to your skills.",
+    "related_certs": null,
+    "related_skills": [
+      "Documentation",
+      "SOPs",
+      "Procedures",
+      "Report Writing"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "cdeaa459-d080-449d-a82f-efe7a3e47a6e",
+    "gap_keyword": "Palo Alto",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Next-gen firewall platform. Free Beacon training available. Your military firewall/network security experience is directly relevant.",
+    "related_certs": [
+      "Security+",
+      "CCNA",
+      "PCNSA"
+    ],
+    "related_skills": [
+      "Firewall Management",
+      "Network Security"
+    ],
+    "free_resource_url": "https://beacon.paloaltonetworks.com",
+    "resource_name": "Palo Alto Beacon",
+    "estimated_time": "20-40 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "cf00eb2e-557c-4394-8067-1600041882e4",
+    "gap_keyword": "Business Continuity",
+    "gap_category": "skill",
+    "recommendation_type": "equivalent",
+    "recommendation": "Military COOP (Continuity of Operations) planning is business continuity. Your disaster preparedness and emergency planning experience translates directly.",
+    "related_certs": null,
+    "related_skills": [
+      "COOP",
+      "Disaster Recovery",
+      "Emergency Planning"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "cf056c22-4953-4025-b982-38b8764db2ec",
+    "gap_keyword": "CCNA",
+    "gap_category": "certification",
+    "recommendation_type": "training",
+    "recommendation": "Your military network experience maps to CCNA concepts. If you managed shipboard or tactical networks, you likely already know 70% of the material.",
+    "related_certs": [
+      "CompTIA Network+"
+    ],
+    "related_skills": [
+      "Routing",
+      "Switching",
+      "Network Administration",
+      "TCP/IP"
+    ],
+    "free_resource_url": "https://www.cisco.com/site/us/en/learn/training-certifications/certifications/associate/ccna/index.html",
+    "resource_name": "Cisco CCNA",
+    "estimated_time": "2-4 months study",
+    "estimated_cost": "$330 exam",
+    "veteran_discount": true,
+    "veteran_discount_notes": "Cisco offers military/veteran training through NetAcad",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "d15e4eec-2efd-4af9-83dc-1f93d3a7e287",
+    "gap_keyword": "Metasploit",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Penetration testing framework. Free Community Edition. If you have PenTest+ or military red team experience, Metasploit is the standard tool.",
+    "related_certs": [
+      "PenTest+",
+      "CEH",
+      "OSCP"
+    ],
+    "related_skills": [
+      "Penetration Testing",
+      "Exploitation",
+      "Vulnerability Assessment"
+    ],
+    "free_resource_url": "https://www.metasploit.com/",
+    "resource_name": "Rapid7 Metasploit",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free (Community)",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "d38178f0-1d98-4eeb-87b8-b4d470f4aa3f",
+    "gap_keyword": "Secret clearance",
+    "gap_category": "clearance",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you held a Secret clearance during military service, it may still be active or in the system. Check your JPAS/DISS record. An active clearance is extremely valuable — always list it on your resume.",
+    "related_certs": null,
+    "related_skills": [
+      "Security Clearance",
+      "Background Investigation"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "d385e3ab-cb36-4d70-867f-35796de2da4b",
+    "gap_keyword": "CMMI",
+    "gap_category": "methodology",
+    "recommendation_type": "training",
+    "recommendation": "Capability Maturity Model Integration. Used in defense contracting for process maturity. Your QA and process improvement experience is relevant.",
+    "related_certs": [
+      "PMP"
+    ],
+    "related_skills": [
+      "Process Improvement",
+      "Quality Assurance",
+      "Maturity Assessment"
+    ],
+    "free_resource_url": "https://cmmiinstitute.com",
+    "resource_name": "CMMI Institute",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Varies",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "d5aa0523-c996-4cb4-b2d3-f2f3ed58667e",
+    "gap_keyword": "CEH",
+    "gap_category": "certification",
+    "recommendation_type": "equivalent",
+    "recommendation": "Your PenTest+ covers similar offensive security concepts. Mention PenTest+ and any vulnerability assessment experience as equivalent.",
+    "related_certs": [
+      "PenTest+",
+      "OSCP",
+      "GPEN"
+    ],
+    "related_skills": [
+      "Penetration Testing",
+      "Vulnerability Assessment",
+      "Ethical Hacking"
+    ],
+    "free_resource_url": "https://www.eccouncil.org/programs/certified-ethical-hacker-ceh/",
+    "resource_name": "EC-Council CEH",
+    "estimated_time": "2-3 months study",
+    "estimated_cost": "$1,199 exam",
+    "veteran_discount": true,
+    "veteran_discount_notes": "EC-Council offers military discount through GI Bill and VET TEC",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "d5bc8e81-7fbb-4861-b775-7b245bda2a79",
+    "gap_keyword": "PMP",
+    "gap_category": "certification",
+    "recommendation_type": "quick_win",
+    "recommendation": "With your military leadership experience, you likely already qualify for PMP. Military project management experience counts toward the 36-month requirement.",
+    "related_certs": null,
+    "related_skills": [
+      "Project Management",
+      "Leadership",
+      "Budgeting",
+      "Scheduling"
+    ],
+    "free_resource_url": "https://www.pmi.org/certifications/project-management-pmp",
+    "resource_name": "PMI PMP",
+    "estimated_time": "2-3 months study",
+    "estimated_cost": "$405 exam (PMI member)",
+    "veteran_discount": true,
+    "veteran_discount_notes": "PMI offers $100 military discount. VET TEC covers training costs.",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "e8c7d5f0-d623-4953-9f33-458093531642",
+    "gap_keyword": "R",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Statistical programming language. Free courses available. Used heavily in data science and analytics roles.",
+    "related_certs": null,
+    "related_skills": [
+      "Statistics",
+      "Data Science",
+      "Analytics"
+    ],
+    "free_resource_url": "https://www.freecodecamp.org/learn/",
+    "resource_name": "freeCodeCamp",
+    "estimated_time": "40-60 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "ebb49cce-2377-4e1b-8304-56b6e3b60c97",
+    "gap_keyword": "OSCP",
+    "gap_category": "certification",
+    "recommendation_type": "long_term",
+    "recommendation": "OSCP is hands-on pentesting certification. Your PenTest+ and military cyber experience are relevant but OSCP requires dedicated lab time.",
+    "related_certs": [
+      "PenTest+",
+      "CEH",
+      "GPEN"
+    ],
+    "related_skills": [
+      "Penetration Testing",
+      "Linux",
+      "Python",
+      "Exploit Development"
+    ],
+    "free_resource_url": "https://www.offsec.com/courses/pen-200/",
+    "resource_name": "OffSec PEN-200",
+    "estimated_time": "3-6 months",
+    "estimated_cost": "$1,649+ (includes lab)",
+    "veteran_discount": true,
+    "veteran_discount_notes": "OffSec offers military/veteran pricing",
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "f1d206f2-61c8-4fa7-8f72-4192c0a63f44",
+    "gap_keyword": "CISM",
+    "gap_category": "certification",
+    "recommendation_type": "equivalent",
+    "recommendation": "Your Security+ and management experience map to CISM domains. Your military leadership in security programs is directly relevant.",
+    "related_certs": [
+      "Security+",
+      "CISSP",
+      "CASP+"
+    ],
+    "related_skills": [
+      "Security Management",
+      "Risk Management",
+      "Incident Response"
+    ],
+    "free_resource_url": "https://www.isaca.org/credentialing/cism",
+    "resource_name": "ISACA CISM",
+    "estimated_time": "3-6 months study",
+    "estimated_cost": "$575 exam",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "f5ec671d-ec06-4d44-a135-ed53d591b035",
+    "gap_keyword": "ITAR",
+    "gap_category": "methodology",
+    "recommendation_type": "add_skill",
+    "recommendation": "International Traffic in Arms Regulations. If you handled classified defense material or worked with defense systems, you operated under ITAR restrictions. Add to your resume.",
+    "related_certs": null,
+    "related_skills": [
+      "Export Control",
+      "Compliance",
+      "Defense"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "f94a768f-49c6-4e58-81ac-481fce07f6a1",
+    "gap_keyword": "TS/SCI",
+    "gap_category": "clearance",
+    "recommendation_type": "add_skill",
+    "recommendation": "TS/SCI access is the most valuable clearance level. If you had it, verify through your SSO or security manager. Even if expired, noting \"TS/SCI (inactive, eligible for reinstatement)\" has value.",
+    "related_certs": null,
+    "related_skills": [
+      "Security Clearance",
+      "SCI",
+      "Background Investigation"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "fb74ca85-edd9-436b-98b6-c788005d6bcc",
+    "gap_keyword": "CrowdStrike",
+    "gap_category": "tool",
+    "recommendation_type": "training",
+    "recommendation": "Endpoint detection and response platform. Free CrowdStrike University training. Your security monitoring experience translates.",
+    "related_certs": [
+      "Security+",
+      "CySA+"
+    ],
+    "related_skills": [
+      "EDR",
+      "Endpoint Security",
+      "Threat Detection"
+    ],
+    "free_resource_url": "https://www.crowdstrike.com/university/",
+    "resource_name": "CrowdStrike University",
+    "estimated_time": "10-20 hours",
+    "estimated_cost": "Free",
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  },
+  {
+    "id": "fd96f17f-2017-49b8-89fb-fdb5c1286e0e",
+    "gap_keyword": "Top Secret",
+    "gap_category": "clearance",
+    "recommendation_type": "add_skill",
+    "recommendation": "If you held TS during service, verify current status. TS clearances can remain active for up to 6 years. An active TS is worth $5-15K in additional salary. Always list on resume.",
+    "related_certs": null,
+    "related_skills": [
+      "Security Clearance",
+      "Background Investigation"
+    ],
+    "free_resource_url": null,
+    "resource_name": null,
+    "estimated_time": null,
+    "estimated_cost": null,
+    "veteran_discount": false,
+    "veteran_discount_notes": null,
+    "created_at": "2026-02-15T17:49:11.511332+00:00"
+  }
+]

@@ -1,0 +1,178 @@
+[
+  {
+    "id": "22f1179a-b484-4f88-899a-17de4b9fd828",
+    "military_context": "Standing watch for hours",
+    "civilian_skill": "Reliability",
+    "civilian_description": "Consistently dependable and accountable for assigned responsibilities",
+    "resume_phrase": "Highly reliable professional with proven accountability record",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "234f2890-73b0-4723-80e7-5873fbf1cfa5",
+    "military_context": "Mentoring junior personnel",
+    "civilian_skill": "Talent Development",
+    "civilian_description": "Develops and grows team members capabilities",
+    "resume_phrase": "Develops high-performing teams through coaching, mentoring, and targeted training",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "32839ba1-ff8d-4467-bea2-e572c6b10fbd",
+    "military_context": "Briefing senior leadership",
+    "civilian_skill": "Executive Communication",
+    "civilian_description": "Communicates clearly and concisely to senior leadership",
+    "resume_phrase": "Delivers clear, concise briefings to C-suite and executive-level stakeholders",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "3331beb6-efe6-423e-948c-f25cf751bc09",
+    "military_context": "Attention to detail in life-or-death situations",
+    "civilian_skill": "Precision and Quality",
+    "civilian_description": "Applies meticulous attention to detail in all work products",
+    "resume_phrase": "Applies rigorous quality standards and meticulous attention to detail",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "3dcf718b-ad91-4286-afe9-30f0209e52fb",
+    "military_context": "Joint operations with other services",
+    "civilian_skill": "Cross-Functional Collaboration",
+    "civilian_description": "Works effectively across different departments and organizations",
+    "resume_phrase": "Collaborates effectively across organizational boundaries to achieve shared objectives",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "3e229a75-623b-455a-8c9b-69381d89df21",
+    "military_context": "Qualifying on multiple systems",
+    "civilian_skill": "Fast Learner",
+    "civilian_description": "Rapidly acquires new skills and qualifications",
+    "resume_phrase": "Rapidly acquires new technical skills and professional certifications",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "47d83898-2bc2-4873-89a5-9c5e98685fc8",
+    "military_context": "Making decisions with incomplete info",
+    "civilian_skill": "Decisive Judgment",
+    "civilian_description": "Makes sound decisions quickly with limited information",
+    "resume_phrase": "Exercises sound judgment and decisive action in ambiguous situations",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "52d133f6-2e18-488c-86ec-dbeda095276a",
+    "military_context": "Accountability at all levels",
+    "civilian_skill": "Ownership Mentality",
+    "civilian_description": "Takes full ownership of responsibilities and outcomes",
+    "resume_phrase": "Demonstrates full ownership of deliverables and accountability for outcomes",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "6c14d4b3-fcb0-48c9-90a1-bc49b7830b12",
+    "military_context": "Living by military values",
+    "civilian_skill": "Integrity",
+    "civilian_description": "Operates with honesty and strong ethical standards",
+    "resume_phrase": "Demonstrates uncompromising integrity and ethical standards",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "74010edc-9b5b-47f3-8d3a-97065022cbde",
+    "military_context": "Planning operations",
+    "civilian_skill": "Strategic Thinking",
+    "civilian_description": "Plans ahead, anticipates challenges, and develops contingencies",
+    "resume_phrase": "Develops comprehensive plans with risk mitigation and contingency strategies",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "7ab555b7-6b7c-4cf4-9007-53ba89cb71ef",
+    "military_context": "Adapting to deployments and PCS moves",
+    "civilian_skill": "Adaptability",
+    "civilian_description": "Thrives in changing environments and adjusts quickly to new challenges",
+    "resume_phrase": "Demonstrates exceptional adaptability in dynamic, fast-changing environments",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "8376a211-c184-45d8-bd7b-d3b1611c8a41",
+    "military_context": "Working with diverse teams globally",
+    "civilian_skill": "Cross-Cultural Communication",
+    "civilian_description": "Effective communicator across diverse teams and cultures",
+    "resume_phrase": "Communicates effectively across diverse teams, cultures, and organizational levels",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "a1248302-b29a-4f96-be2a-94c4a952ffbf",
+    "military_context": "Mission accomplishment mindset",
+    "civilian_skill": "Results Orientation",
+    "civilian_description": "Relentlessly focused on achieving objectives and delivering outcomes",
+    "resume_phrase": "Consistently delivers measurable results against aggressive timelines",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "a26961da-e3d1-4bdf-be3b-22c9bbf5a422",
+    "military_context": "Never leaving someone behind",
+    "civilian_skill": "Team Commitment",
+    "civilian_description": "Deeply committed to team success and supporting colleagues",
+    "resume_phrase": "Demonstrates unwavering commitment to team objectives and colleague support",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "c1a3d4f7-d82a-44ec-a2e7-91e2d5a4e908",
+    "military_context": "Planning and executing liberty/leave",
+    "civilian_skill": "Work-Life Balance Advocate",
+    "civilian_description": "Values team wellbeing while maintaining operational effectiveness",
+    "resume_phrase": "Balances operational demands with team wellbeing to sustain long-term performance",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "c1f10721-488b-4c80-898e-84d8ddc7e4e7",
+    "military_context": "PT/physical readiness",
+    "civilian_skill": "Discipline",
+    "civilian_description": "Self-motivated with strong personal discipline and work ethic",
+    "resume_phrase": "Maintains exceptional personal discipline and consistent work ethic",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "c21229f0-901c-4db1-a518-889b2dc26f40",
+    "military_context": "Maintaining equipment in austere conditions",
+    "civilian_skill": "Resourcefulness",
+    "civilian_description": "Finds creative solutions with limited resources",
+    "resume_phrase": "Delivers innovative solutions using available resources in constrained environments",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "c3ebf324-4d94-4cd6-8d38-4aacb4c49a3c",
+    "military_context": "Following orders and chain of command",
+    "civilian_skill": "Organizational Alignment",
+    "civilian_description": "Works effectively within organizational hierarchy and follows established processes",
+    "resume_phrase": "Operates effectively within organizational structures and established processes",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "c7ceccff-0402-4ebc-993c-4fa0b2d0402d",
+    "military_context": "Following and enforcing regulations",
+    "civilian_skill": "Compliance Orientation",
+    "civilian_description": "Ensures adherence to policies, regulations, and standards",
+    "resume_phrase": "Ensures organizational compliance with regulatory requirements and industry standards",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "d2428f11-b34e-4bfa-940c-2af311f1a416",
+    "military_context": "After action reviews",
+    "civilian_skill": "Continuous Improvement",
+    "civilian_description": "Actively learns from experience and improves processes",
+    "resume_phrase": "Champions continuous improvement through structured post-project analysis",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "eb0adda5-782f-4981-83b0-17fd2e36e42f",
+    "military_context": "Damage control / firefighting",
+    "civilian_skill": "Crisis Management",
+    "civilian_description": "Remains calm and effective during emergencies",
+    "resume_phrase": "Maintains composure and leads effectively during high-stakes crisis situations",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  },
+  {
+    "id": "eb2bfbef-934d-41d7-aaf8-0927ad8e6dc5",
+    "military_context": "Working under fire/high stress",
+    "civilian_skill": "Pressure Management",
+    "civilian_description": "Delivers consistent results under extreme pressure and tight deadlines",
+    "resume_phrase": "Maintains peak performance under high-pressure conditions with competing priorities",
+    "created_at": "2026-02-15T17:47:32.616746+00:00"
+  }
+]

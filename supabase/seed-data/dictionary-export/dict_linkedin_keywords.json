@@ -1,0 +1,6025 @@
+[
+  {
+    "id": "00d3ad41-4f84-4200-81a2-c7945792302b",
+    "military_skill": "Installation Management",
+    "linkedin_keywords": [
+      "Campus Management",
+      "Facilities Operations",
+      "Property Management",
+      "Master Planning",
+      "Infrastructure"
+    ],
+    "industry": "Real Estate",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "01524230-034d-4711-8d47-b3a7857e45a4",
+    "military_skill": "Information Assurance",
+    "linkedin_keywords": [
+      "FISMA",
+      "RMF",
+      "NIST 800-53",
+      "Security Controls",
+      "Authority to Operate",
+      "STIG"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "016df8bd-a155-4358-af68-59f3b6aae0fe",
+    "military_skill": "Aviation Operations",
+    "linkedin_keywords": [
+      "Flight Operations",
+      "Air Traffic Control",
+      "Aviation Safety",
+      "Flight Planning"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "018192c5-5493-47ab-932b-a43d38e712ff",
+    "military_skill": "Safety Certifications",
+    "linkedin_keywords": [
+      "OSHA 30",
+      "CSP",
+      "ASP",
+      "Safety Professional",
+      "BCSP"
+    ],
+    "industry": "Manufacturing",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "021a6a7e-f9b4-4007-b076-6e0056ac9f16",
+    "military_skill": "Range Operations",
+    "linkedin_keywords": [
+      "Firing Range Management",
+      "Weapons Training",
+      "Range Safety",
+      "Marksmanship Training"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "03d72bb3-9340-4833-8459-43f6e462be52",
+    "military_skill": "Mission Focus",
+    "linkedin_keywords": [
+      "Goal Orientation",
+      "Results-Driven",
+      "Outcome Focus",
+      "Achievement Motivation"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "03f9af1f-a044-4f63-b4a3-f66ab68397ae",
+    "military_skill": "Combat Medic",
+    "linkedin_keywords": [
+      "Emergency Medical Technician",
+      "Paramedic",
+      "Emergency Medicine",
+      "Trauma Care",
+      "Pre-Hospital Care"
+    ],
+    "industry": "Healthcare",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0422f88f-ef3d-4753-9af0-5cb9799d9918",
+    "military_skill": "International Development",
+    "linkedin_keywords": [
+      "Foreign Aid",
+      "International NGO",
+      "Development Programs",
+      "USAID"
+    ],
+    "industry": "Non-Profit",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "053ba22a-0fa9-4c3f-9c16-90cfcd1f8822",
+    "military_skill": "Telecommunications Engineering",
+    "linkedin_keywords": [
+      "VoIP",
+      "Unified Communications",
+      "PBX Systems",
+      "Fiber Optics",
+      "MPLS"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0561f6a6-75e3-4c97-9529-ec474d4caba8",
+    "military_skill": "Lean Manufacturing",
+    "linkedin_keywords": [
+      "Lean Six Sigma",
+      "Process Improvement",
+      "Waste Reduction",
+      "Value Stream Mapping",
+      "5S"
+    ],
+    "industry": "Manufacturing",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0594d259-7b63-4cb9-bf28-0b21767245d6",
+    "military_skill": "Military Freefall",
+    "linkedin_keywords": [
+      "Risk Management",
+      "Advanced Training",
+      "Team Leadership",
+      "Physical Fitness",
+      "Decision Making"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "05a76d61-9f38-41ff-bc6b-a15df4a97fb9",
+    "military_skill": "Foreign Military Sales",
+    "linkedin_keywords": [
+      "FMS",
+      "Security Cooperation",
+      "International Defense",
+      "DSCA"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "062bf9d9-2674-4c72-96b3-8653835a6ba9",
+    "military_skill": "Medical Evacuation",
+    "linkedin_keywords": [
+      "Patient Transport",
+      "Emergency Logistics",
+      "Triage Operations",
+      "Critical Care Coordination"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "069faf15-ecff-4070-9e96-dab5b899efa9",
+    "military_skill": "Military Protocol",
+    "linkedin_keywords": [
+      "Protocol Management",
+      "Ceremony Coordination",
+      "Distinguished Visitor Programs"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "06a1a39f-8003-43e0-bcee-12d760dec2d0",
+    "military_skill": "Medical/Clinical",
+    "linkedin_keywords": [
+      "Patient Care",
+      "Clinical Operations",
+      "Emergency Medicine",
+      "Healthcare Management",
+      "HIPAA",
+      "Electronic Health Records"
+    ],
+    "industry": "healthcare",
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "070bfc21-ac07-427a-a0d4-5a64c86774f9",
+    "military_skill": "Crisis Management",
+    "linkedin_keywords": [
+      "Emergency Management",
+      "Incident Command",
+      "Business Continuity",
+      "Disaster Recovery"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "07dd01b8-73de-48b8-871b-e63d24a221de",
+    "military_skill": "Merchandising",
+    "linkedin_keywords": [
+      "Visual Merchandising",
+      "Product Placement",
+      "Planogram",
+      "Category Management"
+    ],
+    "industry": "Retail",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "08ea0769-db29-4466-bd1d-c5180252c315",
+    "military_skill": "Operations Security",
+    "linkedin_keywords": [
+      "Information Security",
+      "Data Protection",
+      "Privacy",
+      "Confidentiality",
+      "Security Awareness"
+    ],
+    "industry": "Cybersecurity",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "0929f63b-a90d-48d1-8140-f2acd5d32792",
+    "military_skill": "Aircraft Maintenance",
+    "linkedin_keywords": [
+      "Aviation Maintenance",
+      "A&P Mechanic",
+      "Airframe Systems",
+      "Avionics",
+      "FAA Compliance"
+    ],
+    "industry": "Manufacturing",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0a913991-2f50-4b0c-92d1-33d391d94cb7",
+    "military_skill": "Guard Force Management",
+    "linkedin_keywords": [
+      "Security Force Management",
+      "Guard Operations",
+      "Patrol Management"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0b2246aa-e961-4ae4-96e5-447df1fdb3a1",
+    "military_skill": "Personnel Security",
+    "linkedin_keywords": [
+      "Background Investigation",
+      "Security Clearance Processing",
+      "Personnel Vetting",
+      "Insider Threat Program"
+    ],
+    "industry": "Security",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0b23878e-2575-4581-bf9f-84b70616f0b6",
+    "military_skill": "Investigations",
+    "linkedin_keywords": [
+      "Criminal Investigation",
+      "Internal Investigations",
+      "Forensics",
+      "Evidence Collection",
+      "Interview Techniques"
+    ],
+    "industry": "Security",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0b3afe48-087b-4b87-901b-4ff005ad6821",
+    "military_skill": "Tactical Driving",
+    "linkedin_keywords": [
+      "Defensive Driving",
+      "Emergency Vehicle Operations",
+      "Fleet Safety",
+      "Evasive Driving",
+      "Vehicle Operations"
+    ],
+    "industry": "Transportation",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "0bc510a0-6383-464b-b7b4-32505e03c561",
+    "military_skill": "Behavioral Health",
+    "linkedin_keywords": [
+      "Mental Health Support",
+      "Crisis Intervention",
+      "Counseling",
+      "PTSD Treatment",
+      "Behavioral Health Technician"
+    ],
+    "industry": "Healthcare",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0be80e24-3b75-450d-a3c9-24074b678e5c",
+    "military_skill": "Oil and Gas Operations",
+    "linkedin_keywords": [
+      "Petroleum Engineering",
+      "Pipeline Operations",
+      "Downstream Operations"
+    ],
+    "industry": "Energy",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0cf5f5db-aad5-49ef-8930-c2be3eb21e2e",
+    "military_skill": "Standard Operating Procedures",
+    "linkedin_keywords": [
+      "Process Documentation",
+      "SOP Development",
+      "Workflow Design",
+      "Business Process Management"
+    ],
+    "industry": "Consulting",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0d014dd5-ee38-4254-900e-332559ab5aac",
+    "military_skill": "Aviation Operations",
+    "linkedin_keywords": [
+      "Flight Operations",
+      "Aviation Safety",
+      "Air Traffic Management",
+      "Crew Resource Management",
+      "Regulatory Compliance"
+    ],
+    "industry": "Aviation",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "0d62aa19-322f-484f-bf96-811e559cb3cb",
+    "military_skill": "Database Administration",
+    "linkedin_keywords": [
+      "SQL Server",
+      "Oracle",
+      "PostgreSQL",
+      "MySQL",
+      "Database Design",
+      "Data Modeling"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "0de7e471-da5f-445f-8a5c-da854be6b967",
+    "military_skill": "Legal Services",
+    "linkedin_keywords": [
+      "Paralegal",
+      "Legal Research",
+      "Document Review",
+      "Case Management",
+      "Regulatory Compliance"
+    ],
+    "industry": "Legal",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "0f0f8e83-f24c-4421-bf1e-07fa7b7e1d0b",
+    "military_skill": "Counter-Terrorism",
+    "linkedin_keywords": [
+      "Threat Analysis",
+      "Security Strategy",
+      "Intelligence Operations",
+      "Crisis Response",
+      "Risk Mitigation"
+    ],
+    "industry": "Government",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "0f322909-6a53-4fea-be02-fef62e248124",
+    "military_skill": "Airfield Operations",
+    "linkedin_keywords": [
+      "Airport Operations",
+      "Ramp Management",
+      "Safety Compliance",
+      "Air Traffic Coordination",
+      "Ground Support"
+    ],
+    "industry": "Aviation",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "0fd710c5-7db3-4ec6-a40c-f00fb184ef7f",
+    "military_skill": "Weapons Systems",
+    "linkedin_keywords": [
+      "Technical Systems",
+      "Quality Control",
+      "Maintenance Management",
+      "Safety Protocols",
+      "Equipment Operation"
+    ],
+    "industry": "Manufacturing",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "0feac6da-7dcf-4614-8c67-d2e4fb786697",
+    "military_skill": "Fire Support Coordination",
+    "linkedin_keywords": [
+      "Multi-Team Coordination",
+      "Resource Synchronization",
+      "Real-Time Decision Making",
+      "Communication",
+      "Planning"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "0ffe3969-eb56-408c-b3bd-1b24da4ca56b",
+    "military_skill": "Force Protection",
+    "linkedin_keywords": [
+      "Security Management",
+      "Risk Mitigation",
+      "Safety Management",
+      "Threat Assessment",
+      "Physical Security"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "1069395d-b04f-4c0e-8feb-5f5c9f9d5d85",
+    "military_skill": "Military Justice",
+    "linkedin_keywords": [
+      "Compliance",
+      "Investigations",
+      "Policy Enforcement",
+      "Regulatory Affairs",
+      "Legal Operations"
+    ],
+    "industry": "Legal",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "113b7a0f-b156-4836-a1a3-0487ac28ce98",
+    "military_skill": "Photography/Videography",
+    "linkedin_keywords": [
+      "Visual Media",
+      "Video Production",
+      "Adobe Creative Suite",
+      "Content Production"
+    ],
+    "industry": "Media",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "11684539-06fa-42e0-89d4-1b5bf505123b",
+    "military_skill": "CBRN Defense",
+    "linkedin_keywords": [
+      "Chemical Safety",
+      "Biological Safety",
+      "Radiological Protection",
+      "WMD Response",
+      "HAZMAT"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "11a40afc-662b-485d-b7b8-db39b4581cf0",
+    "military_skill": "Regulatory Compliance",
+    "linkedin_keywords": [
+      "FDA Compliance",
+      "EPA Compliance",
+      "SOX Compliance",
+      "Regulatory Affairs"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "11a7f945-734d-47f5-9d5c-ffdd1639b768",
+    "military_skill": "Quality Control",
+    "linkedin_keywords": [
+      "Quality Assurance",
+      "ISO 9001",
+      "Six Sigma",
+      "Statistical Process Control",
+      "Inspection"
+    ],
+    "industry": "Manufacturing",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "11e0a73d-5e18-4e54-bd5a-a89a5c4a1127",
+    "military_skill": "Combat Engineering",
+    "linkedin_keywords": [
+      "Civil Engineering",
+      "Construction Management",
+      "Infrastructure Development",
+      "Demolition"
+    ],
+    "industry": "Construction",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "11e3d699-a5be-48ee-b2ba-037255e080be",
+    "military_skill": "Point of Sale",
+    "linkedin_keywords": [
+      "POS Systems",
+      "Payment Processing",
+      "Cash Management",
+      "Register Operations"
+    ],
+    "industry": "Retail",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "126c9f8e-0fd7-4c52-bce7-788adce56988",
+    "military_skill": "Quality Assurance",
+    "linkedin_keywords": [
+      "Quality Assurance",
+      "Quality Control",
+      "ISO 9001",
+      "Six Sigma",
+      "Process Audit",
+      "Continuous Improvement"
+    ],
+    "industry": null,
+    "priority": "medium",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "13326b97-1ea8-4842-b6ba-c762899df696",
+    "military_skill": "Technical Proposal Writing",
+    "linkedin_keywords": [
+      "RFP Response",
+      "Technical Volume",
+      "Proposal Coordination",
+      "Orals Presentations"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "1398224e-94e1-45d6-b574-8bd4c0f4db95",
+    "military_skill": "Equal Opportunity",
+    "linkedin_keywords": [
+      "Diversity and Inclusion",
+      "EEO",
+      "Compliance",
+      "Investigation",
+      "Training"
+    ],
+    "industry": "Human Resources",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "144159fc-1115-4cfe-89b3-4a8f1632052f",
+    "military_skill": "Strategic Communications",
+    "linkedin_keywords": [
+      "Public Affairs",
+      "Messaging Strategy",
+      "Communication Planning",
+      "Brand Management"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "14912236-4a53-41e4-bf74-ecf2092169b1",
+    "military_skill": "Personnel Recovery",
+    "linkedin_keywords": [
+      "Search and Rescue",
+      "Emergency Management",
+      "Crisis Response",
+      "Coordination",
+      "Planning"
+    ],
+    "industry": "Emergency Management",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "14da1d50-0308-46fe-b62f-207af085bb4d",
+    "military_skill": "Maintenance Management",
+    "linkedin_keywords": [
+      "Maintenance Management",
+      "Preventive Maintenance",
+      "Asset Management",
+      "Facility Management",
+      "CMMS"
+    ],
+    "industry": null,
+    "priority": "medium",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "15a18a16-7692-4f95-8128-b460f59f3196",
+    "military_skill": "Recruiting",
+    "linkedin_keywords": [
+      "Talent Acquisition",
+      "Sourcing",
+      "Interviewing",
+      "Employer Branding",
+      "Recruitment Strategy"
+    ],
+    "industry": "Human Resources",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "15b98181-aeaa-40f8-b008-65693f7335dc",
+    "military_skill": "Physical Training",
+    "linkedin_keywords": [
+      "Fitness Instruction",
+      "Program Design",
+      "Health and Wellness",
+      "Personal Training",
+      "Group Fitness"
+    ],
+    "industry": "Health & Fitness",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "16d7f920-d7dd-413e-be55-77abd3e3035c",
+    "military_skill": "Military Police",
+    "linkedin_keywords": [
+      "Law Enforcement",
+      "Security Management",
+      "Criminal Investigation",
+      "Physical Security"
+    ],
+    "industry": "Security",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "174a2b59-32f6-48de-8fb1-731b070c1e70",
+    "military_skill": "Electronics Repair",
+    "linkedin_keywords": [
+      "Electronics Technician",
+      "Circuit Board Repair",
+      "Soldering",
+      "Electronic Systems Troubleshooting"
+    ],
+    "industry": "Manufacturing",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "17e9261a-3041-4088-a7d2-3a3a0df564a8",
+    "military_skill": "Radio Communications",
+    "linkedin_keywords": [
+      "Telecommunications",
+      "Two-Way Radio",
+      "Network Operations",
+      "Technical Support",
+      "Signal Processing"
+    ],
+    "industry": "Telecommunications",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "1819d673-5cb2-439a-95fc-ed09f56d2e40",
+    "military_skill": "Peacekeeping",
+    "linkedin_keywords": [
+      "Conflict Resolution",
+      "Diplomacy",
+      "Cross-Cultural Communication",
+      "Negotiation",
+      "Community Engagement"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "18b6e209-fa77-4e3c-9ef7-a5c8bead86d6",
+    "military_skill": "Fitness Program Management",
+    "linkedin_keywords": [
+      "Corporate Wellness",
+      "Employee Wellness",
+      "Health Promotion",
+      "Wellness Programs"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "1a0bf0d9-9641-496a-8fb7-7ff3ba075af5",
+    "military_skill": "Master Training Specialist",
+    "linkedin_keywords": [
+      "Senior Instructional Designer",
+      "Training Director",
+      "Learning Architect",
+      "Curriculum Manager"
+    ],
+    "industry": "Education",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "1a7c965f-0c06-43c9-bd50-2be526c2a1e5",
+    "military_skill": "Green Building",
+    "linkedin_keywords": [
+      "LEED Certification",
+      "Sustainable Construction",
+      "Green Design",
+      "Energy-Efficient Building"
+    ],
+    "industry": "Construction",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "1ac53f23-f0f2-456e-b86e-9aedaa3ca358",
+    "military_skill": "Mission Planning",
+    "linkedin_keywords": [
+      "Strategic Planning",
+      "Project Planning",
+      "Program Management",
+      "Risk Assessment",
+      "Contingency Planning"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "1bb68639-2d85-416f-9583-0870c0b693c7",
+    "military_skill": "Solar Energy",
+    "linkedin_keywords": [
+      "Photovoltaic Systems",
+      "Solar Installation",
+      "Renewable Energy",
+      "Solar Design"
+    ],
+    "industry": "Energy",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "1c804799-6434-463f-a4f9-045b95990a80",
+    "military_skill": "Mission Planning",
+    "linkedin_keywords": [
+      "Strategic Planning",
+      "Project Planning",
+      "Operations Planning",
+      "Program Management"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "1d3f05a4-3c5f-4b74-93cc-ea44e9f6a919",
+    "military_skill": "Fleet Electrification",
+    "linkedin_keywords": [
+      "EV Fleet",
+      "Electric Vehicle Infrastructure",
+      "Charging Stations",
+      "Green Fleet"
+    ],
+    "industry": "Logistics",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "1d5fa91c-04e0-4d0b-9ddc-984e839650d8",
+    "military_skill": "Public Affairs",
+    "linkedin_keywords": [
+      "Public Relations",
+      "Media Relations",
+      "Content Creation",
+      "Social Media",
+      "Strategic Communications"
+    ],
+    "industry": "Communications",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "1dcc66cf-a302-40c0-9137-056e13c56702",
+    "military_skill": "Combat Operations",
+    "linkedin_keywords": [
+      "Tactical Operations",
+      "Mission Execution",
+      "Operational Planning",
+      "Battle Management"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "1df5040a-bba8-409d-81ed-6ce6efa588cd",
+    "military_skill": "Battlefield Surgery",
+    "linkedin_keywords": [
+      "Surgical Assistance",
+      "Operating Room",
+      "Sterile Technique",
+      "Patient Preparation",
+      "Post-Operative Care"
+    ],
+    "industry": "Healthcare",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "1df7b82f-f304-43e3-a573-9eb215324bf7",
+    "military_skill": "Network Security",
+    "linkedin_keywords": [
+      "Firewall Administration",
+      "IDS/IPS",
+      "Zero Trust Architecture",
+      "Network Segmentation"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "1e883cc9-1dc8-4334-b6b3-cc6b3b7a34dd",
+    "military_skill": "Explosive Ordnance Disposal",
+    "linkedin_keywords": [
+      "Bomb Disposal",
+      "Hazardous Materials",
+      "Risk Assessment",
+      "Public Safety",
+      "Technical Investigation"
+    ],
+    "industry": "Law Enforcement",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "1f96e072-3c7e-49e8-a998-298841afee00",
+    "military_skill": "Public Affairs",
+    "linkedin_keywords": [
+      "Public Relations",
+      "Media Relations",
+      "Corporate Communications",
+      "Press Secretary",
+      "Crisis Communications"
+    ],
+    "industry": "Media",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "1fc07fdf-f580-4b06-8569-db3f51765661",
+    "military_skill": "Collection Management",
+    "linkedin_keywords": [
+      "Requirements Management",
+      "Information Gathering",
+      "Source Management",
+      "Priority Setting",
+      "Reporting"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "1fe07516-893a-433f-8e46-93ca2341c9ac",
+    "military_skill": "Personnel Management",
+    "linkedin_keywords": [
+      "Human Resources",
+      "Talent Management",
+      "Employee Relations",
+      "Performance Management",
+      "Workforce Planning"
+    ],
+    "industry": "Human Resources",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "23c201dd-a1bd-40c5-9782-0d30065d51ff",
+    "military_skill": "Travel Voucher Processing",
+    "linkedin_keywords": [
+      "Expense Management",
+      "Travel Administration",
+      "Accounts Payable",
+      "Invoice Processing"
+    ],
+    "industry": "Finance",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2429a90f-610c-435d-bb84-d78a07f6ba4a",
+    "military_skill": "Protocol and Ceremonies",
+    "linkedin_keywords": [
+      "Event Management",
+      "VIP Coordination",
+      "Corporate Protocol",
+      "Executive Support",
+      "Professional Etiquette"
+    ],
+    "industry": "Hospitality",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "24682d21-3cb4-4b03-97c8-d472484e269e",
+    "military_skill": "Fiber Optics",
+    "linkedin_keywords": [
+      "FTTH",
+      "Fiber Splicing",
+      "Optical Network",
+      "Fiber Installation"
+    ],
+    "industry": "Telecommunications",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "24f6598f-195f-40d1-98a7-0084000b51d0",
+    "military_skill": "Organizational Development",
+    "linkedin_keywords": [
+      "OD Consulting",
+      "Team Effectiveness",
+      "Organizational Design",
+      "Culture Change"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2605d625-ba40-4202-9d9a-c260cb7453d4",
+    "military_skill": "Teamwork",
+    "linkedin_keywords": [
+      "Cross-Functional Collaboration",
+      "Team Building",
+      "Collaborative Leadership",
+      "Interpersonal Skills"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "27e4d667-be23-467d-9b53-b510ec0e6aed",
+    "military_skill": "Fire Direction",
+    "linkedin_keywords": [
+      "Mathematical Modeling",
+      "Data Analysis",
+      "Real-Time Calculations",
+      "Quality Control",
+      "Precision Operations"
+    ],
+    "industry": "Data Science",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "2846e5d4-cc14-4601-ad6f-5190e0091719",
+    "military_skill": "Geospatial Intelligence",
+    "linkedin_keywords": [
+      "GIS",
+      "Geospatial Analysis",
+      "Remote Sensing",
+      "Mapping Technology",
+      "ESRI ArcGIS"
+    ],
+    "industry": "Government",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "28761dd7-bc14-4b31-b268-15710864969c",
+    "military_skill": "Psychological Operations",
+    "linkedin_keywords": [
+      "Marketing",
+      "Influence",
+      "Content Strategy",
+      "Audience Analysis",
+      "Campaign Development"
+    ],
+    "industry": "Marketing",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "28bf45d8-cf3b-4b66-992a-0f75fe717f20",
+    "military_skill": "Simulation Training",
+    "linkedin_keywords": [
+      "Virtual Training",
+      "Simulation Technology",
+      "Immersive Learning",
+      "XR Training",
+      "Serious Games"
+    ],
+    "industry": "Education",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "28d3601c-8c0e-43b3-b931-e2ece66d9df2",
+    "military_skill": "Military Intelligence",
+    "linkedin_keywords": [
+      "Competitive Intelligence",
+      "Market Analysis",
+      "Research Methods",
+      "Information Gathering",
+      "Analytical Frameworks"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "28f55a97-e8a6-415c-81ac-82e679b44661",
+    "military_skill": "Budget Management",
+    "linkedin_keywords": [
+      "Financial Management",
+      "Budget Planning",
+      "Cost Control",
+      "Financial Analysis",
+      "Resource Allocation"
+    ],
+    "industry": "Finance",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "2a0edd63-a248-4bf5-ab0b-b8f525466359",
+    "military_skill": "Information Security",
+    "linkedin_keywords": [
+      "Cybersecurity",
+      "Information Security",
+      "NIST",
+      "RMF",
+      "FISMA",
+      "Vulnerability Management",
+      "SIEM"
+    ],
+    "industry": "cybersecurity",
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "2a2b9297-c415-4537-b57e-3a4609b70295",
+    "military_skill": "Security Clearance - TS/SCI",
+    "linkedin_keywords": [
+      "Top Secret Clearance",
+      "Security Clearance",
+      "Government Security",
+      "Classified Programs"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2a6f319a-3328-47c9-b8d4-91a1166944be",
+    "military_skill": "Convoy Operations",
+    "linkedin_keywords": [
+      "Transportation Coordination",
+      "Route Planning",
+      "Vehicle Dispatch",
+      "Load Planning"
+    ],
+    "industry": "Logistics",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2b58cbbc-02a7-4fd4-92e6-2569daa81afd",
+    "military_skill": "Cyber Warfare Operations",
+    "linkedin_keywords": [
+      "Penetration Testing",
+      "Red Team Operations",
+      "Offensive Security",
+      "Vulnerability Assessment"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2ba6ff99-e3c6-4fa5-a256-3b16b7c8c645",
+    "military_skill": "Attention to Detail",
+    "linkedin_keywords": [
+      "Quality Focus",
+      "Precision",
+      "Thoroughness",
+      "Compliance Orientation"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2c0355be-fc17-4a6c-928b-232556b03826",
+    "military_skill": "Virtualization",
+    "linkedin_keywords": [
+      "VMware vSphere",
+      "Hyper-V",
+      "Containerization",
+      "Docker",
+      "Kubernetes"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2dbfd562-9802-45d5-b88d-0ccdfd186592",
+    "military_skill": "Physical Fitness",
+    "linkedin_keywords": [
+      "Health Conscious",
+      "Active Lifestyle",
+      "Physical Endurance",
+      "Wellness Advocate"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2dd3b660-64f3-465d-807c-54720c056844",
+    "military_skill": "Humanitarian Assistance",
+    "linkedin_keywords": [
+      "International Development",
+      "Disaster Relief",
+      "NGO Coordination",
+      "Project Management",
+      "Cross-Cultural Communication"
+    ],
+    "industry": "Nonprofit",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "2e3a2451-5969-4637-b80e-5e39159c7361",
+    "military_skill": "Electrical Systems",
+    "linkedin_keywords": [
+      "Electrician",
+      "Electrical Engineering",
+      "Power Distribution",
+      "NEC Compliance"
+    ],
+    "industry": "Construction",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2e87382d-b7ee-4ea6-9ba7-b307da18b6b6",
+    "military_skill": "Physical Training",
+    "linkedin_keywords": [
+      "Fitness Programming",
+      "Wellness Coaching",
+      "Performance Training",
+      "Health and Wellness"
+    ],
+    "industry": "Education",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2ee7f38c-f573-4ff8-8d33-030c5c1fb0b1",
+    "military_skill": "Test and Evaluation",
+    "linkedin_keywords": [
+      "Quality Engineering",
+      "Test Planning",
+      "Data Analysis",
+      "Requirements Verification",
+      "Performance Testing"
+    ],
+    "industry": "Manufacturing",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "2ef03fdf-c974-4b4a-b31e-60726fb6bbfd",
+    "military_skill": "Avionics",
+    "linkedin_keywords": [
+      "Avionics Systems",
+      "Flight Instruments",
+      "Navigation Systems",
+      "Cockpit Systems"
+    ],
+    "industry": "Aerospace",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2f399d9d-fd65-4434-8427-c70af59bb6a8",
+    "military_skill": "Surveying",
+    "linkedin_keywords": [
+      "Land Surveying",
+      "Topographic Mapping",
+      "GIS",
+      "AutoCAD",
+      "Civil 3D"
+    ],
+    "industry": "Construction",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "2f864f0a-5d4c-4446-9391-fc62461fb1af",
+    "military_skill": "Dental Services",
+    "linkedin_keywords": [
+      "Dental Practice Management",
+      "Patient Care",
+      "Clinical Operations",
+      "Health Records",
+      "Sterilization"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "302818eb-7c82-413b-a001-1e9a277ccfd0",
+    "military_skill": "Cultural Awareness",
+    "linkedin_keywords": [
+      "Cross-Cultural Communication",
+      "Global Mindset",
+      "Cultural Competency",
+      "Diversity Awareness"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "302e6652-2371-4841-b7d0-c4b3183d6e01",
+    "military_skill": "Government Contracting",
+    "linkedin_keywords": [
+      "Federal Acquisition",
+      "Contract Management",
+      "FAR/DFAR",
+      "Procurement",
+      "Source Selection"
+    ],
+    "industry": "Finance",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "30ca3452-953b-4ccd-a7e3-8a535e068e38",
+    "military_skill": "Security Clearance",
+    "linkedin_keywords": [
+      "TS/SCI",
+      "Top Secret Clearance",
+      "Secret Clearance",
+      "Security Clearance",
+      "Government Clearance"
+    ],
+    "industry": "defense",
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "3146eff8-d2c1-4101-b311-039f499379c4",
+    "military_skill": "Ship Handling",
+    "linkedin_keywords": [
+      "Vessel Operations",
+      "Bridge Watch",
+      "Seamanship",
+      "Helm Operations"
+    ],
+    "industry": "Defense",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "31889642-88e8-4fc3-b1fe-c2d9ccbccd8c",
+    "military_skill": "Federal HR Management",
+    "linkedin_keywords": [
+      "OPM Regulations",
+      "Merit Systems",
+      "Position Classification",
+      "Federal Pay Systems"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "328b8519-f1a8-4154-8a78-a3378e1411b5",
+    "military_skill": "Propulsion Systems",
+    "linkedin_keywords": [
+      "Rocket Propulsion",
+      "Jet Engines",
+      "Turbine Technology",
+      "Propulsion Engineering"
+    ],
+    "industry": "Aerospace",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "32cc1d30-e903-4460-8aa6-9133e6d86b08",
+    "military_skill": "ISR Operations",
+    "linkedin_keywords": [
+      "Surveillance Systems",
+      "Reconnaissance",
+      "Sensor Operations",
+      "Collection Management"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "338ab432-419e-46ad-aa52-3ca237aa1685",
+    "military_skill": "Environmental Compliance",
+    "linkedin_keywords": [
+      "EPA Regulations",
+      "Environmental Management",
+      "Sustainability",
+      "Waste Management"
+    ],
+    "industry": "Energy",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "342629e2-1372-433e-a382-a3d72d6bb18f",
+    "military_skill": "Compliance",
+    "linkedin_keywords": [
+      "Regulatory Compliance",
+      "Compliance Management",
+      "Audit",
+      "Policy Compliance",
+      "Internal Controls"
+    ],
+    "industry": null,
+    "priority": "medium",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "3524f31d-e214-4db5-a473-e4bdc5f6898b",
+    "military_skill": "Resource Allocation",
+    "linkedin_keywords": [
+      "Capital Planning",
+      "Resource Management",
+      "Strategic Budgeting",
+      "Investment Analysis"
+    ],
+    "industry": "Finance",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "353f07f3-9784-4a54-bc0e-aa199fe6b562",
+    "military_skill": "Grant Management",
+    "linkedin_keywords": [
+      "Federal Grants",
+      "Grant Writing",
+      "Grant Administration",
+      "Grants.gov",
+      "Federal Funding"
+    ],
+    "industry": "Government",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "36ffe598-0908-4d4c-9be1-9cd86758073c",
+    "military_skill": "CompTIA Certifications",
+    "linkedin_keywords": [
+      "CompTIA Security+",
+      "CompTIA Network+",
+      "CompTIA A+",
+      "IT Certification"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "3709c04b-fcff-4ef6-aebb-a94b7f8c6ece",
+    "military_skill": "Stakeholder Management",
+    "linkedin_keywords": [
+      "Client Relationship Management",
+      "Stakeholder Analysis",
+      "Requirements Gathering"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "3713bd49-d090-47ff-bd79-4d5166ccc709",
+    "military_skill": "Healthcare Certifications",
+    "linkedin_keywords": [
+      "BLS",
+      "ACLS",
+      "PALS",
+      "TCCC",
+      "EMT Certification"
+    ],
+    "industry": "Healthcare",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "3746f378-92b1-4f48-81fa-f1cb9bbd0248",
+    "military_skill": "Satellite Communications",
+    "linkedin_keywords": [
+      "Telecommunications",
+      "Network Engineering",
+      "RF Engineering",
+      "Satellite Systems",
+      "Technical Operations"
+    ],
+    "industry": "Telecommunications",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "38379f4b-1f93-4810-aff0-134f31e3ad49",
+    "military_skill": "Materiel Management",
+    "linkedin_keywords": [
+      "Materials Planning",
+      "MRP/ERP",
+      "Procurement",
+      "Asset Lifecycle Management"
+    ],
+    "industry": "Logistics",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "383bbf5c-e1a9-4d59-819c-c63ddf7c9e05",
+    "military_skill": "Medical Logistics",
+    "linkedin_keywords": [
+      "Healthcare Supply Chain",
+      "Medical Equipment",
+      "Pharmaceutical Distribution",
+      "Inventory Management",
+      "Regulatory Compliance"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "388afd13-b626-4ff6-9b83-6b4db9c085c9",
+    "military_skill": "Briefing Skills",
+    "linkedin_keywords": [
+      "Executive Presentation",
+      "Public Speaking",
+      "Stakeholder Communication",
+      "Board Presentations"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "389c67d2-a5af-40f1-a60d-26f4c145c2ea",
+    "military_skill": "Community Engagement",
+    "linkedin_keywords": [
+      "Outreach Coordination",
+      "Community Organizing",
+      "Volunteer Management",
+      "Public Engagement"
+    ],
+    "industry": "Non-Profit",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "39730da8-d2be-447c-914c-f8bb8d2dccc5",
+    "military_skill": "Dental Technician",
+    "linkedin_keywords": [
+      "Dental Lab",
+      "Prosthetics",
+      "Quality Control",
+      "Clinical Support",
+      "Patient Care"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "3a0894fd-7c34-48a0-8574-8ce0f03a2d1c",
+    "military_skill": "Prisoner Handling",
+    "linkedin_keywords": [
+      "Corrections",
+      "Security Operations",
+      "Documentation",
+      "Compliance",
+      "De-escalation"
+    ],
+    "industry": "Law Enforcement",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "3b4561fa-11db-4a33-9526-ee133a2aa22f",
+    "military_skill": "Company Commander",
+    "linkedin_keywords": [
+      "Department Director",
+      "Business Unit Leader",
+      "Operations Director",
+      "General Manager"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "3bad6ece-f2ad-44be-8973-f7732fbcd4d4",
+    "military_skill": "Military Working Dogs",
+    "linkedin_keywords": [
+      "K-9 Handler",
+      "Animal Training",
+      "Search and Detection",
+      "Law Enforcement",
+      "Behavioral Science"
+    ],
+    "industry": "Law Enforcement",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "3d7ad49c-156c-4d06-acce-3569cb60d7ee",
+    "military_skill": "Manpower Management",
+    "linkedin_keywords": [
+      "Workforce Analytics",
+      "Staffing",
+      "Capacity Planning",
+      "Labor Relations",
+      "Organizational Design"
+    ],
+    "industry": "Human Resources",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "3d8853e6-1ac9-4756-bce9-ecb51b1f1482",
+    "military_skill": "Corpsman",
+    "linkedin_keywords": [
+      "Medical Assistant",
+      "Patient Care Technician",
+      "Clinical Support",
+      "Healthcare Administration"
+    ],
+    "industry": "Healthcare",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "3e61882a-a591-464f-8fdf-94a5d866de4d",
+    "military_skill": "E-Learning",
+    "linkedin_keywords": [
+      "LMS Administration",
+      "Online Learning",
+      "Moodle",
+      "Blackboard",
+      "Canvas"
+    ],
+    "industry": "Education",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "3ebefbb1-7bb1-4454-ba16-3f48d6e64f0a",
+    "military_skill": "Preventive Medicine",
+    "linkedin_keywords": [
+      "Public Health",
+      "Occupational Health",
+      "Epidemiology",
+      "Health Inspection",
+      "Disease Prevention"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "3ef72e01-b9c9-4018-a05c-138c7ad170db",
+    "military_skill": "Welding",
+    "linkedin_keywords": [
+      "Structural Welding",
+      "MIG/TIG Welding",
+      "Fabrication",
+      "Metal Working",
+      "AWS Certification"
+    ],
+    "industry": "Manufacturing",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "40b90121-2c8c-41fc-9327-df4e97deff7b",
+    "military_skill": "DevSecOps",
+    "linkedin_keywords": [
+      "Secure Development",
+      "CI/CD Security",
+      "Container Security",
+      "Application Security"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "4125c5dd-9a57-47ae-bf4b-77a13ff427f0",
+    "military_skill": "Mentorship Programs",
+    "linkedin_keywords": [
+      "Employee Mentoring",
+      "Coaching",
+      "Professional Development",
+      "Succession Planning",
+      "Talent Management"
+    ],
+    "industry": "Education",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "4164577f-e599-42cc-b90a-32bb59ddac9e",
+    "military_skill": "Medical Evacuation",
+    "linkedin_keywords": [
+      "Patient Transport",
+      "Emergency Medical Services",
+      "Flight Nursing",
+      "Critical Care Transport",
+      "EMS Operations"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "42b10b09-94e6-42a1-8b57-5fd28d58a6e9",
+    "military_skill": "Unmanned Systems",
+    "linkedin_keywords": [
+      "Drone Operations",
+      "UAS",
+      "Robotics",
+      "Remote Sensing",
+      "Autonomous Systems"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "42cb92d3-07a5-42dc-9fad-e1360e02c895",
+    "military_skill": "Drill Instructor",
+    "linkedin_keywords": [
+      "Leadership Development Instructor",
+      "Performance Coach",
+      "Motivation Speaker",
+      "Team Building Facilitator"
+    ],
+    "industry": "Education",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "43284db5-e44c-4227-a9c6-43b7c37cf13d",
+    "military_skill": "MDMP",
+    "linkedin_keywords": [
+      "Decision Analysis",
+      "Strategic Decision Making",
+      "Problem Solving Framework",
+      "Structured Analysis"
+    ],
+    "industry": "Consulting",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "43476429-f4f1-47e8-ad37-01e79a8702d4",
+    "military_skill": "Intelligence Analysis",
+    "linkedin_keywords": [
+      "Business Intelligence",
+      "Data Analysis",
+      "Competitive Intelligence",
+      "Market Research",
+      "Strategic Analysis"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "434ff946-fa3c-49eb-ba7a-15ef7e527450",
+    "military_skill": "Field Sanitation",
+    "linkedin_keywords": [
+      "Environmental Health",
+      "Food Safety",
+      "HACCP",
+      "Sanitation",
+      "Regulatory Compliance"
+    ],
+    "industry": "Environmental",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "437e9f38-78ab-442d-b30d-c2cc70c3bcea",
+    "military_skill": "Mobile Device Management",
+    "linkedin_keywords": [
+      "MDM",
+      "BYOD Policy",
+      "Endpoint Security",
+      "Mobile Security",
+      "Intune"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "4396eb63-1911-43fa-8927-d3fc8e98b33d",
+    "military_skill": "First Sergeant",
+    "linkedin_keywords": [
+      "Senior Operations Manager",
+      "Employee Relations Manager",
+      "Organizational Leadership",
+      "Administrative Director"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "4410043a-8327-4f21-873b-6cfde5298f56",
+    "military_skill": "Readiness Reporting",
+    "linkedin_keywords": [
+      "Compliance Reporting",
+      "Status Reporting",
+      "Performance Metrics",
+      "Dashboard Management"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "44358220-1037-4ab7-abe0-ba9595a3fcd3",
+    "military_skill": "Personnel Administration",
+    "linkedin_keywords": [
+      "Human Resources",
+      "HR Management",
+      "Talent Management",
+      "Workforce Planning",
+      "Employee Relations",
+      "HRIS"
+    ],
+    "industry": null,
+    "priority": "medium",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "44b28e03-c286-4985-8dbf-1b2ec27b78b9",
+    "military_skill": "Program Evaluation",
+    "linkedin_keywords": [
+      "Metrics Development",
+      "Program Assessment",
+      "Outcome Measurement",
+      "Impact Analysis"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "45e2f9ac-168d-488e-9772-520ae50072b6",
+    "military_skill": "Weather Forecasting",
+    "linkedin_keywords": [
+      "Meteorology",
+      "Environmental Analysis",
+      "Data Modeling",
+      "Forecasting",
+      "Risk Assessment"
+    ],
+    "industry": "Environmental",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "466edc0a-e2f4-4bf5-955c-7ae9082c1343",
+    "military_skill": "Network Administration",
+    "linkedin_keywords": [
+      "IT Infrastructure",
+      "Network Engineering",
+      "Systems Administration",
+      "Cybersecurity",
+      "Cloud Computing"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "476d450e-2d01-4868-9ab6-6e0a9d10820c",
+    "military_skill": "Signal Intelligence",
+    "linkedin_keywords": [
+      "Data Analytics",
+      "Signal Processing",
+      "Electronic Surveillance",
+      "Technical Collection",
+      "SIGINT"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "477d2951-9b0d-42d9-b085-ed534ce14b0e",
+    "military_skill": "Demand Planning",
+    "linkedin_keywords": [
+      "Forecasting",
+      "Demand Analysis",
+      "S&OP",
+      "Inventory Planning"
+    ],
+    "industry": "Logistics",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "47d4a808-2124-4a10-ba0b-3b2453605e7e",
+    "military_skill": "Convoy Operations",
+    "linkedin_keywords": [
+      "Fleet Management",
+      "Transportation",
+      "Route Planning",
+      "Safety Management",
+      "Logistics Coordination"
+    ],
+    "industry": "Transportation",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "47fc547d-9b2d-4b76-9747-900b893a7cbf",
+    "military_skill": "Submarine Operations",
+    "linkedin_keywords": [
+      "Confined Space Operations",
+      "Life Support Systems",
+      "Technical Monitoring",
+      "Watch Standing",
+      "Safety Protocols"
+    ],
+    "industry": "Maritime",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "4873de37-fadb-4eec-8c4b-fa6b344d9b3f",
+    "military_skill": "5G Technology",
+    "linkedin_keywords": [
+      "5G Networks",
+      "Next-Gen Wireless",
+      "Small Cell Deployment",
+      "5G Architecture"
+    ],
+    "industry": "Telecommunications",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "49ba6389-7ce1-4d04-9dce-9f8c564243d2",
+    "military_skill": "Network Administration",
+    "linkedin_keywords": [
+      "Network Engineering",
+      "Cisco Networking",
+      "TCP/IP",
+      "LAN/WAN",
+      "Network Infrastructure"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "4b858e3a-8856-4349-92e6-247105db42ea",
+    "military_skill": "Damage Control",
+    "linkedin_keywords": [
+      "Emergency Management",
+      "Fire Fighting",
+      "Flood Control",
+      "Damage Assessment",
+      "Rapid Repair"
+    ],
+    "industry": "Emergency Management",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "4c963e57-4fcc-46fc-a6e5-1ea7c7fde045",
+    "military_skill": "Tool and Die",
+    "linkedin_keywords": [
+      "Tool Making",
+      "Die Design",
+      "Fixture Design",
+      "Precision Tooling"
+    ],
+    "industry": "Manufacturing",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "4ca7d66b-2d7e-4f86-8195-cdfcac72c2a0",
+    "military_skill": "Procurement",
+    "linkedin_keywords": [
+      "Strategic Sourcing",
+      "Vendor Management",
+      "Purchase Orders",
+      "Supplier Relations"
+    ],
+    "industry": "Logistics",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "4ec8594f-1c7f-4c18-b752-5c40ebf327c0",
+    "military_skill": "Joint Operations",
+    "linkedin_keywords": [
+      "Cross-Functional Collaboration",
+      "Multi-Agency Coordination",
+      "Interagency Operations"
+    ],
+    "industry": "Consulting",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "5080a348-5fa0-4aff-8c05-77065b6bf7f2",
+    "military_skill": "Network Administration",
+    "linkedin_keywords": [
+      "Network Administration",
+      "Cisco",
+      "TCP/IP",
+      "LAN/WAN",
+      "Network Security",
+      "Firewall Management"
+    ],
+    "industry": "technology",
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "50fa18ce-d1ff-41cf-a80a-cbfbee0f2674",
+    "military_skill": "Emergency Management",
+    "linkedin_keywords": [
+      "FEMA Coordination",
+      "National Response Framework",
+      "NIMS",
+      "Disaster Recovery"
+    ],
+    "industry": "Government",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "5113e6ea-2c74-451f-abfc-252c2f016c20",
+    "military_skill": "Insurance Operations",
+    "linkedin_keywords": [
+      "Risk Insurance",
+      "Claims Management",
+      "Underwriting",
+      "SGLI/VGLI Knowledge"
+    ],
+    "industry": "Finance",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "51bbcfbb-3c8e-4ec7-99a6-73c93206ff07",
+    "military_skill": "Naval Navigation",
+    "linkedin_keywords": [
+      "Maritime Navigation",
+      "Chart Reading",
+      "Celestial Navigation",
+      "ECDIS"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "5257e23f-59e6-4ff2-bb9f-862924c8e23b",
+    "military_skill": "Field Artillery",
+    "linkedin_keywords": [
+      "Heavy Equipment",
+      "Technical Operations",
+      "Safety Compliance",
+      "Team Coordination",
+      "Maintenance"
+    ],
+    "industry": "Manufacturing",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "52c73119-b3be-4c50-9aca-b09102fb93b1",
+    "military_skill": "Imagery Analysis",
+    "linkedin_keywords": [
+      "Geospatial Intelligence",
+      "Image Processing",
+      "Pattern Recognition",
+      "Remote Sensing",
+      "Data Analysis"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "52f8b80c-8013-4627-a398-89664f60e65f",
+    "military_skill": "Performance Improvement",
+    "linkedin_keywords": [
+      "Operational Excellence",
+      "Efficiency Optimization",
+      "KPI Development",
+      "Benchmarking"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "530cf127-dafa-4c52-bc61-d61d35782608",
+    "military_skill": "Warehouse Operations",
+    "linkedin_keywords": [
+      "Warehouse Management",
+      "WMS",
+      "Order Fulfillment",
+      "Receiving and Shipping",
+      "Cross-Docking"
+    ],
+    "industry": "Logistics",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "53ddd34b-0d0a-49ab-9c27-c81c6e40708b",
+    "military_skill": "Amphibious Operations",
+    "linkedin_keywords": [
+      "Maritime Logistics",
+      "Intermodal Transportation",
+      "Complex Operations",
+      "Multi-Phase Planning",
+      "Rapid Deployment"
+    ],
+    "industry": "Logistics",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "54ab69f5-fb46-4f2d-be2c-e3fe604079a4",
+    "military_skill": "Flight Test",
+    "linkedin_keywords": [
+      "Flight Test Engineering",
+      "Test Pilot Support",
+      "Flight Data Analysis",
+      "Certification"
+    ],
+    "industry": "Aerospace",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "54af58f2-ea6b-4323-9a22-0a21a6cea5f7",
+    "military_skill": "Platoon Leader",
+    "linkedin_keywords": [
+      "Team Manager",
+      "First Line Manager",
+      "Operations Team Lead",
+      "People Manager"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "569a005c-63bc-4e30-9613-14dd64a7a264",
+    "military_skill": "STEM Education",
+    "linkedin_keywords": [
+      "STEM Curriculum",
+      "Science Education",
+      "Technology Education",
+      "Engineering Education"
+    ],
+    "industry": "Education",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "56b061a0-e999-46e1-9c3f-a19e20d12f11",
+    "military_skill": "Search and Rescue",
+    "linkedin_keywords": [
+      "SAR Operations",
+      "Emergency Rescue",
+      "Swift Water Rescue",
+      "Wilderness SAR"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "57b35169-ad26-4aa9-aa9c-92ab919e7ef2",
+    "military_skill": "Regulatory Affairs",
+    "linkedin_keywords": [
+      "Federal Regulations",
+      "Rulemaking",
+      "Administrative Law",
+      "Compliance Management"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "57e38f5a-0708-4ec1-b55c-442913d12ccf",
+    "military_skill": "PMP Preparation",
+    "linkedin_keywords": [
+      "Project Management Professional",
+      "PMP",
+      "PMBOK",
+      "Project Management Institute"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "5a690a66-c60d-4809-bf2b-3fc04339f27f",
+    "military_skill": "Operations Center Management",
+    "linkedin_keywords": [
+      "NOC Management",
+      "Command Center",
+      "Situational Awareness",
+      "24/7 Operations"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "5a967d20-199f-42b2-9816-104046cdb44f",
+    "military_skill": "ERP Systems",
+    "linkedin_keywords": [
+      "SAP",
+      "Oracle ERP",
+      "Enterprise Resource Planning",
+      "Business Applications"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "5c18b827-70ba-4563-944e-26ee81ed0f99",
+    "military_skill": "Vendor Management",
+    "linkedin_keywords": [
+      "Supplier Relationship Management",
+      "RFP Management",
+      "Vendor Evaluation",
+      "Contract Negotiation"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "5da4e185-9c4c-491f-bc6f-956e31e534db",
+    "military_skill": "Desert Operations",
+    "linkedin_keywords": [
+      "Harsh Environment Operations",
+      "Resource Management",
+      "Adaptability",
+      "Water Conservation",
+      "Heat Safety"
+    ],
+    "industry": "Environmental",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "5eae1e0e-5501-485c-9160-2c7612b8ec5f",
+    "military_skill": "Combat Leadership",
+    "linkedin_keywords": [
+      "Team Leadership",
+      "Crisis Management",
+      "Decision Making Under Pressure",
+      "Executive Leadership"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "5f014931-3d2a-465b-a71c-9583d7f61b65",
+    "military_skill": "Antiterrorism",
+    "linkedin_keywords": [
+      "Counterterrorism",
+      "Threat Assessment",
+      "Vulnerability Assessment",
+      "Security Planning"
+    ],
+    "industry": "Security",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "5f44d64c-5e6d-46fc-882e-c5d2f337acd3",
+    "military_skill": "HVAC Systems",
+    "linkedin_keywords": [
+      "HVAC Technician",
+      "Climate Control",
+      "Building Automation",
+      "Energy Management"
+    ],
+    "industry": "Construction",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "5f45c079-df4c-4a47-ac66-39d42cd32ddd",
+    "military_skill": "Motor Transport",
+    "linkedin_keywords": [
+      "Fleet Management",
+      "Vehicle Maintenance",
+      "DOT Compliance",
+      "CDL",
+      "Route Planning"
+    ],
+    "industry": "Transportation",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "5fce4f24-235d-4f4b-8d15-bde63cada3b5",
+    "military_skill": "Human Intelligence",
+    "linkedin_keywords": [
+      "Source Development",
+      "Interviewing",
+      "Investigative Research",
+      "Stakeholder Analysis"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "6063bf80-5e0f-49f6-910a-368ebaa35c09",
+    "military_skill": "CISSP Knowledge",
+    "linkedin_keywords": [
+      "CISSP",
+      "Information Systems Security",
+      "ISC2",
+      "Security Architecture"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "60afeea1-94ca-41f4-a657-d6e61b84f888",
+    "military_skill": "Acquisition Management",
+    "linkedin_keywords": [
+      "ACAT Programs",
+      "Milestone Reviews",
+      "Program Execution",
+      "Acquisition Strategy"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "61229177-84bd-475b-a2d0-ba1168bd58c4",
+    "military_skill": "Postal Operations",
+    "linkedin_keywords": [
+      "Mail Operations",
+      "Package Logistics",
+      "Postal Management",
+      "Distribution Services"
+    ],
+    "industry": "Retail",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "6135f771-be7d-46e5-8c97-fa1f28a022c2",
+    "military_skill": "Industrial Safety",
+    "linkedin_keywords": [
+      "OSHA Compliance",
+      "Lockout/Tagout",
+      "PPE Programs",
+      "Safety Auditing"
+    ],
+    "industry": "Manufacturing",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "618d8147-7c4f-4c31-b7f1-ff89e01d2ca2",
+    "military_skill": "Return Logistics",
+    "linkedin_keywords": [
+      "Reverse Logistics",
+      "Returns Management",
+      "RMA Processing",
+      "Refurbishment"
+    ],
+    "industry": "Logistics",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "61e843cc-73ff-438a-b32b-aeb1da994fc0",
+    "military_skill": "Cold Chain Logistics",
+    "linkedin_keywords": [
+      "Temperature-Controlled Shipping",
+      "Pharmaceutical Logistics",
+      "Perishable Goods"
+    ],
+    "industry": "Logistics",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "623d5c13-e5e3-44b6-bd68-a54fcccbc64f",
+    "military_skill": "Defense Budget",
+    "linkedin_keywords": [
+      "Government Budget",
+      "Financial Planning",
+      "Program Budgeting",
+      "Cost Estimation",
+      "Fiscal Management"
+    ],
+    "industry": "Finance",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "62aedd7e-eb00-4daf-96f7-4df5bf038953",
+    "military_skill": "Accounts Management",
+    "linkedin_keywords": [
+      "Accounts Receivable",
+      "Accounts Payable",
+      "General Ledger",
+      "Financial Reconciliation"
+    ],
+    "industry": "Finance",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "637bfed0-ae0d-4615-8780-3d2ac13b7529",
+    "military_skill": "Fundraising",
+    "linkedin_keywords": [
+      "Capital Campaigns",
+      "Major Gifts",
+      "Donor Relations",
+      "Annual Fund",
+      "Philanthropy"
+    ],
+    "industry": "Non-Profit",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "6430f8af-2ae1-4941-a120-3e5151fcca6e",
+    "military_skill": "Port Operations",
+    "linkedin_keywords": [
+      "Marine Terminal Operations",
+      "Intermodal Transport",
+      "Customs Compliance",
+      "Container Management"
+    ],
+    "industry": "Logistics",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "655d8f69-ce65-4972-885b-d72963ea017e",
+    "military_skill": "Paint/Coatings",
+    "linkedin_keywords": [
+      "Surface Treatment",
+      "Corrosion Control",
+      "Industrial Painting",
+      "Protective Coatings"
+    ],
+    "industry": "Manufacturing",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "65c76c49-a69d-44c3-9001-28e6a90da618",
+    "military_skill": "Heavy Equipment Operation",
+    "linkedin_keywords": [
+      "Equipment Operator",
+      "Crane Operation",
+      "Excavation",
+      "Grading",
+      "CDL"
+    ],
+    "industry": "Construction",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "66c0ad05-ec63-496a-94d2-5e6b8d1975a1",
+    "military_skill": "IT Help Desk",
+    "linkedin_keywords": [
+      "Technical Support",
+      "IT Service Desk",
+      "Troubleshooting",
+      "Customer Support",
+      "ITIL"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "66cd83ec-dd07-4441-8550-60103df79601",
+    "military_skill": "MEDPROS Management",
+    "linkedin_keywords": [
+      "Electronic Health Records",
+      "Medical Readiness",
+      "Healthcare Compliance",
+      "Clinical Data Management"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "67196059-9012-4ce1-9952-bf40aca21106",
+    "military_skill": "Curriculum Development",
+    "linkedin_keywords": [
+      "Instructional Design",
+      "Learning Design",
+      "E-Learning Development",
+      "Course Development"
+    ],
+    "industry": "Education",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "6761eb39-2789-404f-9138-0f7f59120b13",
+    "military_skill": "Casualty Assistance",
+    "linkedin_keywords": [
+      "Family Support Services",
+      "Crisis Counseling",
+      "Benefits Administration",
+      "Compassionate Care"
+    ],
+    "industry": "Non-Profit",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "6787d7e8-82bd-43ed-8a52-733e9995eb22",
+    "military_skill": "Self-Discipline",
+    "linkedin_keywords": [
+      "Self-Motivation",
+      "Self-Starter",
+      "Initiative",
+      "Personal Accountability"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "67bf1bcd-4c2b-4cff-b5f9-86a9179a95fd",
+    "military_skill": "Vehicle Maintenance",
+    "linkedin_keywords": [
+      "Fleet Maintenance",
+      "Diesel Technology",
+      "Automotive Service",
+      "Heavy Equipment Repair"
+    ],
+    "industry": "Manufacturing",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "68cf40a6-653b-4d37-aeac-283fdd0294ce",
+    "military_skill": "Combat Engineering",
+    "linkedin_keywords": [
+      "Civil Engineering",
+      "Construction Management",
+      "Project Management",
+      "Heavy Equipment",
+      "Site Development"
+    ],
+    "industry": "Construction",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "693f18f3-dd33-4be0-a362-66d963dc6ca7",
+    "military_skill": "Social Media Operations",
+    "linkedin_keywords": [
+      "Social Media Management",
+      "Digital Marketing",
+      "Content Strategy",
+      "Community Management"
+    ],
+    "industry": "Media",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "69c084e1-3455-48dc-9447-a75a0f651d58",
+    "military_skill": "Route Clearance",
+    "linkedin_keywords": [
+      "Safety Inspection",
+      "Hazard Identification",
+      "Quality Assurance",
+      "Risk Mitigation",
+      "Preventive Measures"
+    ],
+    "industry": "Construction",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "6b1093b4-cdb0-44db-8bbf-f2d829fcc30c",
+    "military_skill": "Systems Integration",
+    "linkedin_keywords": [
+      "C4ISR",
+      "Interoperability",
+      "Systems Architecture",
+      "Interface Design"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "6b7d079e-0eb8-477c-bf0e-fee9512e56f7",
+    "military_skill": "Real Estate Management",
+    "linkedin_keywords": [
+      "Property Management",
+      "Facility Operations",
+      "Lease Administration",
+      "Space Planning"
+    ],
+    "industry": "Construction",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "6bbf168f-b934-4dde-a49f-7c5b5f48c6b1",
+    "military_skill": "After Action Review",
+    "linkedin_keywords": [
+      "Lessons Learned",
+      "Process Improvement",
+      "Root Cause Analysis",
+      "Continuous Improvement",
+      "Knowledge Management"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "6d23aa55-0612-4b87-a61a-c397f36b50cd",
+    "military_skill": "Geospatial Intelligence",
+    "linkedin_keywords": [
+      "GIS",
+      "Remote Sensing",
+      "Geospatial Analysis",
+      "Mapping",
+      "Data Visualization"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "6fc66284-1931-4e44-b80e-1f2b9d8eb097",
+    "military_skill": "Store Operations",
+    "linkedin_keywords": [
+      "Store Management",
+      "Retail Operations",
+      "Shrinkage Control",
+      "Labor Scheduling"
+    ],
+    "industry": "Retail",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "70f21fa1-e418-404b-9c76-35ff133ecec3",
+    "military_skill": "Energy Efficiency",
+    "linkedin_keywords": [
+      "Energy Auditing",
+      "Building Efficiency",
+      "LEED",
+      "Energy Star",
+      "Sustainability"
+    ],
+    "industry": "Energy",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "71627ae6-5703-487e-904d-f67ff4f52c75",
+    "military_skill": "Volunteer Coordination",
+    "linkedin_keywords": [
+      "Volunteer Management",
+      "Volunteer Recruitment",
+      "Community Volunteers"
+    ],
+    "industry": "Non-Profit",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "72804967-7e48-4def-9b26-759d4dd757f8",
+    "military_skill": "Stress Management",
+    "linkedin_keywords": [
+      "Resilience",
+      "Emotional Intelligence",
+      "Self-Regulation",
+      "Mindfulness"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "72e37610-cdf2-47a7-b631-7dfe5e5a24b4",
+    "military_skill": "Assessment Development",
+    "linkedin_keywords": [
+      "Test Development",
+      "Psychometrics",
+      "Rubric Design",
+      "Learning Assessment"
+    ],
+    "industry": "Education",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "72e9e75e-c969-4960-a92c-69849ceecfbb",
+    "military_skill": "Customer Service",
+    "linkedin_keywords": [
+      "Client Relations",
+      "Customer Experience",
+      "Service Delivery",
+      "Account Management"
+    ],
+    "industry": "Retail",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "73241155-e4ae-49e1-821b-6fe4627fa59e",
+    "military_skill": "Security Clearance - Secret",
+    "linkedin_keywords": [
+      "Secret Clearance",
+      "Government Clearance",
+      "Sensitive Programs"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "742d6a30-a718-4cc1-bdca-b0b7c9ddf9c7",
+    "military_skill": "Unmanned Aerial Systems",
+    "linkedin_keywords": [
+      "UAV Operations",
+      "Drone Technology",
+      "sUAS",
+      "Part 107",
+      "Remote Pilot"
+    ],
+    "industry": "Aerospace",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "74b25941-c6ca-406f-ab3e-f7d4f7705f69",
+    "military_skill": "Psychological Operations",
+    "linkedin_keywords": [
+      "Information Operations",
+      "Influence Operations",
+      "Strategic Communication",
+      "MISO"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "74cc1b71-7a20-496b-9fe8-4713ef714076",
+    "military_skill": "Route Clearance",
+    "linkedin_keywords": [
+      "IED Awareness",
+      "Explosive Ordnance",
+      "Route Reconnaissance",
+      "Risk Assessment"
+    ],
+    "industry": "Construction",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "75da92a0-22e8-4b1b-9d52-ce5cf7c19f66",
+    "military_skill": "Carpentry",
+    "linkedin_keywords": [
+      "Rough Carpentry",
+      "Finish Carpentry",
+      "Framing",
+      "Trim Work"
+    ],
+    "industry": "Construction",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "760e7529-c112-4c2f-9875-aeedbb327626",
+    "military_skill": "Food Service Management",
+    "linkedin_keywords": [
+      "Culinary Management",
+      "Food Safety",
+      "Inventory Control",
+      "Menu Planning",
+      "Cost Control"
+    ],
+    "industry": "Hospitality",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "762a2a27-52d2-4ac3-9b52-ebe5b2e5d790",
+    "military_skill": "Anti-Terrorism",
+    "linkedin_keywords": [
+      "Security Risk Management",
+      "Vulnerability Assessment",
+      "Protection Planning",
+      "Security Training",
+      "Threat Awareness"
+    ],
+    "industry": "Security",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "77d93ff9-bfed-4923-9910-52787f2b16fb",
+    "military_skill": "Intelligence Analysis",
+    "linkedin_keywords": [
+      "Research Analysis",
+      "Competitive Intelligence",
+      "Market Research",
+      "Business Intelligence"
+    ],
+    "industry": "Government",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "78067bff-d671-4c72-ba25-d639219f1ecd",
+    "military_skill": "Maritime Security",
+    "linkedin_keywords": [
+      "Port Security",
+      "Vessel Inspection",
+      "Maritime Law",
+      "Coastal Security",
+      "MTSA"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "7853716b-91b2-41c2-a074-526e0bd79de9",
+    "military_skill": "Software Development",
+    "linkedin_keywords": [
+      "Full Stack Development",
+      "Agile Development",
+      "DevOps",
+      "Software Engineering",
+      "CI/CD"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "78a274d8-3be6-4cc9-8938-8245e37225fa",
+    "military_skill": "Assembly Operations",
+    "linkedin_keywords": [
+      "Production Line",
+      "Assembly Processes",
+      "Work Instructions",
+      "Standard Work"
+    ],
+    "industry": "Manufacturing",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "7a7e77be-1a29-49ad-9965-11a0032215f8",
+    "military_skill": "Information Operations",
+    "linkedin_keywords": [
+      "Digital Strategy",
+      "Content Strategy",
+      "Influence Marketing",
+      "Communications",
+      "Public Relations"
+    ],
+    "industry": "Marketing",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "7acce5d8-a11e-4ec2-89a0-a01364282496",
+    "military_skill": "Investment Analysis",
+    "linkedin_keywords": [
+      "Portfolio Management",
+      "Securities Analysis",
+      "Market Analysis",
+      "Bloomberg Terminal"
+    ],
+    "industry": "Finance",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "7add5ebe-53e3-4120-80b5-0682fae94177",
+    "military_skill": "Mountain Warfare",
+    "linkedin_keywords": [
+      "Extreme Environment Operations",
+      "Physical Endurance",
+      "Technical Skills",
+      "Safety Management",
+      "Team Building"
+    ],
+    "industry": "Outdoor Recreation",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "7b20edf8-74ea-41fb-a429-9ff77f155146",
+    "military_skill": "Nuclear Operations",
+    "linkedin_keywords": [
+      "Nuclear Power",
+      "Reactor Operations",
+      "NRC Compliance",
+      "Radiation Protection",
+      "Nuclear Engineering"
+    ],
+    "industry": "Energy",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "7c5595dd-582c-466c-9899-f5eb5c83128f",
+    "military_skill": "Weapons Systems Maintenance",
+    "linkedin_keywords": [
+      "Precision Mechanical Systems",
+      "Technical Maintenance",
+      "Calibration",
+      "Quality Control"
+    ],
+    "industry": "Manufacturing",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "7cd48e2c-0b2c-4d43-b7ac-7554e3e916da",
+    "military_skill": "Cybersecurity Operations",
+    "linkedin_keywords": [
+      "Information Security",
+      "Cybersecurity",
+      "SOC Analyst",
+      "Incident Response",
+      "Threat Hunting",
+      "SIEM"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "7cd599a4-31d0-453a-a2a1-4147c5701d2c",
+    "military_skill": "Logistics",
+    "linkedin_keywords": [
+      "Supply Chain Management",
+      "Logistics",
+      "Inventory Management",
+      "Procurement",
+      "Warehouse Management",
+      "Distribution"
+    ],
+    "industry": "logistics",
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "7d377456-ffb6-40ad-8df1-62f8cf73ed08",
+    "military_skill": "Congressional Liaison",
+    "linkedin_keywords": [
+      "Legislative Affairs",
+      "Government Relations",
+      "Public Policy",
+      "Political Affairs"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "7e1df2a0-a638-4c88-8f21-702b9d2d8bb3",
+    "military_skill": "Physical Security",
+    "linkedin_keywords": [
+      "Facility Security",
+      "Security Systems",
+      "Alarm Systems",
+      "Perimeter Security",
+      "CPTED"
+    ],
+    "industry": "Security",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "7ec8cc37-60cc-4820-a6ff-76830d36a75d",
+    "military_skill": "Space Operations",
+    "linkedin_keywords": [
+      "Orbital Operations",
+      "Space Situational Awareness",
+      "Satellite Control",
+      "Ground Systems"
+    ],
+    "industry": "Aerospace",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "800fad26-fef0-47a2-9192-bc5ff351d662",
+    "military_skill": "Lessons Learned",
+    "linkedin_keywords": [
+      "Continuous Improvement",
+      "Process Optimization",
+      "Knowledge Capture",
+      "After Action Review",
+      "Best Practices"
+    ],
+    "industry": "Consulting",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "801e0ef2-015b-487d-b852-7bc896fe1f5c",
+    "military_skill": "Base Defense",
+    "linkedin_keywords": [
+      "Physical Security",
+      "Access Control",
+      "Perimeter Security",
+      "Surveillance",
+      "Security Operations"
+    ],
+    "industry": "Security",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "805d43f1-528e-46e1-ba2c-5404d3ec3dd0",
+    "military_skill": "Joint Operations",
+    "linkedin_keywords": [
+      "Cross-Functional Leadership",
+      "Multi-Organizational Collaboration",
+      "Strategic Coordination",
+      "Interagency Operations",
+      "Unified Planning"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "80d8d4fc-6c8f-4b39-b27c-155c652eb81d",
+    "military_skill": "Microwave Communications",
+    "linkedin_keywords": [
+      "Microwave Links",
+      "Point-to-Point",
+      "Backhaul",
+      "Microwave Engineering"
+    ],
+    "industry": "Telecommunications",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "8140ec46-e203-41ec-9b36-475faa1ae02a",
+    "military_skill": "Infantry Tactics",
+    "linkedin_keywords": [
+      "Team Leadership",
+      "Physical Fitness",
+      "Decision Making Under Pressure",
+      "Situational Awareness",
+      "Resilience"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "82b63466-315b-40af-9d3d-344863d65538",
+    "military_skill": "Military Bearing",
+    "linkedin_keywords": [
+      "Professional Presence",
+      "Executive Presence",
+      "Professional Demeanor",
+      "Poise"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "82f77f28-e080-439c-8c85-dd67cf03ea58",
+    "military_skill": "Battle Rhythm",
+    "linkedin_keywords": [
+      "Operational Cadence",
+      "Meeting Management",
+      "Stakeholder Updates",
+      "Reporting Cycles"
+    ],
+    "industry": "Consulting",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "834d3e58-c9c6-4c8b-af2c-8b59838af9ce",
+    "military_skill": "Force Development",
+    "linkedin_keywords": [
+      "Organizational Development",
+      "Workforce Planning",
+      "Strategic HR",
+      "Capability Assessment",
+      "Resource Planning"
+    ],
+    "industry": "Human Resources",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "83c37c2f-01ee-4fba-8fad-b32f1d364148",
+    "military_skill": "Pay and Entitlements",
+    "linkedin_keywords": [
+      "Payroll Management",
+      "Compensation Administration",
+      "Benefits Administration",
+      "HRIS"
+    ],
+    "industry": "Finance",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "84450d65-5904-4e00-8857-0502493122e4",
+    "military_skill": "Customer Analytics",
+    "linkedin_keywords": [
+      "Shopping Analytics",
+      "Customer Segmentation",
+      "Loyalty Programs",
+      "Conversion Optimization"
+    ],
+    "industry": "Retail",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "8449f730-b8a2-480c-a126-9e21ebd886d6",
+    "military_skill": "Test and Evaluation",
+    "linkedin_keywords": [
+      "T&E Planning",
+      "Operational Testing",
+      "DT&E",
+      "OT&E",
+      "Test Reports"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "84796545-65a2-490a-8a28-c4d736a43ccd",
+    "military_skill": "Foreign Disclosure",
+    "linkedin_keywords": [
+      "Technology Transfer",
+      "Export Control",
+      "ITAR",
+      "EAR Compliance"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "848e52f7-6efe-46b8-a6fd-9055ff3e1d62",
+    "military_skill": "Urban Warfare",
+    "linkedin_keywords": [
+      "Complex Environment Operations",
+      "Adaptive Leadership",
+      "Quick Decision Making",
+      "Risk Management",
+      "Team Coordination"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "84a21a12-9d90-4bea-baab-70185d3484e7",
+    "military_skill": "Flight Medic",
+    "linkedin_keywords": [
+      "Flight Nurse",
+      "Aeromedical Evacuation",
+      "Critical Care Transport",
+      "Emergency Response"
+    ],
+    "industry": "Healthcare",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "85064b17-2dfc-4000-af48-3c34bbbd74b2",
+    "military_skill": "Crisis Communications",
+    "linkedin_keywords": [
+      "Public Relations",
+      "Corporate Communications",
+      "Media Relations",
+      "Stakeholder Communication",
+      "Brand Management"
+    ],
+    "industry": "Communications",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "85400401-c771-46de-83ab-cc023ef355f4",
+    "military_skill": "Parachute Operations",
+    "linkedin_keywords": [
+      "Aerial Delivery",
+      "Logistics",
+      "Safety Compliance",
+      "Equipment Inspection",
+      "Operations Planning"
+    ],
+    "industry": "Logistics",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "85f5f7fe-cc4e-492a-af50-38dcbff358ca",
+    "military_skill": "Tank Operations",
+    "linkedin_keywords": [
+      "Armored Vehicle Operations",
+      "Combined Arms Maneuver",
+      "Gunnery",
+      "Mounted Operations"
+    ],
+    "industry": "Defense",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "8639d850-621a-4c93-ae5e-13f7f9aa6149",
+    "military_skill": "Problem Solving",
+    "linkedin_keywords": [
+      "Critical Thinking",
+      "Analytical Reasoning",
+      "Root Cause Analysis",
+      "Decision Analysis"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "87a312d1-9d30-4216-b3c4-fa34a71c6ca8",
+    "military_skill": "Due Diligence",
+    "linkedin_keywords": [
+      "M&A Analysis",
+      "Company Assessment",
+      "Risk Evaluation",
+      "Financial Review"
+    ],
+    "industry": "Consulting",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "87c63d51-a10e-4a3e-b281-be147e1375b9",
+    "military_skill": "Convoy Security",
+    "linkedin_keywords": [
+      "Escort Operations",
+      "VIP Protection",
+      "Route Security",
+      "Security Operations"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "88ee23f2-9ae9-4c33-b947-08944f22ccdb",
+    "military_skill": "Work Under Pressure",
+    "linkedin_keywords": [
+      "High-Stress Environment",
+      "Composure",
+      "Performance Under Pressure",
+      "Resilience"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "89932c68-760d-4ee1-93eb-157a997bf402",
+    "military_skill": "Base Operations",
+    "linkedin_keywords": [
+      "Facilities Management",
+      "Operations Management",
+      "Property Management",
+      "Vendor Management",
+      "Space Planning"
+    ],
+    "industry": "Real Estate",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "89a49ca2-7f98-4c53-a2bc-6a138f77b690",
+    "military_skill": "Power Generation",
+    "linkedin_keywords": [
+      "Power Plant Operations",
+      "Electrical Generation",
+      "Grid Management",
+      "Utilities Management"
+    ],
+    "industry": "Energy",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "8ae0ab45-b8c3-4184-a09a-9a66669bb481",
+    "military_skill": "Modeling and Simulation",
+    "linkedin_keywords": [
+      "JLVC",
+      "Constructive Simulation",
+      "War Gaming",
+      "Scenario Development"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "8ae55121-e7dd-4ea8-bf9f-c5bfa0af948c",
+    "military_skill": "Aircraft Maintenance",
+    "linkedin_keywords": [
+      "Aviation Maintenance",
+      "Mechanical Engineering",
+      "Technical Inspection",
+      "Quality Assurance",
+      "Safety Compliance"
+    ],
+    "industry": "Aviation",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "8b42c2f2-812a-493b-a69e-3cd88a4efb3b",
+    "military_skill": "Personnel Management",
+    "linkedin_keywords": [
+      "Human Resources",
+      "Employee Relations",
+      "Talent Management",
+      "Organizational Development"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "8b7dac67-0f57-4c7a-be48-65a4b5d2c249",
+    "military_skill": "Equipment Maintenance",
+    "linkedin_keywords": [
+      "Preventive Maintenance",
+      "Equipment Reliability",
+      "CMMS",
+      "Total Productive Maintenance"
+    ],
+    "industry": "Manufacturing",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "8d2ceb5a-61e2-4f95-83d3-e36176870e19",
+    "military_skill": "Customs and Border",
+    "linkedin_keywords": [
+      "Customs Compliance",
+      "Import/Export",
+      "Trade Compliance",
+      "International Shipping"
+    ],
+    "industry": "Logistics",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "8e4f0910-07c9-4f94-9a1b-0ed889cde8e9",
+    "military_skill": "Squad Leader",
+    "linkedin_keywords": [
+      "Shift Supervisor",
+      "Team Leader",
+      "Work Group Lead",
+      "Section Manager"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "8ff07c55-7b79-47a7-96ef-fbeb7d9c05bf",
+    "military_skill": "Logistics Certifications",
+    "linkedin_keywords": [
+      "APICS",
+      "CSCP",
+      "CPIM",
+      "Supply Chain Certification"
+    ],
+    "industry": "Logistics",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "9038e036-26de-41d5-8f32-951354f9d2f8",
+    "military_skill": "Laboratory Operations",
+    "linkedin_keywords": [
+      "Lab Management",
+      "Clinical Laboratory",
+      "Quality Control",
+      "CLIA Compliance"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "91c21783-a9b8-44dd-bb36-d23936ea0dff",
+    "military_skill": "CBRN/HAZMAT",
+    "linkedin_keywords": [
+      "HAZMAT",
+      "Environmental Health & Safety",
+      "EHS",
+      "OSHA Compliance",
+      "Emergency Response",
+      "Incident Command"
+    ],
+    "industry": "safety",
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "91dc2908-3b59-4ed3-b24c-f0861c4b5911",
+    "military_skill": "Map Reading",
+    "linkedin_keywords": [
+      "Geospatial Analysis",
+      "Navigation",
+      "Route Planning",
+      "GIS",
+      "Land Survey"
+    ],
+    "industry": "Construction",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "91e53a16-37ec-4bc4-ab07-7dbfc35b6fb9",
+    "military_skill": "Combat Camera",
+    "linkedin_keywords": [
+      "Photography",
+      "Videography",
+      "Content Production",
+      "Documentation",
+      "Visual Communications"
+    ],
+    "industry": "Media",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "922a2b42-54f7-41d6-88b8-a09db99f7159",
+    "military_skill": "Pharmacy Operations",
+    "linkedin_keywords": [
+      "Medication Management",
+      "Pharmaceutical Logistics",
+      "Drug Safety",
+      "Clinical Pharmacy"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "92367108-9bf3-48c2-bc7d-d5343a4b6bd6",
+    "military_skill": "Plumbing Systems",
+    "linkedin_keywords": [
+      "Master Plumber",
+      "Water Systems",
+      "Piping Design",
+      "Utility Infrastructure"
+    ],
+    "industry": "Construction",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "92914a0a-e045-4871-9d12-41085d629d68",
+    "military_skill": "Amphibious Operations",
+    "linkedin_keywords": [
+      "Beach Operations",
+      "Landing Craft",
+      "Ship-to-Shore",
+      "Expeditionary Operations"
+    ],
+    "industry": "Defense",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "930b7dbf-5fca-4064-a4ca-6aa97f1a58d2",
+    "military_skill": "Coalition Operations",
+    "linkedin_keywords": [
+      "Multinational Operations",
+      "Alliance Management",
+      "NATO Operations",
+      "International Cooperation"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "94f69ea7-7001-40c2-aca9-25277ae33684",
+    "military_skill": "Knowledge Management",
+    "linkedin_keywords": [
+      "Information Management",
+      "Document Management",
+      "SharePoint",
+      "Confluence",
+      "Organizational Learning"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "965facbf-b3d9-4513-8306-45cd363b121c",
+    "military_skill": "Identity Management",
+    "linkedin_keywords": [
+      "IAM",
+      "Single Sign-On",
+      "MFA",
+      "Privileged Access Management",
+      "Okta"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "9697e36f-0f09-49ea-ab64-c2d4c8e00e64",
+    "military_skill": "Property Accountability",
+    "linkedin_keywords": [
+      "Asset Tracking",
+      "Inventory Control",
+      "Loss Prevention",
+      "Fixed Asset Management"
+    ],
+    "industry": "Logistics",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "96c67128-c28c-48e1-b6a4-21cb4fb902e5",
+    "military_skill": "Vehicle Recovery",
+    "linkedin_keywords": [
+      "Heavy Equipment",
+      "Towing",
+      "Rigging",
+      "Crane Operations",
+      "Vehicle Maintenance"
+    ],
+    "industry": "Transportation",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "970a5a9d-d1b8-4c6f-8ac9-6ec90aab9811",
+    "military_skill": "Data Analysis",
+    "linkedin_keywords": [
+      "Business Intelligence",
+      "Data Visualization",
+      "SQL",
+      "Python",
+      "Tableau",
+      "Power BI"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "97684817-4155-4590-b5b0-49fa8293c2e9",
+    "military_skill": "Followership",
+    "linkedin_keywords": [
+      "Organizational Support",
+      "Team Player",
+      "Execution",
+      "Operational Support"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "98228df1-9e7d-44ef-b226-ed3e072cc56a",
+    "military_skill": "Tower Operations",
+    "linkedin_keywords": [
+      "Cell Tower Maintenance",
+      "Tower Climbing",
+      "Antenna Installation",
+      "Tower Safety"
+    ],
+    "industry": "Telecommunications",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "982420e1-af11-4def-8248-ba2f67bdf044",
+    "military_skill": "Requisition Processing",
+    "linkedin_keywords": [
+      "Purchase Order Management",
+      "Procurement Operations",
+      "Vendor Relations",
+      "E-Procurement"
+    ],
+    "industry": "Logistics",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "989ea81e-495a-4b88-a19d-95ca8e6a0770",
+    "military_skill": "Artillery Fire Direction",
+    "linkedin_keywords": [
+      "Ballistic Computation",
+      "Fire Control",
+      "Targeting Systems",
+      "Precision Munitions"
+    ],
+    "industry": "Defense",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "990774b0-f948-4799-81b0-82173c9e4e88",
+    "military_skill": "Configuration Management",
+    "linkedin_keywords": [
+      "CM Planning",
+      "Baseline Management",
+      "Change Control",
+      "Version Control"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "9a0a52a0-ced4-49d2-904f-8c096ef6887a",
+    "military_skill": "Naval Operations",
+    "linkedin_keywords": [
+      "Maritime Operations",
+      "Ship Management",
+      "Fleet Operations",
+      "Navigation",
+      "Seamanship"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "9a35d792-c77a-4b4e-b51f-f82416a289ed",
+    "military_skill": "Chaplain Services",
+    "linkedin_keywords": [
+      "Counseling",
+      "Crisis Intervention",
+      "Spiritual Care",
+      "Employee Assistance",
+      "Conflict Resolution"
+    ],
+    "industry": "Social Services",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "9b3cf1b8-1a0b-4bcc-86fe-650ae449eca2",
+    "military_skill": "Risk Assessment",
+    "linkedin_keywords": [
+      "Enterprise Risk Management",
+      "Risk Mitigation",
+      "Threat Assessment",
+      "Business Continuity"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "9baf256e-1ad3-4447-8411-2c0cbbcf8681",
+    "military_skill": "Medical Supply",
+    "linkedin_keywords": [
+      "Healthcare Supply Chain",
+      "Medical Logistics",
+      "Pharmaceutical Distribution",
+      "Medical Equipment Management"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "9be6d58e-5fd8-492c-9430-d6bff9892ad3",
+    "military_skill": "Language Analysis",
+    "linkedin_keywords": [
+      "Translation",
+      "Interpretation",
+      "Cultural Advisory",
+      "Linguistic Analysis",
+      "Cross-Cultural Communication"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "9c466726-2f91-4a67-92fa-169267783718",
+    "military_skill": "Mission Planning",
+    "linkedin_keywords": [
+      "Strategic Planning",
+      "Project Planning",
+      "Program Management",
+      "Operations Planning",
+      "Resource Allocation"
+    ],
+    "industry": null,
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "9c8f2470-a8a2-4bbe-bb60-a7e10c532a1e",
+    "military_skill": "Veterans Affairs",
+    "linkedin_keywords": [
+      "VA Benefits",
+      "Veterans Services",
+      "Transition Assistance",
+      "Military-to-Civilian"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "9d0103df-b809-493d-8c53-77e840e670c8",
+    "military_skill": "Access Control",
+    "linkedin_keywords": [
+      "Identity Management",
+      "Access Control Systems",
+      "Badge Systems",
+      "CCTV Operations"
+    ],
+    "industry": "Security",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "9f3fa25d-5785-4186-b5f9-5be1da42f80f",
+    "military_skill": "Facility Management",
+    "linkedin_keywords": [
+      "Building Management",
+      "Property Management",
+      "Facilities Engineering",
+      "Space Planning"
+    ],
+    "industry": "Construction",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "9f4c9f71-9265-4861-a4c5-6e1b228c9210",
+    "military_skill": "Requirements Management",
+    "linkedin_keywords": [
+      "JCIDS",
+      "Capabilities Development",
+      "Requirements Traceability",
+      "DOORS"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a0aa4c9b-84a8-4a88-b253-84bf250412b9",
+    "military_skill": "Dental Operations",
+    "linkedin_keywords": [
+      "Dental Practice Management",
+      "Oral Health Programs",
+      "Clinical Coordination"
+    ],
+    "industry": "Healthcare",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a0ea671f-232c-4ee5-ac9b-ca6d2e9868b0",
+    "military_skill": "Military Deception",
+    "linkedin_keywords": [
+      "Strategic Communication",
+      "Information Operations",
+      "Competitive Strategy",
+      "Marketing",
+      "Influence Operations"
+    ],
+    "industry": "Marketing",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "a116a3cf-9cba-4682-83c7-ad2f9f0c5641",
+    "military_skill": "Tactical Communications",
+    "linkedin_keywords": [
+      "Field Communications",
+      "Radio Frequency",
+      "Emergency Communications",
+      "Voice over IP"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a14cbfef-bbd8-49bc-8cb1-a7dc00e2a363",
+    "military_skill": "Close Air Support",
+    "linkedin_keywords": [
+      "Air-Ground Coordination",
+      "Multi-Domain Operations",
+      "Joint Operations",
+      "Communication",
+      "Precision Targeting"
+    ],
+    "industry": "Defense",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "a191df09-1ee2-432e-a31d-57b3d983ec7d",
+    "military_skill": "Contract Administration",
+    "linkedin_keywords": [
+      "COR/COTR",
+      "Performance Monitoring",
+      "Contract Compliance",
+      "Deliverable Tracking"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a1991d6f-c8de-477d-9da7-9a5bdad3203d",
+    "military_skill": "Foreign Disclosure",
+    "linkedin_keywords": [
+      "Information Sharing",
+      "International Relations",
+      "Classification",
+      "Policy",
+      "Compliance"
+    ],
+    "industry": "Government",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "a289cabc-9e22-41c3-ade8-026e70ab5a0d",
+    "military_skill": "3D Printing",
+    "linkedin_keywords": [
+      "Additive Manufacturing",
+      "3D Modeling",
+      "Rapid Prototyping",
+      "CAD Design"
+    ],
+    "industry": "Manufacturing",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a2b656d4-adc4-4645-8190-eee8aaa97806",
+    "military_skill": "Force Protection",
+    "linkedin_keywords": [
+      "Corporate Security",
+      "Executive Protection",
+      "Threat Management",
+      "Physical Security"
+    ],
+    "industry": "Security",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a2cf0dac-6a5b-40f9-a1a1-00fad0f4649f",
+    "military_skill": "SCADA Systems",
+    "linkedin_keywords": [
+      "Industrial Control Systems",
+      "ICS Security",
+      "SCADA Operations",
+      "OT Security"
+    ],
+    "industry": "Energy",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a3124580-1ee4-4802-9645-385ddd483bcc",
+    "military_skill": "Interagency Coordination",
+    "linkedin_keywords": [
+      "Multi-Agency Operations",
+      "Federal Partnerships",
+      "Joint Task Force",
+      "Coalition Building"
+    ],
+    "industry": "Government",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a34c9644-1b15-4ee8-8ba6-8bc1e4026c36",
+    "military_skill": "Mine Warfare",
+    "linkedin_keywords": [
+      "Explosive Ordnance",
+      "Mine Countermeasures",
+      "UXO",
+      "Demining"
+    ],
+    "industry": "Defense",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a3643ac3-a721-4955-a3f9-f12d1adc7bd8",
+    "military_skill": "Readiness Reporting",
+    "linkedin_keywords": [
+      "Performance Metrics",
+      "KPI Tracking",
+      "Dashboard Development",
+      "Status Reporting",
+      "Data Visualization"
+    ],
+    "industry": "Analytics",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "a445d082-d04c-4942-bfa6-b059f4760a68",
+    "military_skill": "Environmental Remediation",
+    "linkedin_keywords": [
+      "Soil Remediation",
+      "Asbestos Abatement",
+      "Lead Paint Removal",
+      "Environmental Cleanup"
+    ],
+    "industry": "Construction",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a4e92128-395b-4689-897b-7c8dfa4c1307",
+    "military_skill": "Naval Navigation",
+    "linkedin_keywords": [
+      "Maritime Operations",
+      "Navigation",
+      "Vessel Management",
+      "Safety Compliance",
+      "Watch Standing"
+    ],
+    "industry": "Maritime",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "a5d0d8eb-ec33-4303-9392-c71935c3ce75",
+    "military_skill": "Adult Education",
+    "linkedin_keywords": [
+      "GED Programs",
+      "Continuing Education",
+      "Professional Development",
+      "Lifelong Learning"
+    ],
+    "industry": "Education",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a67d0712-c17d-42ee-8851-9586c2d72aa0",
+    "military_skill": "Agile/Scrum",
+    "linkedin_keywords": [
+      "Scrum Master",
+      "Sprint Planning",
+      "Kanban",
+      "Jira",
+      "Agile Methodology"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a6f5aebc-d1bc-47fe-b83e-517169aadb09",
+    "military_skill": "Civil Affairs",
+    "linkedin_keywords": [
+      "Community Relations",
+      "Stakeholder Engagement",
+      "Humanitarian Operations",
+      "Government Relations",
+      "Partnership Development"
+    ],
+    "industry": "Nonprofit",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "a739751e-28dc-4a1e-beb7-0029b3ceb7bd",
+    "military_skill": "Special Operations Support",
+    "linkedin_keywords": [
+      "SOF Support",
+      "Unconventional Warfare Support",
+      "Direct Action Support"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a91bb3f6-f8fb-4627-953a-016a6d939a67",
+    "military_skill": "Acquisition Certifications",
+    "linkedin_keywords": [
+      "DAWIA",
+      "Defense Acquisition",
+      "Program Management",
+      "Level III Certified"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "a923ef91-ad72-422d-995c-ff4bb4b15b36",
+    "military_skill": "Combat Fitness",
+    "linkedin_keywords": [
+      "Physical Fitness",
+      "Wellness Programs",
+      "Team Building",
+      "Endurance Training",
+      "Health Promotion"
+    ],
+    "industry": "Health & Fitness",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "a962cccc-3b0f-44f9-8864-dfbb49a2708c",
+    "military_skill": "Medical Records Management",
+    "linkedin_keywords": [
+      "Electronic Health Records",
+      "Epic",
+      "Cerner",
+      "Medical Coding",
+      "HIPAA Compliance"
+    ],
+    "industry": "Healthcare",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "aa036d2e-c982-4ee4-8544-139e9191e627",
+    "military_skill": "Foreign Military Sales",
+    "linkedin_keywords": [
+      "International Business",
+      "Export Compliance",
+      "Government Sales",
+      "Contract Administration",
+      "Cross-Cultural Negotiation"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "ab1daeff-ca88-47ab-8f6d-7a3dbbd8b58e",
+    "military_skill": "Nuclear Regulatory",
+    "linkedin_keywords": [
+      "NRC Compliance",
+      "Health Physics",
+      "Dosimetry",
+      "Nuclear Safety Culture"
+    ],
+    "industry": "Energy",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "abe3138a-d4f4-499f-a3aa-ad50ba94f0b4",
+    "military_skill": "3PL Management",
+    "linkedin_keywords": [
+      "Third-Party Logistics",
+      "Outsourced Logistics",
+      "Carrier Management",
+      "Freight Brokerage"
+    ],
+    "industry": "Logistics",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "ac169342-5b80-43e4-b3cd-f2c9a6952e4a",
+    "military_skill": "Electronic Warfare",
+    "linkedin_keywords": [
+      "EW Systems",
+      "Electromagnetic Spectrum Operations",
+      "Signal Jamming",
+      "Electronic Attack"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "ac5871c4-64e8-4323-98dd-2189d4f3381d",
+    "military_skill": "Resilience Training",
+    "linkedin_keywords": [
+      "Employee Wellness",
+      "Mental Health",
+      "Stress Management",
+      "Team Building",
+      "Performance Psychology"
+    ],
+    "industry": "Human Resources",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "ac611f73-3b8b-4f05-a4f7-92300f92fdef",
+    "military_skill": "Technical Writing",
+    "linkedin_keywords": [
+      "Documentation",
+      "Standard Operating Procedures",
+      "Report Writing",
+      "Policy Development"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "ac6b362b-21d6-4419-9ab3-c20df7a42363",
+    "military_skill": "Capture Management",
+    "linkedin_keywords": [
+      "Proposal Development",
+      "Win Strategy",
+      "Government BD",
+      "Opportunity Pipeline"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "aca4ad06-50ee-4c06-8ee5-dc6c479b72d7",
+    "military_skill": "Battle Damage Assessment",
+    "linkedin_keywords": [
+      "Damage Assessment",
+      "Impact Analysis",
+      "Post-Incident Review",
+      "Data Collection",
+      "Reporting"
+    ],
+    "industry": "Insurance",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "add42d21-a562-4253-832b-d7b05cacd480",
+    "military_skill": "Civil Affairs",
+    "linkedin_keywords": [
+      "Community Relations",
+      "Stakeholder Engagement",
+      "Government Relations",
+      "Public Engagement"
+    ],
+    "industry": "Non-Profit",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "ade2f92e-306c-49ce-a0ca-72ca680ee55b",
+    "military_skill": "Training Development",
+    "linkedin_keywords": [
+      "Learning & Development",
+      "Instructional Design",
+      "Curriculum Development",
+      "Employee Training",
+      "Performance Improvement"
+    ],
+    "industry": "Education",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "ae3a7bf7-a0e0-4758-bff4-ea21d3cc25bf",
+    "military_skill": "Missile Defense",
+    "linkedin_keywords": [
+      "Ballistic Missile Defense",
+      "Air Defense Systems",
+      "Integrated Air and Missile Defense"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "ae819131-defe-4649-a838-f9efb977307b",
+    "military_skill": "Help Desk Management",
+    "linkedin_keywords": [
+      "ITIL Service Management",
+      "Service Desk",
+      "Incident Management",
+      "SLA Management"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "af37bc49-29b4-4a2c-a69e-272b7d6cb834",
+    "military_skill": "Space Operations",
+    "linkedin_keywords": [
+      "Satellite Operations",
+      "Space Systems",
+      "Orbital Mechanics",
+      "Telemetry",
+      "Mission Control"
+    ],
+    "industry": "Aerospace",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "af6cf0d0-3217-4216-a523-e19227d154e8",
+    "military_skill": "Counter-IED Operations",
+    "linkedin_keywords": [
+      "Threat Detection",
+      "Risk Analysis",
+      "Safety Engineering",
+      "Hazard Assessment",
+      "Protective Measures"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "afc3ef10-3e81-4cad-b08a-8c67feed3010",
+    "military_skill": "Combat Diving",
+    "linkedin_keywords": [
+      "Commercial Diving",
+      "Underwater Operations",
+      "Marine Construction",
+      "Safety Compliance",
+      "Technical Diving"
+    ],
+    "industry": "Maritime",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "afdc9cd9-5f49-4428-beb8-c00ea60889af",
+    "military_skill": "Dining Facility Management",
+    "linkedin_keywords": [
+      "Food Service Management",
+      "Restaurant Management",
+      "Catering Operations",
+      "ServSafe"
+    ],
+    "industry": "Retail",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b005b5ea-16c0-4459-ab86-986df71dedc7",
+    "military_skill": "Military Retail (AAFES/NEX)",
+    "linkedin_keywords": [
+      "Retail Management",
+      "Store Operations",
+      "Merchandising",
+      "Inventory Management"
+    ],
+    "industry": "Retail",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b0aca00e-530c-4423-92f4-fb402e8dac8b",
+    "military_skill": "Threat Analysis",
+    "linkedin_keywords": [
+      "Risk Intelligence",
+      "Threat Modeling",
+      "Vulnerability Assessment",
+      "Security Analytics"
+    ],
+    "industry": "Government",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b0b4e371-cc14-4fd8-bce9-2ad04a5c5f9d",
+    "military_skill": "Clinical Research",
+    "linkedin_keywords": [
+      "Medical Research",
+      "Clinical Trials",
+      "IRB Compliance",
+      "Research Administration"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b0bbd725-fa8c-42b2-9c91-0db4c36a1c1c",
+    "military_skill": "Weapons Systems",
+    "linkedin_keywords": [
+      "Defense Systems",
+      "Weapons Engineering",
+      "Armament Systems",
+      "Ordnance Management"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b0dfb3d2-9dc3-4101-b91f-3c46e0ca420e",
+    "military_skill": "Supply Chain Operations",
+    "linkedin_keywords": [
+      "Supply Chain Management",
+      "Logistics",
+      "Inventory Management",
+      "Procurement",
+      "Distribution"
+    ],
+    "industry": "Logistics",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "b0f7bcb3-37a0-4adc-b2d5-6eef603302c0",
+    "military_skill": "Space Systems Operations",
+    "linkedin_keywords": [
+      "Satellite Operations",
+      "Space Technology",
+      "Mission Control",
+      "Orbital Mechanics"
+    ],
+    "industry": "Aerospace",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b1d720cc-e64e-481c-b77c-a60ab95fb6aa",
+    "military_skill": "Counter-Drug Operations",
+    "linkedin_keywords": [
+      "Drug Interdiction",
+      "Counter-Narcotics",
+      "Law Enforcement Operations"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b2b616ce-4969-4d92-b1de-e72f4600d449",
+    "military_skill": "Geopolitical Analysis",
+    "linkedin_keywords": [
+      "Regional Expertise",
+      "Political-Military Analysis",
+      "Country Studies",
+      "Cultural Analysis"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b2cc43f4-b9d8-4803-a29d-b50222976dfb",
+    "military_skill": "Open Source Intelligence",
+    "linkedin_keywords": [
+      "OSINT",
+      "Social Media Analysis",
+      "Web Research",
+      "Data Mining",
+      "Competitive Analysis"
+    ],
+    "industry": "Government",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b30df541-1d37-4f30-b340-97759880e282",
+    "military_skill": "Petroleum Operations",
+    "linkedin_keywords": [
+      "Fuel Management",
+      "Pipeline Operations",
+      "Quality Control",
+      "Hazardous Materials",
+      "Distribution"
+    ],
+    "industry": "Energy",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "b3582fe2-d235-41d2-b646-0de487837261",
+    "military_skill": "Classification Management",
+    "linkedin_keywords": [
+      "Security Classification",
+      "Declassification",
+      "FOIA",
+      "Records Management"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b3d7db0b-17bc-45f3-88c7-77267a3bf22a",
+    "military_skill": "SHARP/SAPR",
+    "linkedin_keywords": [
+      "Title IX Compliance",
+      "Harassment Prevention",
+      "Victim Advocacy",
+      "Compliance Training"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b5ddde77-38e9-4716-8a12-e33dbe91f173",
+    "military_skill": "Blueprint Reading",
+    "linkedin_keywords": [
+      "Construction Drawings",
+      "Technical Drawings",
+      "Architectural Plans",
+      "As-Built Documentation"
+    ],
+    "industry": "Construction",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b7e578a5-8c46-4347-bd44-cc846174d92d",
+    "military_skill": "IoT Systems",
+    "linkedin_keywords": [
+      "Internet of Things",
+      "Sensor Networks",
+      "Edge Computing",
+      "Embedded Systems"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b83f675f-0963-4aba-a44a-b9bd5a4c3d0d",
+    "military_skill": "Training Management",
+    "linkedin_keywords": [
+      "Learning & Development",
+      "Training Program Management",
+      "Talent Development",
+      "Employee Training"
+    ],
+    "industry": "Education",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b9078346-65fc-4e26-ac2f-2aeea416e047",
+    "military_skill": "Transportation Management",
+    "linkedin_keywords": [
+      "Fleet Management",
+      "Freight Logistics",
+      "Route Optimization",
+      "Distribution Management"
+    ],
+    "industry": "Logistics",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b94c07ab-3cd7-408e-b196-b7d9ac54409e",
+    "military_skill": "E-Commerce",
+    "linkedin_keywords": [
+      "Online Retail",
+      "Digital Commerce",
+      "Shopify",
+      "Amazon Marketplace",
+      "Omnichannel"
+    ],
+    "industry": "Retail",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b959877a-73ed-4512-b8e9-b50446a1dd9f",
+    "military_skill": "Business Development",
+    "linkedin_keywords": [
+      "Sales Strategy",
+      "Client Acquisition",
+      "Proposal Writing",
+      "Capture Management"
+    ],
+    "industry": "Defense",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "b96c90a6-63f4-4ced-ab39-00e03ec08a41",
+    "military_skill": "Land Navigation",
+    "linkedin_keywords": [
+      "Orienteering",
+      "Route Planning",
+      "Field Operations",
+      "Wilderness Skills",
+      "Emergency Preparedness"
+    ],
+    "industry": "Outdoor Recreation",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "ba215e19-3be5-4e96-b8b4-1fa631d55f88",
+    "military_skill": "Electrical Assembly",
+    "linkedin_keywords": [
+      "Wire Harness",
+      "PCB Assembly",
+      "Soldering",
+      "Electrical Testing"
+    ],
+    "industry": "Manufacturing",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "bbe9f7b3-c409-40d4-a822-54bae035524e",
+    "military_skill": "Financial Systems",
+    "linkedin_keywords": [
+      "SAP",
+      "Oracle Financials",
+      "GFEBS",
+      "Financial ERP",
+      "Accounting Software"
+    ],
+    "industry": "Finance",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "bc486b25-6633-42dc-a0a0-277905c713a8",
+    "military_skill": "Tactical Operations",
+    "linkedin_keywords": [
+      "Operations Management",
+      "Project Execution",
+      "Resource Coordination",
+      "Process Optimization",
+      "Strategic Operations"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "bc9734c4-42cd-4673-815e-38a4b240297d",
+    "military_skill": "Fuel Operations",
+    "linkedin_keywords": [
+      "Petroleum Distribution",
+      "Fuel Management",
+      "Pipeline Operations",
+      "Hazmat Handling"
+    ],
+    "industry": "Energy",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "bca77ad0-ca9e-49aa-915f-530170bb62fa",
+    "military_skill": "Leadership",
+    "linkedin_keywords": [
+      "Team Leadership",
+      "People Management",
+      "Organizational Leadership",
+      "Cross-Functional Leadership",
+      "Staff Development"
+    ],
+    "industry": null,
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "be115ac2-1578-4194-ab2f-115098b76fae",
+    "military_skill": "Deployment Planning",
+    "linkedin_keywords": [
+      "Mobilization Planning",
+      "Deployment Logistics",
+      "Force Deployment",
+      "Redeployment"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "be7176c8-ffba-41bf-b663-9c95f1a3e86c",
+    "military_skill": "Sergeant Major",
+    "linkedin_keywords": [
+      "Chief Operating Officer",
+      "VP Operations",
+      "Senior Director",
+      "Executive Manager"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "bed9e968-2724-4330-ba39-d2b65f1ce37c",
+    "military_skill": "Base Operations Support",
+    "linkedin_keywords": [
+      "Installation Management",
+      "Garrison Operations",
+      "Facility Support",
+      "Base Services"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "bf121493-ca06-4189-964d-1ff2803b0d04",
+    "military_skill": "Financial Accountability",
+    "linkedin_keywords": [
+      "Internal Audit",
+      "Financial Compliance",
+      "Asset Management",
+      "Fiscal Responsibility"
+    ],
+    "industry": "Finance",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "bf625b63-8136-4df7-86b5-2ef541e5e8a7",
+    "military_skill": "Medical Training",
+    "linkedin_keywords": [
+      "BLS Instructor",
+      "ACLS",
+      "Combat Lifesaver",
+      "First Aid Training",
+      "CPR Instructor"
+    ],
+    "industry": "Healthcare",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "bfa287a2-54e6-4e61-bcc2-a7bc845bc659",
+    "military_skill": "Operations Management",
+    "linkedin_keywords": [
+      "Operations Management",
+      "Process Improvement",
+      "Operational Excellence",
+      "Lean Management",
+      "Continuous Improvement"
+    ],
+    "industry": null,
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "c068e24c-b410-48cd-bcbc-6d51559c1c38",
+    "military_skill": "Acquisition Management",
+    "linkedin_keywords": [
+      "Procurement",
+      "Contract Management",
+      "Vendor Relations",
+      "Compliance",
+      "Budget Management"
+    ],
+    "industry": "Government",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "c06d746e-30a7-47fc-b250-4dca6deb2890",
+    "military_skill": "Systems Administration",
+    "linkedin_keywords": [
+      "Linux Administration",
+      "Windows Server",
+      "Active Directory",
+      "VMware",
+      "Cloud Infrastructure"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c0cc4fa5-5402-4e8e-86aa-0a7120db8227",
+    "military_skill": "Veterinary Services",
+    "linkedin_keywords": [
+      "Animal Care",
+      "Laboratory",
+      "Public Health",
+      "Quality Assurance",
+      "Sanitation"
+    ],
+    "industry": "Healthcare",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "c14bc554-8bea-4463-93bb-1200b3c2934e",
+    "military_skill": "Intelligence Analysis",
+    "linkedin_keywords": [
+      "Intelligence Analysis",
+      "Data Analysis",
+      "Business Intelligence",
+      "Competitive Intelligence",
+      "OSINT",
+      "Threat Assessment"
+    ],
+    "industry": "intelligence",
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "c14c10d6-af8c-4419-9176-9401dc3e4ad9",
+    "military_skill": "Process Mapping",
+    "linkedin_keywords": [
+      "Business Process Mapping",
+      "Workflow Analysis",
+      "Swimlane Diagrams",
+      "Process Documentation"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c18acdeb-57b8-4257-a2d3-0e8d85820f73",
+    "military_skill": "Risk Management",
+    "linkedin_keywords": [
+      "Risk Management",
+      "Risk Assessment",
+      "Enterprise Risk Management",
+      "Business Continuity",
+      "Crisis Management"
+    ],
+    "industry": null,
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "c1f9a867-1b54-4ea3-b054-66e933b3ed7c",
+    "military_skill": "Blockchain Knowledge",
+    "linkedin_keywords": [
+      "Distributed Ledger",
+      "Smart Contracts",
+      "Cryptocurrency",
+      "Web3"
+    ],
+    "industry": "Technology",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c32e80fe-9bbc-4036-b9f8-822f9de597fa",
+    "military_skill": "Humanitarian Assistance",
+    "linkedin_keywords": [
+      "Disaster Relief",
+      "Emergency Response",
+      "International Development",
+      "Humanitarian Aid"
+    ],
+    "industry": "Non-Profit",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c394c81a-cdca-4b57-b3f4-c6446abd7dc0",
+    "military_skill": "Budget Management",
+    "linkedin_keywords": [
+      "Financial Planning",
+      "Budget Analysis",
+      "Cost Control",
+      "P&L Management",
+      "Financial Reporting"
+    ],
+    "industry": "Finance",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c3c624d9-8537-4e48-b329-7c291a14e17c",
+    "military_skill": "After Action Review",
+    "linkedin_keywords": [
+      "Lessons Learned",
+      "Post-Mortem Analysis",
+      "Continuous Improvement",
+      "Root Cause Analysis",
+      "Kaizen"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c4370492-f19c-4cc2-82cc-7b2f956ad5af",
+    "military_skill": "Electronic Warfare",
+    "linkedin_keywords": [
+      "Spectrum Management",
+      "Electronic Systems",
+      "Signal Processing",
+      "Electromagnetic Compatibility",
+      "Technical Surveillance"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "c590534b-d454-405c-8024-21ced36df86c",
+    "military_skill": "Personnel Recovery",
+    "linkedin_keywords": [
+      "SERE",
+      "Survival Training",
+      "Evasion",
+      "Escape and Recovery"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c5be847f-c129-46bf-a0f0-d9705bfe8b7d",
+    "military_skill": "Machine Learning",
+    "linkedin_keywords": [
+      "AI/ML",
+      "Deep Learning",
+      "Neural Networks",
+      "Predictive Modeling",
+      "TensorFlow"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c5d7696c-5ee6-4037-b4a0-0df90f724651",
+    "military_skill": "Training Development",
+    "linkedin_keywords": [
+      "Training & Development",
+      "Curriculum Design",
+      "Instructional Design",
+      "Learning Management",
+      "Employee Development"
+    ],
+    "industry": null,
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "c6cdcb8a-fa45-488c-887d-d092155aff09",
+    "military_skill": "Time Management",
+    "linkedin_keywords": [
+      "Prioritization",
+      "Deadline Management",
+      "Task Management",
+      "Efficiency",
+      "Multitasking"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c70c8b0b-a545-4245-ac19-1a85290318a3",
+    "military_skill": "Adaptability",
+    "linkedin_keywords": [
+      "Change Management",
+      "Agile Mindset",
+      "Flexibility",
+      "Resilience",
+      "Growth Mindset"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c7c94eea-3fe9-4fbd-a099-c6dd47557a43",
+    "military_skill": "Concrete Operations",
+    "linkedin_keywords": [
+      "Concrete Placement",
+      "Masonry",
+      "Foundation Work",
+      "Structural Concrete"
+    ],
+    "industry": "Construction",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c7eda0a2-8b6f-4b88-8895-891766b843fa",
+    "military_skill": "Religious Support",
+    "linkedin_keywords": [
+      "Spiritual Wellness",
+      "Counseling",
+      "Community Support",
+      "Crisis Intervention",
+      "Diversity and Inclusion"
+    ],
+    "industry": "Social Services",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "c856216f-146e-4aa3-a4b6-83153a44249f",
+    "military_skill": "Strategy Development",
+    "linkedin_keywords": [
+      "Strategic Framework",
+      "Competitive Analysis",
+      "Market Entry Strategy",
+      "Growth Strategy"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c87daee7-00a8-4cd9-988a-e02ca0dd511e",
+    "military_skill": "Band/Music",
+    "linkedin_keywords": [
+      "Event Entertainment",
+      "Audio Production",
+      "Performance",
+      "Music Education",
+      "Ceremony Coordination"
+    ],
+    "industry": "Entertainment",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "c8ffe41b-4978-4a86-b4c0-b3999d8bfea3",
+    "military_skill": "Tactical Communications",
+    "linkedin_keywords": [
+      "Enterprise Communications",
+      "VoIP",
+      "Unified Communications",
+      "Network Operations",
+      "Technical Support"
+    ],
+    "industry": "Telecommunications",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "c9510092-a4df-40b2-a688-39f246783b28",
+    "military_skill": "Combat Medic",
+    "linkedin_keywords": [
+      "Emergency Medicine",
+      "Patient Care",
+      "Trauma Care",
+      "Clinical Skills",
+      "Healthcare Delivery"
+    ],
+    "industry": "Healthcare",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "c953ddcc-537a-4dde-86dd-40d368900b68",
+    "military_skill": "Automation",
+    "linkedin_keywords": [
+      "Ansible",
+      "Terraform",
+      "PowerShell Scripting",
+      "Python Automation",
+      "Infrastructure as Code"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "c96e5aff-8c73-4cbb-994d-b67f490a1d22",
+    "military_skill": "Equal Opportunity",
+    "linkedin_keywords": [
+      "Diversity and Inclusion",
+      "EEO Compliance",
+      "DEI Programs",
+      "Affirmative Action"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "ca75668a-ae39-4392-b0ef-7c841e360dd0",
+    "military_skill": "Hydraulic Systems",
+    "linkedin_keywords": [
+      "Hydraulic Maintenance",
+      "Pneumatic Systems",
+      "Fluid Power",
+      "Hydraulic Design"
+    ],
+    "industry": "Manufacturing",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "cb75f0bf-8852-44bf-8ca6-a62ffc23f71e",
+    "military_skill": "Water Purification",
+    "linkedin_keywords": [
+      "Water Treatment",
+      "Environmental Engineering",
+      "Quality Testing",
+      "Chemical Analysis",
+      "Plant Operations"
+    ],
+    "industry": "Environmental",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "cc56863c-cd59-47f0-abe2-cfd1a08dde0f",
+    "military_skill": "Supply Chain Management",
+    "linkedin_keywords": [
+      "Supply Chain Optimization",
+      "Demand Planning",
+      "Inventory Management",
+      "Vendor Management"
+    ],
+    "industry": "Logistics",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "cccd0d46-b211-4a8b-9118-9ead518c830f",
+    "military_skill": "Chemical Detection",
+    "linkedin_keywords": [
+      "Environmental Monitoring",
+      "Chemical Analysis",
+      "Laboratory Operations",
+      "Safety Compliance",
+      "Emergency Response"
+    ],
+    "industry": "Environmental",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "ce651143-246c-4a5c-ba1f-07a136cea7d6",
+    "military_skill": "Mine Clearing",
+    "linkedin_keywords": [
+      "Explosive Safety",
+      "Hazardous Environment",
+      "Risk Assessment",
+      "Technical Operations",
+      "Safety Management"
+    ],
+    "industry": "Environmental",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "d0ab45c6-ac46-471a-ba7f-fb25febf79f4",
+    "military_skill": "Technical Writing",
+    "linkedin_keywords": [
+      "Technical Writing",
+      "Documentation",
+      "Standard Operating Procedures",
+      "Policy Development",
+      "Report Writing"
+    ],
+    "industry": null,
+    "priority": "medium",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "d1200945-854f-412d-a057-1f3beb1280ca",
+    "military_skill": "Backup and Recovery",
+    "linkedin_keywords": [
+      "Disaster Recovery",
+      "Business Continuity",
+      "Data Backup",
+      "RTO/RPO"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "d2e9e50a-0772-444a-be1e-74b615dd8527",
+    "military_skill": "Battalion Staff Officer",
+    "linkedin_keywords": [
+      "Senior Manager",
+      "Director of Operations",
+      "Strategic Planning Manager",
+      "Chief of Staff"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "d45399a5-f0b2-430b-950d-84db2029b025",
+    "military_skill": "Armor Operations",
+    "linkedin_keywords": [
+      "Armored Vehicle Operations",
+      "Mechanized Operations",
+      "Combined Arms",
+      "Maneuver Warfare"
+    ],
+    "industry": "Defense",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "d473d0d0-08dc-4ab1-b859-9f83cc05a046",
+    "military_skill": "Information Security",
+    "linkedin_keywords": [
+      "Data Protection",
+      "Classification Management",
+      "OPSEC",
+      "Information Assurance"
+    ],
+    "industry": "Security",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "d4c32c08-83fd-4bb9-82f0-4fc5e59ba2bb",
+    "military_skill": "Awards and Recognition Programs",
+    "linkedin_keywords": [
+      "Employee Recognition",
+      "Incentive Programs",
+      "Performance Awards",
+      "Rewards Management"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "d5af62c0-27f7-46c7-8055-e8d581b9469f",
+    "military_skill": "Diplomatic Skills",
+    "linkedin_keywords": [
+      "International Relations",
+      "Negotiation",
+      "Cross-Cultural Leadership",
+      "Partnership Building"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "d64e69c3-692a-44ed-b07a-0c6e6f32f57b",
+    "military_skill": "Force Protection",
+    "linkedin_keywords": [
+      "Physical Security",
+      "Executive Protection",
+      "Security Management",
+      "Access Control"
+    ],
+    "industry": "Consulting",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "d6a7cd2d-9af5-4c93-83d6-ee535878a748",
+    "military_skill": "Air Cargo Operations",
+    "linkedin_keywords": [
+      "Air Freight",
+      "Load Master",
+      "Cargo Management",
+      "Aviation Logistics"
+    ],
+    "industry": "Logistics",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "d706a4f1-d59a-4c86-ad69-6fada8d7fae4",
+    "military_skill": "Foreign Language Skills",
+    "linkedin_keywords": [
+      "Bilingual",
+      "Translation",
+      "Interpretation",
+      "Cross-Cultural Communication"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "d7c084fd-68d7-4e6d-9a19-eb457d529fb8",
+    "military_skill": "Counter-Drug Operations",
+    "linkedin_keywords": [
+      "Narcotics Investigation",
+      "Surveillance",
+      "Intelligence Gathering",
+      "Interagency Cooperation",
+      "Evidence Collection"
+    ],
+    "industry": "Law Enforcement",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "d7ff027b-74de-4cfa-a902-6439e8a54d4f",
+    "military_skill": "Cloud Computing",
+    "linkedin_keywords": [
+      "AWS",
+      "Azure",
+      "Google Cloud",
+      "Cloud Architecture",
+      "Cloud Migration",
+      "IaaS",
+      "SaaS"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "d85f03d0-eb30-4559-9e36-6fcbd4256a56",
+    "military_skill": "Emergency Management",
+    "linkedin_keywords": [
+      "Emergency Preparedness",
+      "FEMA ICS",
+      "Disaster Recovery",
+      "Crisis Response",
+      "NIMS"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "db089c13-281d-4f5e-b72d-0c4a97fe6fcb",
+    "military_skill": "Conflict Resolution",
+    "linkedin_keywords": [
+      "Mediation",
+      "Dispute Resolution",
+      "Negotiation",
+      "Conflict Management"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "db524e68-bb13-41cb-865e-8bd4dbff087c",
+    "military_skill": "Drone Operations",
+    "linkedin_keywords": [
+      "UAS Operations",
+      "Remote Sensing",
+      "Aerial Photography",
+      "Geospatial Analysis",
+      "Autonomous Systems"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "dbe5cb12-dee9-40f5-9d1b-9e95a484474d",
+    "military_skill": "Wind Energy",
+    "linkedin_keywords": [
+      "Wind Turbine Operations",
+      "Wind Farm Management",
+      "Renewable Energy Systems"
+    ],
+    "industry": "Energy",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "dd44763e-224f-4037-86c6-d656022563bb",
+    "military_skill": "Damage Control",
+    "linkedin_keywords": [
+      "Emergency Management",
+      "Fire Protection",
+      "Crisis Response",
+      "Safety Management",
+      "Loss Prevention",
+      "Business Continuity"
+    ],
+    "industry": "safety",
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "dd836652-f0a4-4f2e-8718-3b52f7d86881",
+    "military_skill": "Targeting",
+    "linkedin_keywords": [
+      "Data-Driven Decision Making",
+      "Prioritization",
+      "Effects-Based Analysis",
+      "Coordination",
+      "Critical Thinking"
+    ],
+    "industry": "Analytics",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "ddffb1af-b3c9-4787-8382-b9507e8b26fa",
+    "military_skill": "Last Mile Delivery",
+    "linkedin_keywords": [
+      "Delivery Management",
+      "Route Optimization",
+      "Delivery Logistics",
+      "E-Commerce Fulfillment"
+    ],
+    "industry": "Logistics",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "de0fa3b0-cfc1-401e-92f2-ab60b06d4dcd",
+    "military_skill": "Six Sigma Methodology",
+    "linkedin_keywords": [
+      "Lean Six Sigma",
+      "Green Belt",
+      "Black Belt",
+      "DMAIC",
+      "Process Improvement"
+    ],
+    "industry": "Manufacturing",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "de2c8e41-632b-440c-a8f1-eaf0ba275d18",
+    "military_skill": "Advocacy",
+    "linkedin_keywords": [
+      "Policy Advocacy",
+      "Legislative Advocacy",
+      "Community Advocacy",
+      "Grassroots Organizing"
+    ],
+    "industry": "Non-Profit",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "de6ab046-616e-40b4-bc2c-12fd405963f5",
+    "military_skill": "Submarine Operations",
+    "linkedin_keywords": [
+      "Undersea Warfare",
+      "Nuclear Submarine",
+      "Silent Service",
+      "Submarine Systems"
+    ],
+    "industry": "Defense",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "df156488-2465-43b9-8968-f18152f5427f",
+    "military_skill": "Artillery Operations",
+    "linkedin_keywords": [
+      "Precision Operations",
+      "Data-Driven Decision Making",
+      "Technical Calculations",
+      "Fire Direction",
+      "Systems Operation"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "df4e449d-1950-4bec-a3df-7f20c40fc677",
+    "military_skill": "Chemical Warfare Defense",
+    "linkedin_keywords": [
+      "HAZMAT",
+      "Environmental Safety",
+      "Chemical Safety",
+      "Emergency Response",
+      "Regulatory Compliance"
+    ],
+    "industry": "Environmental",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "df6c708d-93d5-4c4f-aace-4d6433a01319",
+    "military_skill": "Small Arms Repair",
+    "linkedin_keywords": [
+      "Gunsmithing",
+      "Precision Machining",
+      "Quality Control",
+      "Maintenance",
+      "Technical Documentation"
+    ],
+    "industry": "Manufacturing",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "dfe6c012-42fa-4229-b2a1-fc510cf3e34b",
+    "military_skill": "Cyber Operations",
+    "linkedin_keywords": [
+      "Cybersecurity",
+      "Penetration Testing",
+      "Vulnerability Assessment",
+      "Security Operations",
+      "Threat Hunting"
+    ],
+    "industry": "Cybersecurity",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "e03eddc6-3be2-42c4-9b49-b73bb1780e8d",
+    "military_skill": "Social Services",
+    "linkedin_keywords": [
+      "Case Management",
+      "Social Work",
+      "Client Services",
+      "Needs Assessment"
+    ],
+    "industry": "Non-Profit",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "e1b1960c-51d4-4308-8e82-b31c5dec54e8",
+    "military_skill": "Air Defense",
+    "linkedin_keywords": [
+      "Air Surveillance",
+      "Radar Operations",
+      "Threat Detection",
+      "Systems Monitoring",
+      "Command and Control"
+    ],
+    "industry": "Defense",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "e2254597-4f9e-4cf8-9a21-ef2cee5aebc1",
+    "military_skill": "Combat Leadership",
+    "linkedin_keywords": [
+      "Team Leadership",
+      "Crisis Management",
+      "Decision Making",
+      "Strategic Planning",
+      "Organizational Leadership"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "e3129943-9db9-4d0c-83aa-11fc1358c70d",
+    "military_skill": "Bridge Building",
+    "linkedin_keywords": [
+      "Structural Engineering",
+      "Construction",
+      "Project Management",
+      "Heavy Equipment",
+      "Safety"
+    ],
+    "industry": "Construction",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "e329cfb7-f45b-41de-b867-8011fdcf3b38",
+    "military_skill": "Budget Management",
+    "linkedin_keywords": [
+      "Budget Management",
+      "Financial Management",
+      "Cost Control",
+      "P&L Management",
+      "Resource Management"
+    ],
+    "industry": null,
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "e4a46c50-c677-4cdc-920d-493a124873af",
+    "military_skill": "Military Instructor",
+    "linkedin_keywords": [
+      "Corporate Trainer",
+      "Technical Instructor",
+      "Training Specialist",
+      "Learning Facilitator"
+    ],
+    "industry": "Education",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "e51c0653-2672-4142-978e-5e0c6ce1eac5",
+    "military_skill": "NBC/CBRN",
+    "linkedin_keywords": [
+      "HAZMAT Response",
+      "Chemical Safety",
+      "Radiological Safety",
+      "Biological Preparedness"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "e6d9e66e-d4e6-48d1-b40f-a3b4545381bb",
+    "military_skill": "Building Codes",
+    "linkedin_keywords": [
+      "International Building Code",
+      "Fire Code",
+      "ADA Compliance",
+      "Code Inspection"
+    ],
+    "industry": "Construction",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "e7b14708-306c-4763-8c1c-bda36fa951a2",
+    "military_skill": "HAZMAT Handling",
+    "linkedin_keywords": [
+      "Hazardous Materials",
+      "OSHA Compliance",
+      "Environmental Safety",
+      "Chemical Safety",
+      "DOT Regulations"
+    ],
+    "industry": "Logistics",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "e7ea82ab-9a89-46b9-a64f-9bab808d3f81",
+    "military_skill": "Library Science",
+    "linkedin_keywords": [
+      "Information Management",
+      "Research Services",
+      "Digital Archives",
+      "Knowledge Management"
+    ],
+    "industry": "Education",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "e8b8de84-383b-4182-b4e0-de26db07dde7",
+    "military_skill": "Satellite Communications",
+    "linkedin_keywords": [
+      "SATCOM",
+      "VSAT Operations",
+      "Satellite Engineering",
+      "Earth Station Operations"
+    ],
+    "industry": "Telecommunications",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "eba926a0-3f3e-4340-9297-2e5f10a7ac34",
+    "military_skill": "SATCOM Operations",
+    "linkedin_keywords": [
+      "Satellite Communications",
+      "VSAT",
+      "Telecommunications Engineering",
+      "RF Engineering",
+      "Signal Processing"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "ebfb59dc-765a-4e71-9c20-b2195e1b44a8",
+    "military_skill": "Nuclear Operations",
+    "linkedin_keywords": [
+      "Nuclear Engineering",
+      "Reactor Operations",
+      "Radiation Safety",
+      "Quality Assurance",
+      "Regulatory Compliance"
+    ],
+    "industry": "Energy",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "eccf6773-a822-48b6-8cd8-bda5d648807d",
+    "military_skill": "Electrical Distribution",
+    "linkedin_keywords": [
+      "Power Grid",
+      "Substation Operations",
+      "Load Balancing",
+      "SCADA Systems"
+    ],
+    "industry": "Energy",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "ed268f22-1f72-4dd3-8f10-e425e65a005a",
+    "military_skill": "Jungle Operations",
+    "linkedin_keywords": [
+      "Challenging Environment Adaptability",
+      "Resilience",
+      "Field Craft",
+      "Survival Skills",
+      "Team Cohesion"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "ed5a7a34-fa19-4ebc-bba1-42c472d12e4b",
+    "military_skill": "Parachute Rigging",
+    "linkedin_keywords": [
+      "Equipment Inspection",
+      "Quality Assurance",
+      "Safety Compliance",
+      "Inventory Management",
+      "Technical Documentation"
+    ],
+    "industry": "Logistics",
+    "priority": "low",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "ee036aaf-96fc-4ba9-992b-1d28970552d7",
+    "military_skill": "Convoy Security",
+    "linkedin_keywords": [
+      "Route Security",
+      "Risk Assessment",
+      "Protective Services",
+      "Transportation Safety",
+      "Situational Awareness"
+    ],
+    "industry": "Security",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "f0370469-82c7-42f0-97cd-01a3117e8428",
+    "military_skill": "Emergency Response",
+    "linkedin_keywords": [
+      "Mass Casualty Management",
+      "Triage",
+      "Emergency Preparedness",
+      "FEMA ICS"
+    ],
+    "industry": "Healthcare",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f084234f-e9d3-4498-a8b6-88454ae8fb9e",
+    "military_skill": "Aircraft Structures",
+    "linkedin_keywords": [
+      "Structural Repair",
+      "Composite Materials",
+      "Non-Destructive Testing",
+      "Structural Analysis"
+    ],
+    "industry": "Aerospace",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f0887770-ff46-4380-898e-2c390317d81a",
+    "military_skill": "Counterintelligence",
+    "linkedin_keywords": [
+      "Insider Threat",
+      "Security Investigations",
+      "Background Investigations",
+      "Fraud Detection"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f0ee08a7-b5fb-4bf9-8299-3aa439cd8777",
+    "military_skill": "Special Operations",
+    "linkedin_keywords": [
+      "High-Stress Operations",
+      "Advanced Planning",
+      "Cross-Functional Teams",
+      "Risk Management",
+      "Unconventional Problem Solving"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "f1b183ab-c695-45fb-b223-036bed030185",
+    "military_skill": "Project Management",
+    "linkedin_keywords": [
+      "Project Management",
+      "PMP",
+      "Agile",
+      "Scrum",
+      "Program Management",
+      "Stakeholder Management",
+      "PMO"
+    ],
+    "industry": null,
+    "priority": "high",
+    "created_at": "2026-02-15T17:46:34.592483+00:00"
+  },
+  {
+    "id": "f1b73b1b-9a87-4588-b383-baa0f6f49de8",
+    "military_skill": "Cost-Benefit Analysis",
+    "linkedin_keywords": [
+      "Financial Modeling",
+      "ROI Analysis",
+      "Business Case Development",
+      "Economic Analysis"
+    ],
+    "industry": "Finance",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f37390bf-677d-41df-b881-b5d9d04c25d3",
+    "military_skill": "Airborne Operations",
+    "linkedin_keywords": [
+      "Parachute Operations",
+      "Air Assault",
+      "Airborne Planning",
+      "Drop Zone Operations"
+    ],
+    "industry": "Defense",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f38542f3-545b-4211-be61-8cccfc788903",
+    "military_skill": "Crypto Maintenance",
+    "linkedin_keywords": [
+      "Encryption Technology",
+      "PKI Management",
+      "Security Hardware",
+      "Cryptographic Systems"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f43d35ae-469e-410a-a1a1-cc7fb161bfaa",
+    "military_skill": "Ship Engineering",
+    "linkedin_keywords": [
+      "Marine Engineering",
+      "Mechanical Systems",
+      "Propulsion",
+      "Maintenance Management",
+      "Technical Operations"
+    ],
+    "industry": "Maritime",
+    "priority": "medium",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "f4791c9f-ba8d-4be5-80a7-db3ca2c990f4",
+    "military_skill": "Audit Compliance",
+    "linkedin_keywords": [
+      "SOX Compliance",
+      "Internal Controls",
+      "Audit Readiness",
+      "Risk Assessment",
+      "Financial Controls"
+    ],
+    "industry": "Finance",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f591f158-0f91-4ef2-8bc0-c89dcf6005f5",
+    "military_skill": "Artillery Operations",
+    "linkedin_keywords": [
+      "Fire Support",
+      "Target Engagement",
+      "Ballistic Computation",
+      "Precision Targeting"
+    ],
+    "industry": "Defense",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f5a600db-e20b-4d58-8c7b-cd390ed65f09",
+    "military_skill": "Military Journalism",
+    "linkedin_keywords": [
+      "Content Creation",
+      "Journalism",
+      "Technical Writing",
+      "Copywriting",
+      "Digital Media"
+    ],
+    "industry": "Media",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f7f30a55-0df7-436e-8efe-29ae414cda84",
+    "military_skill": "NCO Leadership",
+    "linkedin_keywords": [
+      "Supervisory Experience",
+      "Front Line Leadership",
+      "Team Building",
+      "Workforce Development"
+    ],
+    "industry": "General",
+    "priority": "high",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f8afb77a-7752-4ff3-a353-0bea7ee2dd08",
+    "military_skill": "Preventive Medicine",
+    "linkedin_keywords": [
+      "Public Health",
+      "Epidemiology",
+      "Health Risk Assessment",
+      "Occupational Health"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f9749c90-3d93-41c4-a15a-fcee9efc9da0",
+    "military_skill": "Integrity",
+    "linkedin_keywords": [
+      "Ethics",
+      "Professional Integrity",
+      "Accountability",
+      "Trustworthiness",
+      "Moral Courage"
+    ],
+    "industry": "General",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f978384a-e6de-4e50-9d54-86937ac1f9e9",
+    "military_skill": "Telemedicine",
+    "linkedin_keywords": [
+      "Telehealth",
+      "Virtual Care",
+      "Remote Patient Monitoring",
+      "Digital Health"
+    ],
+    "industry": "Healthcare",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "f9e6ca71-21bc-4ba1-9470-af4cfcb28710",
+    "military_skill": "Student Affairs",
+    "linkedin_keywords": [
+      "Student Services",
+      "Academic Counseling",
+      "Student Development",
+      "Enrollment Management"
+    ],
+    "industry": "Education",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "fb7b262d-ed4a-4cbd-9a41-81dfd3f0e3d9",
+    "military_skill": "Signals Intelligence",
+    "linkedin_keywords": [
+      "Data Analytics",
+      "Pattern Recognition",
+      "Technical Analysis",
+      "Information Security",
+      "Cyber Intelligence"
+    ],
+    "industry": "Technology",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "fbac9ba2-29c7-41f2-bc90-8f2bd724b595",
+    "military_skill": "CNC Operations",
+    "linkedin_keywords": [
+      "CNC Programming",
+      "G-Code",
+      "Precision Machining",
+      "CAM Software"
+    ],
+    "industry": "Manufacturing",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "fbdbc825-af8a-4651-98f4-71689c61f32a",
+    "military_skill": "Special Education",
+    "linkedin_keywords": [
+      "Disability Services",
+      "IEP Development",
+      "Accommodations",
+      "Section 504"
+    ],
+    "industry": "Education",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "fc11c176-841a-4db0-95bd-90af37642d8f",
+    "military_skill": "Military Police",
+    "linkedin_keywords": [
+      "Law Enforcement",
+      "Security",
+      "Investigations",
+      "Access Control",
+      "Emergency Response"
+    ],
+    "industry": "Law Enforcement",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "fc617145-4fd1-45a3-b91e-a16c97c46924",
+    "military_skill": "Civil-Military Operations",
+    "linkedin_keywords": [
+      "Civil Affairs",
+      "Reconstruction",
+      "Stability Operations",
+      "Nation Building"
+    ],
+    "industry": "General",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "fdfb9d9f-0ca7-40f7-aa24-f9f79c3ac1b6",
+    "military_skill": "Targeting",
+    "linkedin_keywords": [
+      "Data-Driven Targeting",
+      "Audience Analysis",
+      "Market Segmentation",
+      "Customer Analytics"
+    ],
+    "industry": "Government",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "feeb5799-acdf-4458-a711-903659271e83",
+    "military_skill": "Counterintelligence",
+    "linkedin_keywords": [
+      "Security Investigations",
+      "Insider Threat",
+      "Risk Analysis",
+      "Background Investigation",
+      "Protective Operations"
+    ],
+    "industry": "Government",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "fefb7368-1c08-41b9-9c41-ed272544d7e0",
+    "military_skill": "Operational Planning",
+    "linkedin_keywords": [
+      "Strategic Planning",
+      "Business Planning",
+      "Program Management",
+      "Risk Management",
+      "Resource Allocation"
+    ],
+    "industry": "Consulting",
+    "priority": "high",
+    "created_at": "2026-02-18T14:03:12.64537+00:00"
+  },
+  {
+    "id": "ff81b9bd-bcec-4bc9-a2e9-4fa75d6bdcca",
+    "military_skill": "Tax Compliance",
+    "linkedin_keywords": [
+      "Tax Preparation",
+      "Tax Law",
+      "Military Tax Exemptions",
+      "State Tax Compliance"
+    ],
+    "industry": "Finance",
+    "priority": "low",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "ff9ce760-77c3-4caf-8710-fe8a331870e9",
+    "military_skill": "Radar Operations",
+    "linkedin_keywords": [
+      "Radar Systems",
+      "Surveillance Technology",
+      "Electronic Warfare",
+      "Air Traffic Control Technology"
+    ],
+    "industry": "Technology",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  },
+  {
+    "id": "ffc5ae3c-b154-4bbc-a42d-35a16193e7c0",
+    "military_skill": "Treasury Management",
+    "linkedin_keywords": [
+      "Cash Management",
+      "Liquidity Analysis",
+      "Wire Transfers",
+      "Banking Operations"
+    ],
+    "industry": "Finance",
+    "priority": "medium",
+    "created_at": "2026-02-16T22:57:14.130798+00:00"
+  }
+]
