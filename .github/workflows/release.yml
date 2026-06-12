@@ -1,0 +1,40 @@
+name: Release single-file build
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Debriefed.html
+        run: npm run build:singlefile
+
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-singlefile/Debriefed.html
+          generate_release_notes: true
+        if: startsWith(github.ref, 'refs/tags/')
+
+      - name: Upload artifact (manual runs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Debriefed.html
+          path: dist-singlefile/Debriefed.html
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
