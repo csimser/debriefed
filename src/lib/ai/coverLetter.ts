@@ -528,7 +528,7 @@ Write the complete cover letter now:`
     const status = (apiError as { status?: number })?.status
 
     if (status === 401) {
-      throw new Error('Invalid API key. Please contact support.')
+      throw new Error('Your Anthropic API key was rejected — check it in Settings.')
     }
     if (status === 429) {
       throw new Error('Rate limit exceeded. Please wait a moment and try again.')
