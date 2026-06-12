@@ -1,0 +1,35 @@
+<!doctype html>
+<!--
+  ════════════════════════════════════════════════════════════════════════
+  Debriefed — Military to Civilian Resume Builder (single-file edition)
+
+  This entire application lives in this one HTML file. No installation, no
+  accounts, no server. Your data is stored in this browser's localStorage.
+  AI features use your own Anthropic API key (Settings), sent directly from
+  your browser to api.anthropic.com — nowhere else.
+
+  Built by Chris Simser · Open source under the MIT license
+  Source code:       https://github.com/csimser/debriefed
+  Hosted version:    https://getdebriefed.co
+  Official releases: https://github.com/csimser/debriefed/releases
+  ════════════════════════════════════════════════════════════════════════
+-->
+<html lang="en" suppressHydrationWarning>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Debriefed — Military to Civilian Resume Builder</title>
+    <script>
+      // Apply saved theme before first paint
+      try {
+        if (localStorage.getItem('debriefed-theme') === 'light')
+          document.documentElement.setAttribute('data-theme', 'light')
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
