@@ -7,8 +7,9 @@ import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import { polishSummary } from '@/lib/dictionary/outputPolisher'
 import type { DictProfessionalSummary, DictRankEquivalent } from '@/lib/dictionary/types'
 import { enhanceSummary } from '@/lib/ai/summary'
-import { classifyAIError, hasApiKey } from '@/lib/ai/client'
-import { KeySetupModal } from '@/components/settings/KeySetupModal'
+import { classifyAIError } from '@/lib/ai/client'
+import { EnhanceWithAI } from '@/components/ai/EnhanceWithAI'
+import { OutputModeLabel } from '@/components/ai/OutputModeLabel'
 
 interface ProfessionalSummaryEditorProps {
   value: string
@@ -17,7 +18,6 @@ interface ProfessionalSummaryEditorProps {
 }
 
 export function ProfessionalSummaryEditor({ value, onChange, profile }: ProfessionalSummaryEditorProps) {
-  const [keyModalOpen, setKeyModalOpen] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [isEnhancing, setIsEnhancing] = useState(false)
@@ -136,17 +136,33 @@ export function ProfessionalSummaryEditor({ value, onChange, profile }: Professi
       onChange(polishSummary(cleanTemplateOutput(text), { tone: 'professional', length: 'standard' }))
     }
     setTemplateFallbacks(fallbacks)
-    setSummarySource(template.isDictionary ? 'dictionary' : null)
+    // Template output is the keyless dictionary path — label it as such
+    setSummarySource('dictionary')
+  }
+
+  // One-click keyless generation: pick the best-matching template (the
+  // StepFinish mechanism) and fill it with profile data. No API key needed.
+  const handleGenerateFromTemplate = () => {
+    // Best dictionary template (already ranked by rank tier + industry match)
+    const dictPick = buildMergedTemplates().find(t => t.isDictionary)
+    if (dictPick) {
+      handleSelectTemplate(dictPick)
+      return
+    }
+
+    // Fall back to hardcoded templates: leadership for senior ranks, else operations
+    const tier = getRankTier()
+    const isLeadership = tier === 'senior_enlisted' || tier === 'senior_officer' || tier === 'warrant_officer'
+    let templates = getTemplatesByCategory(isLeadership ? 'leadership' : 'operations')
+    if (templates.length === 0) templates = getTemplatesByCategory('general')
+    if (templates.length === 0 && SUMMARY_TEMPLATES.length > 0) templates = [SUMMARY_TEMPLATES[0]]
+    if (templates.length > 0) {
+      handleSelectTemplate({ ...templates[0], isDictionary: false })
+    }
   }
 
   const handleEnhanceWithAI = async () => {
     if (!value.trim()) return
-
-    // AI action — requires the user's Anthropic API key
-    if (!hasApiKey()) {
-      setKeyModalOpen(true)
-      return
-    }
 
     setIsEnhancing(true)
     try {
@@ -177,16 +193,7 @@ export function ProfessionalSummaryEditor({ value, onChange, profile }: Professi
     <div className="space-y-3">
       <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2 flex items-center gap-2">
         Professional Summary
-        {summarySource === 'dictionary' && (
-          <span className="text-[10px] px-1.5 py-0.5 bg-status-green/20 text-status-green rounded normal-case tracking-normal font-normal">
-            Dictionary template
-          </span>
-        )}
-        {summarySource === 'ai' && (
-          <span className="text-[10px] px-1.5 py-0.5 bg-status-amber/20 text-status-amber rounded normal-case tracking-normal font-normal">
-            AI enhanced
-          </span>
-        )}
+        {summarySource && <OutputModeLabel mode={summarySource} />}
       </label>
 
       <textarea
@@ -206,8 +213,18 @@ export function ProfessionalSummaryEditor({ value, onChange, profile }: Professi
       <div className="flex items-center justify-between flex-wrap gap-2">
         <p className="text-xs text-text-dim">This summary will pre-fill when you create new resumes</p>
 
-        <div className="flex items-center gap-2">
-          {/* Template Button - Primary Action */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Generate Button - Primary keyless action */}
+          <button
+            type="button"
+            onClick={handleGenerateFromTemplate}
+            className="flex items-center gap-2 px-4 py-2 bg-gold text-bg-primary hover:bg-gold/90 font-semibold rounded text-sm transition-colors"
+          >
+            <span>&#128221;</span>
+            Generate from Template
+          </button>
+
+          {/* Template Browser */}
           <button
             type="button"
             onClick={() => setShowTemplates(!showTemplates)}
@@ -217,35 +234,14 @@ export function ProfessionalSummaryEditor({ value, onChange, profile }: Professi
             {showTemplates ? 'Hide Templates' : 'Choose Template'}
           </button>
 
-          {/* Enhance Button - Secondary/Fallback */}
-          <button
-            type="button"
-            onClick={handleEnhanceWithAI}
-            disabled={isEnhancing || !value.trim()}
-            className="flex items-center gap-2 px-4 py-2 bg-gold/20 hover:bg-gold/30 border border-gold/50 disabled:bg-bg-tertiary disabled:border-border disabled:cursor-not-allowed text-gold disabled:text-text-dim font-semibold rounded text-sm transition-colors"
-          >
-            {isEnhancing ? (
-              <>
-                <span className="animate-spin">&#8635;</span>
-                Enhancing...
-              </>
-            ) : (
-              <>
-                <span>&#10024;</span>
-                Enhance
-              </>
-            )}
-          </button>
+          {/* Optional AI polish on top of the current (template or hand-written) summary */}
+          <EnhanceWithAI
+            onEnhance={handleEnhanceWithAI}
+            busy={isEnhancing}
+            featureNote="Summary enhancement uses Claude to refine your professional summary."
+          />
         </div>
       </div>
-
-      {/* API key setup — shown when an AI action is attempted without a key */}
-      <KeySetupModal
-        isOpen={keyModalOpen}
-        onClose={() => setKeyModalOpen(false)}
-        onKeySaved={handleEnhanceWithAI}
-        featureNote="Summary enhancement uses Claude to refine your professional summary."
-      />
 
       {/* Template Selector Panel */}
       {showTemplates && (

@@ -5,12 +5,15 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
-import { generateLinkedIn, analyzeLinkedIn } from '@/lib/ai/linkedin'
+import { generateLinkedIn, analyzeLinkedIn, calculateBaselineScores } from '@/lib/ai/linkedin'
 import { parseLinkedInPdf } from '@/lib/ai/visionExtract'
-import { hasApiKey, classifyAIError } from '@/lib/ai/client'
-import { KeySetupModal } from '@/components/settings/KeySetupModal'
+import { classifyAIError } from '@/lib/ai/client'
+import { EnhanceWithAI } from '@/components/ai/EnhanceWithAI'
+import { OutputModeLabel } from '@/components/ai/OutputModeLabel'
+import { useApiKey } from '@/hooks/useApiKey'
 import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
-import type { DictProfessionalSummary, DictRankEquivalent, DictLinkedinKeyword, DictMilitaryJargon } from '@/lib/dictionary/types'
+import { fillLinkedInHeadline, fillLinkedInAbout } from '@/lib/dictionary/linkedinFiller'
+import type { DictProfessionalSummary, DictRankEquivalent, DictLinkedinKeyword, DictMilitaryJargon, DictionaryCache } from '@/lib/dictionary/types'
 import { getRankTier, formatClearanceForHeadline, buildLinkedInValues, fillLinkedInTemplate, ensureProperTitle, titleCaseHeadline, smartSkillSort } from './linkedInUtils'
 import type { DictAtsKeyword } from '@/lib/dictionary/types'
 
@@ -119,16 +122,13 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
-  // API key setup modal (shown when an AI action is attempted without a key)
-  const [keyModalOpen, setKeyModalOpen] = useState(false)
-  const pendingActionRef = useRef<(() => void) | null>(null)
-
   // Summary editing
   const [summaryFocused, setSummaryFocused] = useState(false)
   const summaryRef = useRef<HTMLTextAreaElement>(null)
 
   // Dictionary state
   const [dictLoading, setDictLoading] = useState(true)
+  const dictRef = useRef<DictionaryCache | null>(null)
   const [summaries, setSummaries] = useState<DictProfessionalSummary[]>([])
   const [rankEquivalents, setRankEquivalents] = useState<DictRankEquivalent[]>([])
   const [atsKeywords, setAtsKeywords] = useState<DictAtsKeyword[]>([])
@@ -157,6 +157,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   // Load dictionary data on mount
   useEffect(() => {
     getDictionary().then(dict => {
+      dictRef.current = dict
       setSummaries(dict.professionalSummaries ?? [])
       setRankEquivalents(dict.rankEquivalents ?? [])
       setAtsKeywords(dict.atsKeywords ?? [])
@@ -183,6 +184,8 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     return false
   })
   const [aboutTemplateIndex, setAboutTemplateIndex] = useState(0)
+  // 3 built-in tone variants, +1 when the dictionary has a matching About template
+  const [aboutVariantCount, setAboutVariantCount] = useState(3)
   const emphasisKey = emphasis.join(',')
   const selectedSkillsKey = selectedSkills.join(',')
   useEffect(() => {
@@ -351,6 +354,20 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
       addUnique(build([`${skill1} Expert`, civTitle, industry, cert1], tone))
     }
 
+    // --- Dictionary template fill (linkedin_templates table via linkedinFiller) ---
+    const dictCache = dictRef.current
+    const fillerProfile = {
+      ...(userProfile || {}),
+      targetRole: role,
+      skills: orderedSkills,
+      certifications: certs.map((c: string) => ({ name: c })),
+      education: education || [],
+    }
+    if (dictCache) {
+      const tplHeadline = fillLinkedInHeadline(fillerProfile, dictCache)
+      if (tplHeadline) addUnique({ text: tplHeadline, tone })
+    }
+
     // --- Professional tone (3+ headlines, rotating credentials) ---
     // P1: Years Veteran | Role | Cert1 | Clearance
     addUnique(build([`${years}-Year ${branchShort} Veteran`, civTitle, cert1, clearance], 'professional'))
@@ -402,8 +419,12 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
       clearance ? `${clearance.replace(' Clearance', '')} Cleared` : '',
     ], 'bold'))
 
-    // --- ABOUT SECTION: tone x length x templateIndex (3 visibly distinct variants per tone) ---
-    const templateIndex = (overrideTemplateIndex ?? aboutTemplateIndex) % 3
+    // --- ABOUT SECTION: tone x length x templateIndex (3 visibly distinct variants per tone,
+    //     +1 dictionary-table template variant when the dictionary has a match) ---
+    const templateAbout = dictCache ? fillLinkedInAbout(fillerProfile, experiences || [], dictCache) : null
+    const variantCount = templateAbout ? 4 : 3
+    setAboutVariantCount(variantCount)
+    const templateIndex = (overrideTemplateIndex ?? aboutTemplateIndex) % variantCount
     const clearanceStmt = clearance ? `Holds active ${clearance}.` : ''
     const certStmt = cert1 ? `${cert1} certified.` : ''
     const credLine = [degreeShort, cert1].filter(Boolean).join(' | ')
@@ -418,7 +439,10 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
     let summary = ''
 
-    if (tone === 'professional') {
+    if (templateIndex === 3 && templateAbout) {
+      // Dictionary-table template variant (filled by linkedinFiller)
+      summary = templateAbout
+    } else if (tone === 'professional') {
       // 3 openings: 0=transition story, 1=achievement lead, 2=role + value prop
       const openings = [
         `${years}-year ${branchShort} veteran transitioning to ${role} in ${industry}.`,
@@ -518,15 +542,11 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
     setResults(null)
   }
 
+  // AI enhancement — only reachable through EnhanceWithAI, which owns key/online states.
+  // The dictionary draft is passed as a baseline so Claude improves it instead of starting cold.
   const handleGenerate = async () => {
     if (!targetRole) {
       setError('Please enter your target role')
-      return
-    }
-
-    if (!hasApiKey()) {
-      pendingActionRef.current = () => handleGenerate()
-      setKeyModalOpen(true)
       return
     }
 
@@ -544,6 +564,10 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
         tone,
         aboutLength,
         emphasis,
+        baseline: {
+          headline: selectedHeadline?.text || dictResults?.headlines?.[0]?.text || null,
+          about: editedSummary || dictResults?.summary || null,
+        },
       })
 
       setResults({
@@ -791,6 +815,11 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
                   <span className="text-gold">&#9670;</span> Headlines
+                  {results?.headline ? (
+                    <OutputModeLabel mode="ai" />
+                  ) : displayHeadlines.length > 0 ? (
+                    <OutputModeLabel mode="dictionary" />
+                  ) : null}
                 </h3>
                 <div className="flex items-center gap-2">
                   {selectedHeadline && (
@@ -807,7 +836,6 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
               {results?.headline ? (
                 <div className="space-y-3">
                   <div className="bg-bg-secondary rounded-lg p-4">
-                    <p className="text-xs text-gold font-semibold mb-1">AI Enhanced</p>
                     <p className="text-lg font-medium">{results.headline}</p>
                   </div>
                   <button
@@ -912,15 +940,17 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
               <p className="text-xs text-text-dim mt-2">Max 220 characters for LinkedIn</p>
 
-              {/* Enhance with AI */}
+              {/* Optional AI polish — EnhanceWithAI handles key/online states */}
               {dictResults?.headlines && !results?.headline && !generating && (
-                <button
-                  onClick={handleGenerate}
-                  disabled={generating}
-                  className="mt-3 w-full py-2 px-3 text-sm bg-bg-secondary border border-gold/30 rounded-lg text-gold hover:bg-gold/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  ✦ Enhance with AI
-                </button>
+                <div className="mt-3">
+                  <EnhanceWithAI
+                    label="✨ Enhance with AI"
+                    busy={generating}
+                    onEnhance={handleGenerate}
+                    featureNote="LinkedIn enhancement uses Claude to polish your headline and About section."
+                    className="w-full justify-center"
+                  />
+                </div>
               )}
             </Card>
 
@@ -929,18 +959,23 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
                   <span className="text-gold">&#9643;</span> About / Summary
+                  {results?.summary ? (
+                    <OutputModeLabel mode="ai" />
+                  ) : dictResults?.summary ? (
+                    <OutputModeLabel mode="dictionary" />
+                  ) : null}
                 </h3>
                 <div className="flex items-center gap-2">
                   {dictResults?.summary && !results?.summary && (
                     <button
                       onClick={() => {
-                        const nextIdx = (aboutTemplateIndex + 1) % 3
+                        const nextIdx = (aboutTemplateIndex + 1) % aboutVariantCount
                         setAboutTemplateIndex(nextIdx)
                         handleDictGenerate(nextIdx)
                       }}
                       className="text-xs text-text-muted hover:text-text"
                     >
-                      Variant ({aboutTemplateIndex + 1}/3)
+                      Variant ({(aboutTemplateIndex % aboutVariantCount) + 1}/{aboutVariantCount})
                     </button>
                   )}
                 </div>
@@ -949,7 +984,6 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
               {results?.summary ? (
                 <div>
                   <div className="bg-bg-secondary rounded-lg p-4 max-h-80 overflow-auto">
-                    <p className="text-xs text-gold font-semibold mb-2">AI Enhanced</p>
                     <p className="whitespace-pre-line text-sm leading-relaxed">{results.summary}</p>
                   </div>
                 </div>
@@ -1006,7 +1040,7 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                   {!results?.summary && dictResults?.summary && (
                     <button
                       onClick={() => {
-                        const nextIdx = (aboutTemplateIndex + 1) % 3
+                        const nextIdx = (aboutTemplateIndex + 1) % aboutVariantCount
                         setAboutTemplateIndex(nextIdx)
                         handleDictGenerate(nextIdx)
                       }}
@@ -1018,15 +1052,17 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
                 </div>
               )}
 
-              {/* Enhance with AI */}
+              {/* Optional AI polish — EnhanceWithAI handles key/online states */}
               {dictResults?.summary && !results?.summary && !generating && (
-                <button
-                  onClick={handleGenerate}
-                  disabled={generating}
-                  className="mt-3 w-full py-2 px-3 text-sm bg-bg-secondary border border-gold/30 rounded-lg text-gold hover:bg-gold/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  ✦ Enhance with AI
-                </button>
+                <div className="mt-3">
+                  <EnhanceWithAI
+                    label="✨ Enhance with AI"
+                    busy={generating}
+                    onEnhance={handleGenerate}
+                    featureNote="LinkedIn enhancement uses Claude to polish your headline and About section."
+                    className="w-full justify-center"
+                  />
+                </div>
               )}
             </Card>
 
@@ -1349,18 +1385,6 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
           targetRole={targetRole}
         />
       )}
-
-      {/* API key setup modal — shown when an AI action needs a key */}
-      <KeySetupModal
-        isOpen={keyModalOpen}
-        onClose={() => setKeyModalOpen(false)}
-        onKeySaved={() => {
-          const pending = pendingActionRef.current
-          pendingActionRef.current = null
-          pending?.()
-        }}
-        featureNote="LinkedIn enhancement uses Claude to polish your headline and About section."
-      />
     </div>
   )
 }
@@ -1394,9 +1418,85 @@ function AnalyzeMode({
   const [copiedSection, setCopiedSection] = useState<string | null>(null)
   const [expandedPositions, setExpandedPositions] = useState<number[]>([0]) // First position expanded by default
 
-  // API key setup modal (PDF parsing + analysis both run on Claude)
-  const [keyModalOpen, setKeyModalOpen] = useState(false)
-  const pendingActionRef = useRef<(() => void) | null>(null)
+  // PDF import runs on Claude — keyless users get the manual-entry path instead
+  const { hasKey } = useApiKey()
+
+  // Keyless checklist analysis (calculateBaselineScores heuristics, no AI)
+  const [baselineResult, setBaselineResult] = useState<{
+    overallScore: number
+    sections: Record<string, { score: number; current?: string }>
+    checklist: { label: string; ok: boolean }[]
+  } | null>(null)
+
+  // Manual profile entry — the keyless route when there's no PDF import
+  const [manualHeadline, setManualHeadline] = useState('')
+  const [manualAbout, setManualAbout] = useState('')
+  const [manualSkills, setManualSkills] = useState('')
+  const hasManualData = Boolean(manualHeadline.trim() || manualAbout.trim())
+
+  /** The profile being analyzed: imported PDF data, or manually entered fields. */
+  const buildProfileData = () => {
+    if (linkedInPDF) return linkedInPDF
+    return {
+      headline: manualHeadline.trim(),
+      about: manualAbout.trim(),
+      experience: [],
+      skills: manualSkills.split(',').map(s => s.trim()).filter(Boolean),
+      _manual: true,
+    }
+  }
+
+  /** Run the dictionary-mode checklist analysis — no key, no network. */
+  const handleChecklistAnalyze = () => {
+    const data = buildProfileData()
+    const scores = calculateBaselineScores(data)
+    const isManual = Boolean(data._manual)
+
+    const headlineLen = (data.headline || '').length
+    const aboutLen = (data.about || data.summary || '').length
+    const skillCount = (data.skills || []).length
+    const expList = data.experience || []
+
+    // Sections we can honestly score. Manual entry has no experience data, and
+    // skills only when provided — anything we can't fill is omitted, not teased.
+    const sections: Record<string, { score: number; current?: string }> = {
+      headline: { score: scores.headline, current: data.headline || '' },
+      about: { score: scores.about, current: data.about || data.summary || '' },
+    }
+    const includeExperience = !isManual
+    const includeSkills = !isManual || skillCount > 0
+    if (includeExperience) sections.experience = { score: scores.experience }
+    if (includeSkills) sections.skills = { score: scores.skills }
+
+    const checklist: { label: string; ok: boolean }[] = [
+      { label: 'Headline present', ok: headlineLen > 10 },
+      { label: 'Headline uses the available space (50+ of 220 characters)', ok: headlineLen > 50 },
+      { label: 'About section present', ok: aboutLen > 50 },
+      { label: 'About tells your story (200+ characters)', ok: aboutLen > 200 },
+      { label: 'About covers achievements in depth (500+ characters)', ok: aboutLen > 500 },
+      ...(includeSkills ? [
+        { label: '5+ skills listed', ok: skillCount > 5 },
+        { label: '10+ skills listed for search visibility', ok: skillCount > 10 },
+      ] : []),
+      ...(includeExperience ? [
+        { label: '3+ positions listed', ok: expList.length > 3 },
+        { label: 'Positions include bullet points', ok: expList.some((e: any) => e.bullets && e.bullets.length > 0) },
+      ] : []),
+    ]
+
+    // Weighted average over the sections we scored
+    const weights: Record<string, number> = { headline: 0.25, about: 0.35, experience: 0.2, skills: 0.2 }
+    let weightedSum = 0
+    let totalWeight = 0
+    for (const [key, sec] of Object.entries(sections)) {
+      weightedSum += sec.score * weights[key]
+      totalWeight += weights[key]
+    }
+    const overallScore = totalWeight > 0 ? Math.round(weightedSum / totalWeight) : 0
+
+    setUploadError('')
+    setBaselineResult({ overallScore, sections, checklist })
+  }
 
   const describeError = (err: unknown, fallback: string): string => {
     const classified = classifyAIError(err)
@@ -1409,12 +1509,6 @@ function AnalyzeMode({
   const handleFileUpload = async (file: File) => {
     if (!file.name.endsWith('.pdf')) {
       setUploadError('Please upload a PDF file')
-      return
-    }
-
-    if (!hasApiKey()) {
-      pendingActionRef.current = () => handleFileUpload(file)
-      setKeyModalOpen(true)
       return
     }
 
@@ -1442,17 +1536,12 @@ function AnalyzeMode({
     }
   }
 
+  // Full AI analysis — only reachable through EnhanceWithAI, which owns key/online states
   const handleAnalyze = async () => {
-    if (!hasApiKey()) {
-      pendingActionRef.current = () => handleAnalyze()
-      setKeyModalOpen(true)
-      return
-    }
-
     setIsAnalyzing(true)
     try {
       const result = await analyzeLinkedIn({
-        linkedInData: linkedInPDF,
+        linkedInData: buildProfileData(),
         targetCriteria: {
           targetRole: targetRole || 'General professional role',
           targetIndustry: '',
@@ -1490,7 +1579,9 @@ function AnalyzeMode({
         <Card className="p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-heading text-sm font-bold uppercase tracking-wider">Profile Score</h3>
+              <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                Profile Score <OutputModeLabel mode="ai" />
+              </h3>
               <p className="text-text-muted text-sm">Based on full profile analysis</p>
             </div>
             <div className={`text-4xl font-bold ${getScoreColor(analysis.overallScore)}`}>
@@ -2031,6 +2122,7 @@ function AnalyzeMode({
           className="w-full"
           onClick={() => {
             setAnalysis(null)
+            setBaselineResult(null)
             setLinkedInPDF(null)
           }}
         >
@@ -2040,7 +2132,91 @@ function AnalyzeMode({
     )
   }
 
-  // Show profile preview + analyze button
+  // Keyless checklist analysis results (dictionary-mode heuristics)
+  if (baselineResult) {
+    const sectionLabels: Record<string, string> = {
+      headline: 'Headline',
+      about: 'About',
+      experience: 'Experience',
+      skills: 'Skills',
+    }
+    return (
+      <div className="space-y-6">
+        {/* Overall Score */}
+        <Card className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                Profile Score <OutputModeLabel mode="dictionary" />
+              </h3>
+              <p className="text-text-muted text-sm">Rule-based checklist scoring — no AI involved</p>
+            </div>
+            <div className={`text-4xl font-bold ${getScoreColor(baselineResult.overallScore)}`}>
+              {baselineResult.overallScore}<span className="text-lg text-text-muted">/100</span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Section Breakdown — only the sections we could score */}
+        <Card className="p-6">
+          <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span className="text-gold">&#9678;</span> Section Breakdown
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Object.entries(baselineResult.sections).map(([key, sec]) => (
+              <div key={key} className="p-3 bg-bg-secondary rounded-lg text-center">
+                <p className="text-xs text-text-dim mb-1">{sectionLabels[key] || key}</p>
+                <p className={`text-2xl font-bold ${getScoreColor(sec.score)}`}>{sec.score}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Checklist */}
+        <Card className="p-6">
+          <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+            <span className="text-gold">&#10003;</span> Profile Checklist
+          </h3>
+          <ul className="space-y-2">
+            {baselineResult.checklist.map((item, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-sm">
+                <span className={item.ok ? 'text-status-green' : 'text-text-dim'}>
+                  {item.ok ? '✓' : '○'}
+                </span>
+                <span className={item.ok ? 'text-text-muted' : 'text-text'}>{item.label}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+
+        {/* Optional full AI analysis on the same data */}
+        <div className="flex flex-col sm:flex-row gap-2">
+          <EnhanceWithAI
+            label="✨ Full AI Analysis"
+            busy={isAnalyzing}
+            onEnhance={handleAnalyze}
+            featureNote="Profile analysis uses Claude to score and rewrite your LinkedIn sections."
+            className="flex-1 justify-center"
+          />
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={() => setBaselineResult(null)}
+          >
+            Start Over
+          </Button>
+        </div>
+
+        {uploadError && (
+          <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
+            <p className="text-sm text-status-red">{uploadError}</p>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Show profile preview + analyze actions
   if (linkedInPDF) {
     return (
       <div className="space-y-6">
@@ -2064,32 +2240,34 @@ function AnalyzeMode({
           </div>
         </Card>
 
+        {/* Keyless checklist analysis is the default; AI is the optional enhancement */}
         <Button
           className="w-full"
-          onClick={handleAnalyze}
+          onClick={handleChecklistAnalyze}
           disabled={isAnalyzing}
         >
-          {isAnalyzing ? (
-            <>
-              <span className="animate-spin mr-2">&#10227;</span>
-              Analyzing Your Profile...
-            </>
-          ) : (
-            '✦ Analyze My Profile'
-          )}
+          ◆ Run Profile Checklist
         </Button>
+        {isAnalyzing ? (
+          <div className="w-full py-2.5 text-center text-sm text-text-muted">
+            <span className="animate-spin inline-block mr-2">&#10227;</span>
+            Analyzing Your Profile...
+          </div>
+        ) : (
+          <EnhanceWithAI
+            label="✨ Full AI Analysis"
+            busy={isAnalyzing}
+            onEnhance={handleAnalyze}
+            featureNote="Profile analysis uses Claude to score and rewrite your LinkedIn sections."
+            className="w-full justify-center"
+          />
+        )}
 
-        {/* API key setup modal */}
-        <KeySetupModal
-          isOpen={keyModalOpen}
-          onClose={() => setKeyModalOpen(false)}
-          onKeySaved={() => {
-            const pending = pendingActionRef.current
-            pendingActionRef.current = null
-            pending?.()
-          }}
-          featureNote="Profile analysis uses Claude to score and rewrite your LinkedIn sections."
-        />
+        {uploadError && (
+          <div className="bg-status-red-dim border border-status-red/20 rounded-md p-3">
+            <p className="text-sm text-status-red">{uploadError}</p>
+          </div>
+        )}
       </div>
     )
   }
@@ -2189,13 +2367,16 @@ function AnalyzeMode({
         )}
       </Card>
 
-      {/* Upload Drop Zone */}
+      {/* Upload Drop Zone — PDF import runs on Claude (AI-only feature) */}
       <Card
-        className="p-10 text-center border-dashed border-2 hover:border-gold/50 cursor-pointer transition-colors"
-        onClick={() => document.getElementById('linkedin-pdf')?.click()}
+        className={`p-10 text-center border-dashed border-2 transition-colors ${
+          hasKey ? 'hover:border-gold/50 cursor-pointer' : ''
+        }`}
+        onClick={() => { if (hasKey) document.getElementById('linkedin-pdf')?.click() }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault()
+          if (!hasKey) return
           const file = e.dataTransfer.files[0]
           if (file) handleFileUpload(file)
         }}
@@ -2221,9 +2402,72 @@ function AnalyzeMode({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             <p className="text-text font-medium mb-1">Upload your LinkedIn PDF</p>
-            <p className="text-text-muted text-sm">Drag & drop or click to browse</p>
+            {hasKey ? (
+              <p className="text-text-muted text-sm">Drag & drop or click to browse</p>
+            ) : (
+              <>
+                <p className="text-text-dim text-sm mb-3">
+                  PDF import uses Claude — add a key, or enter your profile manually below.
+                </p>
+                <EnhanceWithAI
+                  label="✨ Import PDF with AI"
+                  onEnhance={() => document.getElementById('linkedin-pdf')?.click()}
+                  featureNote="Reading your LinkedIn PDF uses Claude to extract your profile data."
+                />
+              </>
+            )}
           </>
         )}
+      </Card>
+
+      {/* Manual entry — the keyless analysis path */}
+      <Card className="p-6">
+        <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
+          <span className="text-gold">&#9998;</span> Or Enter Your Profile Manually
+        </h3>
+        <p className="text-xs text-text-dim mb-4">
+          Paste your current LinkedIn headline and About section to run the checklist analysis — works entirely in your browser.
+        </p>
+        <div className="space-y-3">
+          <Input
+            label="Current Headline"
+            value={manualHeadline}
+            onChange={(e) => setManualHeadline(e.target.value)}
+            placeholder="Paste your LinkedIn headline..."
+          />
+          <div className="space-y-1.5">
+            <label className="block font-heading text-xs font-semibold uppercase tracking-wider text-text-muted">
+              Current About Section
+            </label>
+            <textarea
+              autoComplete="off"
+              value={manualAbout}
+              onChange={(e) => setManualAbout(e.target.value)}
+              placeholder="Paste your LinkedIn About section..."
+              className="w-full min-h-[120px] px-3 py-2 bg-bg-secondary border border-border rounded text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-y"
+            />
+          </div>
+          <Input
+            label="Skills (optional, comma-separated)"
+            value={manualSkills}
+            onChange={(e) => setManualSkills(e.target.value)}
+            placeholder="e.g., Project Management, Logistics, Security"
+          />
+          {hasManualData && (
+            <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              <Button className="flex-1" onClick={handleChecklistAnalyze}>
+                ◆ Run Profile Checklist
+              </Button>
+              <EnhanceWithAI
+                label="✨ Full AI Analysis"
+                busy={isAnalyzing}
+                onEnhance={handleAnalyze}
+                featureNote="Profile analysis uses Claude to score and rewrite your LinkedIn sections."
+                className="flex-1 justify-center"
+              />
+            </div>
+          )}
+        </div>
       </Card>
 
       {uploadError && (
@@ -2231,18 +2475,6 @@ function AnalyzeMode({
           <p className="text-sm text-status-red">{uploadError}</p>
         </div>
       )}
-
-      {/* API key setup modal */}
-      <KeySetupModal
-        isOpen={keyModalOpen}
-        onClose={() => setKeyModalOpen(false)}
-        onKeySaved={() => {
-          const pending = pendingActionRef.current
-          pendingActionRef.current = null
-          pending?.()
-        }}
-        featureNote="Reading your LinkedIn PDF uses Claude to extract your profile data."
-      />
     </div>
   )
 }
