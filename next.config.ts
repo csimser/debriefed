@@ -1,46 +1,18 @@
 import type { NextConfig } from 'next'
-import { withSentryConfig } from '@sentry/nextjs'
 
+// Static export — the app is a zero-backend PWA served from GitHub Pages.
+// Security headers (CSP etc.) are set via <meta> tags in the root layout
+// because static hosting cannot set response headers.
 const nextConfig: NextConfig = {
+  output: 'export',
+  trailingSlash: true,
+  poweredByHeader: false,
   typescript: {
     ignoreBuildErrors: true,
   },
-  poweredByHeader: false,
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-          { key: 'X-XSS-Protection', value: '1; mode=block' },
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: https: blob:",
-              "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com",
-              "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.sentry.io",
-              "frame-src 'self' https://js.stripe.com",
-              "worker-src 'self' blob:",
-            ].join('; '),
-          },
-        ],
-      },
-    ]
+  images: {
+    unoptimized: true,
   },
 }
 
-export default withSentryConfig(nextConfig, {
-  // Suppresses source map uploading logs during build
-  silent: true,
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  // Only upload source maps in production builds
-  disableSourceMapUpload: !process.env.SENTRY_AUTH_TOKEN,
-})
+export default nextConfig
