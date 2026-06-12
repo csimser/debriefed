@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { deleteResume } from '@/lib/storage'
 import { ModalShell } from '@/components/ui/ModalShell'
 
 interface DeleteResumeModalProps {
@@ -20,7 +20,6 @@ export function DeleteResumeModal({
   resume,
   onDeleted
 }: DeleteResumeModalProps) {
-  const supabase = createClient()
   const [deleting, setDeleting] = useState(false)
   const [confirmText, setConfirmText] = useState('')
 
@@ -31,16 +30,8 @@ export function DeleteResumeModal({
 
     setDeleting(true)
     try {
-      const { error } = await supabase
-        .from('resumes')
-        .delete()
-        .eq('id', resume.id)
-
-      if (error) {
-        console.error('Delete error:', error)
-        alert(`Failed to delete: ${error.message}`)
-        return
-      }
+      // Removes the resume and all of its saved versions from local storage
+      deleteResume(resume.id)
 
       setConfirmText('')
       onClose()

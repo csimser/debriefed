@@ -7,12 +7,11 @@ import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { Toast } from '@/components/ui/Toast'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
-import { createClient } from '@/lib/supabase/client'
+import { saveSkill, deleteSkill, saveAllSkills, newId } from '@/lib/storage'
 import { getMOSData } from '@/lib/military-mos-data'
 import { getSkillsForPaygrade } from '@/lib/constants/rank-skills'
 
 interface SkillsSectionProps {
-  userId: string
   skills: any[]
   paygrade?: string
   ratingMOS?: string
@@ -23,13 +22,12 @@ interface SkillsSectionProps {
   hint?: string
 }
 
-export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate, isOpen, onToggle, summary, hint }: SkillsSectionProps) {
+export function SkillsSection({ skills, paygrade, ratingMOS, onUpdate, isOpen, onToggle, summary, hint }: SkillsSectionProps) {
   const [newSkill, setNewSkill] = useState('')
   const [saving, setSaving] = useState(false)
   const [showMOSRecommendations, setShowMOSRecommendations] = useState(true)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
   const [confirmDialog, setConfirmDialog] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null)
-  const supabase = createClient()
 
   // Get MOS-specific skill recommendations
   const mosData = useMemo(() => {
@@ -56,27 +54,15 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate, i
 
     setSaving(true)
     try {
-      const { data, error } = await supabase
-        .from('skills')
-        .insert({
-          user_id: userId,
-          name: name.trim(),
-          category: 'general',
-          sort_order: skills.length,
-        })
-        .select()
-        .single()
+      const data = saveSkill({
+        id: newId(),
+        name: name.trim(),
+        category: 'general',
+        sort_order: skills.length,
+      })
 
-      if (error) {
-        console.error('Error adding skill:', error)
-        setToast({ message: `Failed to add skill: ${error.message}`, type: 'error' })
-        return
-      }
-
-      if (data) {
-        onUpdate([...skills, data])
-        setNewSkill('')
-      }
+      onUpdate([...skills, data])
+      setNewSkill('')
     } catch (err: any) {
       console.error('Error:', err)
       setToast({ message: `Error: ${err?.message}`, type: 'error' })
@@ -90,24 +76,14 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate, i
 
     setSaving(true)
     try {
-      const { data, error } = await supabase
-        .from('skills')
-        .insert({
-          user_id: userId,
-          name,
-          category,
-          sort_order: skills.length,
-        })
-        .select()
-        .single()
+      const data = saveSkill({
+        id: newId(),
+        name,
+        category,
+        sort_order: skills.length,
+      })
 
-      if (error) {
-        console.error('Error adding skill:', error)
-        setToast({ message: `Failed to add skill: ${error.message}`, type: 'error' })
-        return
-      }
-
-      if (data) onUpdate([...skills, data])
+      onUpdate([...skills, data])
     } catch (err: any) {
       console.error('Error:', err)
     } finally {
@@ -120,27 +96,16 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate, i
 
     setSaving(true)
     try {
-      const skillsToAdd = mosRecommendedSkills.slice(0, 10).map((name, idx) => ({
-        user_id: userId,
-        name,
-        category: 'technical',
-        sort_order: skills.length + idx,
-      }))
+      const added = mosRecommendedSkills.slice(0, 10).map((name, idx) =>
+        saveSkill({
+          id: newId(),
+          name,
+          category: 'technical',
+          sort_order: skills.length + idx,
+        })
+      )
 
-      const { data, error } = await supabase
-        .from('skills')
-        .insert(skillsToAdd)
-        .select()
-
-      if (error) {
-        console.error('Error adding skills:', error)
-        setToast({ message: `Failed to add skills: ${error.message}`, type: 'error' })
-        return
-      }
-
-      if (data) {
-        onUpdate([...skills, ...data])
-      }
+      onUpdate([...skills, ...added])
     } catch (err: any) {
       console.error('Error:', err)
     } finally {
@@ -149,11 +114,11 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate, i
   }
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('skills').delete().eq('id', id)
-    if (error) {
-      setToast({ message: `Failed to delete: ${error.message}`, type: 'error' })
-    } else {
+    try {
+      deleteSkill(id)
       onUpdate(skills.filter(s => s.id !== id))
+    } catch (err: any) {
+      setToast({ message: `Failed to delete: ${err?.message || 'Unknown error'}`, type: 'error' })
     }
   }
 
@@ -162,11 +127,11 @@ export function SkillsSection({ userId, skills, paygrade, ratingMOS, onUpdate, i
       title: 'Delete All Skills',
       message: 'Are you sure you want to delete all skills? This cannot be undone.',
       onConfirm: async () => {
-        const { error } = await supabase.from('skills').delete().eq('user_id', userId)
-        if (error) {
-          setToast({ message: `Failed to clear: ${error.message}`, type: 'error' })
-        } else {
+        try {
+          saveAllSkills([])
           onUpdate([])
+        } catch (err: any) {
+          setToast({ message: `Failed to clear: ${err?.message || 'Unknown error'}`, type: 'error' })
         }
       },
     })

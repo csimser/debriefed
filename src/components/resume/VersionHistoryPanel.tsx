@@ -3,11 +3,27 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Toast } from '@/components/ui/Toast'
+import {
+  listResumes,
+  listResumeVersions,
+  saveResume,
+  saveResumeVersion,
+  deleteResumeVersion,
+} from '@/lib/storage'
+import type { ResumeVersion } from '@/lib/storage'
 
-interface Version {
-  id: string
-  version_name: string
-  created_at: string
+type Version = ResumeVersion
+
+/** Snapshot of the stored resume kept inside a version (storage shape). */
+function snapshotResumeData(resumeId: string): Record<string, unknown> | null {
+  const resume = listResumes().find((r) => r.id === resumeId)
+  if (!resume) return null
+  return {
+    title: resume.title,
+    type: resume.type,
+    template: resume.template,
+    content: resume.content,
+  }
 }
 
 interface VersionHistoryPanelProps {
@@ -50,10 +66,7 @@ export function VersionHistoryPanel({
     if (!resumeId) return
     setLoading(true)
     try {
-      const res = await fetch(`/api/resume/versions?resumeId=${resumeId}`)
-      if (!res.ok) throw new Error('Failed to fetch')
-      const data = await res.json()
-      setVersions(data.versions || [])
+      setVersions(listResumeVersions(resumeId))
     } catch {
       setToast({ message: 'Failed to load versions', type: 'error' })
     } finally {
@@ -73,16 +86,9 @@ export function VersionHistoryPanel({
       // Force-save current resume state first
       await onBeforeSave()
 
-      const res = await fetch('/api/resume/versions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resumeId,
-          versionName: versionName.trim() || undefined,
-        }),
-      })
-
-      if (!res.ok) throw new Error('Failed to save')
+      const resumeData = snapshotResumeData(resumeId)
+      if (!resumeData) throw new Error('Failed to save')
+      saveResumeVersion(resumeId, versionName.trim() || placeholder, resumeData)
 
       setVersionName('')
       setToast({ message: 'Version saved', type: 'success' })
@@ -99,26 +105,39 @@ export function VersionHistoryPanel({
     try {
       // Auto-save current state before restoring
       await onBeforeSave()
-      await fetch('/api/resume/versions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const currentData = snapshotResumeData(resumeId)
+      if (currentData) {
+        saveResumeVersion(
           resumeId,
-          versionName: `Auto-save before restore \u00b7 ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`,
-        }),
+          `Auto-save before restore \u00b7 ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`,
+          currentData,
+        )
+      }
+
+      // Restore the selected version \u2014 write the snapshot back onto the resume
+      const current = listResumes().find((r) => r.id === resumeId)
+      if (!current) throw new Error('Failed to restore')
+
+      const data = version.resume_data as Record<string, any>
+      const restoredTitle = (data.title ?? data.name ?? current.title) as string
+      const restoredType = (data.type ?? data.resume_type) === 'federal' ? 'federal' : 'civilian'
+      const restoredTemplate = (data.template ?? current.template) as string | undefined
+      const restoredContent = (data.content ?? current.content) as Record<string, unknown>
+
+      saveResume({
+        ...current,
+        title: restoredTitle,
+        type: restoredType,
+        template: restoredTemplate,
+        content: restoredContent,
       })
 
-      // Restore the selected version
-      const res = await fetch('/api/resume/versions/restore', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ versionId: version.id }),
+      onRestore({
+        name: restoredTitle,
+        template: restoredTemplate || 'classic_professional',
+        resume_type: restoredType === 'federal' ? 'federal' : 'private',
+        content: restoredContent,
       })
-
-      if (!res.ok) throw new Error('Failed to restore')
-
-      const data = await res.json()
-      onRestore(data.resume)
       setConfirmRestore(null)
       setToast({ message: `Restored "${version.version_name}"`, type: 'success' })
       await fetchVersions()
@@ -132,11 +151,7 @@ export function VersionHistoryPanel({
   const handleDelete = async (version: Version) => {
     setDeleting(true)
     try {
-      const res = await fetch(`/api/resume/versions/${version.id}`, {
-        method: 'DELETE',
-      })
-
-      if (!res.ok) throw new Error('Failed to delete')
+      deleteResumeVersion(version.id)
 
       setConfirmDelete(null)
       setToast({ message: 'Version deleted', type: 'success' })

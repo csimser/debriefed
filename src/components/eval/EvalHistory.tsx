@@ -9,7 +9,8 @@ import { BulletImportModal } from './BulletImportModal'
 interface EvalHistoryProps {
   uploads: any[]
   experiences: any[]
-  userId: string
+  /** Unused — kept optional for older call sites. */
+  userId?: string
   onImportComplete: () => void
 }
 
@@ -22,7 +23,7 @@ const EVAL_TYPE_NAMES: Record<string, string> = {
   award: 'Award',
 }
 
-export function EvalHistory({ uploads, experiences, userId, onImportComplete }: EvalHistoryProps) {
+export function EvalHistory({ uploads, experiences, onImportComplete }: EvalHistoryProps) {
   const [viewingUpload, setViewingUpload] = useState<any>(null)
 
   if (uploads.length === 0) {
@@ -46,16 +47,16 @@ export function EvalHistory({ uploads, experiences, userId, onImportComplete }: 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded flex items-center justify-center ${
-                  upload.status === 'complete' ? 'bg-status-green-dim' :
+                  (upload.status === 'complete' || upload.status === 'completed') ? 'bg-status-green-dim' :
                   upload.status === 'processing' ? 'bg-status-amber-dim' :
                   'bg-status-red-dim'
                 }`}>
                   <span className={
-                    upload.status === 'complete' ? 'text-status-green' :
+                    (upload.status === 'complete' || upload.status === 'completed') ? 'text-status-green' :
                     upload.status === 'processing' ? 'text-status-amber' :
                     'text-status-red'
                   }>
-                    {upload.status === 'complete' ? '✓' : upload.status === 'processing' ? '⟳' : '✕'}
+                    {(upload.status === 'complete' || upload.status === 'completed') ? '✓' : upload.status === 'processing' ? '⟳' : '✕'}
                   </span>
                 </div>
 
@@ -71,7 +72,7 @@ export function EvalHistory({ uploads, experiences, userId, onImportComplete }: 
               </div>
 
               <div className="flex items-center gap-2">
-                {upload.status === 'complete' && upload.extracted_data?.length > 0 && (
+                {(upload.status === 'complete' || upload.status === 'completed') && upload.extracted_data?.length > 0 && (
                   <>
                     <Badge variant="gold">{upload.extracted_data.length} bullets</Badge>
                     <Button size="sm" variant="secondary" onClick={() => setViewingUpload(upload)}>
@@ -90,7 +91,6 @@ export function EvalHistory({ uploads, experiences, userId, onImportComplete }: 
         <BulletImportModal
           bullets={viewingUpload.extracted_data || []}
           experiences={experiences}
-          userId={userId}
           onClose={() => setViewingUpload(null)}
           onImport={onImportComplete}
         />

@@ -6,18 +6,18 @@ import { populateTemplate, cleanTemplateOutput, personalizeStaticSummary, Profil
 import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import { polishSummary } from '@/lib/dictionary/outputPolisher'
 import type { DictProfessionalSummary, DictRankEquivalent } from '@/lib/dictionary/types'
-import { getUserTier, isPaidTier } from '@/lib/tier-utils'
-import { UpgradeLink } from '@/components/modals/UpgradeModal'
+import { enhanceSummary } from '@/lib/ai/summary'
+import { classifyAIError, hasApiKey } from '@/lib/ai/client'
+import { KeySetupModal } from '@/components/settings/KeySetupModal'
 
 interface ProfessionalSummaryEditorProps {
   value: string
   onChange: (value: string) => void
   profile: ProfileData
-  userPlan?: string
 }
 
-export function ProfessionalSummaryEditor({ value, onChange, profile, userPlan }: ProfessionalSummaryEditorProps) {
-  const isFree = !isPaidTier(getUserTier({ tier: userPlan }))
+export function ProfessionalSummaryEditor({ value, onChange, profile }: ProfessionalSummaryEditorProps) {
+  const [keyModalOpen, setKeyModalOpen] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [isEnhancing, setIsEnhancing] = useState(false)
@@ -142,26 +142,32 @@ export function ProfessionalSummaryEditor({ value, onChange, profile, userPlan }
   const handleEnhanceWithAI = async () => {
     if (!value.trim()) return
 
+    // AI action — requires the user's Anthropic API key
+    if (!hasApiKey()) {
+      setKeyModalOpen(true)
+      return
+    }
+
     setIsEnhancing(true)
     try {
-      const res = await fetch('/api/enhance-summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ summary: value, profile })
+      const { enhanced } = await enhanceSummary({
+        summary: value,
+        profile: {
+          mos: profile?.mos,
+          branch: profile?.branch,
+          targetIndustry: profile?.targetIndustry,
+          targetRole: profile?.targetRole,
+          yearsOfService: profile?.yearsOfService,
+        },
       })
 
-      if (!res.ok) {
-        throw new Error('Enhancement failed')
-      }
-
-      const { enhanced } = await res.json()
       if (enhanced) {
         onChange(enhanced)
         setSummarySource('ai')
       }
     } catch (error) {
       console.error('Enhancement failed:', error)
-      alert('Failed to enhance summary. Please try again.')
+      alert(classifyAIError(error).message)
     } finally {
       setIsEnhancing(false)
     }
@@ -211,34 +217,35 @@ export function ProfessionalSummaryEditor({ value, onChange, profile, userPlan }
             {showTemplates ? 'Hide Templates' : 'Choose Template'}
           </button>
 
-          {/* Enhance Button - Secondary/Fallback (paid only) */}
-          {isFree ? (
-            <span className="text-xs text-text-dim">
-              <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">Upgrade to Core</UpgradeLink>
-              {' '}for AI enhancement
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={handleEnhanceWithAI}
-              disabled={isEnhancing || !value.trim()}
-              className="flex items-center gap-2 px-4 py-2 bg-gold/20 hover:bg-gold/30 border border-gold/50 disabled:bg-bg-tertiary disabled:border-border disabled:cursor-not-allowed text-gold disabled:text-text-dim font-semibold rounded text-sm transition-colors"
-            >
-              {isEnhancing ? (
-                <>
-                  <span className="animate-spin">&#8635;</span>
-                  Enhancing...
-                </>
-              ) : (
-                <>
-                  <span>&#10024;</span>
-                  Enhance
-                </>
-              )}
-            </button>
-          )}
+          {/* Enhance Button - Secondary/Fallback */}
+          <button
+            type="button"
+            onClick={handleEnhanceWithAI}
+            disabled={isEnhancing || !value.trim()}
+            className="flex items-center gap-2 px-4 py-2 bg-gold/20 hover:bg-gold/30 border border-gold/50 disabled:bg-bg-tertiary disabled:border-border disabled:cursor-not-allowed text-gold disabled:text-text-dim font-semibold rounded text-sm transition-colors"
+          >
+            {isEnhancing ? (
+              <>
+                <span className="animate-spin">&#8635;</span>
+                Enhancing...
+              </>
+            ) : (
+              <>
+                <span>&#10024;</span>
+                Enhance
+              </>
+            )}
+          </button>
         </div>
       </div>
+
+      {/* API key setup — shown when an AI action is attempted without a key */}
+      <KeySetupModal
+        isOpen={keyModalOpen}
+        onClose={() => setKeyModalOpen(false)}
+        onKeySaved={handleEnhanceWithAI}
+        featureNote="Summary enhancement uses Claude to refine your professional summary."
+      />
 
       {/* Template Selector Panel */}
       {showTemplates && (

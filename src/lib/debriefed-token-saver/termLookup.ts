@@ -2,7 +2,7 @@ import terms from './military-terms-dictionary.json'
 
 const acronyms = terms.acronyms as Record<string, string>
 const generalTerms = terms.terms as Record<string, string>
-const ranks = terms.ranks as Record<string, Record<string, { abbreviation: string; civilian_equivalent: string }>>
+const ranks = terms.ranks as unknown as Record<string, Record<string, { abbreviation: string; civilian_equivalent: string }>>
 
 export function translateTerm(militaryTerm: string): string | null {
   const normalized = militaryTerm.toLowerCase().trim()

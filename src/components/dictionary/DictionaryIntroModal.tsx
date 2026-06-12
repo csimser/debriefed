@@ -1,62 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Card } from '@/components/ui/Card'
+import { useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { ModalShell } from '@/components/ui/ModalShell'
-import { createClient } from '@/lib/supabase/client'
+import { saveSettings } from '@/lib/storage'
 
-const LS_KEY = 'dictionary_intro_dismissed'
-
-interface DictionaryIntroModalProps {
-  userId: string
-}
-
-export function DictionaryIntroModal({ userId }: DictionaryIntroModalProps) {
+export function DictionaryIntroModal() {
   const [dismissed, setDismissed] = useState(false)
-  const router = useRouter()
-  const supabase = createClient()
 
-  // Check localStorage on mount — prevents re-showing if DB update failed previously
-  useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem(LS_KEY) === 'true') {
-      setDismissed(true)
-    }
-  }, [])
-
-  const markShown = async () => {
-    // localStorage fallback — survives even if DB update fails
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(LS_KEY, 'true')
-    }
-
-    console.log('[dictionary-intro] Updating dictionary_intro_shown for user:', userId)
-    const { error } = await supabase
-      .from('profiles')
-      .update({ dictionary_intro_shown: true })
-      .eq('user_id', userId)
-
-    if (error) {
-      console.error('[dictionary-intro] Failed to update dictionary_intro_shown:', error.message, error)
-    } else {
-      console.log('[dictionary-intro] Successfully updated dictionary_intro_shown')
-    }
-  }
-
-  const handleDismiss = async () => {
+  const handleDismiss = () => {
     setDismissed(true)
-    await markShown()
-  }
-
-  const handleContribute = async () => {
-    setDismissed(true)
-    await markShown()
-    router.push('/career-tools?tool=community')
+    saveSettings({ dictionary_intro_shown: true })
   }
 
   return (
-    <ModalShell isOpen={!dismissed} onClose={handleDismiss} title="Community Dictionary">
+    <ModalShell isOpen={!dismissed} onClose={handleDismiss} title="Translation Dictionary">
       <div className="bg-bg-card border-t md:border border-border rounded-t-2xl md:rounded-lg w-full shadow-xl">
         {/* Mobile drag indicator */}
         <div className="md:hidden w-12 h-1 bg-border rounded-full mx-auto mt-3" />
@@ -73,41 +31,30 @@ export function DictionaryIntroModal({ userId }: DictionaryIntroModalProps) {
 
           {/* Heading */}
           <h2 className="font-heading text-lg font-bold uppercase tracking-wider text-center mb-4">
-            Community Dictionary
+            Translation Dictionary
           </h2>
 
           {/* Body */}
           <div className="space-y-3 text-sm text-text-muted leading-relaxed mb-6">
             <p>
-              Debriefed translates military jargon to civilian language using a dictionary built and maintained by veterans like you. The free tier is powered almost entirely by this dictionary — it&apos;s what makes Debriefed accessible to every veteran, regardless of budget.
+              Debriefed translates military jargon to civilian language using a dictionary built and maintained by veterans. The dictionary ships with the app, so the core tools work entirely offline — no AI required, no cost, no account.
             </p>
             <p>
-              If you ever see a wrong or missing translation, you can submit a correction or add a new term right from the app.
+              For deeper AI-powered features, you can connect your own Anthropic API key in Settings. Dictionary translations are always free.
             </p>
             <p className="text-text font-medium">
-              Your submissions help every veteran who comes after you.
-            </p>
-            <p>
-              Contributing is always free — submissions never cost credits.
+              Everything stays in your browser. Your data never leaves your device.
             </p>
           </div>
 
           {/* Buttons — stack on mobile */}
           <div className="flex flex-col-reverse md:flex-row gap-3 safe-area-inset-bottom">
             <Button
-              variant="secondary"
               onClick={handleDismiss}
               fullWidthMobile
               className="flex-1"
             >
               Got It
-            </Button>
-            <Button
-              onClick={handleContribute}
-              fullWidthMobile
-              className="flex-1"
-            >
-              Contribute Now
             </Button>
           </div>
         </div>

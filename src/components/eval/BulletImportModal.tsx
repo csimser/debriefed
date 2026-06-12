@@ -5,21 +5,21 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ModalShell } from '@/components/ui/ModalShell'
-import { createClient } from '@/lib/supabase/client'
+import { listExperiences, saveExperience, newId } from '@/lib/storage'
 
 interface BulletImportModalProps {
   bullets: any[]
   experiences: any[]
-  userId: string
+  /** Unused — kept optional for older call sites. */
+  userId?: string
   onClose: () => void
   onImport: () => void
 }
 
-export function BulletImportModal({ bullets, experiences, userId, onClose, onImport }: BulletImportModalProps) {
+export function BulletImportModal({ bullets, experiences, onClose, onImport }: BulletImportModalProps) {
   const [selectedBullets, setSelectedBullets] = useState<Set<number>>(new Set())
   const [targetExperienceId, setTargetExperienceId] = useState<string>('')
   const [importing, setImporting] = useState(false)
-  const supabase = createClient()
 
   const toggleBullet = (idx: number) => {
     const newSelected = new Set(selectedBullets)
@@ -41,18 +41,19 @@ export function BulletImportModal({ bullets, experiences, userId, onClose, onImp
     setImporting(true)
 
     try {
-      const bulletsToInsert = Array.from(selectedBullets).map((idx, order) => ({
-        experience_id: targetExperienceId,
-        original_text: bullets[idx].original,
-        source: 'eval_upload',
-        sort_order: order,
-      }))
+      // Append the selected bullets to the chosen experience in local storage
+      const target = listExperiences().find((exp) => exp.id === targetExperienceId)
+      if (target) {
+        const existingCount = target.bullets.length
+        const bulletsToInsert = Array.from(selectedBullets).map((idx, order) => ({
+          id: newId(),
+          experience_id: targetExperienceId,
+          original_text: bullets[idx].original,
+          source: 'eval_upload',
+          sort_order: existingCount + order,
+        }))
 
-      const { error } = await supabase
-        .from('experience_bullets')
-        .insert(bulletsToInsert)
-
-      if (!error) {
+        saveExperience({ ...target, bullets: [...target.bullets, ...bulletsToInsert] })
         onImport()
         onClose()
       }

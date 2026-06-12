@@ -3,12 +3,10 @@
 import { useState } from 'react'
 import { SELECTABLE_TEMPLATES, TemplateId } from '@/lib/templates'
 import { cn } from '@/lib/utils'
-import { getUserTier, isPaidTier } from '@/lib/tier-utils'
 
 interface TemplateSelectorProps {
   selected: TemplateId
   onSelect: (id: TemplateId) => void
-  userPlan: string
 }
 
 /** Lightweight CSS-only thumbnails representing each template layout */
@@ -85,9 +83,7 @@ function TemplateThumbnail({ templateId, isSelected }: { templateId: string; isS
   }
 }
 
-export function TemplateSelector({ selected, onSelect, userPlan }: TemplateSelectorProps) {
-  const userTier = getUserTier({ tier: userPlan })
-  const hasPremiumAccess = isPaidTier(userTier)
+export function TemplateSelector({ selected, onSelect }: TemplateSelectorProps) {
   const [justSelected, setJustSelected] = useState<string | null>(null)
 
   const handleSelect = (id: TemplateId) => {
@@ -99,23 +95,20 @@ export function TemplateSelector({ selected, onSelect, userPlan }: TemplateSelec
   return (
     <div className="flex gap-2 overflow-x-auto py-1 scrollbar-none">
       {Object.values(SELECTABLE_TEMPLATES).map((template) => {
-        const isLocked = !template.free && !hasPremiumAccess
         const isSelected = selected === template.id
         const isPopping = justSelected === template.id
 
         return (
           <button
             key={template.id}
-            onClick={() => !isLocked && handleSelect(template.id as TemplateId)}
-            disabled={isLocked}
+            onClick={() => handleSelect(template.id as TemplateId)}
             className={cn(
               'relative flex-shrink-0 rounded-lg border p-0.5 transition-all duration-200 ease-out',
               isSelected
                 ? 'border-gold ring-1 ring-gold/30'
                 : 'border-border hover:border-border-bright',
-              !isLocked && 'hover:scale-[1.08]',
-              isPopping && 'scale-[1.05]',
-              isLocked && 'cursor-not-allowed'
+              'hover:scale-[1.08]',
+              isPopping && 'scale-[1.05]'
             )}
             style={isPopping ? {
               boxShadow: '0 0 0 4px rgba(212,168,75,1)',
@@ -124,19 +117,10 @@ export function TemplateSelector({ selected, onSelect, userPlan }: TemplateSelec
           >
             <div className="w-12 h-16 rounded overflow-hidden relative">
               <TemplateThumbnail templateId={template.id} isSelected={isSelected} />
-              {/* Locked stripe overlay */}
-              {isLocked && (
-                <div
-                  className="absolute inset-0 opacity-60"
-                  style={{
-                    background: 'repeating-linear-gradient(135deg, transparent, transparent 3px, rgba(0,0,0,0.15) 3px, rgba(0,0,0,0.15) 5px)',
-                  }}
-                />
-              )}
             </div>
             <div className={cn(
               'text-[8px] font-heading font-bold uppercase tracking-wider text-center mt-0.5 truncate w-12',
-              isSelected ? 'text-gold' : isLocked ? 'text-text-dim' : 'text-text-muted'
+              isSelected ? 'text-gold' : 'text-text-muted'
             )}>
               {template.name === 'Classic Professional' ? 'Classic' : template.name === 'Two Column' ? '2-Col' : template.name}
             </div>

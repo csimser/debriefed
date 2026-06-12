@@ -5,7 +5,7 @@ import { CollapsibleSection } from '../CollapsibleSection'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Card } from '@/components/ui/Card'
-import { createClient } from '@/lib/supabase/client'
+import { saveCertification, deleteCertification, newId } from '@/lib/storage'
 import { getMOSData } from '@/lib/military-mos-data'
 
 const QUICK_CERTS = {
@@ -66,7 +66,6 @@ const CERT_ISSUERS: Record<string, string> = {
 }
 
 interface CertificationsSectionProps {
-  userId: string
   certifications: any[]
   userMOS?: string
   onUpdate: (certifications: any[]) => void
@@ -76,12 +75,11 @@ interface CertificationsSectionProps {
   hint?: string
 }
 
-export function CertificationsSection({ userId, certifications, userMOS, onUpdate, isOpen, onToggle, summary, hint }: CertificationsSectionProps) {
+export function CertificationsSection({ certifications, userMOS, onUpdate, isOpen, onToggle, summary, hint }: CertificationsSectionProps) {
   const [adding, setAdding] = useState(false)
   const [newCert, setNewCert] = useState({ name: '', issuing_organization: '', issue_date: '', expiration_date: '' })
   const [showMOSRecommendations, setShowMOSRecommendations] = useState(true)
   const [saving, setSaving] = useState(false)
-  const supabase = createClient()
 
   // Get MOS-specific certification recommendations
   const mosData = useMemo(() => {
@@ -105,24 +103,16 @@ export function CertificationsSection({ userId, certifications, userMOS, onUpdat
 
     setSaving(true)
     try {
-      const { data, error } = await supabase
-        .from('certifications')
-        .insert({ user_id: userId, ...certData })
-        .select()
-        .single()
+      const data = saveCertification({
+        id: newId(),
+        ...certData,
+        sort_order: certifications.length,
+      } as any)
 
-      if (error) {
-        console.error('Error adding certification:', error)
-        alert(`Failed to add certification: ${error.message}`)
-        return
-      }
-
-      if (data) {
-        onUpdate([...certifications, data])
-        if (!name) {
-          setNewCert({ name: '', issuing_organization: '', issue_date: '', expiration_date: '' })
-          setAdding(false)
-        }
+      onUpdate([...certifications, data])
+      if (!name) {
+        setNewCert({ name: '', issuing_organization: '', issue_date: '', expiration_date: '' })
+        setAdding(false)
       }
     } catch (err: any) {
       console.error('Exception:', err)
@@ -133,8 +123,8 @@ export function CertificationsSection({ userId, certifications, userMOS, onUpdat
   }
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('certifications').delete().eq('id', id)
-    if (!error) onUpdate(certifications.filter(c => c.id !== id))
+    deleteCertification(id)
+    onUpdate(certifications.filter(c => c.id !== id))
   }
 
   const handleAddMOSCert = async (name: string) => {
@@ -143,27 +133,19 @@ export function CertificationsSection({ userId, certifications, userMOS, onUpdat
     setSaving(true)
     try {
       const issuer = CERT_ISSUERS[name] || ''
-      const { data, error } = await supabase
-        .from('certifications')
-        .insert({
-          user_id: userId,
-          name,
-          issuing_organization: issuer,
-          issue_date: '',
-          expiration_date: ''
-        })
-        .select()
-        .single()
+      const data = saveCertification({
+        id: newId(),
+        name,
+        issuing_organization: issuer,
+        issue_date: '',
+        expiration_date: '',
+        sort_order: certifications.length,
+      } as any)
 
-      if (error) {
-        console.error('Error adding MOS cert:', error)
-        alert(`Failed to add certification: ${error.message}`)
-        return
-      }
-
-      if (data) {
-        onUpdate([...certifications, data])
-      }
+      onUpdate([...certifications, data])
+    } catch (err: any) {
+      console.error('Error adding MOS cert:', err)
+      alert(`Failed to add certification: ${err?.message || 'Unknown error'}`)
     } finally {
       setSaving(false)
     }
@@ -174,28 +156,21 @@ export function CertificationsSection({ userId, certifications, userMOS, onUpdat
 
     setSaving(true)
     try {
-      const certsToAdd = mosRecommendedCerts.slice(0, 8).map(name => ({
-        user_id: userId,
-        name,
-        issuing_organization: CERT_ISSUERS[name] || '',
-        issue_date: '',
-        expiration_date: '',
-      }))
+      const added = mosRecommendedCerts.slice(0, 8).map((name, idx) =>
+        saveCertification({
+          id: newId(),
+          name,
+          issuing_organization: CERT_ISSUERS[name] || '',
+          issue_date: '',
+          expiration_date: '',
+          sort_order: certifications.length + idx,
+        } as any)
+      )
 
-      const { data, error } = await supabase
-        .from('certifications')
-        .insert(certsToAdd)
-        .select()
-
-      if (error) {
-        console.error('Error adding all MOS certs:', error)
-        alert(`Failed to add certifications: ${error.message}`)
-        return
-      }
-
-      if (data) {
-        onUpdate([...certifications, ...data])
-      }
+      onUpdate([...certifications, ...added])
+    } catch (err: any) {
+      console.error('Error adding all MOS certs:', err)
+      alert(`Failed to add certifications: ${err?.message || 'Unknown error'}`)
     } finally {
       setSaving(false)
     }

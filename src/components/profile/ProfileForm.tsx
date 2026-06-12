@@ -1,7 +1,18 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import {
+  saveProfile as persistProfile,
+  saveExperience,
+  saveEducation,
+  saveCertification,
+  saveSkill,
+  listExperiences,
+  listEducation,
+  listCertifications,
+  listSkills,
+  newId,
+} from '@/lib/storage'
 import { ExperienceSection } from './sections/ExperienceSection'
 import { EducationSection } from './sections/EducationSection'
 import { CertificationsSection } from './sections/CertificationsSection'
@@ -19,7 +30,6 @@ import { US_STATES } from '@/lib/constants/states'
 import { BRANCHES as MILITARY_BRANCHES, PAYGRADES as MILITARY_PAYGRADES, PAYGRADE_TO_RANK } from '@/lib/constants/military'
 
 interface ProfileFormProps {
-  userId: string
   initialData: {
     profile: any
     experiences: any[]
@@ -27,11 +37,7 @@ interface ProfileFormProps {
     certifications: any[]
     skills: any[]
   }
-  resumeImportUsage?: number
-  resumeImportLimit?: number
-  bulletTranslationUsage?: { used: number; limit: number; remaining: number; allowed: boolean }
   userBranch?: string
-  userPlan?: string
 }
 
 // Use consistent military constants (with empty option for select)
@@ -138,9 +144,7 @@ const SECTION_HINTS: Record<SectionKey, string> = {
 
 const ALL_SECTIONS: SectionKey[] = ['personal', 'military', 'career', 'summary', 'experience', 'education', 'certifications', 'skills']
 
-export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImportLimit, bulletTranslationUsage, userBranch, userPlan }: ProfileFormProps) {
-  const supabase = createClient()
-
+export function ProfileForm({ initialData, userBranch }: ProfileFormProps) {
   // Initialize state from initialData
   const profileData = initialData?.profile || initialData
 
@@ -191,23 +195,16 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
     if (!recoveryFirstName.trim() || !recoveryLastName.trim()) return
     setSavingRecovery(true)
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          first_name: recoveryFirstName.trim(),
-          last_name: recoveryLastName.trim(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId)
-
-      if (!error) {
-        setProfile(prev => ({
-          ...prev,
-          first_name: recoveryFirstName.trim(),
-          last_name: recoveryLastName.trim(),
-        }))
-        setShowNameRecovery(false)
-      }
+      persistProfile({
+        first_name: recoveryFirstName.trim(),
+        last_name: recoveryLastName.trim(),
+      })
+      setProfile(prev => ({
+        ...prev,
+        first_name: recoveryFirstName.trim(),
+        last_name: recoveryLastName.trim(),
+      }))
+      setShowNameRecovery(false)
     } catch (err) {
       console.error('Name recovery save failed:', err)
     } finally {
@@ -267,19 +264,10 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
       professional_summary: data.professional_summary || null,
       target_industry: data.target_industry || null,
       target_role: data.target_role || null,
-      updated_at: new Date().toISOString(),
     }
 
-    const result = await supabase
-      .from('profiles')
-      .update(profilePayload)
-      .eq('user_id', userId)
-      .select()
-
-    if (result.error) {
-      throw new Error(result.error.message)
-    }
-  }, [supabase, userId])
+    persistProfile(profilePayload)
+  }, [])
 
   // Hook up autosave (1.5 second debounce)
   const { autosaveStatus } = useAutosave(profile, saveProfile, 1500)
@@ -333,17 +321,11 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
     }
 
     if (Object.keys(updates).length > 0) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('user_id', userId)
-
-      if (!profileError) {
-        setProfile(prev => ({ ...prev, ...updates }))
-        // If names were updated, clear the recovery prompt
-        if (updates.first_name || updates.last_name) {
-          setShowNameRecovery(false)
-        }
+      persistProfile(updates)
+      setProfile(prev => ({ ...prev, ...updates }))
+      // If names were updated, clear the recovery prompt
+      if (updates.first_name || updates.last_name) {
+        setShowNameRecovery(false)
       }
     }
 
@@ -362,52 +344,36 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
       for (let i = 0; i < newExps.length; i++) {
         const exp = newExps[i]
         const isMilitary = exp.employment_type === 'military'
+        const experienceId = newId()
 
-        const { data: insertedExp, error: expError } = await supabase
-          .from('experience')
-          .insert({
-            user_id: userId,
-            employment_type: exp.employment_type || 'civilian',
-            job_title: exp.job_title,
-            civilian_title: exp.civilian_title || exp.job_title,
-            organization: isMilitary ? exp.organization : null,
-            company_name: !isMilitary ? exp.organization : null,
-            city: exp.city || null,
-            state: exp.state || null,
-            location: exp.city && exp.state ? `${exp.city}, ${exp.state}` : null,
-            start_date: exp.start_date || null,
-            end_date: exp.is_current ? null : exp.end_date || null,
-            is_current: exp.is_current || false,
-            hours_per_week: 40,
-            sort_order: startOrder + i,
-          })
-          .select()
-          .single()
-
-        if (expError) continue
-
-        if (insertedExp && exp.bullets?.length > 0) {
-          const bulletsToInsert = exp.bullets.map((text: string, bIdx: number) => ({
-            experience_id: insertedExp.id,
+        saveExperience({
+          id: experienceId,
+          employment_type: exp.employment_type || 'civilian',
+          job_title: exp.job_title,
+          civilian_title: exp.civilian_title || exp.job_title,
+          organization: isMilitary ? exp.organization : null,
+          company_name: !isMilitary ? exp.organization : null,
+          city: exp.city || null,
+          state: exp.state || null,
+          location: exp.city && exp.state ? `${exp.city}, ${exp.state}` : null,
+          start_date: exp.start_date || null,
+          end_date: exp.is_current ? null : exp.end_date || null,
+          is_current: exp.is_current || false,
+          hours_per_week: 40,
+          sort_order: startOrder + i,
+          bullets: (exp.bullets || []).map((text: string, bIdx: number) => ({
+            id: newId(),
+            experience_id: experienceId,
             original_text: text,
             translated_text: text,
             sort_order: bIdx,
             status: 'accepted',
-          }))
-          await supabase.from('experience_bullets').insert(bulletsToInsert)
-        }
+          })),
+        })
       }
 
       // Refresh experiences
-      const { data: updatedExp } = await supabase
-        .from('experience')
-        .select('*, experience_bullets(*)')
-        .eq('user_id', userId)
-        .order('sort_order')
-
-      if (updatedExp) {
-        setExperiences(updatedExp.map(exp => ({ ...exp, bullets: exp.experience_bullets })))
-      }
+      setExperiences(listExperiences())
     }
 
     // ─── Education (dedup by degree_type + school_name) ──────────
@@ -422,7 +388,7 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
           return !existingEdu.has(key)
         })
         .map((edu: any, idx: number) => ({
-          user_id: userId,
+          id: newId(),
           school_name: edu.school_name || null,
           degree_type: edu.degree_type || null,
           field_of_study: edu.field_of_study || null,
@@ -431,13 +397,8 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
         }))
 
       if (newEdu.length > 0) {
-        await supabase.from('education').insert(newEdu)
-        const { data: updatedEdu } = await supabase
-          .from('education')
-          .select('*')
-          .eq('user_id', userId)
-          .order('sort_order')
-        if (updatedEdu) setEducation(updatedEdu)
+        newEdu.forEach((edu: any) => saveEducation(edu))
+        setEducation(listEducation())
       }
     }
 
@@ -450,20 +411,15 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
       const newCerts = data.certifications
         .filter((cert: any) => !existingCerts.has(cert.name?.toLowerCase()))
         .map((cert: any, idx: number) => ({
-          user_id: userId,
+          id: newId(),
           name: cert.name,
           issuing_organization: cert.issuing_organization || null,
           sort_order: certifications.length + idx,
         }))
 
       if (newCerts.length > 0) {
-        await supabase.from('certifications').insert(newCerts)
-        const { data: updatedCerts } = await supabase
-          .from('certifications')
-          .select('*')
-          .eq('user_id', userId)
-          .order('sort_order')
-        if (updatedCerts) setCertifications(updatedCerts)
+        newCerts.forEach((cert: any) => saveCertification(cert))
+        setCertifications(listCertifications())
       }
     }
 
@@ -479,20 +435,15 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
           return !existingSkillNames.has(name?.toLowerCase())
         })
         .map((skill: any, idx: number) => ({
-          user_id: userId,
+          id: newId(),
           name: typeof skill === 'string' ? skill : skill.name,
           category: typeof skill === 'string' ? 'general' : (skill.category || 'general'),
           sort_order: skills.length + idx,
         }))
 
       if (newSkills.length > 0) {
-        await supabase.from('skills').insert(newSkills)
-        const { data: updatedSkills } = await supabase
-          .from('skills')
-          .select('*')
-          .eq('user_id', userId)
-          .order('sort_order')
-        if (updatedSkills) setSkills(updatedSkills)
+        newSkills.forEach((skill: any) => saveSkill(skill))
+        setSkills(listSkills())
       }
     }
   }
@@ -900,21 +851,17 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
           value={profile.professional_summary}
           onChange={(value) => updateField('professional_summary', value)}
           profile={profileDataForTemplates}
-          userPlan={userPlan}
         />
       </CollapsibleSection>
 
       {/* Experience Section */}
       <ExperienceSection
-        userId={userId}
         experiences={experiences}
         onUpdate={setExperiences}
         pendingBullets={pendingBullets}
         onBulletsSaved={() => setPendingBullets([])}
-        bulletTranslationUsage={bulletTranslationUsage}
         userBranch={userBranch}
         userPaygrade={profile.paygrade}
-        userPlan={userPlan}
         isOpen={openSection === 'experience'}
         onToggle={() => handleSectionToggle('experience')}
         summary={sectionSummary('experience')}
@@ -923,7 +870,6 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
 
       {/* Education Section */}
       <EducationSection
-        userId={userId}
         education={education}
         onUpdate={setEducation}
         isOpen={openSection === 'education'}
@@ -934,7 +880,6 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
 
       {/* Certifications Section */}
       <CertificationsSection
-        userId={userId}
         certifications={certifications}
         userMOS={profile.rating_mos}
         onUpdate={setCertifications}
@@ -946,7 +891,6 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
 
       {/* Skills Section */}
       <SkillsSection
-        userId={userId}
         skills={skills}
         paygrade={profile.paygrade}
         ratingMOS={profile.rating_mos}
@@ -962,8 +906,6 @@ export function ProfileForm({ userId, initialData, resumeImportUsage, resumeImpo
         isOpen={showResumeImport}
         onClose={() => setShowResumeImport(false)}
         onImport={handleResumeImport}
-        currentUsage={resumeImportUsage}
-        usageLimit={resumeImportLimit}
         existingExperiences={experiences}
         existingSkills={skills}
         existingCertifications={certifications}

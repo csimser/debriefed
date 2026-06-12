@@ -1,11 +1,26 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { DEGREE_TYPES, matchDegreeType } from '@/lib/constants/education'
-import { UpgradeLink } from '@/components/modals/UpgradeModal'
+import { extractResumeText } from '@/lib/ai/visionExtract'
+import { parseResumeText } from '@/lib/ai/importResume'
+import { classifyAIError, hasApiKey } from '@/lib/ai/client'
+import { KeySetupModal } from '@/components/settings/KeySetupModal'
+
+/** Read a File as base64 (data: prefix stripped). */
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = reader.result as string
+      resolve(dataUrl.split(',')[1])
+    }
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.readAsDataURL(file)
+  })
+}
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -54,8 +69,6 @@ interface ResumeImportModalProps {
   isOpen: boolean
   onClose: () => void
   onImport: (data: ImportData) => Promise<void>
-  currentUsage?: number
-  usageLimit?: number
   existingExperiences?: any[]
   existingSkills?: any[]
   existingCertifications?: any[]
@@ -69,16 +82,12 @@ export function ResumeImportModal({
   isOpen,
   onClose,
   onImport,
-  currentUsage = 0,
-  usageLimit = 3,
   existingExperiences = [],
   existingSkills = [],
   existingCertifications = [],
   existingEducation = [],
   userBranch,
 }: ResumeImportModalProps) {
-  const remaining = Math.max(0, usageLimit - currentUsage)
-
   // Step state
   const [step, setStep] = useState<Step>('upload')
   const [inputTab, setInputTab] = useState<'file' | 'paste'>('file')
@@ -93,8 +102,24 @@ export function ResumeImportModal({
   // Parsed data state
   const [importData, setImportData] = useState<ImportData | null>(null)
   const [aiUsed, setAiUsed] = useState(false)
-  const [aiLimitHit, setAiLimitHit] = useState(false)
   const [editingEduIdx, setEditingEduIdx] = useState<number | null>(null)
+
+  // API key gating — remembers the blocked action so it can re-run after key save
+  const [keyModalOpen, setKeyModalOpen] = useState(false)
+  const pendingActionRef = useRef<(() => void) | null>(null)
+
+  const requireApiKey = (action: () => void): boolean => {
+    if (hasApiKey()) return true
+    pendingActionRef.current = action
+    setKeyModalOpen(true)
+    return false
+  }
+
+  const handleKeySaved = () => {
+    const action = pendingActionRef.current
+    pendingActionRef.current = null
+    action?.()
+  }
 
   // Success state
   const [importSummary, setImportSummary] = useState('')
@@ -125,7 +150,6 @@ export function ResumeImportModal({
   }
 
   const handleExtractText = async () => {
-    setProcessing(true)
     setError('')
 
     try {
@@ -133,33 +157,35 @@ export function ResumeImportModal({
         const text = pasteText.trim()
         if (text.length < 100) {
           setError("This doesn't look like a full resume. Did you paste everything?")
-          setProcessing(false)
           return
         }
         setExtractedText(text)
         setStep('preview')
       } else if (file) {
-        const formData = new FormData()
-        formData.append('file', file)
+        const isPDF = file.type === 'application/pdf'
 
-        const res = await fetch('/api/import-resume/extract-text', {
-          method: 'POST',
-          body: formData,
-        })
+        // PDF extraction runs Claude vision — requires the user's API key.
+        // DOCX is parsed locally (mammoth), no key needed.
+        if (isPDF && !requireApiKey(handleExtractText)) return
 
-        const result = await res.json()
-        if (!res.ok || result.error) {
-          setError(result.error || 'Failed to extract text from file.')
+        setProcessing(true)
+        try {
+          let result
+          if (isPDF) {
+            const base64 = await fileToBase64(file)
+            result = await extractResumeText({ fileBase64: base64, mediaType: file.type })
+          } else {
+            result = await extractResumeText({ docxFile: file })
+          }
+
+          setExtractedText(result.text)
+          setStep('preview')
+        } finally {
           setProcessing(false)
-          return
         }
-
-        setExtractedText(result.text)
-        setStep('preview')
       }
     } catch (err: any) {
-      setError(err?.message || 'Failed to extract text.')
-    } finally {
+      setError(classifyAIError(err).message || err?.message || 'Failed to extract text.')
       setProcessing(false)
     }
   }
@@ -167,34 +193,18 @@ export function ResumeImportModal({
   // ─── Step 2→3: Parse Text ─────────────────────────────────────────
 
   const handleParse = async () => {
+    // AI action — requires the user's Anthropic API key
+    if (!requireApiKey(handleParse)) return
+
     setStep('parsing')
     setProcessing(true)
     setError('')
 
     try {
-      // Send full resume text to Haiku for comprehensive parsing
-      const res = await fetch('/api/import-resume', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeText: extractedText }),
-      })
+      // Send full resume text to Claude for comprehensive parsing
+      const result: any = await parseResumeText(extractedText)
 
-      const result = await res.json()
-
-      if (result.limitReached) {
-        setAiLimitHit(true)
-        setError(result.error || 'Import limit reached.')
-        setStep('preview')
-        return
-      }
-
-      if (!res.ok) {
-        setError(result.error || 'Failed to parse resume.')
-        setStep('preview')
-        return
-      }
-
-      // Map API response to ImportData
+      // Map parsed response to ImportData
       const data: ImportData = {
         contact: result.contact || { phone: null, city: null, state: null, linkedin_url: null },
         professional_summary: result.professional_summary || null,
@@ -231,7 +241,7 @@ export function ResumeImportModal({
       setImportData(data)
       setStep('review')
     } catch (err: any) {
-      setError(err?.message || 'Failed to parse resume.')
+      setError(classifyAIError(err).message || err?.message || 'Failed to parse resume.')
       setStep('preview')
     } finally {
       setProcessing(false)
@@ -378,7 +388,6 @@ export function ResumeImportModal({
     setProcessing(false)
     setImportData(null)
     setAiUsed(false)
-    setAiLimitHit(false)
     setEditingEduIdx(null)
     setImportSummary('')
     onClose()
@@ -396,11 +405,6 @@ export function ResumeImportModal({
           <div className="flex items-center justify-between">
             <h2 className="font-heading text-xl font-bold">Import Resume</h2>
             <div className="flex items-center gap-2">
-              {step !== 'success' && (
-                <Badge variant={remaining <= 0 ? 'red' : remaining <= 1 ? 'amber' : 'default'}>
-                  {remaining} AI Import{remaining !== 1 ? 's' : ''} Left
-                </Badge>
-              )}
               <button onClick={handleClose} className="p-2 text-text-muted hover:text-text transition-colors">
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -544,7 +548,7 @@ export function ResumeImportModal({
                   <p className="flex items-center gap-2"><span className="text-gold">&#10003;</span> Skills & certs</p>
                 </div>
                 <p className="text-xs text-text-dim mt-3">
-                  AI-powered parsing uses 1 of your {usageLimit} import{usageLimit !== 1 ? 's' : ''}.
+                  AI-powered parsing runs on your own Anthropic API key.
                 </p>
               </div>
             </div>
@@ -579,20 +583,6 @@ export function ResumeImportModal({
           {/* ─── STEP: Review ─── */}
           {step === 'review' && importData && (
             <div className="space-y-5">
-              {/* AI limit nudge */}
-              {aiLimitHit && (
-                <div className="p-4 bg-status-amber/10 border border-status-amber/30 rounded-lg text-sm">
-                  <p className="text-status-amber font-semibold">AI import limit reached</p>
-                  <p className="text-text-muted mt-1">
-                    Dictionary extraction applied.{' '}
-                    <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">
-                      Upgrade to Core
-                    </UpgradeLink>{' '}
-                    for unlimited AI-powered experience parsing.
-                  </p>
-                </div>
-              )}
-
               {/* AI success indicator */}
               {aiUsed && (
                 <div className="p-3 bg-status-green/10 border border-status-green/30 rounded-lg text-sm flex items-center gap-2">
@@ -665,9 +655,7 @@ export function ResumeImportModal({
                 </h4>
                 {importData.experiences.length === 0 ? (
                   <p className="text-sm text-text-dim">
-                    {aiLimitHit
-                      ? 'Experience parsing requires an AI import. Upgrade to parse experience entries.'
-                      : 'No experience entries detected. You can add them manually on your profile.'}
+                    No experience entries detected. You can add them manually on your profile.
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -1013,6 +1001,14 @@ export function ResumeImportModal({
           </div>
         )}
       </div>
+
+      {/* API key setup — shown when an AI action is attempted without a key */}
+      <KeySetupModal
+        isOpen={keyModalOpen}
+        onClose={() => setKeyModalOpen(false)}
+        onKeySaved={handleKeySaved}
+        featureNote="Resume import uses Claude to read and structure your resume."
+      />
     </ModalShell>
   )
 }

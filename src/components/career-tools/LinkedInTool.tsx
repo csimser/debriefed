@@ -5,10 +5,10 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
-import { trackEvent } from '@/lib/analytics'
-import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
-import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
-import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { generateLinkedIn, analyzeLinkedIn } from '@/lib/ai/linkedin'
+import { parseLinkedInPdf } from '@/lib/ai/visionExtract'
+import { hasApiKey, classifyAIError } from '@/lib/ai/client'
+import { KeySetupModal } from '@/components/settings/KeySetupModal'
 import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import type { DictProfessionalSummary, DictRankEquivalent, DictLinkedinKeyword, DictMilitaryJargon } from '@/lib/dictionary/types'
 import { getRankTier, formatClearanceForHeadline, buildLinkedInValues, fillLinkedInTemplate, ensureProperTitle, titleCaseHeadline, smartSkillSort } from './linkedInUtils'
@@ -20,10 +20,6 @@ interface LinkedInToolProps {
   skills: string[]
   certifications?: any[]
   education?: any[]
-  hasPaidAccess: boolean
-  userTier?: 'free' | 'core' | 'full' | 'expired'
-  currentUsage?: number
-  usageLimit?: number
   onBack: () => void
 }
 
@@ -44,9 +40,7 @@ function formatCredential(cert: string): string {
   return CREDENTIAL_CASE_MAP[lower] || cert
 }
 
-export function LinkedInTool({ userProfile, experiences, skills, certifications, education, hasPaidAccess, userTier = 'free', currentUsage = 0, usageLimit = 999, onBack }: LinkedInToolProps) {
-  const remaining = usageLimit - currentUsage
-  const { openUpgradeModal } = useUpgradeModal()
+export function LinkedInTool({ userProfile, experiences, skills, certifications, education, onBack }: LinkedInToolProps) {
 
   // Mode toggle
   const [mode, setMode] = useState<'generate' | 'keywords' | 'analyze'>('generate')
@@ -124,8 +118,10 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
   const [analysis, setAnalysis] = useState<any>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
-  const [showLastUseWarning, setShowLastUseWarning] = useState(false)
-  const { triggerPostActionModal } = usePostActionModal()
+
+  // API key setup modal (shown when an AI action is attempted without a key)
+  const [keyModalOpen, setKeyModalOpen] = useState(false)
+  const pendingActionRef = useRef<(() => void) | null>(null)
 
   // Summary editing
   const [summaryFocused, setSummaryFocused] = useState(false)
@@ -517,14 +513,6 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
     setDictResults({ headlines: allHeadlines, summary })
     setEditedSummary(summary)
-    // Track dictionary LinkedIn generation (only on first generate, not setting-change re-renders)
-    if (!hasGenerated) {
-      fetch('/api/track-usage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feature: 'linkedin_profile_analysis' }),
-      }).catch(() => {})
-    }
     setHasGenerated(true)
     // Clear any previous AI results
     setResults(null)
@@ -536,55 +524,34 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
       return
     }
 
-    if (remaining <= 0) {
-      setError('Limit reached — upgrade for more generations')
+    if (!hasApiKey()) {
+      pendingActionRef.current = () => handleGenerate()
+      setKeyModalOpen(true)
       return
     }
-
-    if (remaining === 1 && !showLastUseWarning) {
-      setShowLastUseWarning(true)
-      return
-    }
-    setShowLastUseWarning(false)
 
     setGenerating(true)
     setError('')
 
     try {
-      const res = await fetch('/api/generate-linkedin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetRole,
-          userProfile,
-          experiences,
-          skills,
-          certifications: certifications || userProfile?.certifications || [],
-          education: education || userProfile?.education || [],
-          tone,
-          aboutLength,
-          emphasis,
-        }),
+      const data = await generateLinkedIn({
+        targetRole,
+        userProfile,
+        experiences,
+        skills,
+        certifications: certifications || userProfile?.certifications || [],
+        education: education || userProfile?.education || [],
+        tone,
+        aboutLength,
+        emphasis,
       })
 
-      const data = await res.json()
-
-      if (res.status === 403) {
-        setError(data.details?.reason || data.error || 'Usage limit reached')
-        openUpgradeModal()
-        return
-      }
-
-      if (data.error) {
-        setError(data.error)
-      } else {
-        setResults(data)
-        trackEvent('feature_used', { feature: 'linkedin' })
-        // Trigger post-action modal after results render
-        setTimeout(() => triggerPostActionModal('linkedin-complete'), 800)
-      }
+      setResults({
+        headline: data.headline || '',
+        summary: data.summary || '',
+      })
     } catch (err) {
-      setError('Failed to generate. Please try again.')
+      setError(classifyAIError(err).message)
     } finally {
       setGenerating(false)
     }
@@ -717,11 +684,6 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
           <span className="text-gold">&rsaquo;</span>
           <span className="text-text-muted">LinkedIn Optimizer</span>
         </div>
-        {hasPaidAccess && (
-          <Badge variant={remaining <= 1 ? 'red' : remaining <= 2 ? 'amber' : 'default'}>
-            {remaining} AI {remaining === 1 ? 'Use' : 'Uses'} Left
-          </Badge>
-        )}
       </div>
 
       {/* Mode Tabs */}
@@ -950,23 +912,15 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
               <p className="text-xs text-text-dim mt-2">Max 220 characters for LinkedIn</p>
 
-              {/* Enhance with AI / Upgrade nudge */}
+              {/* Enhance with AI */}
               {dictResults?.headlines && !results?.headline && !generating && (
-                hasPaidAccess ? (
-                  <button
-                    onClick={handleGenerate}
-                    disabled={generating || remaining <= 0}
-                    className="mt-3 w-full py-2 px-3 text-sm bg-bg-secondary border border-gold/30 rounded-lg text-gold hover:bg-gold/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {remaining <= 0 ? 'AI Limit Reached' : '✦ Enhance with AI'}
-                  </button>
-                ) : (
-                  <div className="mt-3 p-3 bg-gold/5 border border-gold/20 rounded-lg text-center">
-                    <p className="text-xs text-text-muted">
-                      <UpgradeLink className="text-gold hover:text-gold-bright">Upgrade to Core</UpgradeLink> for AI-enhanced headlines
-                    </p>
-                  </div>
-                )
+                <button
+                  onClick={handleGenerate}
+                  disabled={generating}
+                  className="mt-3 w-full py-2 px-3 text-sm bg-bg-secondary border border-gold/30 rounded-lg text-gold hover:bg-gold/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  ✦ Enhance with AI
+                </button>
               )}
             </Card>
 
@@ -1066,21 +1020,13 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
 
               {/* Enhance with AI */}
               {dictResults?.summary && !results?.summary && !generating && (
-                hasPaidAccess ? (
-                  <button
-                    onClick={handleGenerate}
-                    disabled={generating || remaining <= 0}
-                    className="mt-3 w-full py-2 px-3 text-sm bg-bg-secondary border border-gold/30 rounded-lg text-gold hover:bg-gold/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {remaining <= 0 ? 'AI Limit Reached' : '✦ Enhance with AI'}
-                  </button>
-                ) : (
-                  <p className="mt-3 text-xs text-text-dim">
-                    <span className="text-gold">&#9670;</span> Want deeper insights?{' '}
-                    <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">Upgrade to Full</UpgradeLink>
-                    {' '}for a complete profile audit with specific fixes.
-                  </p>
-                )
+                <button
+                  onClick={handleGenerate}
+                  disabled={generating}
+                  className="mt-3 w-full py-2 px-3 text-sm bg-bg-secondary border border-gold/30 rounded-lg text-gold hover:bg-gold/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  ✦ Enhance with AI
+                </button>
               )}
             </Card>
 
@@ -1401,24 +1347,20 @@ export function LinkedInTool({ userProfile, experiences, skills, certifications,
           isUploading={isUploading}
           setIsUploading={setIsUploading}
           targetRole={targetRole}
-          hasPaidAccess={userTier === 'full'}
         />
       )}
 
-      {showLastUseWarning && (
-        <LastUseWarningModal
-          featureName="LinkedIn Generation"
-          tier={hasPaidAccess ? 'full' : 'free'}
-          limitType="tier"
-          onContinue={() => {
-            setShowLastUseWarning(false)
-            handleGenerate()
-          }}
-          onViewPricing={() => {
-            setShowLastUseWarning(false)
-          }}
-        />
-      )}
+      {/* API key setup modal — shown when an AI action needs a key */}
+      <KeySetupModal
+        isOpen={keyModalOpen}
+        onClose={() => setKeyModalOpen(false)}
+        onKeySaved={() => {
+          const pending = pendingActionRef.current
+          pendingActionRef.current = null
+          pending?.()
+        }}
+        featureNote="LinkedIn enhancement uses Claude to polish your headline and About section."
+      />
     </div>
   )
 }
@@ -1434,7 +1376,6 @@ function AnalyzeMode({
   isUploading,
   setIsUploading,
   targetRole,
-  hasPaidAccess,
 }: {
   linkedInPDF: any
   setLinkedInPDF: (data: any) => void
@@ -1445,13 +1386,25 @@ function AnalyzeMode({
   isUploading: boolean
   setIsUploading: (val: boolean) => void
   targetRole: string
-  hasPaidAccess: boolean
 }) {
-  const { openUpgradeModal } = useUpgradeModal()
+  // Everyone gets the full analysis now — the AI runs on the user's own key
+  const hasPaidAccess = true
   const [showInstructions, setShowInstructions] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const [copiedSection, setCopiedSection] = useState<string | null>(null)
   const [expandedPositions, setExpandedPositions] = useState<number[]>([0]) // First position expanded by default
+
+  // API key setup modal (PDF parsing + analysis both run on Claude)
+  const [keyModalOpen, setKeyModalOpen] = useState(false)
+  const pendingActionRef = useRef<(() => void) | null>(null)
+
+  const describeError = (err: unknown, fallback: string): string => {
+    const classified = classifyAIError(err)
+    if (classified.kind === 'unknown' && err instanceof Error && err.message) {
+      return err.message || fallback
+    }
+    return classified.message
+  }
 
   const handleFileUpload = async (file: File) => {
     if (!file.name.endsWith('.pdf')) {
@@ -1459,60 +1412,58 @@ function AnalyzeMode({
       return
     }
 
+    if (!hasApiKey()) {
+      pendingActionRef.current = () => handleFileUpload(file)
+      setKeyModalOpen(true)
+      return
+    }
+
     setIsUploading(true)
     setUploadError('')
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const response = await fetch('/api/parse-linkedin-pdf', {
-        method: 'POST',
-        body: formData,
+      // Read the file as base64 (strip the data: URL prefix)
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const result = String(reader.result || '')
+          resolve(result.includes(',') ? result.split(',')[1] : result)
+        }
+        reader.onerror = () => reject(new Error('Failed to read file'))
+        reader.readAsDataURL(file)
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to process PDF')
-      }
-
-      setLinkedInPDF(data.profileData)
+      const { profileData } = await parseLinkedInPdf(base64)
+      setLinkedInPDF(profileData)
     } catch (err: any) {
-      setUploadError(err.message || 'Failed to process LinkedIn PDF')
+      setUploadError(describeError(err, 'Failed to process LinkedIn PDF'))
     } finally {
       setIsUploading(false)
     }
   }
 
   const handleAnalyze = async () => {
+    if (!hasApiKey()) {
+      pendingActionRef.current = () => handleAnalyze()
+      setKeyModalOpen(true)
+      return
+    }
+
     setIsAnalyzing(true)
     try {
-      const response = await fetch('/api/analyze-linkedin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          linkedInData: linkedInPDF,
-          targetCriteria: {
-            targetRole: targetRole || 'General professional role',
-            targetIndustry: '',
-            careerLevel: 'senior',
-            priorities: [],
-          },
-          hasPaidAccess: true,
-        }),
+      const result = await analyzeLinkedIn({
+        linkedInData: linkedInPDF,
+        targetCriteria: {
+          targetRole: targetRole || 'General professional role',
+          targetIndustry: '',
+          careerLevel: 'senior',
+          priorities: [],
+        },
+        hasPaidAccess: true,
       })
-      const data = await response.json()
-      if (response.status === 403) {
-        openUpgradeModal()
-        return
-      }
-      if (data.error) {
-        throw new Error(data.error)
-      }
-      setAnalysis(data.analysis)
+      setAnalysis(result.analysis)
     } catch (err: any) {
-      setUploadError(err.message || 'Analysis failed')
+      setUploadError(describeError(err, 'Analysis failed'))
     } finally {
       setIsAnalyzing(false)
     }
@@ -1530,26 +1481,6 @@ function AnalyzeMode({
     if (score >= 60) return 'text-status-amber'
     return 'text-status-red'
   }
-
-  // Recommendations Paywall Component for free users
-  const RecommendationsPaywall = () => (
-    <Card className="p-6 border-gold/30 bg-gradient-to-br from-gold/5 to-transparent">
-      <div className="text-center">
-        <div className="w-12 h-12 mx-auto mb-3 bg-gold/20 rounded-full flex items-center justify-center">
-          <svg className="w-6 h-6 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-bold text-text mb-2">Upgrade to Full to unlock AI-powered recommendations</h3>
-        <p className="text-sm text-text-muted mb-4">
-          Get specific rewrites for your headline, about section, skills recommendations, and priority actions.
-        </p>
-        <Button onClick={openUpgradeModal}>
-          Get Full Access
-        </Button>
-      </div>
-    </Card>
-  )
 
   // Show analysis results
   if (analysis) {
@@ -1625,10 +1556,7 @@ function AnalyzeMode({
           </div>
         </Card>
 
-        {/* Paywall for free users - show after scores */}
-        {!hasPaidAccess && <RecommendationsPaywall />}
-
-        {/* Quick Wins - only for pro users */}
+        {/* Quick Wins */}
         {hasPaidAccess && analysis.quickWins && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
@@ -2136,30 +2064,32 @@ function AnalyzeMode({
           </div>
         </Card>
 
-        {hasPaidAccess ? (
-          <Button
-            className="w-full"
-            onClick={handleAnalyze}
-            disabled={isAnalyzing}
-          >
-            {isAnalyzing ? (
-              <>
-                <span className="animate-spin mr-2">&#10227;</span>
-                Analyzing Your Profile...
-              </>
-            ) : (
-              '✦ Analyze My Profile'
-            )}
-          </Button>
-        ) : (
-          <div className="w-full p-4 bg-gold/10 border border-gold/30 rounded-lg text-center">
-            <p className="text-sm font-medium text-text mb-1">Upgrade to Full for AI-powered LinkedIn analysis</p>
-            <p className="text-xs text-text-muted mb-3">Get detailed scores, headline rewrites, skills audit, and keyword recommendations</p>
-            <UpgradeLink className="inline-block px-4 py-2 bg-gold text-bg-primary rounded font-heading font-bold uppercase text-sm hover:bg-gold-bright transition-colors">
-              View Plans
-            </UpgradeLink>
-          </div>
-        )}
+        <Button
+          className="w-full"
+          onClick={handleAnalyze}
+          disabled={isAnalyzing}
+        >
+          {isAnalyzing ? (
+            <>
+              <span className="animate-spin mr-2">&#10227;</span>
+              Analyzing Your Profile...
+            </>
+          ) : (
+            '✦ Analyze My Profile'
+          )}
+        </Button>
+
+        {/* API key setup modal */}
+        <KeySetupModal
+          isOpen={keyModalOpen}
+          onClose={() => setKeyModalOpen(false)}
+          onKeySaved={() => {
+            const pending = pendingActionRef.current
+            pendingActionRef.current = null
+            pending?.()
+          }}
+          featureNote="Profile analysis uses Claude to score and rewrite your LinkedIn sections."
+        />
       </div>
     )
   }
@@ -2301,6 +2231,18 @@ function AnalyzeMode({
           <p className="text-sm text-status-red">{uploadError}</p>
         </div>
       )}
+
+      {/* API key setup modal */}
+      <KeySetupModal
+        isOpen={keyModalOpen}
+        onClose={() => setKeyModalOpen(false)}
+        onKeySaved={() => {
+          const pending = pendingActionRef.current
+          pendingActionRef.current = null
+          pending?.()
+        }}
+        featureNote="Reading your LinkedIn PDF uses Claude to extract your profile data."
+      />
     </div>
   )
 }

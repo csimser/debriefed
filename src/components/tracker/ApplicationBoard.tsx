@@ -5,19 +5,11 @@ import { ApplicationCard } from './ApplicationCard'
 import { LogApplicationDrawer } from './LogApplicationDrawer'
 import { StatsBar } from './StatsBar'
 import { Toast } from '@/components/ui/Toast'
+import { deleteApplication, newId, saveApplication } from '@/lib/storage'
+import type { JobApplication } from '@/lib/storage'
 
-interface Application {
-  id: string
-  company_name: string
-  job_title: string
-  resume_id: string | null
+interface Application extends JobApplication {
   resume_name: string | null
-  applied_date: string
-  status: string
-  notes: string | null
-  salary_offered: number | null
-  created_at: string
-  updated_at: string
 }
 
 interface Resume {
@@ -68,55 +60,27 @@ export function ApplicationBoard({ initialApplications, resumes }: ApplicationBo
     notes: string | null
     salary_offered: number | null
   }) => {
-    try {
-      if (editingApp?.id) {
-        // Update existing
-        const res = await fetch(`/api/applications/${editingApp.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        })
-        if (!res.ok) throw new Error('Failed to update')
-        const { application } = await res.json()
+    const resumeName = data.resume_id
+      ? resumes.find(r => r.id === data.resume_id)?.name || 'Unknown'
+      : null
 
-        // Preserve resume_name
-        const resumeName = data.resume_id
-          ? resumes.find(r => r.id === data.resume_id)?.name || 'Unknown'
-          : null
-
-        setApplications(prev =>
-          prev.map(a => a.id === editingApp.id ? { ...application, resume_name: resumeName } : a)
-        )
-      } else {
-        // Create new
-        const res = await fetch('/api/applications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        })
-        if (!res.ok) throw new Error('Failed to create')
-        const { application } = await res.json()
-
-        const resumeName = data.resume_id
-          ? resumes.find(r => r.id === data.resume_id)?.name || 'Unknown'
-          : null
-
-        setApplications(prev => [{ ...application, resume_name: resumeName }, ...prev])
-      }
-    } catch (err) {
-      throw err
+    if (editingApp?.id) {
+      // Update existing
+      const saved = saveApplication({ ...editingApp, ...data })
+      setApplications(prev =>
+        prev.map(a => a.id === editingApp.id ? { ...saved, resume_name: resumeName } : a)
+      )
+    } else {
+      // Create new
+      const saved = saveApplication({ id: newId(), ...data })
+      setApplications(prev => [{ ...saved, resume_name: resumeName }, ...prev])
     }
   }
 
   const handleDelete = async (id: string) => {
-    try {
-      const res = await fetch(`/api/applications/${id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete')
-      setApplications(prev => prev.filter(a => a.id !== id))
-      setToast({ message: 'Application deleted', type: 'success' })
-    } catch (err) {
-      throw err
-    }
+    deleteApplication(id)
+    setApplications(prev => prev.filter(a => a.id !== id))
+    setToast({ message: 'Application deleted', type: 'success' })
   }
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -134,7 +98,7 @@ export function ApplicationBoard({ initialApplications, resumes }: ApplicationBo
     setDragOverColumn(null)
   }
 
-  const handleDrop = async (e: React.DragEvent, newStatus: string) => {
+  const handleDrop = (e: React.DragEvent, newStatus: string) => {
     e.preventDefault()
     setDragOverColumn(null)
 
@@ -142,27 +106,10 @@ export function ApplicationBoard({ initialApplications, resumes }: ApplicationBo
     const app = applications.find(a => a.id === id)
     if (!app || app.status === newStatus) return
 
-    // Optimistic update
+    saveApplication({ ...app, status: newStatus })
     setApplications(prev =>
       prev.map(a => a.id === id ? { ...a, status: newStatus } : a)
     )
-
-    try {
-      const res = await fetch(`/api/applications/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      })
-      if (!res.ok) {
-        throw new Error('Failed to update')
-      }
-    } catch {
-      // Revert on failure
-      setApplications(prev =>
-        prev.map(a => a.id === id ? { ...a, status: app.status } : a)
-      )
-      setToast({ message: 'Failed to move application', type: 'error' })
-    }
   }
 
   const isEmpty = applications.length === 0

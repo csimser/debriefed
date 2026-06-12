@@ -3,6 +3,17 @@
 import { useState, useRef } from 'react'
 import { OnboardingData } from './NewOnboardingWizard'
 import { ResumeImportModal } from '@/components/profile/ResumeImportModal'
+import { KeySetupModal } from '@/components/settings/KeySetupModal'
+import { hasApiKey } from '@/lib/ai/client'
+import {
+  newId,
+  saveAllCertifications,
+  saveAllEducation,
+  saveAllSkills,
+  saveExperiences,
+  saveProfile,
+} from '@/lib/storage'
+import type { Certification, Education, Experience, Profile, Skill } from '@/lib/storage'
 
 interface StepWelcomeProps {
   data: OnboardingData
@@ -11,18 +22,26 @@ interface StepWelcomeProps {
   onSkip: () => void
   jumpToStep: (step: number) => Promise<void>
   saving: boolean
-  userId: string
-  supabase: any
-  loadRelatedData: () => Promise<void>
+  loadRelatedData: () => void
 }
 
-export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, saving, userId, supabase, loadRelatedData }: StepWelcomeProps) {
+export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, saving, loadRelatedData }: StepWelcomeProps) {
   const [showResumeModal, setShowResumeModal] = useState(false)
+  const [showKeyModal, setShowKeyModal] = useState(false)
   const jumpToStepRef = useRef(jumpToStep)
   jumpToStepRef.current = jumpToStep
   const [importing, setImporting] = useState(false)
   const [importSuccess, setImportSuccess] = useState(false)
   const [importError, setImportError] = useState('')
+
+  // Resume import uses Claude to parse the file — needs the user's API key.
+  const handleImportClick = () => {
+    if (hasApiKey()) {
+      setShowResumeModal(true)
+    } else {
+      setShowKeyModal(true)
+    }
+  }
 
   const handleResumeImport = async (parsed: any) => {
     setImporting(true)
@@ -30,7 +49,7 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
 
     try {
       // 1. Build profile updates from parsed data
-      const profileUpdate: Record<string, any> = {}
+      const profileUpdate: Partial<Profile> = {}
       const wizardUpdates: Partial<OnboardingData> = {}
 
       // Contact info
@@ -92,123 +111,80 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
         wizardUpdates.clearance = mapped
       }
 
-      // 2. Save profile fields to DB
+      // 2. Save profile fields
       if (Object.keys(profileUpdate).length > 0) {
-        profileUpdate.updated_at = new Date().toISOString()
-        const { error } = await supabase
-          .from('profiles')
-          .update(profileUpdate)
-          .eq('user_id', userId)
-        if (error) console.error('Profile update failed:', error)
+        saveProfile(profileUpdate)
       }
 
-      // 2b. Clear existing related-table data before inserting to prevent duplicates
-      // Delete bullets first (FK dependency), then experiences, then the rest
-      const { data: existingExps } = await supabase
-        .from('experience')
-        .select('id')
-        .eq('user_id', userId)
-      if (existingExps?.length) {
-        const expIds = existingExps.map((e: any) => e.id)
-        await supabase.from('experience_bullets').delete().in('experience_id', expIds)
-        await supabase.from('experience').delete().eq('user_id', userId)
-      }
-      await supabase.from('education').delete().eq('user_id', userId)
-      await supabase.from('certifications').delete().eq('user_id', userId)
-      await supabase.from('skills').delete().eq('user_id', userId)
-
-      // 3. Insert experiences with bullets
-      if (parsed.experiences?.length) {
-        for (let i = 0; i < parsed.experiences.length; i++) {
-          const exp = parsed.experiences[i]
-          const isMilitary = exp.employment_type === 'military'
-
-          const { data: expData, error: expError } = await supabase
-            .from('experience')
-            .insert({
-              user_id: userId,
-              job_title: exp.job_title,
-              civilian_title: exp.civilian_title || exp.job_title,
-              organization: isMilitary ? exp.organization : null,
-              company_name: !isMilitary ? exp.organization : null,
-              location: exp.city && exp.state ? `${exp.city}, ${exp.state}` : null,
-              employment_type: exp.employment_type || 'civilian',
-              city: exp.city || null,
-              state: exp.state || null,
-              start_date: exp.start_date || null,
-              end_date: exp.is_current ? null : exp.end_date || null,
-              is_current: exp.is_current || false,
-              sort_order: i,
-              hours_per_week: 40,
-            })
-            .select()
-            .single()
-
-          if (expError) {
-            console.error(`Experience ${i} insert failed:`, expError)
-            continue
-          }
-
-          if (expData && exp.bullets?.length) {
-            const bulletInserts = exp.bullets.map((bullet: string, j: number) => ({
-              experience_id: expData.id,
-              original_text: bullet,
-              translated_text: bullet,
-              status: 'accepted',
-              sort_order: j,
-            }))
-            await supabase.from('experience_bullets').insert(bulletInserts)
-          }
+      // 3. Replace experiences (bullets embedded) — full overwrite prevents duplicates
+      const experiences: Experience[] = (parsed.experiences || []).map((exp: any, i: number) => {
+        const isMilitary = exp.employment_type === 'military'
+        const expId = newId()
+        return {
+          id: expId,
+          job_title: exp.job_title,
+          civilian_title: exp.civilian_title || exp.job_title,
+          organization: isMilitary ? exp.organization : null,
+          company_name: !isMilitary ? exp.organization : null,
+          location: exp.city && exp.state ? `${exp.city}, ${exp.state}` : null,
+          employment_type: exp.employment_type || 'civilian',
+          city: exp.city || null,
+          state: exp.state || null,
+          start_date: exp.start_date || null,
+          end_date: exp.is_current ? null : exp.end_date || null,
+          is_current: exp.is_current || false,
+          sort_order: i,
+          hours_per_week: 40,
+          bullets: (exp.bullets || []).map((bullet: string, j: number) => ({
+            id: newId(),
+            experience_id: expId,
+            original_text: bullet,
+            translated_text: bullet,
+            status: 'accepted',
+            sort_order: j,
+          })),
         }
-      }
+      })
+      saveExperiences(experiences)
 
-      // 4. Insert education (new column names with fallbacks for old names)
-      if (parsed.education?.length) {
-        const eduInserts = parsed.education.map((edu: any, idx: number) => ({
-          user_id: userId,
-          school_name: edu.school_name || edu.institution || null,
-          degree_type: edu.degree_type || edu.degree || null,
-          field_of_study: edu.field_of_study || null,
-          graduation_month: edu.graduation_month || null,
-          graduation_year: edu.graduation_year || edu.graduation_date || null,
-          gpa: edu.gpa || null,
-          sort_order: idx,
-        }))
-        const { error } = await supabase.from('education').insert(eduInserts)
-        if (error) console.error('Education insert failed:', error)
-      }
+      // 4. Replace education (new field names with fallbacks for old names)
+      const education: Education[] = (parsed.education || []).map((edu: any, idx: number) => ({
+        id: newId(),
+        school_name: edu.school_name || edu.institution || null,
+        degree_type: edu.degree_type || edu.degree || null,
+        field_of_study: edu.field_of_study || null,
+        graduation_month: edu.graduation_month || null,
+        graduation_year: edu.graduation_year || edu.graduation_date || null,
+        gpa: edu.gpa || null,
+        sort_order: idx,
+      }))
+      saveAllEducation(education)
 
-      // 5. Insert certifications (new column names with fallbacks)
-      if (parsed.certifications?.length) {
-        const certInserts = parsed.certifications.map((cert: any, idx: number) => ({
-          user_id: userId,
-          name: cert.name,
-          issuing_organization: cert.issuing_organization || cert.issuing_org || null,
-          issue_date: cert.issue_date || cert.date_earned || null,
-          expiration_date: cert.expiration_date || null,
-          sort_order: idx,
-        }))
-        const { error } = await supabase.from('certifications').insert(certInserts)
-        if (error) console.error('Certifications insert failed:', error)
-      }
+      // 5. Replace certifications (new field names with fallbacks)
+      const certifications: Certification[] = (parsed.certifications || []).map((cert: any, idx: number) => ({
+        id: newId(),
+        name: cert.name,
+        issuing_organization: cert.issuing_organization || cert.issuing_org || null,
+        issue_date: cert.issue_date || cert.date_earned || null,
+        expiration_date: cert.expiration_date || null,
+        sort_order: idx,
+      }))
+      saveAllCertifications(certifications)
 
-      // 6. Insert skills (handle both string[] and object[] formats)
-      if (parsed.skills?.length) {
-        const skillInserts = parsed.skills.map((skill: any, idx: number) => ({
-          user_id: userId,
-          name: typeof skill === 'string' ? skill : skill.name,
-          category: typeof skill === 'string' ? 'general' : (skill.category || 'general'),
-          sort_order: idx,
-        }))
-        const { error } = await supabase.from('skills').insert(skillInserts)
-        if (error) console.error('Skills insert failed:', error)
-      }
+      // 6. Replace skills (handle both string[] and object[] formats)
+      const skills: Skill[] = (parsed.skills || []).map((skill: any, idx: number) => ({
+        id: newId(),
+        name: typeof skill === 'string' ? skill : skill.name,
+        category: typeof skill === 'string' ? 'general' : (skill.category || 'general'),
+        sort_order: idx,
+      }))
+      saveAllSkills(skills)
 
       // 7. Update wizard state for profile-level fields
       updateData(wizardUpdates)
 
-      // 8. Refresh related-table data from DB so all steps see the imported data
-      await loadRelatedData()
+      // 8. Refresh related data from storage so all steps see the imported data
+      loadRelatedData()
 
       // 9. Show success banner, then jump to Experience step (step 2)
       setImportSuccess(true)
@@ -273,7 +249,7 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
           {/* Option 1: Import Resume */}
           <div className="p-4 bg-bg-tertiary rounded-lg border border-border hover:border-gold/50 transition-colors">
             <button
-              onClick={() => setShowResumeModal(true)}
+              onClick={handleImportClick}
               disabled={importing || importSuccess}
               className="w-full text-left flex items-start gap-4 disabled:opacity-50"
             >
@@ -282,6 +258,7 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
                 <h3 className="font-semibold text-gold">I have an existing resume</h3>
                 <p className="text-sm text-text-muted mt-1">
                   Upload a PDF or Word document and we&apos;ll extract your info automatically
+                  (uses your Anthropic API key)
                 </p>
               </div>
             </button>
@@ -298,7 +275,7 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
               <div>
                 <h3 className="font-semibold text-gold">Start fresh</h3>
                 <p className="text-sm text-text-muted mt-1">
-                  Build your profile step by step - we&apos;ll guide you through it
+                  Build your profile step by step - we&apos;ll guide you through it. No API key needed.
                 </p>
               </div>
             </button>
@@ -307,7 +284,7 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
       </div>
 
       <p className="text-sm text-text-dim max-w-md mx-auto mb-4">
-        Your progress is saved automatically.
+        Your progress is saved automatically — everything stays in this browser.
       </p>
 
       <div className="text-center">
@@ -319,6 +296,13 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
           Skip setup — go straight to dashboard
         </button>
       </div>
+
+      <KeySetupModal
+        isOpen={showKeyModal}
+        onClose={() => setShowKeyModal(false)}
+        onKeySaved={() => setShowResumeModal(true)}
+        featureNote="Resume import uses Claude to read your existing resume."
+      />
 
       <ResumeImportModal
         isOpen={showResumeModal}

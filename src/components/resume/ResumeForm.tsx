@@ -14,12 +14,12 @@ import type { VagueFlag, VerbSuggestion } from '@/lib/dictionary/bulletTranslato
 import { parseAndTranslateEvalText } from '@/lib/dictionary/evalParser'
 import { polishBullet } from '@/lib/dictionary/outputPolisher'
 import { HelpTranslatePrompt } from '@/components/dictionary/HelpTranslatePrompt'
-import { submitTerm } from '@/lib/dictionary/communityQueries'
 import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import type { DictBulletPattern, DictAtsKeyword, DictionaryCache } from '@/lib/dictionary/types'
-import { createClient } from '@/lib/supabase/client'
-import { getUserTier, isPaidTier } from '@/lib/tier-utils'
-import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { listEvalUploads } from '@/lib/storage'
+import { translateBullet as aiTranslateBullet } from '@/lib/ai/translate'
+import { classifyAIError, hasApiKey } from '@/lib/ai/client'
+import { KeySetupModal } from '@/components/settings/KeySetupModal'
 import { BulletTemplateModal } from '@/components/profile/BulletTemplateModal'
 import { EvalUploadModal } from '@/components/profile/EvalUploadModal'
 
@@ -33,9 +33,6 @@ interface ResumeFormProps {
   profileSummary?: string
   allSkills?: any[]
   allCertifications?: any[]
-  bulletTranslationUsage?: number
-  bulletTranslationLimit?: number
-  userPlan?: string
   isFirstResume?: boolean
   openSection: string | null
   onSectionToggle: (section: string) => void
@@ -119,10 +116,7 @@ const CLEARANCE_STATUS_OPTIONS = [
   { value: 'expired', label: 'Expired' },
 ]
 
-export function ResumeForm({ resumeId, content, resumeType, onChange, onSummarySaved, userProfile, profileSummary, allSkills = [], allCertifications = [], bulletTranslationUsage = 0, bulletTranslationLimit = 999, userPlan, isFirstResume = false, openSection, onSectionToggle }: ResumeFormProps) {
-  const isFreeUser = !isPaidTier(getUserTier({ tier: userPlan }))
-  const [localTranslationRemaining, setLocalTranslationRemaining] = useState(bulletTranslationLimit - bulletTranslationUsage)
-  const bulletTranslationRemaining = localTranslationRemaining
+export function ResumeForm({ resumeId, content, resumeType, onChange, onSummarySaved, userProfile, profileSummary, allSkills = [], allCertifications = [], isFirstResume = false, openSection, onSectionToggle }: ResumeFormProps) {
   const updateContent = (key: string, value: any) => {
     onChange({ ...content, [key]: value })
   }
@@ -350,7 +344,6 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, onSummaryS
         profile={profileDataForTemplates}
         onUpdate={(summary) => updateContent('summary', summary)}
         onSummarySaved={onSummarySaved}
-        userPlan={userPlan}
         targetIndustry={targetIndustry}
         targetRole={targetRole}
       />
@@ -366,11 +359,6 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, onSummaryS
           <span className="text-xs text-text-muted">
             {content.experiences?.length || 0} {content.experiences?.length === 1 ? 'entry' : 'entries'}
           </span>
-        }
-        badge={
-          <Badge variant={bulletTranslationRemaining >= 999 ? 'default' : bulletTranslationRemaining <= 1 ? 'red' : bulletTranslationRemaining <= 3 ? 'amber' : 'default'}>
-            {bulletTranslationRemaining >= 999 ? 'Unlimited' : `${bulletTranslationRemaining} Translations Left`}
-          </Badge>
         }
       >
         <div className="space-y-4">
@@ -391,9 +379,6 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, onSummaryS
                 updateContent('experiences', newExps)
               }}
               userProfile={userProfile}
-              translationRemaining={bulletTranslationRemaining}
-              onTranslationUsed={() => setLocalTranslationRemaining(prev => Math.max(0, prev - 1))}
-              isFreeUser={isFreeUser}
               targetRole={targetRole}
             />
           ))}
@@ -1435,7 +1420,7 @@ function populateBulletTemplate(
 
 // Eval parsing moved to src/lib/dictionary/evalParser.ts (parseAndTranslateEvalText)
 
-function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeType, onChange, onDelete, userProfile, translationRemaining = 999, onTranslationUsed, isFreeUser = false, targetRole }: {
+function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeType, onChange, onDelete, userProfile, targetRole }: {
   experience: any
   experienceIndex: number
   totalExperiences: number
@@ -1443,12 +1428,8 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
   onChange: (exp: any) => void
   onDelete: () => void
   userProfile: any
-  translationRemaining?: number
-  onTranslationUsed?: () => void
-  isFreeUser?: boolean
   targetRole?: string
 }) {
-  const { openUpgradeModal } = useUpgradeModal()
   const [translating, setTranslating] = useState<string | null>(null)
   const [editingBulletIdx, setEditingBulletIdx] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
@@ -1456,18 +1437,16 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
   // Track translation source per bullet: 'dictionary' or 'ai'
   const [bulletSources, setBulletSources] = useState<Record<number, 'dictionary' | 'ai'>>({})
   const [alreadyCivilianBullets, setAlreadyCivilianBullets] = useState<Record<number, string>>({})
-  const [correctionIdx, setCorrectionIdx] = useState<number | null>(null)
-  const [correctionMilitary, setCorrectionMilitary] = useState('')
-  const [correctionCivilian, setCorrectionCivilian] = useState('')
-  const [correctionSubmitting, setCorrectionSubmitting] = useState(false)
-  const [correctionSuccess, setCorrectionSuccess] = useState<number | null>(null)
   // Help Translate prompt state (once per session)
   const [helpPromptIdx, setHelpPromptIdx] = useState<number | null>(null)
   const [helpPromptPhrase, setHelpPromptPhrase] = useState<string>('')
   // Track vague phrases and verb suggestions per bullet
   const [bulletVagueFlags, setBulletVagueFlags] = useState<Record<number, VagueFlag[]>>({})
   const [bulletVerbSuggestions, setBulletVerbSuggestions] = useState<Record<number, VerbSuggestion[]>>({})
-  const [upgradeNudgeIdx, setUpgradeNudgeIdx] = useState<number | null>(null)
+  // API key gate for AI actions (translation fallback + enhance)
+  const [showKeyModal, setShowKeyModal] = useState(false)
+  const pendingAIActionRef = useRef<(() => void) | null>(null)
+  const [aiError, setAiError] = useState<string | null>(null)
   // Bullet suggestions from dict_bullet_patterns
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [suggestions, setSuggestions] = useState<{ pattern: DictBulletPattern; populated: string; score: number }[]>([])
@@ -1483,7 +1462,6 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showEvalUpload, setShowEvalUpload] = useState(false)
-  const [evalUserId, setEvalUserId] = useState<string>('')
   const [headerForm, setHeaderForm] = useState({
     job_title: experience.job_title || '',
     civilian_title: experience.civilian_title || '',
@@ -1492,14 +1470,6 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
     end_date: experience.end_date || '',
     is_current: experience.is_current || false,
   })
-
-  // Fetch userId for EvalUploadModal
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setEvalUserId(user.id)
-    })
-  }, [])
 
   const handleEvalExtracted = (bullets: { original: string; translated: string; metrics: string[]; skills: string[] }[]) => {
     const existingBullets = experience.bullets || []
@@ -1593,55 +1563,46 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
 
       setSuggestions(scored)
 
-      // Fetch eval uploads for eval-derived suggestions
+      // Read locally stored eval uploads for eval-derived suggestions
       try {
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          const { data: evalUploads } = await supabase
-            .from('eval_uploads')
-            .select('extracted_data')
-            .eq('user_id', user.id)
-            .eq('status', 'complete')
-            .order('created_at', { ascending: false })
+        const evalUploads = listEvalUploads().filter(u => !u.status || u.status === 'complete')
 
-          if (evalUploads && evalUploads.length > 0) {
-            setHasEvalData(true)
-            // Concatenate all eval text from uploads and run through new parser
-            const allEvalText: string[] = []
-            for (const upload of evalUploads) {
-              const bullets = upload.extracted_data as any[] | null
-              if (Array.isArray(bullets)) {
-                for (const b of bullets) {
-                  if (b.original && typeof b.original === 'string') {
-                    allEvalText.push(b.original)
-                  }
+        if (evalUploads.length > 0) {
+          setHasEvalData(true)
+          // Concatenate all eval text from uploads and run through new parser
+          const allEvalText: string[] = []
+          for (const upload of evalUploads) {
+            const bullets = upload.extracted_data as unknown as any[] | null
+            if (Array.isArray(bullets)) {
+              for (const b of bullets) {
+                if (b.original && typeof b.original === 'string') {
+                  allEvalText.push(b.original)
                 }
               }
             }
-
-            if (allEvalText.length > 0) {
-              const combinedText = allEvalText.join('\n')
-              const results = await parseAndTranslateEvalText(
-                combinedText,
-                userProfile?.branch || '',
-                userProfile?.rank || '',
-              )
-              setEvalSuggestions(
-                results.map(r => ({
-                  original: r.original,
-                  translated: r.translated,
-                  coverage: r.coverage,
-                }))
-              )
-            }
-          } else {
-            setHasEvalData(false)
-            setEvalSuggestions([])
           }
+
+          if (allEvalText.length > 0) {
+            const combinedText = allEvalText.join('\n')
+            const results = await parseAndTranslateEvalText(
+              combinedText,
+              userProfile?.branch || '',
+              userProfile?.rank || '',
+            )
+            setEvalSuggestions(
+              results.map(r => ({
+                original: r.original,
+                translated: r.translated,
+                coverage: r.coverage,
+              }))
+            )
+          }
+        } else {
+          setHasEvalData(false)
+          setEvalSuggestions([])
         }
       } catch {
-        // Eval fetch failed — not critical, generic suggestions still work
+        // Eval read failed — not critical, generic suggestions still work
         setHasEvalData(false)
       }
     } catch {
@@ -1736,6 +1697,7 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
 
   const handleTranslateBullet = async (bulletIdx: number, originalText: string) => {
     setTranslating(bulletIdx.toString())
+    setAiError(null)
 
     try {
       // Step 1: Try dictionary translation first (free, instant, client-side)
@@ -1779,8 +1741,8 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
         setHelpPromptPhrase(dictResult.unmatchedPhrases[0])
       }
 
-      // Free tier: use dictionary result as-is, skip AI
-      if (isFreeUser) {
+      // No API key: use dictionary result as-is, skip the AI fallback
+      if (!hasApiKey()) {
         const newBullets = [...(experience.bullets || [])]
         newBullets[bulletIdx] = {
           ...newBullets[bulletIdx],
@@ -1788,83 +1750,62 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
         }
         onChange({ ...experience, bullets: newBullets })
         setBulletSources(prev => ({ ...prev, [bulletIdx]: 'dictionary' }))
-        setUpgradeNudgeIdx(bulletIdx)
         return
       }
 
-      // Step 3: Dictionary coverage < 40% — fall back to AI
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bullet: originalText,
-          context: {
-            branch: userProfile?.branch || 'navy',
-            rank: userProfile?.rank || '',
-            jobType: resumeType,
-          },
-        }),
+      // Step 3: Dictionary coverage < 40% — fall back to AI (user's key)
+      const result = await aiTranslateBullet(originalText, {
+        branch: userProfile?.branch || 'navy',
+        rank: userProfile?.rank || '',
+        jobType: resumeType,
       })
 
-      const data = await res.json()
-
-      if (data.translated) {
+      if (result.translated) {
         const newBullets = [...(experience.bullets || [])]
         newBullets[bulletIdx] = {
           ...newBullets[bulletIdx],
-          translated_text: data.translated,
+          translated_text: result.translated,
         }
         onChange({ ...experience, bullets: newBullets })
         setBulletSources(prev => ({ ...prev, [bulletIdx]: 'ai' }))
-        onTranslationUsed?.()
       }
     } catch (error) {
       console.error('Translation error:', error)
+      setAiError(classifyAIError(error).message)
     } finally {
       setTranslating(null)
     }
   }
 
   const handleEnhanceWithAI = async (bulletIdx: number, bulletText: string) => {
-    // Free tier: open upgrade modal instead
-    if (isFreeUser) {
-      openUpgradeModal()
+    // AI action — requires the user's Anthropic API key
+    if (!hasApiKey()) {
+      pendingAIActionRef.current = () => handleEnhanceWithAI(bulletIdx, bulletText)
+      setShowKeyModal(true)
       return
     }
-    if (translationRemaining <= 0) return
 
     setTranslating(bulletIdx.toString())
+    setAiError(null)
     try {
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bullet: bulletText,
-          context: {
-            branch: userProfile?.branch || 'navy',
-            rank: userProfile?.rank || '',
-            jobType: resumeType,
-          },
-        }),
+      const result = await aiTranslateBullet(bulletText, {
+        branch: userProfile?.branch || 'navy',
+        rank: userProfile?.rank || '',
+        jobType: resumeType,
       })
 
-      if (res.status === 403) {
-        return
-      }
-
-      const data = await res.json()
-      if (data.translated) {
+      if (result.translated) {
         const newBullets = [...(experience.bullets || [])]
         newBullets[bulletIdx] = {
           ...newBullets[bulletIdx],
-          translated_text: data.translated,
+          translated_text: result.translated,
         }
         onChange({ ...experience, bullets: newBullets })
         setBulletSources(prev => ({ ...prev, [bulletIdx]: 'ai' }))
-        onTranslationUsed?.()
       }
     } catch (error) {
       console.error('AI enhancement error:', error)
+      setAiError(classifyAIError(error).message)
     } finally {
       setTranslating(null)
     }
@@ -2263,6 +2204,11 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
         </div>
       </div>
 
+      {/* AI error (key/rate-limit/network issues) */}
+      {aiError && (
+        <p className="text-xs text-status-red mb-2">{aiError}</p>
+      )}
+
       {/* Active Bullets */}
       <div className="space-y-3 mt-2">
         {activeBullets.map((bullet: any) => (
@@ -2371,30 +2317,18 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                 <div className="flex gap-2 flex-wrap">
                   {/* Translate / Re-translate — visible on any bullet with content */}
                   {(bullet.translated_text || bullet.original_text) && !alreadyCivilianBullets[bullet._idx] && (
-                    isFreeUser && translationRemaining <= 0 ? (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => openUpgradeModal()}
-                      >
-                        Upgrade to Translate
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleTranslateBullet(bullet._idx, bullet.translated_text || bullet.original_text)}
-                        disabled={translating === bullet._idx.toString() || translationRemaining <= 0}
-                      >
-                        {translating === bullet._idx.toString()
-                          ? 'Translating...'
-                          : translationRemaining <= 0
-                            ? 'Limit Reached'
-                            : bullet.translated_text
-                              ? '✦ Re-translate'
-                              : '✦ Translate'}
-                      </Button>
-                    )
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleTranslateBullet(bullet._idx, bullet.translated_text || bullet.original_text)}
+                      disabled={translating === bullet._idx.toString()}
+                    >
+                      {translating === bullet._idx.toString()
+                        ? 'Translating...'
+                        : bullet.translated_text
+                          ? '✦ Re-translate'
+                          : '✦ Translate'}
+                    </Button>
                   )}
 
                   {/* Accept — for translated bullets not yet accepted */}
@@ -2406,30 +2340,17 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
 
                   {/* Enhance with AI — matches profile Translate button: visible on any bullet with content */}
                   {(bullet.translated_text || bullet.original_text) && !alreadyCivilianBullets[bullet._idx] && (
-                    isFreeUser ? (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="text-gold border-gold/30"
-                        onClick={() => openUpgradeModal()}
-                      >
-                        ✦ Enhance with AI
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="text-gold border-gold/30"
-                        onClick={() => handleEnhanceWithAI(bullet._idx, bullet.translated_text || bullet.original_text)}
-                        disabled={translating === bullet._idx.toString() || translationRemaining <= 0}
-                      >
-                        {translating === bullet._idx.toString()
-                          ? 'Enhancing...'
-                          : translationRemaining <= 0
-                            ? 'Limit Reached'
-                            : '✦ Enhance with AI'}
-                      </Button>
-                    )
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      className="text-gold border-gold/30"
+                      onClick={() => handleEnhanceWithAI(bullet._idx, bullet.translated_text || bullet.original_text)}
+                      disabled={translating === bullet._idx.toString()}
+                    >
+                      {translating === bullet._idx.toString()
+                        ? 'Enhancing...'
+                        : '✦ Enhance with AI'}
+                    </Button>
                   )}
 
                   {bullet.status === 'accepted' && (
@@ -2466,68 +2387,6 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   </Button>
                 </div>
 
-                {/* Suggest a correction — shown on dictionary-translated bullets */}
-                {bullet.translated_text && bulletSources[bullet._idx] === 'dictionary' && bullet.status !== 'excluded' && (
-                  <div className="mt-1">
-                    {correctionSuccess === bullet._idx ? (
-                      <p className="text-xs text-status-green">Thanks! Every correction helps keep Debriefed free for all veterans.</p>
-                    ) : correctionIdx === bullet._idx ? (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <input
-                          type="text"
-                          value={correctionMilitary}
-                          onChange={(e) => setCorrectionMilitary(e.target.value)}
-                          placeholder="e.g. CSMP"
-                          autoComplete="off"
-                          className="px-2 py-1 text-xs bg-bg-secondary border border-border rounded w-32 focus:border-gold focus:ring-1 focus:ring-gold/25"
-                        />
-                        <input
-                          type="text"
-                          value={correctionCivilian}
-                          onChange={(e) => setCorrectionCivilian(e.target.value)}
-                          placeholder="e.g. maintenance backlog"
-                          autoComplete="off"
-                          className="px-2 py-1 text-xs bg-bg-secondary border border-border rounded w-44 focus:border-gold focus:ring-1 focus:ring-gold/25"
-                        />
-                        <button
-                          type="button"
-                          disabled={correctionSubmitting || !correctionMilitary.trim() || !correctionCivilian.trim()}
-                          onClick={async () => {
-                            setCorrectionSubmitting(true)
-                            await submitTerm({
-                              submission_type: 'phrase',
-                              military_term: correctionMilitary.trim(),
-                              suggested_civilian: correctionCivilian.trim(),
-                              branch: userProfile?.branch || 'general',
-                              category: 'phrase_translation',
-                            })
-                            setCorrectionSubmitting(false)
-                            setCorrectionIdx(null)
-                            setCorrectionMilitary('')
-                            setCorrectionCivilian('')
-                            setCorrectionSuccess(bullet._idx)
-                            setTimeout(() => setCorrectionSuccess(null), 3000)
-                          }}
-                          className="px-2 py-1 text-xs bg-gold text-bg-primary rounded hover:bg-gold-bright disabled:opacity-50"
-                        >
-                          {correctionSubmitting ? '...' : 'Submit'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setCorrectionIdx(null); setCorrectionMilitary(''); setCorrectionCivilian('') }}
-                          className="text-xs text-text-dim hover:text-text-muted"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-gray-400 hover:text-gold cursor-pointer mt-1" onClick={() => setCorrectionIdx(bullet._idx)}>
-                        See something wrong? <span className="underline">Suggest a correction</span>
-                      </p>
-                    )}
-                  </div>
-                )}
-
                 {/* Help Translate prompt for low-coverage bullets */}
                 {helpPromptIdx === bullet._idx && helpPromptPhrase && (
                   <HelpTranslatePrompt
@@ -2540,14 +2399,6 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   />
                 )}
 
-                {/* Upgrade nudge for free users after dictionary-only translation */}
-                {upgradeNudgeIdx === bullet._idx && isFreeUser && (
-                  <p className="text-xs text-text-dim mt-1.5">
-                    Dictionary translation applied.{' '}
-                    <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">Upgrade to Core</UpgradeLink>
-                    {' '}for AI-enhanced translations.
-                  </p>
-                )}
               </>
             )}
           </div>
@@ -2824,14 +2675,29 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
         onSelect={handleTemplateSelect}
       />
 
-      {showEvalUpload && evalUserId && (
+      {showEvalUpload && (
         <EvalUploadModal
           isOpen={true}
           onClose={() => setShowEvalUpload(false)}
           onExtracted={handleEvalExtracted}
-          userId={evalUserId}
+          userId="local"
         />
       )}
+
+      {/* API key setup — shown when an AI action is used without a key */}
+      <KeySetupModal
+        isOpen={showKeyModal}
+        onClose={() => {
+          setShowKeyModal(false)
+          pendingAIActionRef.current = null
+        }}
+        onKeySaved={() => {
+          const action = pendingAIActionRef.current
+          pendingAIActionRef.current = null
+          action?.()
+        }}
+        featureNote="Bullet enhancement uses Claude to rewrite your bullet in civilian language."
+      />
     </Card>
   )
 }

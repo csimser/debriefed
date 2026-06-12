@@ -1,38 +1,42 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useEffect, useState } from 'react'
 import { ApplicationBoard } from '@/components/tracker/ApplicationBoard'
-import { redirect } from 'next/navigation'
+import { FullPageLoader } from '@/components/ui/FullPageLoader'
+import { listApplications, listResumes } from '@/lib/storage'
+import type { JobApplication } from '@/lib/storage'
 
-export default async function TrackerPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+interface BoardApplication extends JobApplication {
+  resume_name: string | null
+}
 
-  if (!user) {
-    redirect('/login')
+interface ResumeOption {
+  id: string
+  name: string
+}
+
+export default function TrackerPage() {
+  const [loading, setLoading] = useState(true)
+  const [applications, setApplications] = useState<BoardApplication[]>([])
+  const [resumes, setResumes] = useState<ResumeOption[]>([])
+
+  useEffect(() => {
+    const storedResumes = listResumes().map((r) => ({ id: r.id, name: r.title }))
+    const resumeMap = Object.fromEntries(storedResumes.map((r) => [r.id, r.name]))
+
+    const storedApplications = listApplications().map((app) => ({
+      ...app,
+      resume_name: app.resume_id ? resumeMap[app.resume_id] || 'Deleted resume' : null,
+    }))
+
+    setResumes(storedResumes)
+    setApplications(storedApplications)
+    setLoading(false)
+  }, [])
+
+  if (loading) {
+    return <FullPageLoader message="Loading tracker..." />
   }
-
-  // Fetch applications and resumes in parallel
-  const [applicationsResult, resumesResult] = await Promise.all([
-    supabase
-      .from('job_applications')
-      .select('id, resume_id, company_name, job_title, applied_date, status, notes, salary_offered, created_at, updated_at')
-      .eq('user_id', user.id)
-      .order('applied_date', { ascending: false }),
-    supabase
-      .from('resumes')
-      .select('id, name')
-      .eq('user_id', user.id)
-      .order('updated_at', { ascending: false }),
-  ])
-
-  const applications = applicationsResult.data || []
-  const resumes = resumesResult.data || []
-
-  // Build resume name map for display
-  const resumeMap = Object.fromEntries(resumes.map(r => [r.id, r.name]))
-  const enrichedApplications = applications.map(app => ({
-    ...app,
-    resume_name: app.resume_id ? (resumeMap[app.resume_id] || 'Deleted resume') : null,
-  }))
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -46,7 +50,7 @@ export default async function TrackerPage() {
       </div>
 
       <ApplicationBoard
-        initialApplications={enrichedApplications}
+        initialApplications={applications}
         resumes={resumes}
       />
     </div>

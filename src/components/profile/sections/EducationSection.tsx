@@ -5,7 +5,7 @@ import { CollapsibleSection } from '../CollapsibleSection'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Toast } from '@/components/ui/Toast'
-import { createClient } from '@/lib/supabase/client'
+import { saveEducation, deleteEducation, newId } from '@/lib/storage'
 import {
   DEGREE_TYPES,
   MONTHS,
@@ -16,7 +16,6 @@ import {
 } from '@/lib/constants/education'
 
 interface EducationSectionProps {
-  userId: string
   education: any[]
   onUpdate: (education: any[]) => void
   isOpen?: boolean
@@ -25,7 +24,7 @@ interface EducationSectionProps {
   hint?: string
 }
 
-export function EducationSection({ userId, education, onUpdate, isOpen, onToggle, summary, hint }: EducationSectionProps) {
+export function EducationSection({ education, onUpdate, isOpen, onToggle, summary, hint }: EducationSectionProps) {
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [newEdu, setNewEdu] = useState({
@@ -38,7 +37,6 @@ export function EducationSection({ userId, education, onUpdate, isOpen, onToggle
   })
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null)
-  const supabase = createClient()
 
   const inputClass = "w-full px-3 py-2 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all text-sm"
   const labelClass = "block text-xs font-semibold uppercase tracking-wider text-text-muted mb-1"
@@ -59,31 +57,23 @@ export function EducationSection({ userId, education, onUpdate, isOpen, onToggle
 
     setSaving(true)
     try {
-      const { data, error } = await supabase
-        .from('education')
-        .insert({
-          user_id: userId,
-          school_name: newEdu.school_name,
-          degree_type: newEdu.degree_type || null,
-          field_of_study: newEdu.field_of_study || null,
-          graduation_month: newEdu.graduation_month || null,
-          graduation_year: newEdu.graduation_year || null,
-          gpa: newEdu.gpa ? parseFloat(newEdu.gpa) : null,
-        })
-        .select()
-        .single()
+      const data = saveEducation({
+        id: newId(),
+        school_name: newEdu.school_name,
+        degree_type: newEdu.degree_type || null,
+        field_of_study: newEdu.field_of_study || null,
+        graduation_month: newEdu.graduation_month || null,
+        graduation_year: newEdu.graduation_year || null,
+        gpa: newEdu.gpa ? parseFloat(newEdu.gpa) : null,
+        sort_order: education.length,
+      } as any)
 
-      if (error) {
-        console.error('Error adding education:', error)
-        setToast({ message: `Failed to add education: ${error.message}`, type: 'error' })
-        return
-      }
-
-      if (data) {
-        onUpdate([...education, data])
-        resetForm()
-        setAdding(false)
-      }
+      onUpdate([...education, data])
+      resetForm()
+      setAdding(false)
+    } catch (err: any) {
+      console.error('Error adding education:', err)
+      setToast({ message: `Failed to add education: ${err?.message || 'Unknown error'}`, type: 'error' })
     } finally {
       setSaving(false)
     }
@@ -112,42 +102,35 @@ export function EducationSection({ userId, education, onUpdate, isOpen, onToggle
 
     setSaving(true)
     try {
-      const { data, error } = await supabase
-        .from('education')
-        .update({
-          school_name: newEdu.school_name,
-          degree_type: newEdu.degree_type || null,
-          field_of_study: newEdu.field_of_study || null,
-          graduation_month: newEdu.graduation_month || null,
-          graduation_year: newEdu.graduation_year || null,
-          gpa: newEdu.gpa ? parseFloat(newEdu.gpa) : null,
-        })
-        .eq('id', editingId)
-        .select()
-        .single()
+      const existing = education.find(e => e.id === editingId) || {}
+      const data = saveEducation({
+        ...existing,
+        id: editingId,
+        school_name: newEdu.school_name,
+        degree_type: newEdu.degree_type || null,
+        field_of_study: newEdu.field_of_study || null,
+        graduation_month: newEdu.graduation_month || null,
+        graduation_year: newEdu.graduation_year || null,
+        gpa: newEdu.gpa ? parseFloat(newEdu.gpa) : null,
+      } as any)
 
-      if (error) {
-        console.error('Error updating education:', error)
-        setToast({ message: `Failed to update: ${error.message}`, type: 'error' })
-        return
-      }
-
-      if (data) {
-        onUpdate(education.map(e => e.id === editingId ? data : e))
-        resetForm()
-        setEditingId(null)
-      }
+      onUpdate(education.map(e => e.id === editingId ? data : e))
+      resetForm()
+      setEditingId(null)
+    } catch (err: any) {
+      console.error('Error updating education:', err)
+      setToast({ message: `Failed to update: ${err?.message || 'Unknown error'}`, type: 'error' })
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('education').delete().eq('id', id)
-    if (error) {
-      setToast({ message: `Failed to delete: ${error.message}`, type: 'error' })
-    } else {
+    try {
+      deleteEducation(id)
       onUpdate(education.filter(e => e.id !== id))
+    } catch (err: any) {
+      setToast({ message: `Failed to delete: ${err?.message || 'Unknown error'}`, type: 'error' })
     }
   }
 

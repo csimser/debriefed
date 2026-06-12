@@ -12,18 +12,26 @@ interface ApplicationData {
   id?: string
   company_name: string
   job_title: string
-  resume_id: string | null
+  resume_id?: string | null
   applied_date: string
   status: string
-  notes: string | null
-  salary_offered: number | null
+  notes?: string | null
+  salary_offered?: number | null
   resume_name?: string | null
 }
 
 interface LogApplicationDrawerProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (data: Omit<ApplicationData, 'id' | 'resume_name'>) => Promise<void>
+  onSave: (data: {
+    company_name: string
+    job_title: string
+    resume_id: string | null
+    applied_date: string
+    status: string
+    notes: string | null
+    salary_offered: number | null
+  }) => Promise<void>
   onDelete?: (id: string) => Promise<void>
   resumes: Resume[]
   editingApplication?: ApplicationData | null

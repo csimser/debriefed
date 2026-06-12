@@ -6,63 +6,32 @@ import { Card } from '@/components/ui/Card'
 import { DictCoverLetterBuilder } from './DictCoverLetterBuilder'
 import { LinkedInTool } from './LinkedInTool'
 
-import { getUserTier, isPaidTier } from '@/lib/tier-utils'
-import { CommunitySubmissions } from '@/components/dictionary/CommunitySubmissions'
-import { getDictionaryStats, type DictionaryStats } from '@/lib/dictionary/communityQueries'
-
 interface CareerToolsHubProps {
-  userId: string
-  userPlan: string
   userProfile: any
   experiences: any[]
   skills: string[]
   certifications?: any[]
   education?: any[]
-  coverLetterUsage: number
-  coverLetterLimit: number
-  linkedinUsage: number
-  linkedinLimit: number
-  evalUsage?: number
-  evalLimit?: number
-  evalUploads?: any[]
 }
 
 
 export function CareerToolsHub({
-  userId,
-  userPlan,
   userProfile,
   experiences,
   skills,
   certifications,
   education,
-  coverLetterUsage,
-  coverLetterLimit,
-  linkedinUsage,
-  linkedinLimit,
-  evalUsage = 0,
-  evalLimit = 2,
-  evalUploads = [],
 }: CareerToolsHubProps) {
   const searchParams = useSearchParams()
   const toolFromUrl = searchParams.get('tool')
 
   // Use URL param as the source of truth for initial load only
   const [activeTool, setActiveToolState] = useState<string | null>(toolFromUrl)
-  const [bannerStats, setBannerStats] = useState<DictionaryStats | null>(null)
-  const [coverLetterUsageLocal, setCoverLetterUsageLocal] = useState(coverLetterUsage)
-  const userTier = getUserTier({ tier: userPlan })
-  const hasPaidAccess = isPaidTier(userTier)
 
   // Sync state with URL param changes (handles browser back/forward)
   useEffect(() => {
     setActiveToolState(toolFromUrl)
   }, [toolFromUrl])
-
-  // Fetch dictionary stats for hero banner
-  useEffect(() => {
-    getDictionaryStats().then(setBannerStats).catch(() => {})
-  }, [])
 
   // Update URL shallowly (no server component refetch) when changing tool
   const setActiveTool = useCallback((toolId: string | null) => {
@@ -88,10 +57,10 @@ export function CareerToolsHub({
           <div className="space-y-2 text-sm md:text-base text-text-muted mb-5">
             <p>Why is Debriefed free? Because our translation dictionary replaces expensive AI.</p>
             <p>
-              Veterans like you contribute military-to-civilian translations. That dictionary powers every tool on this platform — resume building, job matching, cover letters, LinkedIn optimization — at zero cost.
+              A dictionary of military-to-civilian translations built by veterans powers every tool on this platform — resume building, job matching, cover letters, LinkedIn optimization — at zero cost.
             </p>
             <p className="font-semibold text-text">
-              The more you contribute, the better it gets for every veteran walking off base.
+              Everything runs in your browser. Your data never leaves your device.
             </p>
           </div>
 
@@ -102,12 +71,6 @@ export function CareerToolsHub({
               <span className="font-bold text-text">10,000+</span> translations
             </span>
             <span>
-              <span className="mr-1">👥</span>
-              <span className="font-bold text-text">
-                {bannerStats && bannerStats.contributorCount > 0 ? bannerStats.contributorCount : 1}
-              </span> veteran{bannerStats && bannerStats.contributorCount > 1 ? 's' : ''} contributing
-            </span>
-            <span>
               <span className="mr-1">🆓</span>
               <span className="font-bold text-text">100%</span> free core features
             </span>
@@ -115,12 +78,6 @@ export function CareerToolsHub({
 
           {/* CTA buttons */}
           <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => setActiveTool('community')}
-              className="px-5 py-2.5 bg-gold text-bg-primary rounded-lg font-heading font-bold uppercase text-sm tracking-wider hover:bg-gold-bright transition-colors"
-            >
-              Contribute a Translation
-            </button>
             <button
               onClick={() => document.getElementById('career-tools-grid')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-5 py-2.5 border border-gold/40 text-gold rounded-lg font-heading font-bold uppercase text-sm tracking-wider hover:bg-gold/10 transition-colors"
@@ -249,11 +206,6 @@ export function CareerToolsHub({
           certifications={certifications}
           education={education}
           onBack={() => setActiveTool(null)}
-          userId={userId}
-          currentUsage={coverLetterUsageLocal}
-          usageLimit={coverLetterLimit}
-          userPlan={userPlan}
-          onAIGenerated={() => setCoverLetterUsageLocal(prev => prev + 1)}
         />
       )}
 
@@ -264,34 +216,8 @@ export function CareerToolsHub({
           skills={skills}
           certifications={certifications}
           education={education}
-          hasPaidAccess={hasPaidAccess}
-          userTier={userTier}
-          currentUsage={linkedinUsage}
-          usageLimit={linkedinLimit}
           onBack={() => setActiveTool(null)}
         />
-      )}
-
-      {/* Active Tool — Community Dictionary */}
-      {activeTool === 'community' && (
-        <div className="space-y-6">
-          <button
-            onClick={() => setActiveTool(null)}
-            className="flex items-center gap-2 text-sm text-text-muted hover:text-gold transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Tools
-          </button>
-
-          <div>
-            <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-1">Community Dictionary</h2>
-            <p className="text-text-muted text-sm">Submit military terms, view your submissions, and see what others need translated</p>
-          </div>
-
-          <CommunitySubmissions userBranch={userProfile?.branch} />
-        </div>
       )}
     </div>
   )

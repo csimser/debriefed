@@ -1,14 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { listResumes, saveResume } from '@/lib/storage'
 import { SUMMARY_TEMPLATES, TEMPLATE_CATEGORIES, getTemplatesByCategory, SummaryTemplate } from '@/lib/summaryTemplates'
 import { populateTemplate, cleanTemplateOutput, personalizeStaticSummary, ProfileData } from '@/lib/populateTemplate'
 import { polishSummary } from '@/lib/dictionary/outputPolisher'
 import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import type { DictProfessionalSummary, DictRankEquivalent } from '@/lib/dictionary/types'
-import { getUserTier, isPaidTier } from '@/lib/tier-utils'
-import { UpgradeLink } from '@/components/modals/UpgradeModal'
+import { enhanceSummary } from '@/lib/ai/summary'
+import { classifyAIError, hasApiKey } from '@/lib/ai/client'
+import { KeySetupModal } from '@/components/settings/KeySetupModal'
 
 interface ProfessionalSummaryEditorProps {
   resumeId: string
@@ -17,7 +18,6 @@ interface ProfessionalSummaryEditorProps {
   profile?: ProfileData
   onUpdate: (summary: string) => void
   onSummarySaved?: () => void
-  userPlan?: string
   targetIndustry?: string
   targetRole?: string
 }
@@ -33,11 +33,9 @@ export function ProfessionalSummaryEditor({
   profile,
   onUpdate,
   onSummarySaved,
-  userPlan,
   targetIndustry,
   targetRole
 }: ProfessionalSummaryEditorProps) {
-  const isFree = !isPaidTier(getUserTier({ tier: userPlan }))
   const [isEditing, setIsEditing] = useState(false)
   const [editedSummary, setEditedSummary] = useState(summary || profileSummary || '')
   const [isEnhancing, setIsEnhancing] = useState(false)
@@ -50,7 +48,8 @@ export function ProfessionalSummaryEditor({
   const [templateFallbacks, setTemplateFallbacks] = useState<string[]>([])
   const [editingFallback, setEditingFallback] = useState<string | null>(null)
   const [editingFallbackValue, setEditingFallbackValue] = useState('')
-  const supabase = createClient()
+  const [showKeyModal, setShowKeyModal] = useState(false)
+  const [enhanceError, setEnhanceError] = useState<string | null>(null)
 
   // Load dictionary templates and rank equivalents
   useEffect(() => {
@@ -67,17 +66,18 @@ export function ProfessionalSummaryEditor({
     setEditedSummary(summary || profileSummary || '')
   }, [summary, profileSummary])
 
-  // Auto-save debounce: writes directly to DB, notifies parent to skip its auto-save
+  // Auto-save debounce: writes directly to local storage, notifies parent to skip its auto-save
   const autoSaveRef = useRef<NodeJS.Timeout | null>(null)
   const autoSave = useCallback(async (text: string) => {
     if (!resumeId || text.length > MAX_CHARS) return
     setIsSaving(true)
     try {
-      const { error } = await supabase
-        .from('resumes')
-        .update({ professional_summary: text || null })
-        .eq('id', resumeId)
-      if (!error) {
+      const resume = listResumes().find((r) => r.id === resumeId)
+      if (resume) {
+        saveResume({
+          ...resume,
+          content: { ...(resume.content || {}), summary: text },
+        })
         // Tell parent to skip its next auto-save (we already wrote)
         onSummarySaved?.()
         // Sync parent state for preview rendering
@@ -86,7 +86,7 @@ export function ProfessionalSummaryEditor({
     } finally {
       setIsSaving(false)
     }
-  }, [resumeId, supabase, onUpdate, onSummarySaved])
+  }, [resumeId, onUpdate, onSummarySaved])
 
   // Trigger debounced save when editedSummary changes from user input
   useEffect(() => {
@@ -234,32 +234,32 @@ export function ProfessionalSummaryEditor({
   const handleEnhance = async () => {
     if (!editedSummary.trim()) return
 
+    // AI action — requires the user's Anthropic API key
+    if (!hasApiKey()) {
+      setShowKeyModal(true)
+      return
+    }
+
     setIsEnhancing(true)
+    setEnhanceError(null)
     try {
-      const response = await fetch('/api/enhance-summary', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          summary: editedSummary,
-          profile: profile ? {
-            rank: profile.rank,
-            branch: profile.branch,
-            yearsOfService: profile.yearsOfService,
-            mos: profile.mos,
-            targetRole: profile.targetRole,
-            targetIndustry: profile.targetIndustry,
-          } : undefined
-        }),
+      const { enhanced } = await enhanceSummary({
+        summary: editedSummary,
+        profile: profile ? {
+          branch: profile.branch,
+          yearsOfService: profile.yearsOfService,
+          mos: profile.mos,
+          targetRole: profile.targetRole,
+          targetIndustry: profile.targetIndustry,
+        } : undefined
       })
 
-      if (response.ok) {
-        const { enhanced } = await response.json()
-        if (enhanced) {
-          setEnhancePreview({ original: editedSummary, enhanced })
-        }
+      if (enhanced) {
+        setEnhancePreview({ original: editedSummary, enhanced })
       }
     } catch (error) {
       console.error('Enhancement failed:', error)
+      setEnhanceError(classifyAIError(error).message)
     } finally {
       setIsEnhancing(false)
     }
@@ -288,12 +288,12 @@ export function ProfessionalSummaryEditor({
     // Clear the resume-specific override, falling back to profile
     setIsSaving(true)
     try {
-      const { error } = await supabase
-        .from('resumes')
-        .update({ professional_summary: null })
-        .eq('id', resumeId)
-
-      if (!error) {
+      const resume = listResumes().find((r) => r.id === resumeId)
+      if (resume) {
+        saveResume({
+          ...resume,
+          content: { ...(resume.content || {}), summary: profileSummary || '' },
+        })
         onSummarySaved?.()
         onUpdate(profileSummary || '')
         setEditedSummary(profileSummary || '')
@@ -416,32 +416,25 @@ export function ProfessionalSummaryEditor({
                 {showTemplates ? 'Hide Templates' : 'Choose Template'}
               </button>
 
-              {/* Enhance Button (paid only) */}
-              {isFree ? (
-                <span className="text-xs text-text-dim">
-                  <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">Upgrade to Core</UpgradeLink>
-                  {' '}for AI enhancement
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleEnhance}
-                  disabled={isEnhancing || !editedSummary.trim()}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-gold/20 hover:bg-gold/30 border border-gold/50 disabled:bg-bg-tertiary disabled:border-border disabled:cursor-not-allowed text-gold disabled:text-text-dim text-xs font-semibold rounded transition-colors"
-                >
-                  {isEnhancing ? (
-                    <>
-                      <span className="animate-spin">&#8635;</span>
-                      Enhancing...
-                    </>
-                  ) : (
-                    <>
-                      <span>&#10024;</span>
-                      Enhance
-                    </>
-                  )}
-                </button>
-              )}
+              {/* Enhance Button — uses the user's Anthropic API key */}
+              <button
+                type="button"
+                onClick={handleEnhance}
+                disabled={isEnhancing || !editedSummary.trim()}
+                className="flex items-center gap-2 px-3 py-1.5 bg-gold/20 hover:bg-gold/30 border border-gold/50 disabled:bg-bg-tertiary disabled:border-border disabled:cursor-not-allowed text-gold disabled:text-text-dim text-xs font-semibold rounded transition-colors"
+              >
+                {isEnhancing ? (
+                  <>
+                    <span className="animate-spin">&#8635;</span>
+                    Enhancing...
+                  </>
+                ) : (
+                  <>
+                    <span>&#10024;</span>
+                    Enhance
+                  </>
+                )}
+              </button>
 
               {/* Reset to Profile button */}
               {profileSummary && editedSummary !== profileSummary && (
@@ -466,6 +459,10 @@ export function ProfessionalSummaryEditor({
               </button>
             </div>
           </div>
+
+          {enhanceError && (
+            <p className="text-xs text-status-red">{enhanceError}</p>
+          )}
 
           {/* Template Selector Panel */}
           {showTemplates && (
@@ -563,6 +560,14 @@ export function ProfessionalSummaryEditor({
           )}
         </div>
       )}
+
+      {/* API key setup — shown when Enhance is used without a key */}
+      <KeySetupModal
+        isOpen={showKeyModal}
+        onClose={() => setShowKeyModal(false)}
+        onKeySaved={handleEnhance}
+        featureNote="Summary enhancement uses Claude to refine your professional summary."
+      />
     </div>
   )
 }

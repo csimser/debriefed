@@ -13,17 +13,12 @@ import { VersionHistoryPanel } from './VersionHistoryPanel'
 import { estimateFederalOverflow } from '@/lib/resume/federalTrimmer'
 
 import { AutosaveIndicator } from '@/components/AutosaveIndicator'
-import { trackEvent } from '@/lib/analytics'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { createClient } from '@/lib/supabase/client'
-import { TEMPLATES, TemplateId, resolveTemplate, isTemplateFreeTier } from '@/lib/templates'
-import { getUserTier, isPaidTier, TIER_LIMITS } from '@/lib/tier-utils'
-import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { TemplateId, resolveTemplate } from '@/lib/templates'
+import { listResumes, saveResume, saveResumeVersion, newId } from '@/lib/storage'
 
 interface ResumeEditorProps {
-  userId: string
-  userPlan: string
   resumes: any[]
   profileData: {
     userProfile: any
@@ -32,14 +27,21 @@ interface ResumeEditorProps {
     certifications: any[]
     skills: any[]
   }
-  usage?: {
-    private_downloads: number
-    federal_downloads: number
-    bullet_rewrites?: number
-    download_used?: number
-    download_limit?: number
-    download_remaining?: number
-  }
+}
+
+// ── Shape normalization (storage uses title + type 'civilian'|'federal';
+//    older saved data may still use name + resume_type 'private'|'federal') ──
+
+function resumeTitle(r: any): string {
+  return r?.title ?? r?.name ?? 'Untitled Resume'
+}
+
+function toUiType(r: any): 'private' | 'federal' {
+  return (r?.type ?? r?.resume_type) === 'federal' ? 'federal' : 'private'
+}
+
+function toStorageType(uiType: 'private' | 'federal'): 'civilian' | 'federal' {
+  return uiType === 'federal' ? 'federal' : 'civilian'
 }
 
 // Helper to build initial content from profile data
@@ -212,8 +214,7 @@ function CompletenessRing({ value }: { value: number }) {
 }
 
 
-export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profileData, usage = { private_downloads: 0, federal_downloads: 0 } }: ResumeEditorProps) {
-  const { openUpgradeModal } = useUpgradeModal()
+export function ResumeEditor({ resumes: initialResumes, profileData }: ResumeEditorProps) {
   const [resumes, setResumes] = useState(initialResumes)
   const [selectedId, setSelectedId] = useState<string | null>(resumes[0]?.id || null)
   const [saving, setSaving] = useState(false)
@@ -229,26 +230,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
   // Single-section accordion state
   const [openSection, setOpenSection] = useState<string | null>(null)
 
-  const supabase = createClient()
-
-  // Check tier for limits
-  const userTier = getUserTier({ tier: userPlan })
-  const isFreeUser = !isPaidTier(userTier)
-
   const selectedResume = resumes.find(r => r.id === selectedId)
-
-  // Resume limit check
-  const resumeLimit = TIER_LIMITS[userTier].resumes
-  const canCreateNew = resumes.length < resumeLimit
-
-  // State for showing limit reached modal
-  const [showLimitModal, setShowLimitModal] = useState(false)
-  const [limitModalMessage, setLimitModalMessage] = useState('')
-
-  const handleLimitReached = (error: string, _tier: string) => {
-    setLimitModalMessage(error)
-    setShowLimitModal(true)
-  }
 
   // Build initial content from profile data
   const initialContent = buildInitialContent(profileData)
@@ -261,7 +243,6 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     content: initialContent,
   })
 
-  const isCurrentTemplateLocked = !isTemplateFreeTier(currentResume.template) && isFreeUser
   const isCurrentUntitled = selectedId ? isUntitledName(currentResume.name) : false
 
   // Completeness
@@ -361,9 +342,9 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
         const content = hasContent ? syncContentWithProfile(resume.content) : initialContent
 
         setCurrentResume({
-          name: resume.name,
+          name: resumeTitle(resume),
           template: resolveTemplate(resume.template),
-          resume_type: resume.resume_type || 'private',
+          resume_type: toUiType(resume),
           content,
         })
 
@@ -377,7 +358,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
   useEffect(() => {
     if (!selectedId) return
     setResumes(prev => prev.map(r =>
-      r.id === selectedId ? { ...r, name: currentResume.name } : r
+      r.id === selectedId ? { ...r, title: currentResume.name } : r
     ))
   }, [currentResume.name, selectedId])
 
@@ -403,18 +384,22 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     setSaveError(null)
 
     try {
-      const { error } = await supabase
-        .from('resumes')
-        .update({
-          name: currentResume.name,
-          template: currentResume.template,
-          resume_type: currentResume.resume_type,
-          content: currentResume.content,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', selectedId)
+      // Write the storage shape (title + type 'civilian'|'federal'); drop any
+      // legacy name/resume_type fields carried over from older saved data.
+      const existing = listResumes().find(r => r.id === selectedId) || {}
+      const { name: _legacyName, resume_type: _legacyType, ...rest } = existing as any
 
-      if (error) throw error
+      const saved = saveResume({
+        ...rest,
+        id: selectedId,
+        title: currentResume.name,
+        type: toStorageType(currentResume.resume_type),
+        template: currentResume.template,
+        content: currentResume.content,
+      })
+
+      // Keep the in-memory list in sync so switching resumes shows fresh data
+      setResumes(prev => prev.map(r => (r.id === selectedId ? saved : r)))
 
       setSaveStatus('saved')
       setLastSaved(new Date())
@@ -435,7 +420,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
       setSaving(false)
       savingRef.current = false
     }
-  }, [selectedId, currentResume, supabase])
+  }, [selectedId, currentResume])
 
   // Force save immediately (used before export)
   const saveNow = useCallback(async () => {
@@ -462,10 +447,6 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
   }, [currentResume, selectedId, performSave])
 
   const handleCreate = () => {
-    if (!canCreateNew) {
-      alert(`You've reached your ${userPlan} plan limit of ${resumeLimit} resume${resumeLimit > 1 ? 's' : ''}. Please upgrade to create more.`)
-      return
-    }
     setNewResumeName(generateResumeName(profileData.userProfile?.target_role))
     setNameModalError('')
     setShowNameModal(true)
@@ -483,33 +464,17 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     const newContent = buildInitialContent(profileData)
 
     try {
-      const res = await fetch('/api/resume/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: trimmed,
-          template: 'classic_professional',
-          resume_type: 'private',
-          content: newContent,
-        }),
+      const created = saveResume({
+        id: newId(),
+        title: trimmed,
+        type: 'civilian',
+        template: 'classic_professional',
+        content: newContent,
+        is_master: false,
       })
 
-      const result = await res.json()
-
-      if (!res.ok) {
-        if (res.status === 403 && result.limitReached) {
-          handleLimitReached(result.error, userPlan)
-        } else {
-          alert(`Failed to create resume: ${result.error || 'Unknown error'}`)
-        }
-        return
-      }
-
-      if (result.data) {
-        setResumes([result.data, ...resumes])
-        setSelectedId(result.data.id)
-        trackEvent('feature_used', { feature: 'resume_created', template: result.data.template, resume_type: result.data.resume_type })
-      }
+      setResumes([created, ...resumes])
+      setSelectedId(created.id)
     } catch (err: any) {
       console.error('Create resume exception:', err)
       alert(`Error: ${err?.message || 'Unknown error'}`)
@@ -529,22 +494,13 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     if (!selectedId || currentResume.resume_type === newType) return
 
     try {
-      const res = await fetch('/api/resume/switch-type', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeId: selectedId, newType }),
+      // Snapshot the current state before the (potentially destructive) switch
+      saveResumeVersion(selectedId, `Before switch to ${newType} · ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, {
+        title: currentResume.name,
+        type: toStorageType(currentResume.resume_type),
+        template: currentResume.template,
+        content: currentResume.content,
       })
-
-      const result = await res.json()
-
-      if (!res.ok) {
-        if (res.status === 403 && result.limitReached) {
-          handleLimitReached(result.error, userPlan)
-        } else {
-          alert(result.error || 'Failed to switch resume type')
-        }
-        return
-      }
 
       setCurrentResume(prev => ({
         ...prev,
@@ -571,7 +527,9 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
     // Update resumes list with restored name
     if (selectedId) {
       setResumes(prev => prev.map(r =>
-        r.id === selectedId ? { ...r, name: resumeData.name, template: resumeData.template, resume_type: resumeData.resume_type, content: resumeData.content } : r
+        r.id === selectedId
+          ? { ...r, title: resumeData.name, template: resumeData.template, type: resumeData.resume_type === 'federal' ? 'federal' : 'civilian', content: resumeData.content }
+          : r
       ))
     }
     setShowVersionHistory(false)
@@ -611,7 +569,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                       }`}
                     >
                       <div className="min-w-0">
-                        <div className="font-heading text-sm font-semibold truncate">{resume.name || 'Untitled'}</div>
+                        <div className="font-heading text-sm font-semibold truncate">{resumeTitle(resume)}</div>
                         <div className="text-xs text-text-muted mt-0.5">
                           {new Date(resume.updated_at).toLocaleDateString()}
                         </div>
@@ -632,8 +590,7 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                       setIsResumeDropdownOpen(false)
                       handleCreate()
                     }}
-                    disabled={!canCreateNew}
-                    className="w-full px-4 py-3 text-left text-sm font-heading uppercase tracking-wider hover:bg-bg-tertiary transition-colors flex items-center gap-2 disabled:opacity-50"
+                    className="w-full px-4 py-3 text-left text-sm font-heading uppercase tracking-wider hover:bg-bg-tertiary transition-colors flex items-center gap-2"
                   >
                     <span className="text-gold">+</span> New Resume
                   </button>
@@ -723,16 +680,11 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
           {selectedId && (
             <div className="flex-shrink-0">
               <ExportMenu
-                resumeId={selectedId}
                 resumeName={currentResume.name}
-                userId={userId}
+                content={currentResume.content}
                 template={currentResume.template}
                 resumeType={currentResume.resume_type}
-                onLimitReached={handleLimitReached}
-                isTemplateLocked={isCurrentTemplateLocked}
                 isUntitled={isCurrentUntitled}
-                downloadRemaining={usage?.download_remaining}
-                downloadLimit={usage?.download_limit}
                 onBeforeExport={saveNow}
                 compact
               />
@@ -822,9 +774,6 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                 profileSummary={profileData.userProfile?.professional_summary}
                 allSkills={profileData.skills}
                 allCertifications={profileData.certifications}
-                bulletTranslationUsage={usage?.bullet_rewrites || 0}
-                bulletTranslationLimit={TIER_LIMITS[userTier]?.bullet_translations}
-                userPlan={userPlan}
                 openSection={openSection}
                 onSectionToggle={handleSectionToggle}
               />
@@ -879,7 +828,6 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                   <TemplateSelector
                     selected={currentResume.template}
                     onSelect={(id) => setCurrentResume(prev => ({ ...prev, template: id }))}
-                    userPlan={userPlan}
                   />
                 ) : (
                   <div className="flex items-center gap-2 py-1">
@@ -908,25 +856,6 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
                     resumeType={currentResume.resume_type}
                     content={currentResume.content}
                   />
-                  {isCurrentTemplateLocked && (
-                    <div className="absolute inset-0 backdrop-blur-md bg-black/20 flex flex-col items-center justify-center rounded-lg z-10">
-                      <svg className="w-12 h-12 text-gold mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                      </svg>
-                      <p className="text-white font-heading text-sm uppercase tracking-wider mb-1">
-                        Upgrade to Core to unlock this template
-                      </p>
-                      <p className="text-white/60 text-xs mb-4">
-                        Preview is blurred — switch to Classic Professional or Federal to download
-                      </p>
-                      <UpgradeLink
-                        className="px-5 py-2.5 bg-gold text-bg-primary font-heading text-sm font-bold uppercase tracking-wider rounded-lg hover:bg-gold-bright transition-colors"
-                      >
-                        View Plans
-                      </UpgradeLink>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -938,18 +867,9 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
             <div className="text-4xl mb-4">&#9647;</div>
             <h2 className="font-heading text-xl font-bold uppercase mb-2">No Resume Selected</h2>
             <p className="text-text-muted mb-4">
-              {canCreateNew
-                ? 'Create a new resume to get started'
-                : `You've reached your ${userPlan} plan limit of ${resumeLimit} resume${resumeLimit > 1 ? 's' : ''}.`
-              }
+              Create a new resume to get started
             </p>
-            {canCreateNew ? (
-              <Button onClick={handleCreate}>+ Create Resume</Button>
-            ) : (
-              <Button variant="secondary" onClick={() => openUpgradeModal()}>
-                Upgrade for More Resumes
-              </Button>
-            )}
+            <Button onClick={handleCreate}>+ Create Resume</Button>
           </Card>
         </div>
       )}
@@ -961,33 +881,10 @@ export function ResumeEditor({ userId, userPlan, resumes: initialResumes, profil
           onClose={() => setShowDeleteModal(false)}
           resume={{
             id: selectedResume.id,
-            name: selectedResume.name,
+            name: resumeTitle(selectedResume),
           }}
           onDeleted={() => handleDelete(selectedResume.id)}
         />
-      )}
-
-      {/* Limit Reached Modal */}
-      {showLimitModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md p-6 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-status-amber/20 flex items-center justify-center">
-              <svg className="w-8 h-8 text-status-amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-              </svg>
-            </div>
-            <h3 className="font-heading text-xl font-bold uppercase mb-2">Download Limit Reached</h3>
-            <p className="text-text-muted mb-4">{limitModalMessage}</p>
-            <div className="flex gap-3 justify-center">
-              <Button variant="ghost" onClick={() => setShowLimitModal(false)}>
-                Close
-              </Button>
-              <Button onClick={() => openUpgradeModal()}>
-                Upgrade Now
-              </Button>
-            </div>
-          </Card>
-        </div>
       )}
 
       {/* Version History Panel */}

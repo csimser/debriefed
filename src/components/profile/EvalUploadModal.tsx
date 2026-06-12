@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { getUserTier, isPaidTier } from '@/lib/tier-utils'
-import { trackEvent } from '@/lib/analytics'
-import { UpgradeLink } from '@/components/modals/UpgradeModal'
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { parseEval, extractEvalImage } from '@/lib/ai/evalParse'
+import { translateBullet as aiTranslateBullet } from '@/lib/ai/translate'
+import { classifyAIError, hasApiKey } from '@/lib/ai/client'
+import { KeySetupModal } from '@/components/settings/KeySetupModal'
+import { listExperiences, saveExperience, saveEvalUpload, newId } from '@/lib/storage'
 
 interface ExtractedBullet {
   original: string
@@ -24,9 +25,11 @@ interface EvalUploadModalProps {
   onClose: () => void
   onExtracted: (bullets: ExtractedBullet[], experienceId: string | null) => void
   onBulletsSaved?: () => void
-  userId: string
+  /** Legacy prop, no longer used (data is local). Kept for compatibility. */
+  userId?: string
   experiences?: Array<{ id: string; job_title: string; organization: string; start_date: string; end_date: string }>
   defaultExperienceId?: string
+  /** Legacy props, no longer used (no tiers or limits). Kept for compatibility. */
   userPlan?: string
   evalRemaining?: number
   evalLimit?: number
@@ -43,10 +46,9 @@ const EVAL_TYPES = [
   { value: 'other', label: 'Other Evaluation' },
 ]
 
-export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, userId, experiences = [], defaultExperienceId, userPlan, evalRemaining, evalLimit }: EvalUploadModalProps) {
+export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, experiences = [], defaultExperienceId }: EvalUploadModalProps) {
   const [step, setStep] = useState<'upload' | 'processing' | 'review' | 'done'>('upload')
   const [savingToExperience, setSavingToExperience] = useState(false)
-  const supabase = createClient()
   const [file, setFile] = useState<File | null>(null)
   const [bulletItems, setBulletItems] = useState<BulletWithStatus[]>([])
   const [evalPeriod, setEvalPeriod] = useState<{ startDate: string | null; endDate: string | null }>({ startDate: null, endDate: null })
@@ -58,37 +60,25 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
   const [editingText, setEditingText] = useState('')
   const [retryingBulletId, setRetryingBulletId] = useState<string | null>(null)
   const [piiWarning, setPiiWarning] = useState<string | null>(null)
-  const [fetchedRemaining, setFetchedRemaining] = useState<number | undefined>(evalRemaining)
-  const [fetchedLimit, setFetchedLimit] = useState<number | undefined>(evalLimit)
   const [savedCount, setSavedCount] = useState(0)
   const [showCloseConfirm, setShowCloseConfirm] = useState(false)
 
-  // Self-fetch eval limits if not provided as props
-  useEffect(() => {
-    if (evalRemaining !== undefined) {
-      setFetchedRemaining(evalRemaining)
-      setFetchedLimit(evalLimit)
-      return
-    }
-    if (!isOpen || !userId) return
-    let cancelled = false
-    async function fetchLimits() {
-      try {
-        const res = await fetch('/api/user/eval-limit')
-        if (res.ok) {
-          const data = await res.json()
-          if (!cancelled) {
-            setFetchedRemaining(data.remaining)
-            setFetchedLimit(data.limit)
-          }
-        }
-      } catch {
-        // If fetch fails, allow upload (don't block on error)
-      }
-    }
-    fetchLimits()
-    return () => { cancelled = true }
-  }, [isOpen, userId, evalRemaining, evalLimit])
+  // API key gating — remembers the blocked action so it can re-run after key save
+  const [keyModalOpen, setKeyModalOpen] = useState(false)
+  const pendingActionRef = useRef<(() => void) | null>(null)
+
+  const requireApiKey = (action: () => void): boolean => {
+    if (hasApiKey()) return true
+    pendingActionRef.current = action
+    setKeyModalOpen(true)
+    return false
+  }
+
+  const handleKeySaved = () => {
+    const action = pendingActionRef.current
+    pendingActionRef.current = null
+    action?.()
+  }
 
   // Reset when modal closes
   useEffect(() => {
@@ -110,6 +100,8 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
     setSavedCount(0)
     setShowCloseConfirm(false)
     setPiiWarning(null)
+    setKeyModalOpen(false)
+    pendingActionRef.current = null
   }
 
   // Find best matching experience for auto-assignment
@@ -137,7 +129,6 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
       experienceId: matchedExp,
     }))
     setBulletItems(bullets)
-    trackEvent('feature_used', { feature: 'eval_parsed', bullet_count: bullets.length })
     setEvalPeriod(data.evalPeriod || { startDate: null, endDate: null })
     setDetectedJobTitle(data.jobTitle || null)
     setStep('review')
@@ -178,6 +169,95 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
     })
   }
 
+  // Read a File as base64 (data: prefix stripped)
+  const fileToBase64 = (f: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        const dataUrl = reader.result as string
+        resolve(dataUrl.split(',')[1])
+      }
+      reader.onerror = () => reject(new Error('Failed to read file'))
+      reader.readAsDataURL(f)
+    })
+
+  // Process a selected file — extraction runs Claude vision on the user's key
+  const processFile = async (selectedFile: File) => {
+    // AI action — requires the user's Anthropic API key
+    if (!requireApiKey(() => processFile(selectedFile))) return
+
+    setFile(selectedFile)
+    setStep('processing')
+    setProcessing(true)
+
+    try {
+      let data
+
+      if (selectedFile.type === 'application/pdf') {
+        // PDF path: base64 → parseEval (single-pass PDF extraction)
+        const base64 = await fileToBase64(selectedFile)
+        data = await parseEval({
+          fileBase64: base64,
+          mediaType: 'application/pdf',
+          fileName: selectedFile.name,
+          evalType,
+        })
+      } else if (selectedFile.type.startsWith('image/') || selectedFile.name.match(/\.(heic|heif|bmp|tiff?)$/i)) {
+        // Convert unsupported formats (HEIC, BMP, TIFF) to JPEG
+        let imageFile = selectedFile
+        try {
+          imageFile = await convertToSupportedFormat(selectedFile)
+        } catch (convErr: any) {
+          setError(convErr?.message || 'Could not process this image format. Please use PNG or JPEG.')
+          setStep('upload')
+          return
+        }
+
+        // Image path: base64 → extractEvalImage (image-only OCR extraction)
+        const base64 = await fileToBase64(imageFile)
+        data = await extractEvalImage({
+          fileBase64: base64,
+          mediaType: imageFile.type,
+          fileName: imageFile.name,
+          evalType,
+        })
+      } else {
+        setError('Please upload a PDF or image file (PNG, JPG, HEIC)')
+        setStep('upload')
+        return
+      }
+
+      // Capture PII warning (non-blocking)
+      if (data.piiWarning) {
+        setPiiWarning(data.piiWarning)
+      }
+
+      if (!data.bullets?.length) {
+        setError('No bullets could be extracted. Try a clearer image or different file.')
+        setStep('upload')
+        return
+      }
+
+      // Persist eval history locally so past uploads stay re-importable
+      saveEvalUpload({
+        id: newId(),
+        file_name: selectedFile.name,
+        file_type: selectedFile.type,
+        eval_type: evalType,
+        extracted_data: data.bullets as any,
+        status: 'completed',
+      })
+
+      processBulletData(data)
+    } catch (err: any) {
+      console.error('File processing error:', err)
+      setError(classifyAIError(err).message || err?.message || 'Failed to process file. Please try again.')
+      setStep('upload')
+    } finally {
+      setProcessing(false)
+    }
+  }
+
   // Handle file selection — send full image or PDF directly (no crop step)
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
@@ -192,96 +272,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
       return
     }
 
-    setFile(selectedFile)
-    setStep('processing')
-    setProcessing(true)
-
-    try {
-      let data
-      let response
-
-      if (selectedFile.type === 'application/pdf') {
-        // PDF path: base64 → /api/parse-eval
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => {
-            const dataUrl = reader.result as string
-            const base64Data = dataUrl.split(',')[1]
-            resolve(base64Data)
-          }
-          reader.onerror = () => reject(new Error('Failed to read file'))
-          reader.readAsDataURL(selectedFile)
-        })
-
-        response = await fetch('/api/parse-eval', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: selectedFile.name,
-            fileData: base64,
-            evalType,
-          }),
-        })
-        data = await response.json()
-      } else if (selectedFile.type.startsWith('image/') || selectedFile.name.match(/\.(heic|heif|bmp|tiff?)$/i)) {
-        // Convert unsupported formats (HEIC, BMP, TIFF) to JPEG
-        let imageFile = selectedFile
-        try {
-          imageFile = await convertToSupportedFormat(selectedFile)
-        } catch (convErr: any) {
-          setError(convErr?.message || 'Could not process this image format. Please use PNG or JPEG.')
-          setStep('upload')
-          return
-        }
-
-        // Image path: send full file via FormData → /api/eval/extract
-        const formData = new FormData()
-        formData.append('image', imageFile)
-        formData.append('evalType', evalType)
-
-        response = await fetch('/api/eval/extract', {
-          method: 'POST',
-          body: formData,
-        })
-        data = await response.json()
-      } else {
-        setError('Please upload a PDF or image file (PNG, JPG, HEIC)')
-        setStep('upload')
-        return
-      }
-
-      // Handle limit reached (both routes return 403)
-      if (response.status === 403 && data.limitReached) {
-        setError(data.error || 'Eval upload limit reached')
-        setStep('upload')
-        return
-      }
-
-      // Capture PII warning (non-blocking)
-      if (data.piiWarning) {
-        setPiiWarning(data.piiWarning)
-      }
-
-      if (data.error) {
-        setError(data.error)
-        setStep('upload')
-        return
-      }
-
-      if (!data.bullets?.length) {
-        setError('No bullets could be extracted. Try a clearer image or different file.')
-        setStep('upload')
-        return
-      }
-
-      processBulletData(data)
-    } catch (err: any) {
-      console.error('File processing error:', err)
-      setError(err?.message || 'Failed to process file. Please try again.')
-      setStep('upload')
-    } finally {
-      setProcessing(false)
-    }
+    await processFile(selectedFile)
   }
 
   // Bullet counts
@@ -334,17 +325,12 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
     const bullet = bulletItems.find(b => b.id === bulletId)
     if (!bullet) return
 
+    // AI action — requires the user's Anthropic API key
+    if (!requireApiKey(() => retryBullet(bulletId))) return
+
     setRetryingBulletId(bulletId)
     try {
-      const response = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bullet: bullet.original,
-          context: { jobType: 'private' }
-        }),
-      })
-      const data = await response.json()
+      const data = await aiTranslateBullet(bullet.original, { jobType: 'private' })
       if (data.translated) {
         setBulletItems(prev => prev.map(b =>
           b.id === bulletId ? { ...b, translated: data.translated } : b
@@ -352,6 +338,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
       }
     } catch (err) {
       console.error('Retry failed:', err)
+      setError(classifyAIError(err).message)
     } finally {
       setRetryingBulletId(null)
     }
@@ -372,36 +359,38 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
         return acc
       }, {} as Record<string, BulletWithStatus[]>)
 
+      const allExperiences = listExperiences()
+
       for (const [expId, bullets] of Object.entries(grouped)) {
-        if (expId === '__new__' || !expId) {
+        const targetExp = expId === '__new__' || !expId
+          ? undefined
+          : allExperiences.find(e => e.id === expId)
+
+        if (!targetExp) {
           onExtracted(bullets, null)
           continue
         }
 
-        // Get current max sort_order for this experience
-        const { data: existingBullets } = await supabase
-          .from('experience_bullets')
-          .select('sort_order')
-          .eq('experience_id', expId)
-          .order('sort_order', { ascending: false })
-          .limit(1)
-
-        const startOrder = existingBullets?.[0]?.sort_order ?? -1
+        // Append after the current max sort_order for this experience
+        const existingBullets = targetExp.bullets || []
+        const startOrder = existingBullets.reduce(
+          (max, b) => Math.max(max, b.sort_order ?? -1),
+          -1,
+        )
 
         const bulletsToInsert = bullets.map((b, idx) => ({
-          experience_id: expId,
+          id: newId(),
+          experience_id: targetExp.id,
           original_text: b.original,
           translated_text: b.translated,
           sort_order: startOrder + idx + 1,
           status: 'accepted',
         }))
 
-        const { error } = await supabase.from('experience_bullets').insert(bulletsToInsert)
-        if (error) {
-          console.error('Error saving bullets:', error)
-          setError('Failed to save bullets: ' + error.message)
-          return
-        }
+        saveExperience({
+          ...targetExp,
+          bullets: [...existingBullets, ...bulletsToInsert],
+        })
       }
 
       setSavedCount(bulletsToSave.length)
@@ -484,71 +473,8 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
           )}
 
           {/* ── UPLOAD STEP ── */}
-          {step === 'upload' && fetchedRemaining !== undefined && fetchedRemaining <= 0 && (
-            <div className="space-y-5 text-center py-4">
-              <div className="w-14 h-14 mx-auto rounded-full bg-gold/10 flex items-center justify-center">
-                <span className="text-gold text-2xl">&#9670;</span>
-              </div>
-              <div>
-                <p className="font-heading text-base font-bold uppercase tracking-wider mb-1">Eval Upload Limit Reached</p>
-                <p className="text-sm text-text-muted">
-                  You&apos;ve used your {fetchedLimit || 0} free eval upload{(fetchedLimit || 0) !== 1 ? 's' : ''}.
-                </p>
-              </div>
-
-              <div className="mx-auto max-w-sm border-2 border-gold/40 rounded-lg p-5 bg-gold/5">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-gold text-lg">&#9889;</span>
-                  <span className="font-heading text-sm font-bold uppercase tracking-wider">Eval Pack — $5 one-time</span>
-                </div>
-                <p className="text-xs text-text-muted mb-3">Add 5 more uploads to any plan</p>
-                <button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch('/api/stripe/create-checkout', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ tier: 'eval_pack' }),
-                      })
-                      const data = await res.json()
-                      if (data.url) window.location.href = data.url
-                    } catch {}
-                  }}
-                  className="w-full px-5 py-2.5 bg-gold text-bg-primary font-heading text-xs font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
-                >
-                  Get Eval Pack &rarr;
-                </button>
-              </div>
-
-              <div>
-                <p className="text-sm text-text-muted mb-2">Want unlimited evals + everything else?</p>
-                <UpgradeLink
-                  className="text-sm text-gold hover:text-gold-bright hover:underline transition-colors"
-                >
-                  View upgrade options &rarr;
-                </UpgradeLink>
-              </div>
-
-              <p className="text-xs text-text-dim">
-                Paste eval text into experience bullets for free dictionary translation anytime.
-              </p>
-            </div>
-          )}
-
-          {step === 'upload' && (fetchedRemaining === undefined || fetchedRemaining > 0) && (
+          {step === 'upload' && (
             <div className="space-y-5">
-              {/* Remaining counter */}
-              {fetchedRemaining !== undefined && fetchedLimit !== undefined && (
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-text-muted">
-                    {fetchedRemaining} of {fetchedLimit} upload{fetchedLimit !== 1 ? 's' : ''} remaining
-                  </span>
-                  {fetchedRemaining === 1 && (
-                    <span className="text-status-amber font-medium">Last upload</span>
-                  )}
-                </div>
-              )}
-
               {/* Eval type selector */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
@@ -867,6 +793,14 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
             </button>
           </div>
         )}
+
+        {/* API key setup — shown when an AI action is attempted without a key */}
+        <KeySetupModal
+          isOpen={keyModalOpen}
+          onClose={() => setKeyModalOpen(false)}
+          onKeySaved={handleKeySaved}
+          featureNote="Eval extraction uses Claude vision to read your evaluation and translate the bullets."
+        />
 
         {/* Unsaved bullets confirmation */}
         {showCloseConfirm && (
