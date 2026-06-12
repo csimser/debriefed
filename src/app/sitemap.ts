@@ -1,6 +1,5 @@
 import { MetadataRoute } from 'next'
 import { getAllMOSCodes } from '@/lib/mos-page-data'
-import { getAllPosts } from '@/lib/mdx'
 import { APP_URL } from '@/lib/site-config'
 
 export const dynamic = 'force-static'
@@ -22,11 +21,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  const blogPages: MetadataRoute.Sitemap = getAllPosts().map((post) => ({
-    url: `${APP_URL}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
-    priority: 0.6,
-  }))
-
-  return [...staticPages, ...mosPages, ...blogPages]
+  return [...staticPages, ...mosPages]
 }

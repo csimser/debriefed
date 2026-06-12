@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import type { PostCategory } from '@/lib/mdx'
-import { CATEGORY_LABELS } from '@/lib/mdx'
+import type { PostCategory } from '@/lib/mdx-shared'
+import { CATEGORY_LABELS } from '@/lib/mdx-shared'
 
 const CATEGORY_COLORS: Record<PostCategory, string> = {
   'mos-transition': 'text-status-green bg-status-green-dim border-status-green/20 hover:bg-status-green/20',
