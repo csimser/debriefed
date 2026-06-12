@@ -2,18 +2,17 @@
  * Shared Military-to-Civilian Translation Engine
  *
  * Single translation pipeline used by ALL features:
- *   1. Phrase-first matching (dict_phrase_translations from Supabase)
- *   2. Term matching (dict_military_jargon from Supabase)
+ *   1. Phrase-first matching (bundled phrase_translations data)
+ *   2. Term matching (bundled military_jargon data)
  *   3. Fallback to MILITARY_TO_CIVILIAN static constants
- *   4. Claude polish pass (content-type-aware)
+ *   4. Claude polish pass (content-type-aware, user's own API key)
  *
  * Returns both the rough dictionary translation AND the polished version.
  */
 
-import Anthropic from '@anthropic-ai/sdk'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { PRIMARY_MODEL, type ModelUsed } from '@/lib/ai-model'
-import { secureSystemPrompt, logAPIUsage } from '@/lib/ai-endpoint-wrapper'
+import { getAnthropicClient, trackTokens } from '@/lib/ai/client'
+import { loadDataFile } from '@/lib/data/files.client'
 import { MILITARY_TO_CIVILIAN } from '@/lib/constants/military-dictionary'
 
 // ── Types ─────────────────────────────────────────────────────────
@@ -46,38 +45,26 @@ export interface TranslationOptions {
   additionalContext?: string
 }
 
-// ── Supabase dictionary cache ─────────────────────────────────────
+// ── Bundled dictionary cache ──────────────────────────────────────
 
 interface PhraseEntry { military_phrase: string; civilian_phrase: string }
 interface JargonEntry { military_term: string; civilian_equivalent: string }
 
 let cachedPhrases: PhraseEntry[] | null = null
 let cachedJargon: JargonEntry[] | null = null
-let cacheTimestamp = 0
-const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
 async function loadDictionaryFromDB(): Promise<{ phrases: PhraseEntry[]; jargon: JargonEntry[] }> {
-  const now = Date.now()
-  if (cachedPhrases && cachedJargon && now - cacheTimestamp < CACHE_TTL) {
+  if (cachedPhrases && cachedJargon) {
     return { phrases: cachedPhrases, jargon: cachedJargon }
   }
 
-  const supabase = createAdminClient()
-
-  const [phrasesRes, jargonRes] = await Promise.all([
-    supabase
-      .from('dict_phrase_translations')
-      .select('military_phrase, civilian_phrase')
-      .order('military_phrase'),
-    supabase
-      .from('dict_military_jargon')
-      .select('military_term, civilian_equivalent')
-      .order('military_term'),
+  const [phrases, jargon] = await Promise.all([
+    loadDataFile<PhraseEntry[]>('phrase_translations.json'),
+    loadDataFile<JargonEntry[]>('military_jargon.json'),
   ])
 
-  cachedPhrases = (phrasesRes.data || []) as PhraseEntry[]
-  cachedJargon = (jargonRes.data || []) as JargonEntry[]
-  cacheTimestamp = now
+  cachedPhrases = phrases
+  cachedJargon = jargon
 
   return { phrases: cachedPhrases, jargon: cachedJargon }
 }
@@ -190,7 +177,7 @@ export async function dictionaryTranslate(
     phrases = db.phrases
     jargon = db.jargon
   } catch (err) {
-    console.error('[translation-engine] Failed to load DB dictionaries, using constants only:', err)
+    console.error('[translation-engine] Failed to load bundled dictionaries, using constants only:', err)
   }
 
   // Tier 1: Phrase translations (from Supabase)
@@ -264,10 +251,6 @@ function buildPolishUserMessage(
 
 // ── Main Entry Point ──────────────────────────────────────────────
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
-
 /**
  * Full two-layer translation pipeline.
  *
@@ -340,10 +323,10 @@ export async function translateMilitaryText(
     )
 
     // Always use Haiku for polish — simple rewrite, no escalation needed
-    const response = await anthropic.messages.create({
+    const response = await getAnthropicClient().messages.create({
       model: PRIMARY_MODEL,
       max_tokens: 1024,
-      system: secureSystemPrompt(POLISH_SYSTEM_PROMPT),
+      system: POLISH_SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     })
 
@@ -358,10 +341,7 @@ export async function translateMilitaryText(
       polished = null
     }
 
-    // Log usage if userId provided
-    if (options.userId && tokensUsed > 0) {
-      await logAPIUsage(options.userId, `translation_polish_${contentType}`, tokensUsed, PRIMARY_MODEL)
-    }
+    trackTokens(tokensUsed)
   } catch (err) {
     console.error('[translation-engine] Polish pass failed, returning dictionary-only:', err)
     polished = null
