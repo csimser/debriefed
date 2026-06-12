@@ -1,11 +1,11 @@
 /**
  * MOS SEO Page Data Layer
  *
- * Build-time data fetching for /mos/[code] and /mos index pages.
- * Uses Supabase SERVICE ROLE client to bypass RLS.
+ * Build-time data for /mos/[code] and /mos index pages.
+ * Reads the bundled data files from public-data/ (previously Supabase).
  */
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { loadDataFileSync } from '@/lib/data/files.server'
 import type {
   DictMosToCivilian,
   DictOnetCrosswalk,
@@ -76,7 +76,6 @@ function normalizeBranch(raw: string): string {
 /**
  * Flatten arrays that may contain semicolon-delimited strings.
  * e.g. ["A; B; C"] → ["A", "B", "C"]
- * Also handles already-split arrays: ["A","B","C"] → ["A","B","C"]
  */
 function flattenSemicolonArray(arr: string[]): string[] {
   const result: string[] = []
@@ -95,169 +94,104 @@ function flattenSemicolonArray(arr: string[]): string[] {
 }
 
 // ============================================================================
-// Data fetching functions
+// Bundled data access
+// ============================================================================
+
+const getMosTable = () => loadDataFileSync<DictMosToCivilian[]>('mos_to_civilian.json')
+const getCrosswalkTable = () => loadDataFileSync<DictOnetCrosswalk[]>('onet_crosswalk.json')
+const getJargonTable = () => loadDataFileSync<DictMilitaryJargon[]>('military_jargon.json')
+const getBulletPatternTable = () => loadDataFileSync<DictBulletPattern[]>('bullet_patterns.json')
+
+const eq = (a: string | null | undefined, b: string | null | undefined) =>
+  (a ?? '').toLowerCase() === (b ?? '').toLowerCase()
+
+// ============================================================================
+// Data access functions
 // ============================================================================
 
 /**
  * Returns deduplicated MOS codes for generateStaticParams — lowercase, unique codes.
  */
 export async function getAllMOSCodes(): Promise<MOSCodeEntry[]> {
-  const supabase = createAdminClient()
+  const rows = [...getMosTable()].sort(
+    (a, b) =>
+      (a.branch ?? '').localeCompare(b.branch ?? '') ||
+      a.military_code.localeCompare(b.military_code),
+  )
 
-  const { data, error } = await supabase
-    .from('dict_mos_to_civilian')
-    .select('military_code, branch')
-    .order('branch')
-    .order('military_code')
-
-  if (error) {
-    console.error('[mos-page-data] getAllMOSCodes error:', error.message)
-    return []
-  }
-
-  // Deduplicate by lowercase code (some codes exist in multiple branches)
   const seen = new Set<string>()
   const result: MOSCodeEntry[] = []
-
-  for (const row of data || []) {
+  for (const row of rows) {
     const lc = row.military_code.toLowerCase()
     if (!seen.has(lc)) {
       seen.add(lc)
       result.push({ code: lc, branch: row.branch })
     }
   }
-
   return result
 }
 
 /**
- * Fetches full page data for one MOS code.
- * Fetches ALL branch records for the code and merges data.
+ * Returns full page data for one MOS code.
+ * Collects ALL branch records for the code and merges data.
  */
 export async function getMOSPageData(code: string): Promise<MOSPageData | null> {
-  const supabase = createAdminClient()
-
-  // Fetch ALL records for this code (may span multiple branches)
-  const { data: mosRows, error: mosError } = await supabase
-    .from('dict_mos_to_civilian')
-    .select('*')
-    .ilike('military_code', code)
-
-  if (mosError || !mosRows?.length) {
-    console.error('[mos-page-data] getMOSPageData MOS not found:', code, mosError?.message)
+  const allBranchRecords = getMosTable().filter((r) => eq(r.military_code, code))
+  if (!allBranchRecords.length) {
+    console.error('[mos-page-data] getMOSPageData MOS not found:', code)
     return null
   }
-
-  const allBranchRecords = mosRows as DictMosToCivilian[]
   const mos = allBranchRecords[0]
 
-  // Collect all unique branches for jargon lookups
+  // O*NET crosswalk rows for this MOS code
+  const crosswalk = getCrosswalkTable()
+    .filter((r) => eq(r.moc, mos.military_code))
+    .slice(0, 20)
+
+  // Branch-relevant jargon for ALL branches of this code (+ general/null branch)
   const branches = [...new Set(allBranchRecords.map((r) => r.branch))]
-
-  // Fetch O*NET crosswalk data for this MOS code
-  const { data: crosswalkData } = await supabase
-    .from('dict_onet_crosswalk')
-    .select('*')
-    .ilike('moc', mos.military_code)
-    .limit(20)
-
-  // Fetch branch-relevant jargon terms for ALL branches of this code
-  const jargonQueries: Promise<{ data: DictMilitaryJargon[] | null }>[] = []
+  const wantedBranches = new Set<string>()
   for (const branch of branches) {
-    const terms = BRANCH_JARGON_MAP[branch] || [branch]
-    for (const b of terms) {
-      jargonQueries.push(
-        supabase
-          .from('dict_military_jargon')
-          .select('*')
-          .ilike('branch', b)
-          .limit(10) as Promise<{ data: DictMilitaryJargon[] | null }>
-      )
-    }
+    for (const b of BRANCH_JARGON_MAP[branch] || [branch]) wantedBranches.add(b.toLowerCase())
   }
 
-  // Also fetch general/null-branch jargon
-  const generalJargonQuery = supabase
-    .from('dict_military_jargon')
-    .select('*')
-    .is('branch', null)
-    .limit(10)
-
-  const [generalResult, ...branchResults] = await Promise.all([
-    generalJargonQuery,
-    ...jargonQueries,
-  ])
-
+  const jargonTable = getJargonTable()
   const allJargon: DictMilitaryJargon[] = []
   const seenTerms = new Set<string>()
-
-  for (const result of [generalResult, ...branchResults]) {
-    for (const row of result.data || []) {
+  const pushJargon = (rows: DictMilitaryJargon[], limit: number) => {
+    let count = 0
+    for (const row of rows) {
+      if (count >= limit) break
       if (!seenTerms.has(row.military_term)) {
         seenTerms.add(row.military_term)
-        allJargon.push(row as DictMilitaryJargon)
+        allJargon.push(row)
+        count++
       }
     }
   }
-
-  // Limit to 20 jargon terms
+  pushJargon(jargonTable.filter((r) => !r.branch), 10)
+  for (const b of wantedBranches) {
+    pushJargon(jargonTable.filter((r) => eq(r.branch, b)), 10)
+  }
   const jargon = allJargon.slice(0, 20)
 
-  // Fetch bullet patterns (before/after examples)
-  const { data: bulletData } = await supabase
-    .from('dict_bullet_patterns')
-    .select('*')
-    .not('example_military', 'is', null)
-    .not('example_output', 'is', null)
-    .limit(5)
+  // Bullet patterns with before/after examples
+  const bulletPatterns = getBulletPatternTable()
+    .filter((r) => r.example_military && r.example_output)
+    .slice(0, 5)
 
-  return {
-    mos,
-    allBranchRecords,
-    crosswalk: (crosswalkData || []) as DictOnetCrosswalk[],
-    jargon,
-    bulletPatterns: (bulletData || []) as DictBulletPattern[],
-  }
+  return { mos, allBranchRecords, crosswalk, jargon, bulletPatterns }
 }
 
 /**
  * Groups all MOS entries by branch for the index page.
  */
 export async function getMOSByBranch(): Promise<MOSByBranch> {
-  const supabase = createAdminClient()
-
-  const { data, error } = await supabase
-    .from('dict_mos_to_civilian')
-    .select('military_code, military_title, branch, civilian_titles, key_skills')
-    .order('branch')
-    .order('military_code')
-
-  if (error) {
-    console.error('[mos-page-data] getMOSByBranch error:', error.message)
-    return {}
-  }
-
   const grouped: MOSByBranch = {}
-  const seen = new Set<string>()
-
-  for (const row of data || []) {
-    const key = `${row.military_code.toLowerCase()}|${(row.branch || '').toLowerCase()}`
-    if (seen.has(key)) continue
-    seen.add(key)
-
-    const branch = normalizeBranch(row.branch || 'Other')
-    if (!grouped[branch]) {
-      grouped[branch] = []
-    }
-    grouped[branch].push({
-      military_code: row.military_code,
-      military_title: row.military_title || row.military_code,
-      branch,
-      civilian_titles: flattenSemicolonArray(row.civilian_titles || []),
-      key_skills: flattenSemicolonArray(row.key_skills || []),
-    })
+  for (const entry of await getAllMOSEntries()) {
+    if (!grouped[entry.branch]) grouped[entry.branch] = []
+    grouped[entry.branch].push(entry)
   }
-
   return grouped
 }
 
@@ -268,28 +202,18 @@ export async function getMOSByBranch(): Promise<MOSByBranch> {
  * are kept as separate entries.
  */
 export async function getAllMOSEntries(): Promise<MOSIndexEntry[]> {
-  const supabase = createAdminClient()
+  const rows = [...getMosTable()].sort(
+    (a, b) =>
+      (a.branch ?? '').localeCompare(b.branch ?? '') ||
+      a.military_code.localeCompare(b.military_code),
+  )
 
-  const { data, error } = await supabase
-    .from('dict_mos_to_civilian')
-    .select('military_code, military_title, branch, civilian_titles, key_skills')
-    .order('branch')
-    .order('military_code')
-
-  if (error) {
-    console.error('[mos-page-data] getAllMOSEntries error:', error.message)
-    return []
-  }
-
-  // Deduplicate: keep first row per code+branch (case-insensitive)
   const seen = new Set<string>()
   const entries: MOSIndexEntry[] = []
-
-  for (const row of data || []) {
+  for (const row of rows) {
     const key = `${row.military_code.toLowerCase()}|${(row.branch || '').toLowerCase()}`
     if (seen.has(key)) continue
     seen.add(key)
-
     entries.push({
       military_code: row.military_code,
       military_title: row.military_title || row.military_code,
@@ -298,6 +222,5 @@ export async function getAllMOSEntries(): Promise<MOSIndexEntry[]> {
       key_skills: flattenSemicolonArray(row.key_skills || []),
     })
   }
-
   return entries
 }

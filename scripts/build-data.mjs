@@ -94,6 +94,14 @@ const manifest = {
 }
 fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2))
 
+// Mirror into public/data/ so the static export serves the files at /data/*
+const PUBLIC_DATA = path.join('public', 'data')
+fs.rmSync(PUBLIC_DATA, { recursive: true, force: true })
+fs.mkdirSync(PUBLIC_DATA, { recursive: true })
+for (const f of fs.readdirSync(OUT)) {
+  fs.copyFileSync(path.join(OUT, f), path.join(PUBLIC_DATA, f))
+}
+
 const totalBytes = outTables.reduce((s, t) => s + t.bytes, 0)
 console.log(`✓ ${outTables.length} files, ${manifest.total_rows} rows, ${(totalBytes / 1024 / 1024).toFixed(1)} MB → ${OUT}/`)
 console.log(`  version: ${manifest.version}`)
