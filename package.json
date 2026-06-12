@@ -1,6 +1,6 @@
 {
   "name": "debriefed",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -45,5 +45,11 @@
     "typescript": "^5",
     "vite": "^8.0.16",
     "vite-plugin-singlefile": "^2.3.3"
+  },
+  "license": "MIT",
+  "author": "Chris Simser",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/csimser/debriefed"
   }
 }
