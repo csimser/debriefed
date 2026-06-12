@@ -221,7 +221,7 @@ export async function generateDocx(
   content: ResumeContent,
   resumeType: 'private' | 'federal',
   template: TemplateId = 'classic_professional',
-): Promise<Buffer> {
+): Promise<Blob> {
   const contact = content.contact || {}
   const experiences = content.experiences || []
   const education = content.education || []
@@ -257,8 +257,8 @@ export async function generateDocx(
       break
   }
 
-  const buffer = await Packer.toBuffer(doc)
-  return Buffer.from(buffer)
+  // Browser-safe: Packer.toBlob avoids Node's Buffer
+  return Packer.toBlob(doc)
 }
 
 // =========================================

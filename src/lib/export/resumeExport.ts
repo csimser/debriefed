@@ -54,13 +54,15 @@ export async function exportResume({
       resumeType: type,
       template,
     })
-    const blob = await pdf(doc as React.ReactElement).toBlob()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const blob = await pdf(doc as any).toBlob()
     saveAs(blob, `${base}.pdf`)
   } else {
-    const buffer = await generateDocx(exportContent, type, template)
-    const blob = new Blob([new Uint8Array(buffer as ArrayBufferLike)], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    })
+    const blob = await generateDocx(
+      exportContent as Parameters<typeof generateDocx>[0],
+      type,
+      template,
+    )
     saveAs(blob, `${base}.docx`)
   }
 }
