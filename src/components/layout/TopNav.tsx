@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { useUpgradeModal } from '@/components/modals/UpgradeModal'
 import { useTheme } from '@/components/theme/ThemeProvider'
+import { getProfile } from '@/lib/storage'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -21,29 +21,34 @@ const secondaryItems = [
   { href: '/help', label: 'Help' },
 ]
 
-interface TopNavProps {
-  user?: {
-    email?: string
-    first_name?: string
-    last_name?: string
-    rank?: string
-  }
-  tier?: string
-  isAdmin?: boolean
-  isOrgAdmin?: boolean
+interface NavUser {
+  email?: string | null
+  first_name?: string | null
+  last_name?: string | null
+  rank?: string | null
 }
 
-export function TopNav({ user, tier = 'free', isAdmin = false, isOrgAdmin = false }: TopNavProps) {
+export function TopNav() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [user, setUser] = useState<NavUser | null>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setIsHydrated(true)
-  }, [])
+    const profile = getProfile()
+    if (profile) {
+      setUser({
+        email: profile.email,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        rank: profile.rank,
+      })
+    }
+  }, [pathname])
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -88,22 +93,7 @@ export function TopNav({ user, tier = 'free', isAdmin = false, isOrgAdmin = fals
     if (user?.first_name) {
       return `${user.first_name} ${user.last_name || ''}`.trim()
     }
-    return user?.email?.split('@')[0] || 'User'
-  }
-
-  const getTierLabel = () => {
-    switch (tier?.toLowerCase()) {
-      case 'full': return 'Full Tier'
-      case 'core': return 'Core Tier'
-      default: return 'Free Tier'
-    }
-  }
-
-  const handleSignOut = async () => {
-    const { createClient } = await import('@/lib/supabase/client')
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    window.location.href = '/login'
+    return user?.email?.split('@')[0] || 'Your Profile'
   }
 
   const isActive = (href: string) => {
@@ -114,9 +104,7 @@ export function TopNav({ user, tier = 'free', isAdmin = false, isOrgAdmin = fals
       : pathname === itemPath
   }
 
-  const { openUpgradeModal } = useUpgradeModal()
   const { theme, toggleTheme } = useTheme()
-  const isFree = tier?.toLowerCase() === 'free'
 
   if (!isHydrated) {
     return (
@@ -157,18 +145,8 @@ export function TopNav({ user, tier = 'free', isAdmin = false, isOrgAdmin = fals
             ))}
           </div>
 
-          {/* Right: Desktop upgrade + user dropdown */}
+          {/* Right: theme toggle + user dropdown */}
           <div className="hidden md:flex items-center gap-3">
-            {isFree && (
-              <button
-                onClick={openUpgradeModal}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-gold-dim border border-gold/30 rounded-md text-gold hover:bg-gold hover:text-bg-primary transition-all text-xs font-nav font-bold uppercase tracking-wider"
-              >
-                <span>&#9733;</span>
-                Upgrade
-              </button>
-            )}
-
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
@@ -201,7 +179,7 @@ export function TopNav({ user, tier = 'free', isAdmin = false, isOrgAdmin = fals
                   {/* User info header */}
                   <div className="px-4 py-3 border-b border-border">
                     <div className="font-semibold text-sm truncate">{getDisplayName()}</div>
-                    <div className="text-xs text-text-muted">{getTierLabel()}</div>
+                    <div className="text-xs text-text-muted">Data stays on this device</div>
                   </div>
 
                   {/* Links */}
@@ -215,32 +193,6 @@ export function TopNav({ user, tier = 'free', isAdmin = false, isOrgAdmin = fals
                         {item.label}
                       </Link>
                     ))}
-                    {isOrgAdmin && (
-                      <Link
-                        href="/partner"
-                        className="block px-4 py-2 text-sm text-gold/70 hover:text-gold hover:bg-gold/10 transition-colors"
-                      >
-                        Partner Portal
-                      </Link>
-                    )}
-                    {isAdmin && (
-                      <Link
-                        href="/admin"
-                        className="block px-4 py-2 text-sm text-status-red/70 hover:text-status-red hover:bg-status-red/10 transition-colors"
-                      >
-                        Admin
-                      </Link>
-                    )}
-                  </div>
-
-                  {/* Sign out */}
-                  <div className="border-t border-border py-1">
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2 text-sm text-status-red hover:bg-status-red/10 transition-colors"
-                    >
-                      Sign Out
-                    </button>
                   </div>
                 </div>
               )}
@@ -303,38 +255,6 @@ export function TopNav({ user, tier = 'free', isAdmin = false, isOrgAdmin = fals
                 </Link>
               ))}
 
-              {isOrgAdmin && (
-                <Link
-                  href="/partner"
-                  className="block px-6 py-3 text-sm text-gold/70 hover:text-gold transition-colors"
-                >
-                  Partner Portal
-                </Link>
-              )}
-
-              {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="block px-6 py-3 text-sm text-status-red/70 hover:text-status-red transition-colors"
-                >
-                  Admin
-                </Link>
-              )}
-
-              {/* Upgrade for free tier */}
-              {isFree && (
-                <>
-                  <div className="h-px bg-border mx-4 my-2" />
-                  <button
-                    onClick={() => { setIsMobileMenuOpen(false); openUpgradeModal() }}
-                    className="flex items-center gap-2 mx-4 my-2 px-4 py-2.5 bg-gold-dim border border-gold/30 rounded-lg text-gold hover:bg-gold hover:text-bg-primary transition-all"
-                  >
-                    <span>&#9733;</span>
-                    <span className="font-nav text-xs font-bold uppercase tracking-wider">Upgrade</span>
-                  </button>
-                </>
-              )}
-
               <div className="h-px bg-border mx-4 my-2" />
 
               {/* Theme toggle (mobile) */}
@@ -356,23 +276,16 @@ export function TopNav({ user, tier = 'free', isAdmin = false, isOrgAdmin = fals
 
               <div className="h-px bg-border mx-4 my-2" />
 
-              {/* User info + sign out */}
+              {/* User info */}
               <div className="px-6 py-3 flex items-center gap-3">
                 <div className="w-9 h-9 bg-gradient-to-br from-gold to-gold-bright rounded-lg flex items-center justify-center flex-shrink-0">
                   <span className="font-heading font-bold text-xs text-bg-primary">{getInitials()}</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm truncate">{getDisplayName()}</div>
-                  <div className="text-xs text-text-muted">{getTierLabel()}</div>
+                  <div className="text-xs text-text-muted">Data stays on this device</div>
                 </div>
               </div>
-
-              <button
-                onClick={handleSignOut}
-                className="w-full text-left px-6 py-3 text-sm text-status-red hover:bg-status-red/10 transition-colors"
-              >
-                Sign Out
-              </button>
             </div>
           </div>
         </>
