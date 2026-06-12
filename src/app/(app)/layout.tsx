@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import { TopNav } from '@/components/layout/TopNav'
 import { StatusBar } from '@/components/layout/StatusBar'
 import { OnboardingGate } from '@/components/layout/OnboardingGate'
+import { OfflineBanner } from '@/components/layout/OfflineBanner'
+import { FirstLaunchModal } from '@/components/settings/FirstLaunchModal'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,10 +12,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <TopNav />
       </Suspense>
       <OnboardingGate />
+      <FirstLaunchModal />
 
       <div className="hidden md:block">
         <StatusBar />
       </div>
+      <OfflineBanner />
 
       <main className="px-4 md:px-6 lg:px-8 pt-[72px] pb-4">{children}</main>
     </div>
