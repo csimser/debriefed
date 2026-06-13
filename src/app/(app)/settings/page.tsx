@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { ApiKeyWalkthrough } from '@/components/settings/ApiKeyWalkthrough'
 import { useApiKey } from '@/hooks/useApiKey'
 import { validateApiKey } from '@/lib/ai/client'
 import {
@@ -21,7 +22,7 @@ function maskKey(key: string): string {
 
 export default function SettingsPage() {
   const router = useRouter()
-  const { key, hasKey, loaded, save, clear } = useApiKey()
+  const { key, hasKey, loaded, clear } = useApiKey()
 
   const [loading, setLoading] = useState(true)
 
@@ -32,9 +33,7 @@ export default function SettingsPage() {
   const [profileSaved, setProfileSaved] = useState(false)
 
   // API key card
-  const [editingKey, setEditingKey] = useState(false)
-  const [keyDraft, setKeyDraft] = useState('')
-  const [showDraft, setShowDraft] = useState(false)
+  const [walkthroughOpen, setWalkthroughOpen] = useState(false)
   const [keyBusy, setKeyBusy] = useState(false)
   const [keyStatus, setKeyStatus] = useState<{ ok: boolean; message: string } | null>(null)
   const [tokensUsed, setTokensUsed] = useState(0)
@@ -78,20 +77,6 @@ export default function SettingsPage() {
         : { ok: false, message: result.error || 'Key check failed.' },
     )
     setKeyBusy(false)
-  }
-
-  const handleSaveKey = async () => {
-    setKeyBusy(true)
-    setKeyStatus(null)
-    const result = await save(keyDraft)
-    setKeyBusy(false)
-    if (!result.ok) {
-      setKeyStatus({ ok: false, message: result.error || 'Could not verify that key.' })
-      return
-    }
-    setKeyDraft('')
-    setEditingKey(false)
-    setKeyStatus({ ok: true, message: 'Key verified and saved to this browser.' })
   }
 
   const handleRemoveKey = () => {
@@ -157,91 +142,81 @@ export default function SettingsPage() {
     <div className="p-6 max-w-2xl mx-auto space-y-6">
       <h1 className="font-heading text-2xl font-bold uppercase tracking-wider">Settings</h1>
 
-      {/* Anthropic API Key */}
+      {/* Translation mode / Anthropic API Key */}
       <Card className="p-6">
-        <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">Anthropic API Key</h2>
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+          <h2 className="font-heading text-lg font-bold uppercase tracking-wider">Translation Mode</h2>
+          <span
+            className={`font-mono text-[11px] uppercase tracking-wider px-2.5 py-1 rounded ${
+              hasKey ? 'text-gold bg-gold-dim' : 'text-text-muted bg-bg-tertiary'
+            }`}
+          >
+            {hasKey ? '✨ AI-enhanced' : '📖 Dictionary'}
+          </span>
+        </div>
 
-        {hasKey && !editingKey ? (
+        {hasKey ? (
           <div className="space-y-4">
+            <p className="text-sm text-text-muted">
+              An Anthropic API key is saved, so Claude refines the dictionary translation for more
+              polished output. Remove the key any time to drop back to Dictionary mode.
+            </p>
+
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <p className="font-mono text-sm text-text">{key ? maskKey(key) : ''}</p>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button
                   variant="secondary"
                   onClick={handleTestKey}
                   disabled={keyBusy}
                   className="text-xs whitespace-nowrap"
                 >
-                  {keyBusy ? 'Testing...' : 'Test'}
+                  {keyBusy ? 'Testing...' : 'Test connection'}
                 </Button>
                 <Button
                   variant="secondary"
-                  onClick={() => { setEditingKey(true); setKeyDraft(''); setKeyStatus(null) }}
+                  onClick={() => { setKeyStatus(null); setWalkthroughOpen(true) }}
                   className="text-xs whitespace-nowrap"
                 >
-                  Replace
+                  Replace key
                 </Button>
                 <Button
                   variant="secondary"
                   onClick={handleRemoveKey}
                   className="text-xs whitespace-nowrap border-status-red/50 text-status-red hover:bg-status-red/10"
                 >
-                  Remove
+                  Remove key
                 </Button>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-border">
+            <div className="pt-3 border-t border-border space-y-2">
               <p className="text-xs text-text-muted">
                 Rough usage this browser: ~{tokensUsed.toLocaleString()} tokens. This is a courtesy
                 meter only — Anthropic bills your key directly, and most actions cost less than a cent.
               </p>
+              <a
+                href="https://console.anthropic.com/settings/billing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block text-xs text-gold hover:text-gold-bright underline"
+              >
+                View usage and billing at Anthropic →
+              </a>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-text-muted">
-              Optional — Debriefed works fully without a key. Add one and Claude enhances the
-              dictionary output (and unlocks PDF reading). It runs on your own Anthropic API key, sent directly from your browser to
-              Anthropic — Debriefed has no servers and no subscriptions. Create a key at{' '}
-              <a
-                href="https://console.anthropic.com/settings/keys"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gold hover:text-gold-bright underline"
-              >
-                console.anthropic.com
-              </a>{' '}
-              and paste it below.
+              You&apos;re in <strong className="text-text">Dictionary mode</strong> — the built-in
+              33,000+ entry dictionary translates your military experience to civilian language, fully
+              offline and free. Add an Anthropic API key to turn on AI-enhanced mode, where Claude
+              refines that translation for more polished output. The setup flow walks you through
+              getting a key — it takes about 3 minutes.
             </p>
-            <div className="flex gap-2">
-              <input
-                type={showDraft ? 'text' : 'password'}
-                value={keyDraft}
-                onChange={(e) => setKeyDraft(e.target.value)}
-                placeholder="sk-ant-..."
-                autoComplete="off"
-                spellCheck={false}
-                className={`${inputClass} flex-1 font-mono`}
-              />
-              <Button variant="secondary" onClick={() => setShowDraft((s) => !s)} className="text-xs">
-                {showDraft ? 'Hide' : 'Show'}
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={handleSaveKey} disabled={keyBusy || !keyDraft.trim()} className="text-xs">
-                {keyBusy ? 'Verifying...' : 'Verify & Save'}
-              </Button>
-              {hasKey && (
-                <Button
-                  variant="secondary"
-                  onClick={() => { setEditingKey(false); setKeyDraft(''); setKeyStatus(null) }}
-                  className="text-xs"
-                >
-                  Cancel
-                </Button>
-              )}
-            </div>
+            <Button onClick={() => { setKeyStatus(null); setWalkthroughOpen(true) }} className="text-xs">
+              Add an Anthropic key
+            </Button>
           </div>
         )}
 
@@ -259,6 +234,62 @@ export default function SettingsPage() {
           </div>
         )}
 
+        {/* About AI-enhanced mode */}
+        <div className="mt-6 pt-5 border-t border-border space-y-4">
+          <h3 className="font-heading text-sm font-bold uppercase tracking-wider">
+            About AI-enhanced mode
+          </h3>
+          <p className="text-sm text-text-muted leading-relaxed">
+            Debriefed works fully in Dictionary mode without an API key. AI-enhanced mode adds
+            Anthropic&apos;s Claude on top of the dictionary translation for more polished output.
+          </p>
+
+          <div>
+            <p className="text-xs font-heading uppercase tracking-wider text-text-muted mb-2">
+              How it works
+            </p>
+            <ol className="text-sm text-text-muted list-decimal pl-5 space-y-1 leading-relaxed">
+              <li>The dictionary engine translates your military experience first</li>
+              <li>Claude refines that translation for tone, flow, and context</li>
+              <li>The output is generally smoother and more natural than dictionary mode alone</li>
+            </ol>
+          </div>
+
+          <div>
+            <p className="text-xs font-heading uppercase tracking-wider text-text-muted mb-2">Cost</p>
+            <ul className="text-sm text-text-muted list-disc pl-5 space-y-1 leading-relaxed">
+              <li>About $0.02 to $0.06 per resume generation</li>
+              <li>$5 in credit covers 80 to 250 generations</li>
+              <li>Most users spend less than $2 during their full job search</li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="text-xs font-heading uppercase tracking-wider text-text-muted mb-2">
+              Privacy
+            </p>
+            <ul className="text-sm text-text-muted list-disc pl-5 space-y-1 leading-relaxed">
+              <li>Your API key never leaves your device</li>
+              <li>
+                When you generate something, Debriefed sends your text directly to Anthropic&apos;s
+                API — no server in between
+              </li>
+              <li>
+                Your text passes through Anthropic per their privacy policy at{' '}
+                <a
+                  href="https://www.anthropic.com/legal/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gold hover:text-gold-bright underline"
+                >
+                  anthropic.com/legal/privacy
+                </a>
+              </li>
+              <li>Nothing is sent anywhere if you don&apos;t have a key entered</li>
+            </ul>
+          </div>
+        </div>
+
         <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-text-muted">
             Your key lives only in this browser and is never included in data exports. For
@@ -266,6 +297,14 @@ export default function SettingsPage() {
           </p>
         </div>
       </Card>
+
+      <ApiKeyWalkthrough
+        isOpen={walkthroughOpen}
+        onClose={() => setWalkthroughOpen(false)}
+        onKeySaved={() =>
+          setKeyStatus({ ok: true, message: 'Key verified and saved — AI-enhanced mode is on.' })
+        }
+      />
 
       {/* Profile */}
       <Card className="p-6">

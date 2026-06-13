@@ -16,6 +16,46 @@ There are no accounts and no servers:
 - **Every feature works without a key**: bullet translation, eval parsing (paste text), job-match scoring, cover letter templates, LinkedIn headline/about generation, summaries — all run on the dictionary engine, fully offline.
 - **AI enhancement is optional**: add your own Anthropic API key (entered once in Settings, stored only in your browser) and Claude refines the dictionary output — plus unlocks document reading (PDF parsing/OCR). Calls go directly from your browser to `api.anthropic.com`; you pay Anthropic directly, about 2–6 cents per resume.
 
+## Dictionary vs AI-enhanced mode
+
+Debriefed has two modes. You can use either or both.
+
+### Dictionary mode (free, no setup)
+
+Debriefed includes a built-in dictionary of 33,000+ military-to-civilian translation entries covering MOS descriptions, evaluation language, performance bullets, and rate/rating terminology across all branches.
+
+You paste your bullet or eval, the dictionary engine translates it, you get a civilian version. No account, no API key, no internet required after download.
+
+This is the default. Most users start here and many stay here. The output is functional, professional, and usable for real applications.
+
+### AI-enhanced mode (optional)
+
+If you want more polished output, you can add an Anthropic API key in Settings. When a key is present, Debriefed runs the dictionary translation first, then sends it through Claude (Anthropic's AI) for refinement. The output is generally more natural and context-aware.
+
+**What it costs:**
+- About $0.02 to $0.06 per resume generation
+- A $5 initial credit at Anthropic covers 80 to 250 generations
+- Most users spend less than $2 during their full job search
+
+**How to get a key:**
+1. Sign up at [console.anthropic.com](https://console.anthropic.com)
+2. Go to Settings → Billing and add $5 in credit
+3. Go to API Keys and create a key named "Debriefed"
+4. Paste it into Debriefed's Settings
+
+The in-app setup flow walks you through this when you click "Add an Anthropic key."
+
+**Privacy:** Your API key is stored only in your browser's local storage. When you generate something, your text is sent directly from your browser to Anthropic's API. No server in the middle, no account on Debriefed, no data retained anywhere by me.
+
+### Which should you use?
+
+- **Tight budget or no credit card:** Dictionary mode. It works.
+- **Already have an Anthropic account:** Add the key, use AI-enhanced mode.
+- **Curious but not sure:** Start with dictionary mode. Try a few translations. If you want them more polished, add a key later.
+- **No internet:** Dictionary mode (AI requires internet to reach Anthropic).
+
+You can switch between modes any time. Removing the key drops you back to dictionary mode immediately.
+
 ## Stack
 
 - **Next.js 16** (App Router, React 19) — static export, deployed to GitHub Pages

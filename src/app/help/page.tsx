@@ -19,8 +19,16 @@ const FAQ_SECTIONS = [
         a: 'All of your data is stored in your browser\'s localStorage on your own device. Nothing is uploaded to any server. You can back it up or move it anytime with Export and Import in Settings. One important caveat: clearing your browser data (or using a "clear site data" cleanup tool) erases everything — so export a backup regularly.',
       },
       {
+        q: 'Dictionary mode vs AI-enhanced mode — what\'s the difference?',
+        a: 'Debriefed has two modes. Dictionary mode (the default, free, no setup) uses a built-in 33,000+ entry military translation dictionary to convert your bullets, evals, and MOS descriptions to civilian language. It works fully offline with no account or API key. AI-enhanced mode (optional) adds Anthropic\'s Claude on top of the dictionary translation: the dictionary translates first, then Claude refines it for tone, flow, and context, so the output is generally smoother. You bring your own Anthropic API key (about 2–6 cents per resume, paid to Anthropic directly), and it stays on your device. To turn it on, go to Settings and click "Add an Anthropic key" — a step-by-step walkthrough gets you set up in about 3 minutes. You can switch between modes any time, and removing the key drops you straight back to Dictionary mode.',
+      },
+      {
         q: 'What is the Anthropic API key? Do I need one?',
         a: 'No — everything works without one. The built-in 33,000+ entry dictionary engine handles translation, job matching, cover letters, and eval parsing, completely offline. Optionally, add an Anthropic API key (console.anthropic.com → Settings) and Claude enhances the dictionary output — about 2–6 cents per resume, paid to Anthropic directly. A key also unlocks reading PDFs (resume import, eval OCR).',
+      },
+      {
+        q: 'What does an Anthropic API key cost?',
+        a: 'Anthropic charges per API call. For Debriefed, each resume generation costs about $0.02 to $0.06 depending on the length and complexity of the input. A reasonable starting credit is $5, which gives you 80 to 250 generations. For example, 20 generations at roughly 4 cents each is about $0.80. Most users complete their entire job search for under $2 of API usage. Anthropic doesn\'t auto-charge you — you add credit up front, and you only spend it as you use the AI. When it runs out, you decide whether to add more. You can monitor your usage and current balance at console.anthropic.com/settings/billing.',
       },
       {
         q: 'Is my API key safe?',
