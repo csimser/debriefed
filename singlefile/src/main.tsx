@@ -1,5 +1,6 @@
 import './data-embed'
 import './fonts-embed'
+import './fonts-embed.css'
 import React, { useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@/app/globals.css'
@@ -28,23 +29,15 @@ const APP_ROUTES: Record<string, React.ComponentType> = {
   '/settings': SettingsPage,
 }
 
-function OnlineOnlyPage({ path }: { path: string }) {
+function NotBundledPage() {
   return (
     <div className="max-w-xl mx-auto py-24 text-center">
       <h1 className="font-heading text-2xl font-bold uppercase tracking-wider mb-3">
-        Available Online
+        Page Not Found
       </h1>
       <p className="text-text-muted mb-6">
-        This page isn&apos;t bundled into the single-file app. You can find it at{' '}
-        <a
-          className="text-gold underline"
-          href={`https://getdebriefed.co${path}/`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          getdebriefed.co{path}
-        </a>
-        .
+        That page isn&apos;t part of the Debriefed app. Everything you need is on
+        the dashboard.
       </p>
       <a href="#/dashboard" className="text-gold underline">
         ← Back to Dashboard
@@ -64,7 +57,7 @@ function Router() {
   if (pathname === '/onboarding') return <OnboardingPage />
 
   const Page = APP_ROUTES[pathname]
-  return <AppLayout>{Page ? <Page /> : <OnlineOnlyPage path={pathname} />}</AppLayout>
+  return <AppLayout>{Page ? <Page /> : <NotBundledPage />}</AppLayout>
 }
 
 function App() {

@@ -31,11 +31,6 @@ export default function HomePage() {
         '@type': 'WebSite',
         url: APP_URL,
         name: 'Debriefed',
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: `${APP_URL}/mos?q={search_term_string}`,
-          'query-input': 'required name=search_term_string',
-        },
       },
     ],
   }
@@ -293,7 +288,7 @@ export default function HomePage() {
               <div className="text-4xl mb-4">💾</div>
               <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">Take It Anywhere</h3>
               <p className="text-sm text-text-muted leading-relaxed">
-                Install Debriefed as an app (PWA) straight from your browser, or download the single-file Debriefed.html from GitHub Releases and run it from a USB stick — no internet connection required for the dictionary tools.
+                Download the single-file Debriefed.html from GitHub Releases and run it from your downloads folder or a USB stick — no install, no internet connection required for the dictionary tools.
               </p>
             </div>
           </div>

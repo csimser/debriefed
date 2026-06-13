@@ -13,7 +13,7 @@ export function OfflineBanner() {
   return (
     <div className="bg-bg-tertiary border-b border-border px-4 py-1.5 text-center">
       <span className="font-mono text-xs text-text-muted">
-        ⚡ Offline — using dictionary translation. AI enhancement needs internet.
+        ⚡ No internet — AI features unavailable. Dictionary translation still works.
       </span>
     </div>
   )

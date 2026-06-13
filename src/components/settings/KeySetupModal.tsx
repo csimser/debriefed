@@ -86,12 +86,16 @@ export function KeySetupModal({ isOpen, onClose, onKeySaved, featureNote }: KeyS
 
         <p className="text-xs text-text-muted">
           Your key is stored only in this browser and never leaves your device except to call
-          Anthropic. To keep it that way, use Debriefed from{' '}
-          <a href="https://getdebriefed.co" className="underline">
-            getdebriefed.co
+          Anthropic. To keep it that way, only run builds downloaded from the{' '}
+          <a
+            href="https://github.com/csimser/debriefed/releases"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            official GitHub releases
           </a>{' '}
-          or a download from our official GitHub releases — that guarantees you&apos;re running
-          the real, unmodified app.
+          — that guarantees you&apos;re running the real, unmodified app.
         </p>
 
         <div className="flex justify-end gap-2 pt-2">

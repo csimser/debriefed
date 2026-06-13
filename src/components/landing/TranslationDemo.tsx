@@ -376,7 +376,7 @@ export function TranslationDemo() {
                     The dictionary catches the terms — but your resume needs more than word swaps. Our AI rewrites your experience into polished civilian language that hiring managers actually respond to.
                   </p>
                   <Link
-                    href="/signup"
+                    href="/onboarding/"
                     className="inline-block px-6 py-3 font-heading text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all"
                   >
                     Get the Full AI-Polished Version — Build Your Free Resume →
@@ -467,7 +467,7 @@ export function TranslationDemo() {
         {/* ── CTA ──────────────────────────────────────────────── */}
         <div className="mt-10 text-center">
           <Link
-            href="/signup"
+            href="/onboarding/"
             className="inline-block px-8 py-4 font-heading text-base font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all"
           >
             Get Your Full AI Translation Free →

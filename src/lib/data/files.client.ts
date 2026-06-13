@@ -6,7 +6,7 @@
  *   1. `window.__DEBRIEFED_DATA__` — the single-file build injects every
  *      data file into this object at build time
  *   2. Cache API copy refreshed by the auto-updater (newer than the bundle)
- *   3. `fetch('/data/<file>')` — static assets deployed with the PWA
+ *   3. `fetch('/data/<file>')` — static assets from public/data (Next dev/build)
  *
  * Results are memoized per session.
  */

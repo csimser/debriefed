@@ -18,7 +18,6 @@ const navItems = [
 const secondaryItems = [
   { href: '/profile', label: 'My Profile' },
   { href: '/settings', label: 'Settings' },
-  { href: '/help', label: 'Help' },
 ]
 
 interface NavUser {

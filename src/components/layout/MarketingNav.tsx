@@ -4,15 +4,13 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 interface MarketingNavProps {
-  currentPage?: 'home' | 'about' | 'mos'
+  currentPage?: 'home' | 'about'
 }
 
 const NAV_LINKS = [
   { href: '/', label: 'Home', page: 'home' as const },
   { href: '/#features', label: 'Features', page: null },
-  { href: '/mos/', label: 'MOS Guide', page: 'mos' as const },
   { href: '/about/', label: 'About', page: 'about' as const },
-  { href: '/blog/', label: 'Blog', page: null },
   { href: '/help/', label: 'Help', page: null },
 ]
 
