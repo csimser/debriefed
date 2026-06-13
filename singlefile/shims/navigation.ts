@@ -49,9 +49,22 @@ export function usePathname(): string {
   return useSyncExternalStore(subscribe, () => parseHash().pathname, () => '/')
 }
 
+// Cache the parsed params so the returned reference is stable while the query
+// string is unchanged. Real next/navigation memoizes useSearchParams the same
+// way; without this, every render produces a fresh URLSearchParams object,
+// which makes effects that depend on `searchParams` (e.g. TopNav's
+// close-menu-on-route-change effect) re-run on every render and instantly
+// dismiss menus that were just opened.
+let cachedSearch: string | null = null
+let cachedParams = new URLSearchParams()
+
 export function useSearchParams(): URLSearchParams {
   const search = useSyncExternalStore(subscribe, () => parseHash().search, () => '')
-  return new URLSearchParams(search)
+  if (search !== cachedSearch) {
+    cachedSearch = search
+    cachedParams = new URLSearchParams(search)
+  }
+  return cachedParams
 }
 
 export function useRouter() {

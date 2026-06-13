@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { cn } from '@/lib/utils'
@@ -1185,7 +1186,7 @@ export function DictCoverLetterBuilder({
                               </div>
                             </div>
                             {score < 40 && (
-                              <a href="/profile" className="text-[10px] text-gold hover:text-gold-bright underline mt-1 inline-block">Add more in Profile</a>
+                              <Link href="/profile" className="text-[10px] text-gold hover:text-gold-bright underline mt-1 inline-block">Add more in Profile</Link>
                             )}
                           </div>
                         )

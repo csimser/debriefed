@@ -1534,7 +1534,7 @@ export function JobMatchWorkspace({
           <Card className="p-6 text-center bg-bg-tertiary">
             <div className="text-3xl mb-3 text-text-dim">◫</div>
             <p className="text-text-muted mb-3">No resumes found. Create one first.</p>
-            <Button size="sm" onClick={() => window.location.href = '/resumes'}>Create Resume</Button>
+            <Button size="sm" onClick={() => router.push('/resumes')}>Create Resume</Button>
           </Card>
         )}
 

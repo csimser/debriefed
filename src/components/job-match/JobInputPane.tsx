@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -29,6 +30,7 @@ export function JobInputPane({
   analyzing,
   error,
 }: JobInputPaneProps) {
+  const router = useRouter()
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -91,7 +93,7 @@ export function JobInputPane({
           {resumes.length === 0 && (
             <Card className="p-4 text-center">
               <p className="text-text-muted text-sm">No resumes found. Create one first.</p>
-              <Button size="sm" className="mt-2" onClick={() => window.location.href = '/resumes'}>
+              <Button size="sm" className="mt-2" onClick={() => router.push('/resumes')}>
                 Create Resume
               </Button>
             </Card>
