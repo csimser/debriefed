@@ -101,10 +101,10 @@ export default function PrivacyPage() {
             <p className="text-text-muted leading-relaxed mb-4">The only third parties involved are:</p>
             <ul className="list-disc list-inside text-text-muted space-y-2 ml-4">
               <li><strong className="text-text">Anthropic:</strong> Receives content you submit to AI features, only when you use them with your own API key</li>
-              <li><strong className="text-text">GitHub Pages:</strong> Serves the static site at getdebriefed.co. Like any web host, GitHub keeps standard server logs (such as IP addresses) under its own policies; we never see them</li>
+              <li><strong className="text-text">GitHub:</strong> Hosts the project&apos;s source code and the Debriefed.html download. Downloading the file is a normal web request; GitHub keeps standard server logs (such as IP addresses) under its own policies, and we never see them</li>
             </ul>
             <p className="text-text-muted leading-relaxed mt-4">
-              If you use the downloadable single-file version (Debriefed.html), even static hosting is out of the picture once you've downloaded it.
+              Once you&apos;ve downloaded Debriefed.html, the app runs entirely from your own device — no further network requests except the Anthropic calls you trigger yourself.
             </p>
           </section>
 
@@ -135,7 +135,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-gold mb-4">10. Security</h2>
             <p className="text-text-muted leading-relaxed">
-              Your data is only as secure as the device and browser it lives on. Connections to Anthropic use encrypted HTTPS. To ensure you are running unmodified code, use the official builds from getdebriefed.co or the{' '}
+              Your data is only as secure as the device and browser it lives on. Connections to Anthropic use encrypted HTTPS. To ensure you are running unmodified code, only download Debriefed from the official{' '}
               <a href="https://github.com/csimser/debriefed/releases" target="_blank" rel="noopener noreferrer" className="text-gold hover:text-gold-bright">GitHub Releases</a> page — and since the project is open source, you can verify the code yourself.
             </p>
           </section>

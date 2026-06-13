@@ -17,8 +17,9 @@ export default defineConfig({
       // onto the hash router.
       'next/link': path.join(__dirname, 'shims/link.tsx'),
       'next/navigation': path.join(__dirname, 'shims/navigation.ts'),
-      // file:// can't load /fonts/* — swap in the inlined UI fonts
-      [path.join(repoRoot, 'src/app/fonts.css')]: path.join(__dirname, 'src/fonts-embed.css'),
+      // UI fonts are inlined via src/fonts-embed.css, imported directly from
+      // main.tsx (globals.css no longer pulls in the /fonts/-absolute fonts.css
+      // that would 404 on file://).
     },
     dedupe: ['react', 'react-dom', '@react-pdf/renderer'],
   },

@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
-import { SUPPORT_EMAIL } from '@/lib/site-config'
 
 // FAQ Data
 const FAQ_SECTIONS = [
@@ -24,7 +23,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: 'Is my API key safe?',
-        a: 'Your key is stored only in this browser, on this device. It is never sent anywhere except directly to Anthropic when you use an AI feature — there is no Debriefed server that could see it. To make sure you\'re running unmodified code, use the official builds from getdebriefed.co or the GitHub Releases page.',
+        a: 'Your key is stored only in this browser, on this device. It is never sent anywhere except directly to Anthropic when you use an AI feature — there is no Debriefed server that could see it. To make sure you\'re running unmodified code, only download Debriefed from the official GitHub Releases page.',
       },
       {
         q: 'How do I move to a new computer?',
@@ -79,11 +78,11 @@ const FAQ_SECTIONS = [
     questions: [
       {
         q: "Why isn't my data saving?",
-        a: `Debriefed saves everything to your browser's localStorage, so no internet connection is required. If data isn't saving, check that you're not in a private/incognito window (some browsers discard storage when the window closes) and that your browser isn't blocking site data for this page. If you're still having trouble, contact ${SUPPORT_EMAIL} with your browser and device info.`,
+        a: "Debriefed saves everything to your browser's localStorage, so no internet connection is required. If data isn't saving, check that you're not in a private/incognito window (some browsers discard storage when the window closes) and that your browser isn't blocking site data for this page. If you're still having trouble, open an issue on GitHub with your browser and device info.",
       },
       {
         q: 'Does Debriefed work offline?',
-        a: 'Yes. Debriefed is a PWA — the app, fonts, and the full 33,000+ entry dictionary are cached on your device, so translation, job matching, cover letter templates, and PDF export all work with no internet. Only the optional AI enhancement needs a connection (it calls Anthropic\'s API directly from your browser).',
+        a: 'Yes. Debriefed is a single HTML file — the app, fonts, and the full 33,000+ entry dictionary all live inside it, so translation, job matching, cover letter templates, and PDF export work with no internet. Only the optional AI enhancement needs a connection (it calls Anthropic\'s API directly from your browser).',
       },
       {
         q: 'What browsers are supported?',
@@ -200,7 +199,7 @@ const TUTORIALS = [
     title: 'Getting Started',
     description: 'From first open to your first resume in 15 minutes',
     steps: [
-      { title: 'Open Debriefed', description: 'Use the app at getdebriefed.co or the single-file download — no account or sign-up needed.' },
+      { title: 'Open Debriefed', description: 'Double-click the Debriefed.html file you downloaded — it opens in your browser. No account or sign-up needed.' },
       { title: 'Complete onboarding', description: 'Create your profile: military branch, paygrade, background, career goals, and transition timeline. It all stays on your device.' },
       { title: 'Add your API key (optional)', description: 'For AI features, paste your Anthropic API key in Settings. Dictionary translation works without one.' },
       { title: 'Review your dashboard', description: 'See your quick actions and recommended next steps.' },
@@ -593,26 +592,18 @@ export default function HelpPage() {
           <Card className="p-8 md:p-12">
             <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-2">Still Need Help?</h2>
             <p className="text-text-muted mb-4">
-              Can't find what you're looking for? Reach out — we're happy to help.
+              Debriefed is free and open source — there&apos;s no support desk, but the project is
+              active on GitHub.
             </p>
             <p className="text-text-muted text-sm mb-6">
-              Found a bug? Open an issue on GitHub or email {SUPPORT_EMAIL}
+              Found a bug or have a question? Open an issue on GitHub and we&apos;ll take a look.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href={`mailto:${SUPPORT_EMAIL}`}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gold text-bg-primary font-heading text-sm font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Email Support
-              </a>
+            <div className="flex justify-center">
               <a
                 href="https://github.com/csimser/debriefed/issues"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-border bg-bg-secondary text-text font-heading text-sm font-bold uppercase tracking-wider rounded hover:border-gold hover:text-gold transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gold text-bg-primary font-heading text-sm font-bold uppercase tracking-wider rounded hover:bg-gold-bright transition-colors"
               >
                 Open a GitHub Issue
               </a>

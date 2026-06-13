@@ -261,8 +261,8 @@ export default function SettingsPage() {
 
         <div className="mt-4 pt-4 border-t border-border">
           <p className="text-xs text-text-muted">
-            Your key lives only in this browser and is never included in data exports. For
-            guaranteed-authentic builds, use getdebriefed.co or the official GitHub releases.
+            Your key lives only in this browser and is never included in data exports. For a
+            guaranteed-authentic build, only download Debriefed from the official GitHub releases.
           </p>
         </div>
       </Card>

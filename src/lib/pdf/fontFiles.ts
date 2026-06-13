@@ -1,10 +1,9 @@
 /**
  * Resolves PDF font files for @react-pdf's Font.register.
  *
- * - PWA build: served from /fonts/pdf/ (latin-subset TTFs in public/,
- *   cached by the service worker → PDF export works offline)
+ * - Next build: served from /fonts/pdf/ (latin-subset TTFs in public/)
  * - Single-file build: singlefile/src/fonts-embed.ts injects base64 data
- *   URLs into window.__DEBRIEFED_FONTS__ at startup
+ *   URLs into window.__DEBRIEFED_FONTS__ at startup → PDF export works on file://
  */
 
 declare global {

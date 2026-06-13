@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import './globals.css'
+import './fonts.css'
 import { ThemeProvider } from '@/components/theme/ThemeProvider'
-import { PWAProvider } from '@/components/providers/PWAProvider'
+import { DataUpdateProvider } from '@/components/providers/DataUpdateProvider'
 import { APP_URL } from '@/lib/site-config'
 
 export const metadata: Metadata = {
@@ -24,10 +25,6 @@ export const metadata: Metadata = {
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GSC_VERIFICATION ?? '',
-  },
-  manifest: '/manifest.json',
-  icons: {
-    apple: '/apple-touch-icon.png',
   },
 }
 
@@ -53,7 +50,7 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
-          <PWAProvider />
+          <DataUpdateProvider />
           <Suspense>{children}</Suspense>
         </ThemeProvider>
       </body>

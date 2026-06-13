@@ -7,14 +7,14 @@ attack surface is correspondingly small, and the security model is:
 
 - **User data** lives in the browser's localStorage only. Nothing is
   transmitted to or stored on any Debriefed-operated server (there are none —
-  the site is static files on GitHub Pages).
+  the app is a single HTML file that runs locally from your device).
 - **The Anthropic API key** is supplied by the user, stored under a dedicated
   localStorage key, **excluded from data exports**, and sent only to
   `api.anthropic.com` directly from the browser.
-- **Content-Security-Policy** is set via a `<meta>` tag (static hosting cannot
+- **Content-Security-Policy** is set via a `<meta>` tag (there is no server to
   set headers): scripts self-only, `connect-src` restricted to self,
-  `api.anthropic.com`, `raw.githubusercontent.com` (data auto-update), and
-  Google Fonts. No third-party scripts, no analytics.
+  `api.anthropic.com`, and `raw.githubusercontent.com` (data auto-update).
+  Fonts are bundled locally — no third-party scripts, no analytics, no CDNs.
 - **PII screening** (SSN/DODID patterns) runs client-side before document text
   is sent to Anthropic for AI parsing.
 - **Data auto-update** fetches JSON from this repo over HTTPS with an
@@ -25,8 +25,8 @@ attack surface is correspondingly small, and the security model is:
 
 1. **XSS ⇒ key theft.** Any successful script injection could read the stored
    API key. Mitigations: meta-CSP, zero third-party scripts, dependency review.
-   Users should only run builds from getdebriefed.co or official GitHub
-   Releases (the app says so in Settings).
+   Users should only run builds downloaded from the official GitHub Releases
+   (the app says so in Settings).
 2. **Modified redistributions.** Anyone can fork and rebuild (MIT). The Terms
    prohibit misrepresenting modified builds as official; users are pointed at
    official sources.

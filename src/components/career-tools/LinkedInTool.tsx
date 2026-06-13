@@ -1664,7 +1664,7 @@ function AnalyzeMode({
           </Card>
         )}
 
-        {/* Headline - only for pro users */}
+        {/* Headline */}
         {hasPaidAccess && (
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -1695,7 +1695,7 @@ function AnalyzeMode({
           </Card>
         )}
 
-        {/* About - only for pro users */}
+        {/* About */}
         {hasPaidAccess && (
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -1726,7 +1726,7 @@ function AnalyzeMode({
           </Card>
         )}
 
-        {/* Experience Analysis (if available) - only for pro users */}
+        {/* Experience Analysis (if available) */}
         {hasPaidAccess && analysis.sections.experience && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -1907,7 +1907,7 @@ function AnalyzeMode({
           </Card>
         )}
 
-        {/* Skills (if available) - only for pro users */}
+        {/* Skills (if available) */}
         {hasPaidAccess && analysis.sections.skills && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -1945,7 +1945,7 @@ function AnalyzeMode({
           </Card>
         )}
 
-        {/* Certifications (if available) - only for pro users */}
+        {/* Certifications (if available) */}
         {hasPaidAccess && analysis.sections.certifications && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -2004,7 +2004,7 @@ function AnalyzeMode({
           </Card>
         )}
 
-        {/* Education (if available) - only for pro users */}
+        {/* Education (if available) */}
         {hasPaidAccess && analysis.sections.education && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -2054,7 +2054,7 @@ function AnalyzeMode({
           </Card>
         )}
 
-        {/* Keywords (if available) - only for pro users */}
+        {/* Keywords (if available) */}
         {hasPaidAccess && analysis.sections.keywords && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -2081,7 +2081,7 @@ function AnalyzeMode({
           </Card>
         )}
 
-        {/* Priority Actions (if available) - only for pro users */}
+        {/* Priority Actions (if available) */}
         {hasPaidAccess && analysis.priorityActions && (
           <Card className="p-6">
             <h3 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">

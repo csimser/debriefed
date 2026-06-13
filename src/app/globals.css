@@ -1,4 +1,8 @@
-@import './fonts.css';
+/* Font @font-face rules are imported separately per build target:
+ *   Next build  → src/app/layout.tsx imports ./fonts.css (served from /fonts/)
+ *   Single file → singlefile/src/main.tsx imports ./fonts-embed.css (inlined)
+ * Keeping them out of globals.css avoids bundling the absolute /fonts/ URLs
+ * (which 404 on file://) into the single-file distribution. */
 
 @tailwind base;
 @tailwind components;

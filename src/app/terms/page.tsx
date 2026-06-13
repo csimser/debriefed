@@ -33,7 +33,7 @@ export default function TermsPage() {
           <section>
             <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-gold mb-4">1. Service Description</h2>
             <p className="text-text-muted leading-relaxed">
-              Debriefed is a free, open-source tool that helps military service members and veterans translate their military experience into civilian-friendly resume content. Features include resume building, military-to-civilian bullet translation, cover letter generation, and career transition tools. Debriefed runs entirely in your browser: there are no accounts, no servers, and no subscriptions. It is available as a web app at getdebriefed.co and as a downloadable single file (Debriefed.html) via GitHub Releases.
+              Debriefed is a free, open-source tool that helps military service members and veterans translate their military experience into civilian-friendly resume content. Features include resume building, military-to-civilian bullet translation, cover letter generation, and career transition tools. Debriefed runs entirely in your browser: there are no accounts, no servers, and no subscriptions. It is distributed as a downloadable single file (Debriefed.html) via GitHub Releases.
             </p>
           </section>
 
@@ -112,9 +112,9 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-gold mb-4">9. Discontinuation of Hosted Distribution</h2>
+            <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-gold mb-4">9. Availability</h2>
             <p className="text-text-muted leading-relaxed">
-              There are no accounts to terminate. We reserve the right to modify or discontinue the hosted distribution of Debriefed (the web app at getdebriefed.co) at any time. Because the app runs locally and the software is MIT licensed, the downloadable single-file version and the open-source code will continue to work and remain available regardless. Your data stays on your device either way; you can delete it at any time through the Settings page or by clearing browser storage.
+              There are no accounts to terminate. We reserve the right to stop publishing new Debriefed releases at any time. Because the app runs locally and the software is MIT licensed, any copy you have already downloaded — and the open-source code — will continue to work and remain available regardless. Your data stays on your device either way; you can delete it at any time through the Settings page or by clearing browser storage.
             </p>
           </section>
 
