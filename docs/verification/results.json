@@ -1,0 +1,112 @@
+[
+  {
+    "name": "first-launch modal shows",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "modal has dictionary option",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "modal has key option",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "modal dismissed, dashboard usable",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "dictionary match analysis renders",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "no key prompts shown",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "enhance affordance present (add key)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "offline page served by service worker",
+    "ok": true,
+    "detail": "15759 chars"
+  },
+  {
+    "name": "offline banner visible",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "dictionary data served offline",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "PDF fonts served offline",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "offline banner still visible with key",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "dictionary analysis works offline with key",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "AI affordances disabled with tooltip",
+    "ok": true,
+    "detail": "2 found"
+  },
+  {
+    "name": "no offline banner when online",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "dictionary analysis still primary",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "active AI buttons with key",
+    "ok": true,
+    "detail": "2 found"
+  },
+  {
+    "name": "resume editor loads",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "MOS explorer renders",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "single-file dictionary analysis works",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "PDF fonts embedded as data URLs",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "name": "zero page errors across all modes",
+    "ok": true,
+    "detail": ""
+  }
+]

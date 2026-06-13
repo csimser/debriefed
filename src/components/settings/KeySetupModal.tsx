@@ -42,13 +42,13 @@ export function KeySetupModal({ isOpen, onClose, onKeySaved, featureNote }: KeyS
   }
 
   return (
-    <ModalShell isOpen={isOpen} onClose={onClose} title="Connect your Anthropic API key">
+    <ModalShell isOpen={isOpen} onClose={onClose} title="Add an Anthropic API key (optional)">
       <div className="space-y-4">
         <p className="text-sm text-text-muted">
-          {featureNote ?? 'This feature uses Claude AI.'} Debriefed has no servers and no
-          subscriptions — AI features run on your own Anthropic API key, sent directly from your
-          browser to Anthropic. You pay Anthropic only for what you use (most actions cost less
-          than a cent).
+          {featureNote ?? 'AI enhancement is optional — the dictionary engine works without it.'}{' '}
+          Debriefed has no servers and no subscriptions — AI runs on your own Anthropic API key,
+          sent directly from your browser to Anthropic. You pay Anthropic only for what you use
+          (about 2–6 cents per resume).
         </p>
 
         <ol className="text-sm text-text-muted list-decimal pl-5 space-y-1">

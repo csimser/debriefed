@@ -113,6 +113,11 @@ export interface GenerateLinkedInInput {
   aboutLength?: string
   emphasis?: string[]
   regenerateOnly?: 'headline' | 'about' | null
+  /**
+   * Optional dictionary-generated drafts. When provided, Claude is asked to
+   * improve the draft rather than start from scratch.
+   */
+  baseline?: { headline?: string | null; about?: string | null }
 }
 
 export interface GenerateLinkedInResult {
@@ -139,6 +144,7 @@ export async function generateLinkedIn(
     aboutLength = 'standard',
     emphasis = [],
     regenerateOnly,
+    baseline,
   } = input
 
   const rank = userProfile?.rank || 'Senior military leader'
@@ -249,7 +255,7 @@ BAD EXAMPLES (don't do this):
 "Operations Leader | Driving 86% Improvements | 100% Success Rates | Transforming Organizations"
 "Results-Driven Leader | Passionate About Excellence | Strategic Visionary"
 
-Generate ONLY the headline, nothing else.`
+Generate ONLY the headline, nothing else.${baseline?.headline ? `\n\nHere is a draft to improve: ${baseline.headline}` : ''}`
 
     const headlineResult = await callWithEscalation(
       anthropic,
@@ -332,7 +338,7 @@ CRITICAL RULES:
 - Sound like a real person wrote this, not AI
 - Max 2,600 characters
 
-Generate the About section with proper paragraph breaks.`
+Generate the About section with proper paragraph breaks.${baseline?.about ? `\n\nHere is a draft to improve: ${baseline.about}` : ''}`
 
     const aboutResult = await callWithEscalation(
       anthropic,
@@ -402,8 +408,9 @@ if (typeof setInterval !== 'undefined') {
   setInterval(cleanCache, 60 * 60 * 1000) // Clean every hour
 }
 
-// Pre-calculate baseline scores based on content presence and quality
-function calculateBaselineScores(linkedInData: any) {
+// Pre-calculate baseline scores based on content presence and quality.
+// Exported so the keyless analysis path can run the same heuristics standalone.
+export function calculateBaselineScores(linkedInData: any) {
   const scores: any = {}
 
   // Headline score: 60-75 if exists, 0-20 if missing

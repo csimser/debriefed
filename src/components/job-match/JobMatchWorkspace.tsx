@@ -14,8 +14,9 @@ import type { ExtractionResult, MatchResult, DictProfessionalSummary } from '@/l
 import { TailoredPreviewModal, type PreviewChange } from './TailoredPreviewModal'
 import { ScoreGauge } from './ScoreGauge'
 import { analyzeJobMatch, getJobMatchSuggestions } from '@/lib/ai/jobMatch'
-import { classifyAIError, hasApiKey } from '@/lib/ai/client'
-import { KeySetupModal } from '@/components/settings/KeySetupModal'
+import { classifyAIError } from '@/lib/ai/client'
+import { EnhanceWithAI } from '@/components/ai/EnhanceWithAI'
+import { OutputModeLabel } from '@/components/ai/OutputModeLabel'
 import { saveResume, newId } from '@/lib/storage'
 import { exportResume } from '@/lib/export/resumeExport'
 
@@ -347,7 +348,11 @@ export function JobMatchWorkspace({
   const [translatedSuggestions, setTranslatedSuggestions] = useState<Map<string, string>>(new Map())
   const [translating, setTranslating] = useState(false)
 
-  // Lazy-loaded suggestions state
+  // AI bullet-rewrite suggestions (optional enhancement, loaded on demand)
+  const [aiSuggestions, setAiSuggestions] = useState<{
+    bulletSuggestions: BulletSuggestion[]
+    skillChanges: AnalysisResult['skillChanges']
+  } | null>(null)
   const [suggestionsLoading, setSuggestionsLoading] = useState(false)
 
   // Dictionary bullet translations for free tier: key → translated text
@@ -366,7 +371,6 @@ export function JobMatchWorkspace({
   const [downloading, setDownloading] = useState(false)
   const [savingResume, setSavingResume] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('classic_professional')
-  const [keyModalOpen, setKeyModalOpen] = useState(false)
 
   // Fix 1: Selectable ATS keywords
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set())
@@ -390,14 +394,14 @@ export function JobMatchWorkspace({
 
   // Translate AI bullet suggestions through the dictionary engine
   useEffect(() => {
-    if (!analysis?.bulletSuggestions?.length) return
+    if (!aiSuggestions?.bulletSuggestions?.length) return
 
     const branch = userProfile?.branch || ''
     setTranslating(true)
 
     const translateAll = async () => {
       const translations = new Map<string, string>()
-      for (const suggestion of analysis.bulletSuggestions) {
+      for (const suggestion of aiSuggestions.bulletSuggestions) {
         if (suggestion.action !== 'rewrite' || !suggestion.suggested) continue
         const key = `${suggestion.experienceIndex}-${suggestion.bulletIndex}`
         try {
@@ -413,9 +417,9 @@ export function JobMatchWorkspace({
     }
 
     translateAll()
-  }, [analysis, userProfile?.branch])
+  }, [aiSuggestions, userProfile?.branch])
 
-  // NOTE: keyword initialization moved inline to handleAnalyze after setDictResult
+  // NOTE: keyword initialization happens inline wherever the dictionary match runs
 
   // Sync tailoredResume skills with selectedKeywords (skills = ONLY the selected keywords)
   useEffect(() => {
@@ -493,6 +497,17 @@ export function JobMatchWorkspace({
         setAddressedGaps(new Set())
         setCustomKeywords([])
         setManualKeyword('')
+        // Fresh tailored copy so keyless users can apply bullets/summaries/keywords
+        if (selectedResume?.content) {
+          setTailoredResume({
+            content: JSON.parse(JSON.stringify(selectedResume.content)),
+            appliedBullets: new Set(),
+            addedSkills: [],
+            removedSkills: [],
+            excludedBullets: new Set(),
+          })
+          setChangesSummary([])
+        }
       } catch {}
     }, 1500)
     return () => { if (extractDebounceRef.current) clearTimeout(extractDebounceRef.current) }
@@ -511,27 +526,14 @@ export function JobMatchWorkspace({
     return () => document.removeEventListener('mousedown', handleClick)
   }, [isResumeDropdownOpen])
 
-  const handleAnalyze = async () => {
+  // Primary analysis — DICTIONARY path, runs unconditionally (no key, no network needed).
+  // Normally fired by the debounced paste effect; callable directly as a fallback.
+  const runDictionaryAnalysis = useCallback(async () => {
     if (!selectedResume || !jobData.description) {
       setError('Please select a resume and enter a job description')
       return
     }
-
-    // AI action — requires the user's Anthropic API key
-    if (!hasApiKey()) {
-      setKeyModalOpen(true)
-      return
-    }
-
-    setAnalyzing(true)
     setError('')
-    setAnalysis(null)
-    setDictResult(null)
-    setTailoredResume(null)
-    setOriginalScore(null)
-    setChangesSummary([])
-
-    // Run dictionary engine first (instant, no API call)
     try {
       const extraction = await extractKeywords(jobData.description)
       const profile = buildUserProfile(
@@ -548,15 +550,39 @@ export function JobMatchWorkspace({
       )
       const match = await calculateMatch(extraction, profile)
       setDictResult({ extraction, match })
-      // Initialize selected keywords immediately (was useEffect, now inline for reliability)
       const top12 = extraction.atsKeywords.slice(0, 12).map(kw => kw.keyword)
       setSelectedKeywords(new Set(top12))
       setAddressedGaps(new Set())
       setCustomKeywords([])
       setManualKeyword('')
+      setTailoredResume({
+        content: JSON.parse(JSON.stringify(selectedResume.content)),
+        appliedBullets: new Set(),
+        addedSkills: [],
+        removedSkills: [],
+        excludedBullets: new Set(),
+      })
+      setChangesSummary([])
     } catch (dictErr) {
       console.error('[DictionaryEngine] Failed:', dictErr)
-      // Non-blocking — continue to AI analysis even if dictionary fails
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedResume, jobData.description, userProfile, userSkills, userCertifications, userEducation])
+
+  // Optional AI enhancement — deep analysis narrative on top of the dictionary baseline.
+  // Reached only through <EnhanceWithAI/>, which handles missing-key and offline states.
+  const handleDeepAnalysis = async () => {
+    if (!selectedResume || !jobData.description) {
+      setError('Please select a resume and enter a job description')
+      return
+    }
+
+    setAnalyzing(true)
+    setError('')
+
+    // Make sure the dictionary baseline exists (it normally ran on paste)
+    if (!dictResult) {
+      await runDictionaryAnalysis()
     }
 
     try {
@@ -567,36 +593,58 @@ export function JobMatchWorkspace({
 
       setAnalysis(data.analysis)
       setOriginalScore(data.analysis.overallScore)
-      setTailoredResume({
+      // Keep any tailoring the user already did on the dictionary path
+      setTailoredResume(prev => prev ?? {
         content: JSON.parse(JSON.stringify(selectedResume.content)),
         appliedBullets: new Set(),
         addedSkills: [],
         removedSkills: [],
         excludedBullets: new Set(),
       })
-
-      // Lazy-load bullet suggestions in background
-      setSuggestionsLoading(true)
-      getJobMatchSuggestions({
-        resumeContent: selectedResume.content,
-        jobPosting: jobData,
-        gaps: data.analysis.gaps,
-      })
-        .then(sugData => {
-          if (sugData.bulletSuggestions?.length || sugData.skillChanges) {
-            setAnalysis(prev => prev ? {
-              ...prev,
-              bulletSuggestions: sugData.bulletSuggestions || prev.bulletSuggestions,
-              skillChanges: sugData.skillChanges || prev.skillChanges,
-            } : prev)
-          }
-        })
-        .catch(() => {}) // Non-critical, silently fail
-        .finally(() => setSuggestionsLoading(false))
     } catch (err) {
+      // Dictionary results stay visible and usable — only the AI layer failed
       setError(classifyAIError(err).message)
     } finally {
       setAnalyzing(false)
+    }
+  }
+
+  // Optional AI enhancement — bullet-rewrite suggestions, on demand only.
+  const handleGetSuggestions = async () => {
+    if (!selectedResume || !jobData.description || suggestionsLoading) return
+
+    setSuggestionsLoading(true)
+    setError('')
+    try {
+      // Prefer AI-analysis gaps; fall back to dictionary gaps so suggestions
+      // work without running deep analysis first
+      const gaps = analysis?.gaps?.length
+        ? analysis.gaps
+        : (dictResult?.match.gaps ?? []).map(g => ({
+            description: `Missing ${g.severity === 'high' ? 'required' : 'preferred'} ${g.category}: ${g.keyword}`,
+          }))
+
+      const sugData = await getJobMatchSuggestions({
+        resumeContent: selectedResume.content,
+        jobPosting: jobData,
+        gaps,
+      })
+      setAiSuggestions({
+        bulletSuggestions: sugData.bulletSuggestions || [],
+        skillChanges: sugData.skillChanges || { add: [], highlight: [], remove: [] },
+      })
+      setTailoredResume(prev => prev ?? {
+        content: JSON.parse(JSON.stringify(selectedResume.content)),
+        appliedBullets: new Set(),
+        addedSkills: [],
+        removedSkills: [],
+        excludedBullets: new Set(),
+      })
+    } catch (err) {
+      // Dictionary gap recommendations remain on screen — only the AI layer failed
+      setError(classifyAIError(err).message)
+    } finally {
+      setSuggestionsLoading(false)
     }
   }
 
@@ -734,15 +782,15 @@ export function JobMatchWorkspace({
     setChangesSummary(prev => [...prev, `Added skill: ${skillName}`])
   }, [])
 
-  // Open preview modal for "Apply All" suggestions
+  // Open preview modal for "Apply All" suggestions (AI rewrites + dictionary translations)
   const openApplyAllPreview = useCallback(() => {
-    if (!analysis || !tailoredResume) return
+    if (!tailoredResume) return
 
     const previewItems: PreviewChange[] = []
     const experiences = tailoredResume.content.experiences || []
 
-    // Bullet rewrites
-    analysis.bulletSuggestions?.forEach(suggestion => {
+    // AI bullet rewrites
+    aiSuggestions?.bulletSuggestions?.forEach(suggestion => {
       if (suggestion.action !== 'rewrite' || !suggestion.suggested) return
       const key = `${suggestion.experienceIndex}-${suggestion.bulletIndex}`
       if (tailoredResume.appliedBullets.has(key)) return // already applied
@@ -762,8 +810,33 @@ export function JobMatchWorkspace({
       })
     })
 
+    // Dictionary bullet translations (keyless path) — skip bullets already
+    // covered by an AI suggestion or already applied
+    dictBulletTranslations.forEach((translated, key) => {
+      if (tailoredResume.appliedBullets.has(key)) return
+      if (previewItems.some(p => p.id === `bullet-${key}`)) return
+
+      const [expIdx, bIdx] = key.split('-').map(Number)
+      const exp = experiences[expIdx]
+      const bullet = exp?.bullets?.[bIdx]
+      if (!bullet) return
+
+      const original = bullet.translated_text || bullet.original_text || ''
+      if (!original || original === translated) return
+      const expLabel = exp?.job_title || exp?.civilian_title || `Experience ${expIdx + 1}`
+
+      previewItems.push({
+        id: `bullet-${key}`,
+        type: 'bullet_rewrite',
+        label: expLabel,
+        before: original,
+        after: translated,
+        status: 'keep',
+      })
+    })
+
     // Skill additions
-    analysis.skillChanges?.add?.forEach(skillName => {
+    aiSuggestions?.skillChanges?.add?.forEach(skillName => {
       const exists = tailoredResume.content.skills?.some((s: any) =>
         s.name.toLowerCase() === skillName.toLowerCase()
       )
@@ -779,7 +852,7 @@ export function JobMatchWorkspace({
     })
 
     // Skill removals
-    analysis.skillChanges?.remove?.forEach(skillName => {
+    aiSuggestions?.skillChanges?.remove?.forEach(skillName => {
       if (tailoredResume.removedSkills.includes(skillName)) return
       const exists = tailoredResume.content.skills?.some((s: any) =>
         s.name.toLowerCase() === skillName.toLowerCase()
@@ -799,11 +872,11 @@ export function JobMatchWorkspace({
 
     setPreviewChanges(previewItems)
     setPreviewMode('apply-all')
-  }, [analysis, tailoredResume, translatedSuggestions])
+  }, [aiSuggestions, tailoredResume, translatedSuggestions, dictBulletTranslations])
 
   // Handle confirmed apply from preview modal
   const handlePreviewApply = useCallback((finalChanges: PreviewChange[]) => {
-    if (previewMode === 'apply-all' && tailoredResume && analysis) {
+    if (previewMode === 'apply-all' && tailoredResume) {
       setApplyingPreview(true)
       const changeLog: string[] = []
 
@@ -853,7 +926,7 @@ export function JobMatchWorkspace({
       }
 
       // Also handle exclude suggestions that weren't in the preview
-      analysis.bulletSuggestions?.forEach(suggestion => {
+      aiSuggestions?.bulletSuggestions?.forEach(suggestion => {
         if (suggestion.action !== 'exclude') return
         const key = `${suggestion.experienceIndex}-${suggestion.bulletIndex}`
         if (!newExcluded.has(key)) {
@@ -877,7 +950,7 @@ export function JobMatchWorkspace({
       // Apply keyword additions to DB resume
       applyKeywordsFromPreview(finalChanges)
     }
-  }, [previewMode, tailoredResume, analysis, previewTargetResumeId])
+  }, [previewMode, tailoredResume, aiSuggestions, previewTargetResumeId])
 
   // Apply keywords to a resume from preview modal confirmation
   const applyKeywordsFromPreview = useCallback(async (finalChanges: PreviewChange[]) => {
@@ -944,6 +1017,8 @@ export function JobMatchWorkspace({
   const handleStartNewAnalysis = useCallback(() => {
     setAnalysis(null)
     setDictResult(null)
+    setAiSuggestions(null)
+    setSuggestionsLoading(false)
     setTailoredResume(null)
     setOriginalScore(null)
     setChangesSummary([])
@@ -1256,7 +1331,7 @@ export function JobMatchWorkspace({
         content: contentWithExclusions,
         target_job_title: jobData.title || null,
         target_job_description: jobData.description || null,
-        match_score: calculateTailoredScore(),
+        match_score: analysis ? calculateTailoredScore() : getAdjustedDictScore(),
       })
 
       alert(`Saved as "${newName}". View it on your Resumes page.`)
@@ -1265,7 +1340,7 @@ export function JobMatchWorkspace({
     } finally {
       setSavingResume(false)
     }
-  }, [tailoredResume, selectedResume, jobData.title, jobData.description, selectedTemplate, calculateTailoredScore])
+  }, [tailoredResume, selectedResume, jobData.title, jobData.description, selectedTemplate, calculateTailoredScore, analysis, getAdjustedDictScore])
 
   // Score display helpers - HARSHER thresholds
   const getScoreColor = (score: number) => {
@@ -1432,20 +1507,15 @@ export function JobMatchWorkspace({
           <p className="text-xs text-text-dim mt-2">Auto-extracted from job description when possible</p>
         </Card>
 
-        {/* ═══ Deep Analysis button — secondary, runs on your API key ═══ */}
+        {/* ═══ Optional AI deep analysis — dictionary results never depend on this ═══ */}
         {dictResult && !analysis && (
           <div className="flex items-center justify-center gap-4">
-            <Button
-              variant="secondary"
-              onClick={handleAnalyze}
-              disabled={analyzing}
-            >
-              {analyzing ? (
-                <><svg className="w-4 h-4 mr-2 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>Running AI Analysis...</>
-              ) : (
-                <>Deep Analysis</>
-              )}
-            </Button>
+            <EnhanceWithAI
+              label="✨ AI Deep Analysis"
+              featureNote="Deep analysis uses Claude to explain your match and strategy."
+              onEnhance={handleDeepAnalysis}
+              busy={analyzing}
+            />
           </div>
         )}
 
@@ -1468,8 +1538,8 @@ export function JobMatchWorkspace({
           </Card>
         )}
 
-        {/* Loading State */}
-        {analyzing && (
+        {/* Loading State — only when there are no dictionary results to show yet */}
+        {analyzing && !hasResults && (
           <Card className="p-12">
             <div className="text-center">
               <div className="relative w-20 h-20 mx-auto mb-6">
@@ -1513,7 +1583,7 @@ export function JobMatchWorkspace({
         {/* ═══════════════════════════════════════════════════════════ */}
         {/* ═══ RESULTS — shown inline below input ═══ */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        {hasResults && !analyzing && (
+        {hasResults && (
           <div className="space-y-6">
 
             {/* ── Score Gauge — dominant visual ── */}
@@ -1529,8 +1599,9 @@ export function JobMatchWorkspace({
                 {/* Category Breakdown — dictionary path */}
                 {dictResult && !analysis && (
                 <div className="flex-1">
-                  <h2 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <span className="text-gold">◈</span> Dictionary Match Analysis
+                  <h2 className="font-heading text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2 flex-wrap">
+                    <span className="text-gold">◈</span> Match Analysis
+                    <OutputModeLabel mode="dictionary" />
                   </h2>
                   <div className="grid grid-cols-2 gap-x-8 gap-y-3">
                     {[
@@ -1565,8 +1636,9 @@ export function JobMatchWorkspace({
                 {/* Category Breakdown — AI path */}
                 {analysis && (
                 <div className="flex-1">
-                  <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">
+                  <h3 className="font-heading text-xs font-semibold uppercase tracking-wider text-text-muted mb-4 flex items-center gap-2 flex-wrap">
                     Category Scores
+                    <OutputModeLabel mode="ai" />
                   </h3>
                   <div className="grid grid-cols-2 gap-x-8 gap-y-3">
                     {[
@@ -1711,6 +1783,51 @@ export function JobMatchWorkspace({
                           </div>
                           {gap.recommendation && (
                             <p className="text-xs text-text-dim mb-2 leading-relaxed">{gap.recommendation}</p>
+                          )}
+                          {(gap.estimatedTime || gap.estimatedCost) && (
+                            <p className="text-[11px] text-text-dim mb-1.5">
+                              {gap.estimatedTime && <>Est. time: <span className="text-text-muted">{gap.estimatedTime}</span></>}
+                              {gap.estimatedTime && gap.estimatedCost && ' · '}
+                              {gap.estimatedCost && <>Est. cost: <span className="text-text-muted">{gap.estimatedCost}</span></>}
+                              {gap.veteranDiscount && <span className="ml-1 text-status-green">· Veteran discount</span>}
+                            </p>
+                          )}
+                          {gap.freeResourceUrl && (
+                            <p className="text-[11px] mb-1.5">
+                              <a href={gap.freeResourceUrl} target="_blank" rel="noopener noreferrer" className="text-gold hover:text-gold-bright underline">
+                                Free resource: {gap.resourceName || 'Learn more'}
+                              </a>
+                            </p>
+                          )}
+                          {gap.fundingSources.length > 0 && (
+                            <div className="mb-2">
+                              <div className="text-[10px] text-text-dim uppercase tracking-wider mb-1">Funding Available</div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {gap.fundingSources.map((f, fIdx) => {
+                                  const url = f.directLink || f.websiteUrl
+                                  return url ? (
+                                    <a
+                                      key={fIdx}
+                                      href={url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="px-2 py-0.5 text-[11px] bg-status-green/10 text-status-green border border-status-green/25 rounded hover:bg-status-green/20 transition-colors"
+                                      title={f.description}
+                                    >
+                                      {f.programName} ↗
+                                    </a>
+                                  ) : (
+                                    <span
+                                      key={fIdx}
+                                      className="px-2 py-0.5 text-[11px] bg-status-green/10 text-status-green border border-status-green/25 rounded"
+                                      title={f.description}
+                                    >
+                                      {f.programName}
+                                    </span>
+                                  )
+                                })}
+                              </div>
+                            </div>
                           )}
                           <div className="flex items-center justify-end">
                             <button
@@ -1953,13 +2070,23 @@ export function JobMatchWorkspace({
 
             {/* ═══ Section: Bullet Rewrite ═══ */}
             <div className="border-t border-border my-8" />
-            <div>
-              <h2 className="font-heading text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-1">
-                <span className="text-gold">◆</span> Rewrite Your Bullets
-              </h2>
-              <p className="text-text-muted text-sm">
-                Select a bullet from your resume and we&apos;ll tailor it to the job posting
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+              <div>
+                <h2 className="font-heading text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-1">
+                  <span className="text-gold">◆</span> Rewrite Your Bullets
+                </h2>
+                <p className="text-text-muted text-sm">
+                  Select a bullet from your resume and we&apos;ll tailor it to the job posting
+                </p>
+              </div>
+              {!aiSuggestions && (
+                <EnhanceWithAI
+                  label="✨ AI Bullet Rewrites"
+                  featureNote="Bullet rewrites use Claude to tailor your resume bullets to this job posting."
+                  onEnhance={handleGetSuggestions}
+                  busy={suggestionsLoading}
+                />
+              )}
             </div>
 
             {/* Dictionary Bullet Translations */}
@@ -2024,6 +2151,125 @@ export function JobMatchWorkspace({
                       )
                     })
                   ).filter(Boolean)}
+                </div>
+              </Card>
+            )}
+
+            {/* Loading state for AI suggestions */}
+            {suggestionsLoading && !aiSuggestions && (
+              <Card className="p-6">
+                <div className="flex items-center gap-3 text-text-muted">
+                  <div className="w-5 h-5 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+                  <span className="text-sm">Loading AI-powered rewrite suggestions...</span>
+                </div>
+              </Card>
+            )}
+
+            {/* AI Bullet Rewrites — optional enhancement */}
+            {(aiSuggestions?.bulletSuggestions?.filter(s => s.action === 'rewrite').length ?? 0) > 0 && (
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+                  <h2 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2 flex-wrap">
+                    <span className="text-gold">◆</span> AI-Powered Rewrites
+                    <OutputModeLabel mode="ai" />
+                    {translating && (
+                      <span className="text-xs font-normal text-text-dim animate-pulse ml-2">
+                        translating...
+                      </span>
+                    )}
+                  </h2>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-text-muted">
+                      {aiSuggestions!.bulletSuggestions.filter(s => s.action === 'rewrite').length} suggestions available
+                    </span>
+                    <Button size="sm" onClick={openApplyAllPreview}>
+                      Review &amp; Apply All
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-3 max-h-80 overflow-auto">
+                  {aiSuggestions!.bulletSuggestions
+                    .filter(s => s.action === 'rewrite')
+                    .slice(0, 5)
+                    .map((suggestion, idx) => {
+                      const key = `${suggestion.experienceIndex}-${suggestion.bulletIndex}`
+                      const isApplied = tailoredResume?.appliedBullets.has(key)
+                      const translated = translatedSuggestions.get(key)
+                      const displayText = translated || suggestion.suggested
+                      const wasDictTranslated = translated && translated !== suggestion.suggested
+
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-4 rounded-lg border transition-all ${
+                            isApplied
+                              ? 'bg-status-green/10 border-status-green/30'
+                              : 'bg-bg-tertiary border-border'
+                          }`}
+                        >
+                          <div className="text-sm line-through text-text-dim mb-2">
+                            {suggestion.original}
+                          </div>
+                          <div className="text-sm text-text mb-2">
+                            → {displayText}
+                          </div>
+                          {wasDictTranslated && (
+                            <div className="text-[11px] text-text-dim italic mb-2">
+                              Dictionary translated military terms
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between">
+                            <div className="flex flex-wrap gap-1">
+                              {suggestion.keywordsAdded?.map((kw, kwIdx) => (
+                                <span key={kwIdx} className="px-2 py-0.5 text-xs bg-gold/20 text-gold rounded">
+                                  +{kw}
+                                </span>
+                              ))}
+                            </div>
+                            {!isApplied ? (
+                              <Button size="sm" onClick={() => applyBulletSuggestion(suggestion)}>
+                                Apply
+                              </Button>
+                            ) : (
+                              <span className="text-status-green text-sm font-semibold">✓ Applied</span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                </div>
+              </Card>
+            )}
+
+            {/* Dictionary gap recommendations — real, complete guidance shown
+                until/unless AI rewrites are loaded */}
+            {!aiSuggestions && !suggestionsLoading && dictResult &&
+             dictResult.match.gaps.some(g => g.recommendation) && (
+              <Card className="p-6">
+                <h3 className="font-heading text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-2 flex-wrap">
+                  <span className="text-gold">◆</span> Recommendations for Your Gaps
+                  <OutputModeLabel mode="dictionary" />
+                </h3>
+                <p className="text-xs text-text-dim mb-4">
+                  Concrete steps to close the gaps this posting cares about.
+                </p>
+                <div className="space-y-2 max-h-80 overflow-auto">
+                  {dictResult.match.gaps.filter(g => g.recommendation).map((gap, idx) => (
+                    <div key={idx} className="p-3 rounded-lg bg-bg-tertiary border border-border">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-text">{gap.keyword}</span>
+                        <span className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase rounded ${
+                          gap.severity === 'high'
+                            ? 'bg-status-red/15 text-status-red'
+                            : 'bg-status-amber/15 text-status-amber'
+                        }`}>
+                          {gap.severity === 'high' ? 'Required' : 'Preferred'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-text-dim leading-relaxed">{gap.recommendation}</p>
+                    </div>
+                  ))}
                 </div>
               </Card>
             )}
@@ -2221,103 +2467,6 @@ export function JobMatchWorkspace({
               )}
             </Card>
 
-            {/* Section: Bullet Rewrites (AI) */}
-            <div className="border-t border-border my-8" />
-            <div>
-              <h2 className="font-heading text-lg font-bold uppercase tracking-wider flex items-center gap-2 mb-1">
-                <span className="text-gold">◆</span> Rewrite Your Bullets
-              </h2>
-              <p className="text-text-muted text-sm">
-                Select a bullet from your resume and we&apos;ll tailor it to the job posting
-              </p>
-            </div>
-
-            {/* Loading state for suggestions */}
-            {suggestionsLoading && !analysis.bulletSuggestions?.length && (
-              <Card className="p-6">
-                <div className="flex items-center gap-3 text-text-muted">
-                  <div className="w-5 h-5 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
-                  <span className="text-sm">Loading AI-powered rewrite suggestions...</span>
-                </div>
-              </Card>
-            )}
-
-            {/* AI Bullet Rewrites */}
-            {analysis.bulletSuggestions?.filter(s => s.action === 'rewrite').length > 0 && (
-              <Card className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                    <span className="text-gold">◆</span> AI-Powered Rewrites
-                    {translating && (
-                      <span className="text-xs font-normal text-text-dim animate-pulse ml-2">
-                        translating...
-                      </span>
-                    )}
-                  </h2>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-text-muted">
-                      {analysis.bulletSuggestions.filter(s => s.action === 'rewrite').length} suggestions available
-                    </span>
-                    <Button size="sm" onClick={openApplyAllPreview}>
-                      Review &amp; Apply All
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-3 max-h-80 overflow-auto">
-                  {analysis.bulletSuggestions
-                    .filter(s => s.action === 'rewrite')
-                    .slice(0, 5)
-                    .map((suggestion, idx) => {
-                      const key = `${suggestion.experienceIndex}-${suggestion.bulletIndex}`
-                      const isApplied = tailoredResume?.appliedBullets.has(key)
-                      const translated = translatedSuggestions.get(key)
-                      const displayText = translated || suggestion.suggested
-                      const wasDictTranslated = translated && translated !== suggestion.suggested
-
-                      return (
-                        <div
-                          key={idx}
-                          className={`p-4 rounded-lg border transition-all ${
-                            isApplied
-                              ? 'bg-status-green/10 border-status-green/30'
-                              : 'bg-bg-tertiary border-border'
-                          }`}
-                        >
-                          <div className="text-sm line-through text-text-dim mb-2">
-                            {suggestion.original}
-                          </div>
-                          <div className="text-sm text-text mb-2">
-                            → {displayText}
-                          </div>
-                          {wasDictTranslated && (
-                            <div className="text-[11px] text-text-dim italic mb-2">
-                              Dictionary translated military terms
-                            </div>
-                          )}
-                          <div className="flex items-center justify-between">
-                            <div className="flex flex-wrap gap-1">
-                              {suggestion.keywordsAdded?.map((kw, kwIdx) => (
-                                <span key={kwIdx} className="px-2 py-0.5 text-xs bg-gold/20 text-gold rounded">
-                                  +{kw}
-                                </span>
-                              ))}
-                            </div>
-                            {!isApplied ? (
-                              <Button size="sm" onClick={() => applyBulletSuggestion(suggestion)}>
-                                Apply
-                              </Button>
-                            ) : (
-                              <span className="text-status-green text-sm font-semibold">✓ Applied</span>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
-                </div>
-              </Card>
-            )}
-
             {/* Section: Preview Tailored Resume (AI path) */}
             {tailoredResume && (
               <>
@@ -2388,7 +2537,7 @@ export function JobMatchWorkspace({
             )}
 
             {/* ═══ Apply Suggestions to Resume — gold CTA ═══ */}
-            {((analysis?.bulletSuggestions?.length ?? 0) > 0 || (dictResult && dictBulletTranslations.size > 0)) && (
+            {((aiSuggestions?.bulletSuggestions?.length ?? 0) > 0 || (dictResult && dictBulletTranslations.size > 0)) && (
               <Card className="p-6 bg-gold/[0.03] border-gold/20">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div>
@@ -2409,9 +2558,11 @@ export function JobMatchWorkspace({
                   <h2 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
                     <span className="text-status-green">✓</span> Applied Changes
                   </h2>
-                  <span className="text-sm text-status-green font-semibold">
-                    Score improved: {originalScore}% → {currentScore}%
-                  </span>
+                  {analysis && originalScore !== null && (
+                    <span className="text-sm text-status-green font-semibold">
+                      Score improved: {originalScore}% → {currentScore}%
+                    </span>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {changesSummary.map((change, idx) => (
@@ -2470,7 +2621,7 @@ export function JobMatchWorkspace({
                 >
                   {downloading ? 'Downloading...' : 'Download PDF'}
                 </Button>
-                {analysis && tailoredResume && changesSummary.length > 0 && (
+                {tailoredResume && changesSummary.length > 0 && (
                   <Button
                     variant="secondary"
                     onClick={handleSaveTailoredResume}
@@ -2518,14 +2669,6 @@ export function JobMatchWorkspace({
         )}
 
       </div>
-
-      {/* API key setup — shown when an AI action is attempted without a key */}
-      <KeySetupModal
-        isOpen={keyModalOpen}
-        onClose={() => setKeyModalOpen(false)}
-        onKeySaved={handleAnalyze}
-        featureNote="Job match analysis uses Claude to score your resume against the posting."
-      />
 
       {/* Preview Modal */}
       {previewChanges && previewMode && (

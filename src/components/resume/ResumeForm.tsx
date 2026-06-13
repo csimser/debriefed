@@ -18,8 +18,11 @@ import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import type { DictBulletPattern, DictAtsKeyword, DictionaryCache } from '@/lib/dictionary/types'
 import { listEvalUploads } from '@/lib/storage'
 import { translateBullet as aiTranslateBullet } from '@/lib/ai/translate'
-import { classifyAIError, hasApiKey } from '@/lib/ai/client'
-import { KeySetupModal } from '@/components/settings/KeySetupModal'
+import { classifyAIError } from '@/lib/ai/client'
+import { EnhanceWithAI } from '@/components/ai/EnhanceWithAI'
+import { OutputModeLabel } from '@/components/ai/OutputModeLabel'
+import { useApiKey } from '@/hooks/useApiKey'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { BulletTemplateModal } from '@/components/profile/BulletTemplateModal'
 import { EvalUploadModal } from '@/components/profile/EvalUploadModal'
 
@@ -1443,9 +1446,10 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
   // Track vague phrases and verb suggestions per bullet
   const [bulletVagueFlags, setBulletVagueFlags] = useState<Record<number, VagueFlag[]>>({})
   const [bulletVerbSuggestions, setBulletVerbSuggestions] = useState<Record<number, VerbSuggestion[]>>({})
-  // API key gate for AI actions (translation fallback + enhance)
-  const [showKeyModal, setShowKeyModal] = useState(false)
-  const pendingAIActionRef = useRef<(() => void) | null>(null)
+  // Key/online state — only consulted for the silent AI fallback on low
+  // dictionary coverage; translation itself never requires a key.
+  const { hasKey } = useApiKey()
+  const online = useOnlineStatus()
   const [aiError, setAiError] = useState<string | null>(null)
   // Bullet suggestions from dict_bullet_patterns
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -1714,60 +1718,61 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
         setBulletVerbSuggestions(prev => ({ ...prev, [bulletIdx]: dictResult.verbSuggestions }))
       }
 
-      // Step 2: If dictionary coverage >= 40%, use dictionary result (no API call)
-      if (dictResult.dictionarySufficient) {
-        if (dictResult.alreadyCivilian) {
-          setAlreadyCivilianBullets(prev => ({
-            ...prev,
-            [bulletIdx]: dictResult.alreadyCivilianMessage || 'Already civilian-ready — no translation needed',
-          }))
-          setBulletSources(prev => ({ ...prev, [bulletIdx]: 'dictionary' }))
-          return
-        }
+      const applyDictionaryResult = () => {
         const newBullets = [...(experience.bullets || [])]
         newBullets[bulletIdx] = {
           ...newBullets[bulletIdx],
           translated_text: dictResult.translatedText,
         }
         onChange({ ...experience, bullets: newBullets })
+        setBulletSources(prev => ({ ...prev, [bulletIdx]: 'dictionary' }))
+      }
+
+      if (dictResult.dictionarySufficient && dictResult.alreadyCivilian) {
+        setAlreadyCivilianBullets(prev => ({
+          ...prev,
+          [bulletIdx]: dictResult.alreadyCivilianMessage || 'Already civilian-ready — no translation needed',
+        }))
         setBulletSources(prev => ({ ...prev, [bulletIdx]: 'dictionary' }))
         return
       }
 
       // Show Help Translate prompt (once per session) for low-coverage bullets
-      if (dictResult.unmatchedPhrases?.length > 0 && !sessionStorage.getItem('dict-help-prompted')) {
+      if (!dictResult.dictionarySufficient && dictResult.unmatchedPhrases?.length > 0 && !sessionStorage.getItem('dict-help-prompted')) {
         sessionStorage.setItem('dict-help-prompted', '1')
         setHelpPromptIdx(bulletIdx)
         setHelpPromptPhrase(dictResult.unmatchedPhrases[0])
       }
 
-      // No API key: use dictionary result as-is, skip the AI fallback
-      if (!hasApiKey()) {
-        const newBullets = [...(experience.bullets || [])]
-        newBullets[bulletIdx] = {
-          ...newBullets[bulletIdx],
-          translated_text: dictResult.translatedText,
-        }
-        onChange({ ...experience, bullets: newBullets })
-        setBulletSources(prev => ({ ...prev, [bulletIdx]: 'dictionary' }))
+      // Step 2: Sufficient coverage — or no key / offline — the dictionary
+      // result stands on its own. Never an error, never a key prompt.
+      if (dictResult.dictionarySufficient || !hasKey || !online) {
+        applyDictionaryResult()
         return
       }
 
-      // Step 3: Dictionary coverage < 40% — fall back to AI (user's key)
-      const result = await aiTranslateBullet(originalText, {
-        branch: userProfile?.branch || 'navy',
-        rank: userProfile?.rank || '',
-        jobType: resumeType,
-      })
+      // Step 3: Low coverage + key + online — let Claude refine the
+      // dictionary baseline. On failure, the dictionary result still stands.
+      try {
+        const result = await aiTranslateBullet(originalText, {
+          branch: userProfile?.branch || 'navy',
+          rank: userProfile?.rank || '',
+          jobType: resumeType,
+        }, dictResult.translatedText)
 
-      if (result.translated) {
-        const newBullets = [...(experience.bullets || [])]
-        newBullets[bulletIdx] = {
-          ...newBullets[bulletIdx],
-          translated_text: result.translated,
+        if (result.translated) {
+          const newBullets = [...(experience.bullets || [])]
+          newBullets[bulletIdx] = {
+            ...newBullets[bulletIdx],
+            translated_text: result.translated,
+          }
+          onChange({ ...experience, bullets: newBullets })
+          setBulletSources(prev => ({ ...prev, [bulletIdx]: 'ai' }))
+        } else {
+          applyDictionaryResult()
         }
-        onChange({ ...experience, bullets: newBullets })
-        setBulletSources(prev => ({ ...prev, [bulletIdx]: 'ai' }))
+      } catch {
+        applyDictionaryResult()
       }
     } catch (error) {
       console.error('Translation error:', error)
@@ -1777,22 +1782,23 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
     }
   }
 
+  // Optional AI polish — dictionary-first: the engine translation is always
+  // generated and passed to Claude as the baseline to refine.
+  // Only reachable via <EnhanceWithAI/> (key + online).
   const handleEnhanceWithAI = async (bulletIdx: number, bulletText: string) => {
-    // AI action — requires the user's Anthropic API key
-    if (!hasApiKey()) {
-      pendingAIActionRef.current = () => handleEnhanceWithAI(bulletIdx, bulletText)
-      setShowKeyModal(true)
-      return
-    }
-
     setTranslating(bulletIdx.toString())
     setAiError(null)
     try {
+      const dictResult = await translateBullet(bulletText, {
+        branch: userProfile?.branch || '',
+        rank: userProfile?.rank || '',
+      })
+
       const result = await aiTranslateBullet(bulletText, {
         branch: userProfile?.branch || 'navy',
         rank: userProfile?.rank || '',
         jobType: resumeType,
-      })
+      }, dictResult.translatedText)
 
       if (result.translated) {
         const newBullets = [...(experience.bullets || [])]
@@ -2248,15 +2254,8 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                   <div className="text-sm mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs uppercase tracking-wider text-gold">Translated:</span>
-                      {bulletSources[bullet._idx] === 'dictionary' && (
-                        <span className="text-xs text-status-green" title="Translated using dictionary — no AI cost">
-                          Dictionary translated
-                        </span>
-                      )}
-                      {bulletSources[bullet._idx] === 'ai' && (
-                        <span className="text-xs text-status-amber" title="Translated using AI — counts against limit">
-                          AI enhanced
-                        </span>
+                      {bulletSources[bullet._idx] && (
+                        <OutputModeLabel mode={bulletSources[bullet._idx]} />
                       )}
                     </div>
                     <p>{bullet.translated_text}</p>
@@ -2338,19 +2337,13 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
                     </Button>
                   )}
 
-                  {/* Enhance with AI — matches profile Translate button: visible on any bullet with content */}
+                  {/* Optional AI polish on top of the dictionary translation */}
                   {(bullet.translated_text || bullet.original_text) && !alreadyCivilianBullets[bullet._idx] && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="text-gold border-gold/30"
-                      onClick={() => handleEnhanceWithAI(bullet._idx, bullet.translated_text || bullet.original_text)}
-                      disabled={translating === bullet._idx.toString()}
-                    >
-                      {translating === bullet._idx.toString()
-                        ? 'Enhancing...'
-                        : '✦ Enhance with AI'}
-                    </Button>
+                    <EnhanceWithAI
+                      onEnhance={() => handleEnhanceWithAI(bullet._idx, bullet.translated_text || bullet.original_text)}
+                      busy={translating === bullet._idx.toString()}
+                      featureNote="Bullet enhancement uses Claude to polish the dictionary translation."
+                    />
                   )}
 
                   {bullet.status === 'accepted' && (
@@ -2683,21 +2676,6 @@ function ExperienceItem({ experience, experienceIndex, totalExperiences, resumeT
           userId="local"
         />
       )}
-
-      {/* API key setup — shown when an AI action is used without a key */}
-      <KeySetupModal
-        isOpen={showKeyModal}
-        onClose={() => {
-          setShowKeyModal(false)
-          pendingAIActionRef.current = null
-        }}
-        onKeySaved={() => {
-          const action = pendingAIActionRef.current
-          pendingAIActionRef.current = null
-          action?.()
-        }}
-        featureNote="Bullet enhancement uses Claude to rewrite your bullet in civilian language."
-      />
     </Card>
   )
 }

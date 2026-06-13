@@ -198,6 +198,8 @@ export interface AppSettings {
   gov_banner_dismissed?: boolean
   /** Rough local token-spend meter (courtesy only — Anthropic bills the user directly). */
   tokens_used?: number
+  /** First-launch dictionary/AI choice modal shown. */
+  first_launch_seen?: boolean
   [key: string]: unknown
 }
 

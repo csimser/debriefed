@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
 import { formatPhoneForDisplay } from '@/lib/formatPhone'
 import { fillTemplate } from '@/lib/dictionary/templateFiller'
@@ -19,8 +18,10 @@ import type {
 } from '@/lib/dictionary/types'
 import { generateCoverLetter, refineCoverLetter } from '@/lib/ai/coverLetter'
 import { exportCoverLetter } from '@/lib/export/coverLetterExport'
-import { hasApiKey, classifyAIError } from '@/lib/ai/client'
-import { KeySetupModal } from '@/components/settings/KeySetupModal'
+import { classifyAIError } from '@/lib/ai/client'
+import { EnhanceWithAI } from '@/components/ai/EnhanceWithAI'
+import { OutputModeLabel } from '@/components/ai/OutputModeLabel'
+import { useApiKey } from '@/hooks/useApiKey'
 
 interface DictCoverLetterBuilderProps {
   userProfile: any
@@ -48,13 +49,14 @@ export function DictCoverLetterBuilder({
   education = [],
   onBack,
 }: DictCoverLetterBuilderProps) {
-  // No tiers anymore — "free" mode means dictionary templates (no API key),
-  // AI mode unlocks when the user has connected their own Anthropic key.
-  const [hasKey, setHasKey] = useState(false)
-  useEffect(() => {
-    setHasKey(hasApiKey())
-  }, [])
-  const isFree = !hasKey
+  // Template mode is the default for everyone — no tiers, no key required.
+  // AI generation/refinement is an optional enhancement (EnhanceWithAI owns
+  // the key/online states). `hasKey` only decides whether to show the
+  // AI quick-refine row; nothing is blocked behind it.
+  const { hasKey } = useApiKey()
+
+  // What produced the current editor text — labels the output honestly
+  const [outputMode, setOutputMode] = useState<'dictionary' | 'ai' | null>(null)
 
   // Context inputs (shared between template & AI modes)
   const [company, setCompany] = useState('')
@@ -93,10 +95,6 @@ export function DictCoverLetterBuilder({
   const [aiGenerating, setAiGenerating] = useState(false)
   const [aiRefining, setAiRefining] = useState(false)
   const [validationWarnings, setValidationWarnings] = useState<string[]>([])
-
-  // API key setup modal (shown when an AI action is attempted without a key)
-  const [keyModalOpen, setKeyModalOpen] = useState(false)
-  const pendingActionRef = useRef<(() => void) | null>(null)
 
   // NEW STATE: Single editor text source of truth
   const [editorText, setEditorText] = useState('')
@@ -280,8 +278,7 @@ export function DictCoverLetterBuilder({
   }, [editorText])
 
   const aiWordLimit = WORD_LIMITS[coverLetterLength]
-  const aiIsOverLimit = !isFree && wordCount > aiWordLimit
-  const aiIsNearLimit = !isFree && wordCount > aiWordLimit * 0.9
+  const aiIsOverLimit = outputMode === 'ai' && wordCount > aiWordLimit
 
   // Extract achievements from experiences for AI selection
   const userAchievements = useMemo(() => {
@@ -349,19 +346,23 @@ export function DictCoverLetterBuilder({
     }
   }, [editorText, applicantName])
 
-  // Template generation handler (free users)
+  // Template generation handler — the default path for everyone, no key needed
   const handleTemplateGenerate = async () => {
     if (!company || !jobTitle) return
     setIsGenerating(true)
+    setError('')
 
     try {
-      // Extract keywords if JD changed
+      // Extract keywords if JD changed (fall back to title + company when no JD pasted)
       const jdChanged = jobDescription.trim() !== lastExtractedJDRef.current
       let currentExtraction = extraction
       if (jobDescription.trim() && (!extraction || jdChanged)) {
         currentExtraction = await extractKeywords(jobDescription)
         setExtraction(currentExtraction)
         lastExtractedJDRef.current = jobDescription.trim()
+      } else if (!jobDescription.trim() && !extraction) {
+        currentExtraction = await extractKeywords(`${jobTitle} at ${company}`)
+        setExtraction(currentExtraction)
       }
 
       if (!selectedTemplateId || !currentExtraction) return
@@ -388,22 +389,18 @@ export function DictCoverLetterBuilder({
         const body = [paragraphs.opening, paragraphs.body1, paragraphs.body2, paragraphs.closing].filter(Boolean).join('\n\n')
         const rawLetter = `${greeting}\n\n${body}\n\nSincerely,\n\n${applicantName}`
         setEditorText(polishCoverLetter(rawLetter))
+        setOutputMode('dictionary')
+        setValidationWarnings([])
       }
     } finally {
       setIsGenerating(false)
     }
   }
 
-  // AI generate handler
+  // AI generate handler (only reachable through EnhanceWithAI, which owns key/online states)
   const handleAIGenerate = async (isRegenerate = false) => {
     if (!company || !jobTitle || !jobDescription) {
       setError('Please fill in company, job title, and job description for AI generation')
-      return
-    }
-
-    if (!hasApiKey()) {
-      pendingActionRef.current = () => handleAIGenerate(isRegenerate)
-      setKeyModalOpen(true)
       return
     }
 
@@ -473,6 +470,7 @@ export function DictCoverLetterBuilder({
 
       if (data.coverLetter) {
         setEditorText(data.coverLetter)
+        setOutputMode('ai')
         if (data.validationIssues) {
           setValidationWarnings(data.validationIssues)
         }
@@ -488,15 +486,9 @@ export function DictCoverLetterBuilder({
     }
   }
 
-  // AI quick refine handler
+  // AI quick refine handler (row is only rendered when a key exists)
   const handleQuickRefine = async (action: 'shorter' | 'stronger' | 'numbers') => {
     if (!editorText) return
-
-    if (!hasApiKey()) {
-      pendingActionRef.current = () => handleQuickRefine(action)
-      setKeyModalOpen(true)
-      return
-    }
 
     setAiRefining(true)
     setError('')
@@ -510,6 +502,7 @@ export function DictCoverLetterBuilder({
       })
 
       setEditorText(data.refined)
+      setOutputMode('ai')
       if (data.validationIssues) {
         setValidationWarnings(data.validationIssues)
       }
@@ -517,15 +510,6 @@ export function DictCoverLetterBuilder({
       setError(classifyAIError(err).message)
     } finally {
       setAiRefining(false)
-    }
-  }
-
-  // Unified generate handler
-  const handleGenerate = () => {
-    if (isFree) {
-      handleTemplateGenerate()
-    } else {
-      handleAIGenerate(false)
     }
   }
 
@@ -675,11 +659,7 @@ export function DictCoverLetterBuilder({
           <span className="text-gold">&rsaquo;</span>
           <span className="text-text-muted">Cover Letter Builder</span>
         </div>
-        {isFree ? (
-          <Badge variant="green">Free</Badge>
-        ) : (
-          <Badge variant="default">AI Mode</Badge>
-        )}
+        {outputMode && editorText && <OutputModeLabel mode={outputMode} />}
       </div>
 
       {/* Three-panel layout */}
@@ -819,8 +799,8 @@ export function DictCoverLetterBuilder({
         {/* ===== CENTER PANEL: Editor ===== */}
         <div className="flex-1 min-w-0 space-y-3">
 
-          {/* Template strip (free users only) */}
-          {isFree && scoredTemplates.length > 0 && (
+          {/* Template strip — templates are the default path for everyone */}
+          {scoredTemplates.length > 0 && (
             <div className="flex gap-2 overflow-x-auto pb-2">
               {scoredTemplates.map(t => (
                 <button
@@ -854,15 +834,11 @@ export function DictCoverLetterBuilder({
             </div>
           )}
 
-          {/* Center panel header: Generate + Settings gear */}
+          {/* Center panel header: Generate (template path) + optional AI + Settings gear */}
           <div className="flex items-center gap-2">
             <button
-              onClick={handleGenerate}
-              disabled={
-                isFree
-                  ? (!company || !jobTitle || isAnyGenerating)
-                  : (!company || !jobTitle || !jobDescription || isAnyGenerating)
-              }
+              onClick={handleTemplateGenerate}
+              disabled={!company || !jobTitle || isAnyGenerating}
               className="flex-1 py-2.5 bg-gold text-bg-primary font-heading font-bold uppercase tracking-wider rounded-lg disabled:bg-border disabled:text-text-dim disabled:cursor-not-allowed hover:bg-gold-bright transition-colors flex items-center justify-center gap-2 text-sm"
             >
               {isAnyGenerating ? (
@@ -871,11 +847,19 @@ export function DictCoverLetterBuilder({
                   Generating...
                 </>
               ) : editorText ? (
-                isFree ? '\u25C6 REGENERATE' : '\u2726 REGENERATE WITH AI'
+                '\u25C6 REGENERATE'
               ) : (
-                isFree ? '\u25C6 GENERATE COVER LETTER' : '\u2726 GENERATE WITH AI'
+                '\u25C6 GENERATE COVER LETTER'
               )}
             </button>
+
+            {/* Optional AI generation \u2014 EnhanceWithAI handles key/online states */}
+            <EnhanceWithAI
+              label="\u2728 Generate with AI"
+              featureNote="Cover letter generation uses Claude."
+              busy={aiGenerating}
+              onEnhance={() => handleAIGenerate(false)}
+            />
 
             {/* Settings gear */}
             <div className="relative" ref={settingsRef}>
@@ -898,10 +882,12 @@ export function DictCoverLetterBuilder({
               {/* Settings popover */}
               {settingsOpen && (
                 <div className="absolute right-0 top-full mt-2 w-80 max-h-[70vh] overflow-y-auto bg-bg-secondary border border-border rounded-lg shadow-lg p-4 z-20">
-                  {!isFree ? (
-                    /* AI mode settings */
-                    <div className="space-y-4">
-                      <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text-dim">AI Settings</h4>
+                  <div className="flex flex-col gap-5">
+                    {/* AI settings — apply to the optional ✨ Generate with AI path (order-2: rendered below template settings) */}
+                    <div className="space-y-4 order-2 border-t border-border pt-4">
+                      <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text-dim">
+                        AI Settings <span className="font-normal normal-case">(✨ Generate with AI)</span>
+                      </h4>
 
                       {/* Tone Selection */}
                       <div>
@@ -1065,9 +1051,8 @@ export function DictCoverLetterBuilder({
                         </div>
                       )}
                     </div>
-                  ) : (
-                    /* Template mode settings (free users) */
-                    <div className="space-y-4">
+                    {/* Template settings — the default generate path */}
+                    <div className="space-y-4 order-1">
                       <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text-dim">Template Settings</h4>
 
                       {/* Field overrides */}
@@ -1206,7 +1191,7 @@ export function DictCoverLetterBuilder({
                         )
                       })()}
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
@@ -1239,10 +1224,10 @@ export function DictCoverLetterBuilder({
               <div className="flex items-center justify-between text-xs text-text-dim">
                 <span>
                   {wordCount} words
-                  {!isFree && ` / ${aiWordLimit}`}
+                  {outputMode === 'ai' && ` / ${aiWordLimit}`}
                   {aiIsOverLimit && <span className="text-status-red ml-1">(over limit)</span>}
                 </span>
-                {filledResult && isFree && (
+                {filledResult && outputMode === 'dictionary' && (
                   <span>Template: {formatTemplateName(filledResult.templateName)}</span>
                 )}
               </div>
@@ -1250,23 +1235,15 @@ export function DictCoverLetterBuilder({
           ) : (
             <div className="flex items-center justify-center h-64 bg-bg-card border border-border rounded-lg">
               <div className="text-center">
-                <div className="text-3xl text-text-dim mb-3">{isFree ? '\u25C7' : '\u2728'}</div>
-                <p className="text-sm text-text-muted">
-                  {isFree
-                    ? 'Fill in job details and click Generate'
-                    : 'Fill in job details and click Generate'}
-                </p>
-                <p className="text-xs text-text-dim mt-1">
-                  {isFree
-                    ? 'Select a template above for best results'
-                    : 'AI will craft a personalized cover letter using your profile'}
-                </p>
+                <div className="text-3xl text-text-dim mb-3">\u25C7</div>
+                <p className="text-sm text-text-muted">Fill in job details and click Generate</p>
+                <p className="text-xs text-text-dim mt-1">Select a template above for best results</p>
               </div>
             </div>
           )}
 
-          {/* Quick refine buttons (AI mode only, after generation) */}
-          {!isFree && editorText && !aiGenerating && (
+          {/* AI quick refine buttons — shown only when a key exists (manual editing always available) */}
+          {hasKey && editorText && !aiGenerating && (
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0">
                 <button
@@ -1437,7 +1414,7 @@ export function DictCoverLetterBuilder({
               </div>
 
               <div className="bg-gray-100 px-6 md:px-10 py-2 text-xs text-gray-500 flex items-center justify-between border-t border-gray-200">
-                <span>{isFree ? 'Dictionary Template' : 'AI Generated'} &bull; One Page Format</span>
+                <span>{outputMode === 'ai' ? 'AI Generated' : 'Dictionary Template'} &bull; One Page Format</span>
                 <span className={aiIsOverLimit ? 'text-status-red font-medium' : ''}>
                   {wordCount} words{aiIsOverLimit && ' - exceeds limit'}
                 </span>
@@ -1489,19 +1466,6 @@ export function DictCoverLetterBuilder({
           )}
         </div>
       </div>
-
-      {/* API key setup modal — shown when an AI action needs a key */}
-      <KeySetupModal
-        isOpen={keyModalOpen}
-        onClose={() => setKeyModalOpen(false)}
-        onKeySaved={() => {
-          setHasKey(true)
-          const pending = pendingActionRef.current
-          pendingActionRef.current = null
-          pending?.()
-        }}
-        featureNote="Cover letter generation uses Claude to write a tailored draft."
-      />
     </div>
   )
 }
