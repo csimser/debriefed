@@ -24,8 +24,11 @@ import { translateBullet as dictTranslateBullet } from '@/lib/dictionary/bulletT
 import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import { parseAndTranslateEvalText } from '@/lib/dictionary/evalParser'
 import { translateBullet as aiTranslateBullet } from '@/lib/ai/translate'
-import { classifyAIError, hasApiKey } from '@/lib/ai/client'
-import { KeySetupModal } from '@/components/settings/KeySetupModal'
+import { classifyAIError } from '@/lib/ai/client'
+import { EnhanceWithAI } from '@/components/ai/EnhanceWithAI'
+import { OutputModeLabel } from '@/components/ai/OutputModeLabel'
+import { useApiKey } from '@/hooks/useApiKey'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { Toast } from '@/components/ui/Toast'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { polishBullet } from '@/lib/dictionary/outputPolisher'
@@ -106,10 +109,10 @@ export function ExperienceSection({
   const [translatingBulletId, setTranslatingBulletId] = useState<string | null>(null)
   const [translationResult, setTranslationResult] = useState<{ bulletId: string; original: string; translated: string; alreadyCivilian?: boolean; alreadyCivilianMessage?: string } | null>(null)
   const [translateError, setTranslateError] = useState<string | null>(null)
-  // API key gating — remembers the blocked translation so it can re-run after key save
-  const [keyModalOpen, setKeyModalOpen] = useState(false)
-  const [pendingTranslateBulletId, setPendingTranslateBulletId] = useState<string | null>(null)
-  const [pendingTranslateExpId, setPendingTranslateExpId] = useState<string | null>(null)
+  // Key/online state — only consulted for the silent AI fallback on low
+  // dictionary coverage; translation itself never requires a key.
+  const { hasKey } = useApiKey()
+  const online = useOnlineStatus()
 
   // Bulk paste state
   const [showBulkPasteForExp, setShowBulkPasteForExp] = useState<string | null>(null)
@@ -342,7 +345,9 @@ export function ExperienceSection({
     )
   }, [])
 
-  // Translate a bullet — dictionary first, AI fallback
+  // Translate a bullet — the dictionary engine ALWAYS runs and always
+  // produces a usable result; no key required. AI only steps in silently
+  // when coverage is low AND the user has a key AND is online.
   const translateBullet = async (bulletId: string, experienceId: string) => {
     // Find bullet text
     const exp = experiences.find(e => e.id === experienceId)
@@ -361,8 +366,7 @@ export function ExperienceSection({
         branch: userBranch || '',
       })
 
-      // Step 2: If dictionary coverage >= 40%, use dictionary result — no API call
-      if (dictResult.dictionarySufficient) {
+      const showDictionaryResult = () => {
         setTranslationResult({
           bulletId,
           original: bulletText,
@@ -371,32 +375,35 @@ export function ExperienceSection({
           alreadyCivilianMessage: dictResult.alreadyCivilianMessage,
         })
         setBulletSources(prev => ({ ...prev, [bulletId]: 'dictionary' }))
-        return
       }
 
       // Show Help Translate prompt (once per session) for low-coverage bullets
-      if (dictResult.unmatchedPhrases?.length > 0 && !sessionStorage.getItem('dict-help-prompted')) {
+      if (!dictResult.dictionarySufficient && dictResult.unmatchedPhrases?.length > 0 && !sessionStorage.getItem('dict-help-prompted')) {
         sessionStorage.setItem('dict-help-prompted', '1')
         setHelpPromptBulletId(bulletId)
         setHelpPromptPhrase(dictResult.unmatchedPhrases[0])
       }
 
-      // Step 3: Dictionary coverage < 40% — fall back to AI.
-      // AI action — requires the user's Anthropic API key.
-      if (!hasApiKey()) {
-        setPendingTranslateBulletId(bulletId)
-        setPendingTranslateExpId(experienceId)
-        setKeyModalOpen(true)
+      // Step 2: Sufficient coverage — or no key / offline — the dictionary
+      // result stands on its own. Never an error, never a key prompt.
+      if (dictResult.dictionarySufficient || !hasKey || !online) {
+        showDictionaryResult()
         return
       }
 
-      const data = await aiTranslateBullet(bulletText, { branch: userBranch })
-      setTranslationResult({
-        bulletId,
-        original: bulletText,
-        translated: data.translated,
-      })
-      setBulletSources(prev => ({ ...prev, [bulletId]: 'ai' }))
+      // Step 3: Low coverage + key + online — let Claude refine the
+      // dictionary baseline. On failure, the dictionary result still stands.
+      try {
+        const data = await aiTranslateBullet(bulletText, { branch: userBranch }, dictResult.translatedText)
+        setTranslationResult({
+          bulletId,
+          original: bulletText,
+          translated: data.translated,
+        })
+        setBulletSources(prev => ({ ...prev, [bulletId]: 'ai' }))
+      } catch {
+        showDictionaryResult()
+      }
     } catch (err) {
       setTranslateError(classifyAIError(err).message)
     } finally {
@@ -425,14 +432,23 @@ export function ExperienceSection({
     setTranslationResult(null)
   }
 
-  // Re-run the blocked translation after the API key is saved
-  const handleKeySaved = () => {
-    if (pendingTranslateBulletId && pendingTranslateExpId) {
-      const bulletId = pendingTranslateBulletId
-      const expId = pendingTranslateExpId
-      setPendingTranslateBulletId(null)
-      setPendingTranslateExpId(null)
-      translateBullet(bulletId, expId)
+  // Optional AI polish — Claude refines the dictionary translation shown in
+  // the suggestion box. Only reachable via <EnhanceWithAI/> (key + online).
+  const enhanceTranslation = async (bulletId: string) => {
+    if (!translationResult || translationResult.bulletId !== bulletId) return
+    const { original, translated } = translationResult
+
+    setTranslateError(null)
+    setTranslatingBulletId(bulletId)
+    try {
+      const data = await aiTranslateBullet(original, { branch: userBranch }, translated)
+      setTranslationResult({ bulletId, original, translated: data.translated })
+      setBulletSources(prev => ({ ...prev, [bulletId]: 'ai' }))
+    } catch (err) {
+      // Dictionary result stays on screen; just surface the AI failure
+      setToast({ message: classifyAIError(err).message, type: 'error' })
+    } finally {
+      setTranslatingBulletId(null)
     }
   }
 
@@ -1629,11 +1645,10 @@ export function ExperienceSection({
                                 </div>
                                 <span className="text-gold mt-0.5 flex-shrink-0">•</span>
                                 <span className="flex-1 text-sm text-text-muted">{bullet.translated_text || bullet.original_text}</span>
-                                {bulletSources[bullet.id] === 'dictionary' && (
-                                  <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 bg-status-green/20 text-status-green rounded" title="Dictionary translated — no AI cost">Dict</span>
-                                )}
-                                {bulletSources[bullet.id] === 'ai' && (
-                                  <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 bg-status-amber/20 text-status-amber rounded" title="AI translated">AI</span>
+                                {bulletSources[bullet.id] && (
+                                  <span className="flex-shrink-0">
+                                    <OutputModeLabel mode={bulletSources[bullet.id]} />
+                                  </span>
                                 )}
                                 <div className="flex gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                                   {speechSupported && (
@@ -1732,15 +1747,10 @@ export function ExperienceSection({
                                     <>
                                       <div className="flex items-center gap-2 mb-1">
                                         <p className="text-status-green text-xs uppercase tracking-wider font-semibold">Suggested Translation</p>
-                                        {bulletSources[bullet.id] === 'dictionary' && (
-                                          <span className="text-[10px] px-1.5 py-0.5 bg-status-green/20 text-status-green rounded">Dictionary — free</span>
-                                        )}
-                                        {bulletSources[bullet.id] === 'ai' && (
-                                          <span className="text-[10px] px-1.5 py-0.5 bg-status-amber/20 text-status-amber rounded">AI enhanced</span>
-                                        )}
+                                        {bulletSources[bullet.id] && <OutputModeLabel mode={bulletSources[bullet.id]} />}
                                       </div>
                                       <p className="text-text">{translationResult!.translated}</p>
-                                      <div className="flex gap-2 mt-2">
+                                      <div className="flex flex-wrap items-center gap-2 mt-2">
                                         <button
                                           onClick={() => acceptTranslation(bullet.id, exp.id)}
                                           className="px-3 py-1 text-xs bg-status-green text-bg-primary rounded hover:bg-status-green/90"
@@ -1759,6 +1769,11 @@ export function ExperienceSection({
                                         >
                                           Dismiss
                                         </button>
+                                        <EnhanceWithAI
+                                          onEnhance={() => enhanceTranslation(bullet.id)}
+                                          busy={translatingBulletId === bullet.id}
+                                          featureNote="Bullet enhancement uses Claude to polish the dictionary translation."
+                                        />
                                       </div>
                                     </>
                                   )}
@@ -2112,14 +2127,6 @@ export function ExperienceSection({
         isOpen={showTemplateForExp !== null}
         onClose={() => setShowTemplateForExp(null)}
         onSelect={handleTemplateSelect}
-      />
-
-      {/* API key setup — shown when an AI translation is attempted without a key */}
-      <KeySetupModal
-        isOpen={keyModalOpen}
-        onClose={() => setKeyModalOpen(false)}
-        onKeySaved={handleKeySaved}
-        featureNote="Bullet translation uses Claude to rewrite military language for civilian employers."
       />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}

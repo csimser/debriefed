@@ -2,7 +2,7 @@
 
 Military-to-civilian resume translation, job-match analysis, cover letter generation, and LinkedIn optimization — built for veterans transitioning out of service.
 
-**Free. Open source. Zero backend.** Your data never leaves your device.
+**Free, no setup required.** Open source, zero backend — your data never leaves your device. The built-in 33,000+ entry dictionary engine translates military experience to civilian language fully offline. Optionally add an Anthropic API key for AI-enhanced output (~2–6 cents per resume).
 
 - **Use it now:** [getdebriefed.co](https://getdebriefed.co) (installable PWA)
 - **Or download it:** grab `Debriefed.html` from [Releases](https://github.com/csimser/debriefed/releases) — the entire app in one file. Run it from a USB stick if you want.
@@ -13,13 +13,14 @@ There are no accounts and no servers:
 
 - **Your data** (profile, resumes, application tracker) lives in your browser's localStorage. Export/import it as JSON from Settings.
 - **The dictionary** — 33,000+ military-to-civilian translations, MOS crosswalks, eval phrases, and templates — ships with the app and works offline. It auto-updates from this repo's `public-data/` when newer data is published.
-- **AI features** (cover letters, job-match scoring, eval parsing, LinkedIn optimization) use **your own Anthropic API key**, entered once in Settings and stored only in your browser. Calls go directly from your browser to `api.anthropic.com` — nowhere else. Most actions cost under a cent; you pay Anthropic directly. Dictionary translation needs no key at all.
+- **Every feature works without a key**: bullet translation, eval parsing (paste text), job-match scoring, cover letter templates, LinkedIn headline/about generation, summaries — all run on the dictionary engine, fully offline.
+- **AI enhancement is optional**: add your own Anthropic API key (entered once in Settings, stored only in your browser) and Claude refines the dictionary output — plus unlocks document reading (PDF parsing/OCR). Calls go directly from your browser to `api.anthropic.com`; you pay Anthropic directly, about 2–6 cents per resume.
 
 ## Stack
 
 - **Next.js 16** (App Router, React 19) — static export, deployed to GitHub Pages
 - **Vite** — separate entry that builds the single-file `Debriefed.html`
-- **Anthropic Claude** (Haiku, Sonnet escalation) — AI generation, browser-direct with your key
+- **Anthropic Claude** (Haiku, Sonnet escalation) — optional AI enhancement, browser-direct with the user's key
 - **Tailwind CSS** — styling
 - **@react-pdf/renderer / docx / pdf-lib** — client-side document generation
 
@@ -49,7 +50,7 @@ Both builds run `scripts/build-data.mjs` first, which transforms the canonical d
 src/app/            Next.js pages (marketing, blog, /mos SEO pages, app pages)
 src/components/     React components
 src/lib/storage/    localStorage persistence layer (all user data)
-src/lib/ai/         browser-side AI services (BYO Anthropic key)
+src/lib/ai/         optional AI enhancement services (user's own key)
 src/lib/dictionary/ translation engines (dictionary-driven, no AI required)
 src/lib/export/     client-side PDF/DOCX/TXT generation
 public-data/        bundled dictionary + O*NET data (served raw for auto-update)

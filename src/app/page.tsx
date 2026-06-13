@@ -282,9 +282,9 @@ export default function HomePage() {
             {/* Card 2: Bring Your Own AI */}
             <div className="p-6 md:p-8 bg-bg-primary border border-border rounded-lg hover:border-gold/30 transition-all">
               <div className="text-4xl mb-4">🔑</div>
-              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">Bring Your Own AI</h3>
+              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">AI Optional, Not Required</h3>
               <p className="text-sm text-text-muted leading-relaxed">
-                AI features — cover letters, job match, eval parsing — run on your own Anthropic API key, entered once in Settings. You pay Anthropic directly, and most actions cost under a cent. Dictionary translation needs no key at all.
+                Every tool runs on the built-in dictionary engine — no key, no account, no cost. Want sharper output? Add your own Anthropic API key in Settings and Claude polishes the dictionary results, about 2–6 cents per resume, paid to Anthropic directly.
               </p>
             </div>
 

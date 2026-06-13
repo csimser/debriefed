@@ -42,7 +42,7 @@ export default function RootLayout({
         <meta httpEquiv="X-UA-Compatible" content="IE=edge,chrome=1" />
         <meta
           httpEquiv="Content-Security-Policy"
-          content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; connect-src 'self' https://api.anthropic.com https://raw.githubusercontent.com https://fonts.gstatic.com https://fonts.googleapis.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'"
+          content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://api.anthropic.com https://raw.githubusercontent.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'"
         />
         {/* Prevent theme flash: apply saved theme before first paint */}
         <script

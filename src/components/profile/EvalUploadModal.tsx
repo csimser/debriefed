@@ -2,10 +2,14 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { parseEval, extractEvalImage } from '@/lib/ai/evalParse'
+import { parseAndTranslateEvalText } from '@/lib/dictionary/evalParser'
 import { translateBullet as aiTranslateBullet } from '@/lib/ai/translate'
 import { classifyAIError, hasApiKey } from '@/lib/ai/client'
 import { KeySetupModal } from '@/components/settings/KeySetupModal'
-import { listExperiences, saveExperience, saveEvalUpload, newId } from '@/lib/storage'
+import { OutputModeLabel } from '@/components/ai/OutputModeLabel'
+import { useApiKey } from '@/hooks/useApiKey'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { listExperiences, saveExperience, saveEvalUpload, newId, getProfile } from '@/lib/storage'
 
 interface ExtractedBullet {
   original: string
@@ -48,6 +52,9 @@ const EVAL_TYPES = [
 
 export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, experiences = [], defaultExperienceId }: EvalUploadModalProps) {
   const [step, setStep] = useState<'upload' | 'processing' | 'review' | 'done'>('upload')
+  const [inputTab, setInputTab] = useState<'paste' | 'file'>('paste')
+  const [pasteText, setPasteText] = useState('')
+  const [sourceMode, setSourceMode] = useState<'dictionary' | 'ai' | null>(null)
   const [savingToExperience, setSavingToExperience] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [bulletItems, setBulletItems] = useState<BulletWithStatus[]>([])
@@ -63,8 +70,15 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
   const [savedCount, setSavedCount] = useState(0)
   const [showCloseConfirm, setShowCloseConfirm] = useState(false)
 
-  // API key gating — remembers the blocked action so it can re-run after key save
+  // API key state — pasting eval text never needs a key; file reading (Claude
+  // vision) does. The key dialog is offered at the action point, never as a wall.
+  const { hasKey } = useApiKey()
+  const online = useOnlineStatus()
+  const [keyJustSaved, setKeyJustSaved] = useState(false)
   const [keyModalOpen, setKeyModalOpen] = useState(false)
+  const effectiveHasKey = hasKey || keyJustSaved
+
+  // Remembers an AI action blocked on the key so it can re-run after key save
   const pendingActionRef = useRef<(() => void) | null>(null)
 
   const requireApiKey = (action: () => void): boolean => {
@@ -75,6 +89,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
   }
 
   const handleKeySaved = () => {
+    setKeyJustSaved(true)
     const action = pendingActionRef.current
     pendingActionRef.current = null
     action?.()
@@ -87,6 +102,9 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
 
   const resetState = () => {
     setFile(null)
+    setInputTab('paste')
+    setPasteText('')
+    setSourceMode(null)
     setBulletItems([])
     setEvalPeriod({ startDate: null, endDate: null })
     setDetectedJobTitle(null)
@@ -183,8 +201,14 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
 
   // Process a selected file — extraction runs Claude vision on the user's key
   const processFile = async (selectedFile: File) => {
-    // AI action — requires the user's Anthropic API key
-    if (!requireApiKey(() => processFile(selectedFile))) return
+    // File reading needs a key. Keep the file selected and let the inline note
+    // in the file tab offer the key dialog — no blocking wall. After the key
+    // is saved, processing resumes with this same file.
+    if (!hasApiKey()) {
+      setFile(selectedFile)
+      pendingActionRef.current = () => processFile(selectedFile)
+      return
+    }
 
     setFile(selectedFile)
     setStep('processing')
@@ -248,6 +272,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
         status: 'completed',
       })
 
+      setSourceMode('ai')
       processBulletData(data)
     } catch (err: any) {
       console.error('File processing error:', err)
@@ -273,6 +298,60 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
     }
 
     await processFile(selectedFile)
+  }
+
+  // Translate pasted eval text — the keyless path. Dictionary engine only,
+  // runs entirely on-device: clean → parse → strip praise → translate → STAR.
+  const handlePasteTranslate = async () => {
+    const text = pasteText.trim()
+    if (text.length < 40) return
+
+    setError('')
+    setPiiWarning(null)
+    setStep('processing')
+    setProcessing(true)
+
+    try {
+      const profile = getProfile()
+      const parsed = await parseAndTranslateEvalText(
+        text,
+        (profile?.branch as string) || '',
+        (profile?.rank as string) || '',
+      )
+
+      if (!parsed.length) {
+        setError('No bullets could be extracted from that text. Paste the performance comments block from your eval — the narrative section with your accomplishments.')
+        setStep('upload')
+        return
+      }
+
+      // Same shape the file path produces, so review + history stay identical
+      const bullets = parsed.map(b => ({
+        original: b.original,
+        translated: b.translated,
+        metrics: [] as string[],
+        skills: [] as string[],
+      }))
+
+      // Persist eval history locally, same as the file path
+      saveEvalUpload({
+        id: newId(),
+        file_name: 'Pasted eval',
+        file_type: 'text/plain',
+        eval_type: evalType,
+        extracted_data: bullets as any,
+        status: 'completed',
+      })
+
+      setSourceMode('dictionary')
+      processBulletData({ bullets })
+    } catch (err: any) {
+      console.error('Paste translation error:', err)
+      setError(err?.message || 'Failed to translate the pasted text. Please try again.')
+      setStep('upload')
+    } finally {
+      setProcessing(false)
+    }
   }
 
   // Bullet counts
@@ -475,7 +554,7 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
           {/* ── UPLOAD STEP ── */}
           {step === 'upload' && (
             <div className="space-y-5">
-              {/* Eval type selector */}
+              {/* Eval type selector — required for file reading, optional for paste */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
                   Evaluation Type
@@ -493,57 +572,150 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                 </select>
               </div>
 
-              {/* File upload */}
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+              {/* Input tabs */}
+              <div className="flex border-b border-border">
+                <button
+                  onClick={() => setInputTab('paste')}
+                  className={`px-4 py-2.5 text-sm font-heading uppercase tracking-wider transition-colors ${
+                    inputTab === 'paste'
+                      ? 'text-gold border-b-2 border-gold'
+                      : 'text-text-muted hover:text-text'
+                  }`}
+                >
+                  Paste Eval Text
+                </button>
+                <button
+                  onClick={() => setInputTab('file')}
+                  className={`px-4 py-2.5 text-sm font-heading uppercase tracking-wider transition-colors ${
+                    inputTab === 'file'
+                      ? 'text-gold border-b-2 border-gold'
+                      : 'text-text-muted hover:text-text'
+                  }`}
+                >
                   Upload File
-                </label>
-                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-gold/50 transition-all">
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/heic,image/heif,image/*,.pdf,.heic,.heif"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                    id="eval-upload-modal"
-                    disabled={!evalType || processing}
+                </button>
+              </div>
+
+              {inputTab === 'paste' ? (
+                /* ── Paste eval text — works without a key, fully on-device ── */
+                <div className="space-y-3">
+                  <textarea
+                    value={pasteText}
+                    onChange={(e) => setPasteText(e.target.value)}
+                    placeholder="Paste the performance comments from your eval here — the narrative block with your accomplishments..."
+                    rows={10}
+                    className="w-full px-4 py-3 bg-bg-secondary border border-border rounded-lg text-base md:text-sm focus:border-gold focus:ring-1 focus:ring-gold/25 transition-all resize-y"
+                    autoComplete="off"
                   />
-                  <label
-                    htmlFor="eval-upload-modal"
-                    className={`cursor-pointer block ${!evalType || processing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  <p className="text-xs text-text-dim">
+                    {pasteText.length > 0
+                      ? `${pasteText.length} characters`
+                      : 'Copy the comments block from your eval and paste it above'}
+                  </p>
+                  <button
+                    onClick={handlePasteTranslate}
+                    disabled={pasteText.trim().length < 40 || processing}
+                    className="w-full px-5 py-3 bg-gold text-bg-primary rounded font-heading font-bold uppercase tracking-wider text-sm hover:bg-gold-bright disabled:opacity-50 transition-colors"
                   >
-                    <svg className="w-10 h-10 mx-auto text-text-muted mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="17 8 12 3 7 8"/>
-                      <line x1="12" y1="3" x2="12" y2="15"/>
-                    </svg>
-                    <p className="text-sm text-text mb-1">Click to upload</p>
-                    <p className="text-xs text-text-muted">PNG, JPG, HEIC, or PDF (max 10MB)</p>
-                  </label>
+                    {processing ? 'Translating...' : 'Translate Bullets'}
+                  </button>
+                  <p className="text-xs text-text-dim text-center">
+                    Translation runs entirely on your device — works offline, no API key needed.
+                  </p>
                 </div>
-                {!evalType && (
-                  <p className="text-xs text-status-amber mt-2">Select an evaluation type first</p>
-                )}
-              </div>
+              ) : (
+                /* ── File upload — reading PDFs/photos uses Claude vision ── */
+                <div className="space-y-4">
+                  <div>
+                    <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-gold/50 transition-all">
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/heic,image/heif,image/*,.pdf,.heic,.heif"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        id="eval-upload-modal"
+                        disabled={!evalType || processing || !online}
+                      />
+                      <label
+                        htmlFor="eval-upload-modal"
+                        className={`cursor-pointer block ${!evalType || processing || !online ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        title={!online ? 'Reading files uses Claude and needs internet. Pasting eval text works offline.' : undefined}
+                      >
+                        <svg className="w-10 h-10 mx-auto text-text-muted mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="17 8 12 3 7 8"/>
+                          <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <p className="text-sm text-text mb-1">Click to upload</p>
+                        <p className="text-xs text-text-muted">PNG, JPG, HEIC, or PDF (max 10MB)</p>
+                      </label>
+                    </div>
+                    {!evalType && (
+                      <p className="text-xs text-status-amber mt-2">Select an evaluation type first</p>
+                    )}
+                    {!online && (
+                      <p className="text-xs text-text-muted mt-2">
+                        Reading files needs internet. Pasting eval text works offline.
+                      </p>
+                    )}
+                  </div>
 
-              {/* Privacy note — non-scary */}
-              <div className="flex items-start gap-2 p-3 bg-status-amber/5 border border-status-amber/20 rounded-lg">
-                <svg className="w-4 h-4 text-status-amber flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-                <p className="text-xs text-text-muted">
-                  <strong className="text-status-amber">Privacy Note</strong> — We&apos;ll automatically redact any SSN, DODID, or personal contact info we detect. You can also crop it out before uploading.
-                </p>
-              </div>
+                  {/* File selected while no key is set — held, not lost */}
+                  {file && !effectiveHasKey && (
+                    <div className="p-3 bg-bg-tertiary rounded-lg flex items-center justify-between">
+                      <p className="text-sm text-text truncate">{file.name}</p>
+                      <button onClick={() => { setFile(null); pendingActionRef.current = null }} className="p-1.5 text-text-muted hover:text-text flex-shrink-0 ml-2">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
+                  )}
 
-              {/* Phone photo tip */}
-              <div className="flex items-start gap-2 p-3 bg-bg-tertiary rounded-lg border border-border">
-                <svg className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-xs text-text-muted">
-                  <strong className="text-gold">Tip:</strong> You can upload a photo from your phone. Block 41/43 PII is not required — crop it out or we&apos;ll handle it automatically.
-                </p>
-              </div>
+                  {/* Reading files uses Claude vision — friendly note, never a wall */}
+                  {!effectiveHasKey && (
+                    <div className="p-4 bg-bg-tertiary border border-border rounded-lg space-y-3">
+                      <p className="text-sm text-text-muted">
+                        Reading eval files uses Claude (optional). {file ? 'Add a key to read the selected file, or paste your eval text — that works without one.' : 'Add a key, or paste your eval text — that works without one.'}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => setKeyModalOpen(true)}
+                          className="px-3 py-1.5 bg-gold/20 text-gold border border-gold/30 rounded text-xs font-semibold hover:bg-gold/30 transition-colors"
+                        >
+                          Add API key
+                        </button>
+                        <button
+                          onClick={() => setInputTab('paste')}
+                          className="px-3 py-1.5 bg-bg-secondary border border-border rounded text-xs font-semibold text-text-muted hover:text-text transition-colors"
+                        >
+                          Paste text instead
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Privacy note — non-scary */}
+                  <div className="flex items-start gap-2 p-3 bg-status-amber/5 border border-status-amber/20 rounded-lg">
+                    <svg className="w-4 h-4 text-status-amber flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <p className="text-xs text-text-muted">
+                      <strong className="text-status-amber">Privacy Note</strong> — We&apos;ll automatically redact any SSN, DODID, or personal contact info we detect. You can also crop it out before uploading.
+                    </p>
+                  </div>
+
+                  {/* Phone photo tip */}
+                  <div className="flex items-start gap-2 p-3 bg-bg-tertiary rounded-lg border border-border">
+                    <svg className="w-4 h-4 text-gold flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-xs text-text-muted">
+                      <strong className="text-gold">Tip:</strong> You can upload a photo from your phone. Block 41/43 PII is not required — crop it out or we&apos;ll handle it automatically.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -573,15 +745,16 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
                 </div>
               )}
 
-              {/* Accept All + counter */}
-              <div className="flex items-center justify-between">
+              {/* Accept All + counter + output source */}
+              <div className="flex items-center justify-between gap-2">
                 <button
                   onClick={acceptAll}
                   className="px-4 py-2 bg-status-green/10 text-status-green border border-status-green/30 rounded text-sm font-medium hover:bg-status-green/20 transition-colors"
                 >
                   Accept All ({bulletItems.length})
                 </button>
-                <span className="text-xs text-text-muted">
+                <span className="flex items-center gap-2 text-xs text-text-muted">
+                  {sourceMode && <OutputModeLabel mode={sourceMode} />}
                   {acceptedBullets.length} accepted
                 </span>
               </div>
@@ -794,12 +967,12 @@ export function EvalUploadModal({ isOpen, onClose, onExtracted, onBulletsSaved, 
           </div>
         )}
 
-        {/* API key setup — shown when an AI action is attempted without a key */}
+        {/* API key setup — offered at the file-reading action point; pasted text never needs it */}
         <KeySetupModal
           isOpen={keyModalOpen}
           onClose={() => setKeyModalOpen(false)}
           onKeySaved={handleKeySaved}
-          featureNote="Eval extraction uses Claude vision to read your evaluation and translate the bullets."
+          featureNote="Reading eval files (PDF or photo) uses Claude vision. Pasting eval text works without a key."
         />
 
         {/* Unsaved bullets confirmation */}

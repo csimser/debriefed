@@ -4,7 +4,7 @@
 
 You don't need any of this. Go to **[getdebriefed.co](https://getdebriefed.co)** — it runs entirely in your browser. Or download `Debriefed.html` from [Releases](https://github.com/csimser/debriefed/releases) and double-click it.
 
-To use the AI features (cover letters, job match, eval parsing), create an API key at [console.anthropic.com](https://console.anthropic.com/settings/keys) and paste it into the app's Settings once. Everything else — including the 33,000-entry translation dictionary — works without it.
+Everything works out of the box — the built-in 33,000-entry dictionary engine handles translation, job matching, cover letters, and eval parsing with no account and no API key. Want higher-quality output? Optionally add an Anthropic API key in Settings ([console.anthropic.com](https://console.anthropic.com/settings/keys)) and Claude enhances the dictionary output for about 2–6 cents per resume.
 
 ## Run the code yourself (ELI5)
 

@@ -1,13 +1,17 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { DEGREE_TYPES, matchDegreeType } from '@/lib/constants/education'
 import { extractResumeText } from '@/lib/ai/visionExtract'
 import { parseResumeText } from '@/lib/ai/importResume'
+import { parseResumeTextLocal } from '@/lib/resume/ruleBasedImport'
 import { classifyAIError, hasApiKey } from '@/lib/ai/client'
 import { KeySetupModal } from '@/components/settings/KeySetupModal'
+import { OutputModeLabel } from '@/components/ai/OutputModeLabel'
+import { useApiKey } from '@/hooks/useApiKey'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 
 /** Read a File as base64 (data: prefix stripped). */
 function fileToBase64(file: File): Promise<string> {
@@ -101,25 +105,18 @@ export function ResumeImportModal({
 
   // Parsed data state
   const [importData, setImportData] = useState<ImportData | null>(null)
-  const [aiUsed, setAiUsed] = useState(false)
+  const [parseMode, setParseMode] = useState<'ai' | 'dictionary' | null>(null)
   const [editingEduIdx, setEditingEduIdx] = useState<number | null>(null)
 
-  // API key gating — remembers the blocked action so it can re-run after key save
+  // API key state — paste/DOCX import never needs a key; PDF reading does.
+  // The key dialog is only offered at the PDF action point, never as a wall.
+  const { hasKey } = useApiKey()
+  const online = useOnlineStatus()
+  const [keyJustSaved, setKeyJustSaved] = useState(false)
   const [keyModalOpen, setKeyModalOpen] = useState(false)
-  const pendingActionRef = useRef<(() => void) | null>(null)
+  const effectiveHasKey = hasKey || keyJustSaved
 
-  const requireApiKey = (action: () => void): boolean => {
-    if (hasApiKey()) return true
-    pendingActionRef.current = action
-    setKeyModalOpen(true)
-    return false
-  }
-
-  const handleKeySaved = () => {
-    const action = pendingActionRef.current
-    pendingActionRef.current = null
-    action?.()
-  }
+  const isPdfFile = file?.type === 'application/pdf'
 
   // Success state
   const [importSummary, setImportSummary] = useState('')
@@ -164,9 +161,9 @@ export function ResumeImportModal({
       } else if (file) {
         const isPDF = file.type === 'application/pdf'
 
-        // PDF extraction runs Claude vision — requires the user's API key.
-        // DOCX is parsed locally (mammoth), no key needed.
-        if (isPDF && !requireApiKey(handleExtractText)) return
+        // PDF extraction runs Claude vision — needs a key. The inline note in
+        // the upload step handles the no-key case; this is just a backstop.
+        if (isPDF && !hasApiKey()) return
 
         setProcessing(true)
         try {
@@ -193,16 +190,31 @@ export function ResumeImportModal({
   // ─── Step 2→3: Parse Text ─────────────────────────────────────────
 
   const handleParse = async () => {
-    // AI action — requires the user's Anthropic API key
-    if (!requireApiKey(handleParse)) return
-
     setStep('parsing')
     setProcessing(true)
     setError('')
 
     try {
-      // Send full resume text to Claude for comprehensive parsing
-      const result: any = await parseResumeText(extractedText)
+      // Structuring is keyless by default (rule-based + dictionary engine).
+      // When a key exists and we're online, Claude structures it instead —
+      // automatically, with a silent fallback to rule-based on failure.
+      let result: any = null
+      let mode: 'ai' | 'dictionary' = 'dictionary'
+
+      if (hasApiKey() && online) {
+        try {
+          result = await parseResumeText(extractedText)
+          mode = 'ai'
+        } catch (aiErr) {
+          console.warn('[ResumeImport] AI parse failed, falling back to rule-based:', aiErr)
+          result = null
+        }
+      }
+
+      if (!result) {
+        result = await parseResumeTextLocal(extractedText)
+        mode = 'dictionary'
+      }
 
       // Map parsed response to ImportData
       const data: ImportData = {
@@ -237,7 +249,7 @@ export function ResumeImportModal({
         military_info: result.military_info || { branch: null, rank: null },
       }
 
-      setAiUsed(true)
+      setParseMode(mode)
       setImportData(data)
       setStep('review')
     } catch (err: any) {
@@ -387,7 +399,7 @@ export function ResumeImportModal({
     setError('')
     setProcessing(false)
     setImportData(null)
-    setAiUsed(false)
+    setParseMode(null)
     setEditingEduIdx(null)
     setImportSummary('')
     onClose()
@@ -522,6 +534,36 @@ export function ResumeImportModal({
                       </button>
                     </div>
                   )}
+
+                  {/* PDF reading uses Claude vision — friendly note at the action point, never a wall */}
+                  {isPdfFile && !effectiveHasKey && (
+                    <div className="p-4 bg-bg-tertiary border border-border rounded-lg space-y-3">
+                      <p className="text-sm text-text-muted">
+                        Reading PDFs uses Claude (optional). Add a key, or use DOCX / paste your
+                        resume text — those work without one.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => setKeyModalOpen(true)}
+                          className="px-3 py-1.5 bg-gold/20 text-gold border border-gold/30 rounded text-xs font-semibold hover:bg-gold/30 transition-colors"
+                        >
+                          Add API key
+                        </button>
+                        <button
+                          onClick={() => { setFile(null); setInputTab('paste') }}
+                          className="px-3 py-1.5 bg-bg-secondary border border-border rounded text-xs font-semibold text-text-muted hover:text-text transition-colors"
+                        >
+                          Paste text instead
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {isPdfFile && effectiveHasKey && !online && (
+                    <p className="text-xs text-text-muted" title="Reading PDFs uses Claude and needs internet.">
+                      Reading PDFs needs internet. DOCX upload and pasted text work offline.
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div>
@@ -548,7 +590,8 @@ export function ResumeImportModal({
                   <p className="flex items-center gap-2"><span className="text-gold">&#10003;</span> Skills & certs</p>
                 </div>
                 <p className="text-xs text-text-dim mt-3">
-                  AI-powered parsing runs on your own Anthropic API key.
+                  Pasted text and DOCX files import right in your browser — no API key needed.
+                  If you&apos;ve added a Claude key, it&apos;s used automatically for higher-fidelity parsing.
                 </p>
               </div>
             </div>
@@ -583,11 +626,16 @@ export function ResumeImportModal({
           {/* ─── STEP: Review ─── */}
           {step === 'review' && importData && (
             <div className="space-y-5">
-              {/* AI success indicator */}
-              {aiUsed && (
-                <div className="p-3 bg-status-green/10 border border-status-green/30 rounded-lg text-sm flex items-center gap-2">
-                  <span className="text-status-green">&#10003;</span>
-                  <span className="text-status-green font-semibold">AI parsed {importData.experiences.length} experience entries</span>
+              {/* Parse result indicator — same banner for both modes, labeled by source */}
+              {parseMode && (
+                <div className="p-3 bg-status-green/10 border border-status-green/30 rounded-lg text-sm flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2">
+                    <span className="text-status-green">&#10003;</span>
+                    <span className="text-status-green font-semibold">
+                      Parsed {importData.experiences.length} experience entr{importData.experiences.length === 1 ? 'y' : 'ies'} — review and edit below
+                    </span>
+                  </span>
+                  <OutputModeLabel mode={parseMode} />
                 </div>
               )}
 
@@ -972,7 +1020,17 @@ export function ResumeImportModal({
             {step === 'upload' && (
               <button
                 onClick={handleExtractText}
-                disabled={processing || (inputTab === 'file' ? !file : pasteText.trim().length < 50)}
+                disabled={
+                  processing ||
+                  (inputTab === 'file'
+                    ? !file || (isPdfFile && (!effectiveHasKey || !online))
+                    : pasteText.trim().length < 50)
+                }
+                title={
+                  inputTab === 'file' && isPdfFile && effectiveHasKey && !online
+                    ? 'Reading PDFs uses Claude and needs internet. DOCX and pasted text work offline.'
+                    : undefined
+                }
                 className="flex-1 px-6 py-3 bg-gold text-bg-primary rounded font-heading font-bold uppercase tracking-wider hover:bg-gold-bright disabled:opacity-50 transition-all"
               >
                 {processing ? 'Extracting...' : 'Extract Text'}
@@ -1002,12 +1060,16 @@ export function ResumeImportModal({
         )}
       </div>
 
-      {/* API key setup — shown when an AI action is attempted without a key */}
+      {/* API key setup — offered only at the PDF action point; paste/DOCX never need it */}
       <KeySetupModal
         isOpen={keyModalOpen}
         onClose={() => setKeyModalOpen(false)}
-        onKeySaved={handleKeySaved}
-        featureNote="Resume import uses Claude to read and structure your resume."
+        onKeySaved={() => {
+          setKeyJustSaved(true)
+          // The PDF the user picked is still selected — continue where they left off
+          void handleExtractText()
+        }}
+        featureNote="Reading PDFs uses Claude vision. DOCX upload and pasted text import without a key."
       />
     </ModalShell>
   )

@@ -16,6 +16,7 @@ import { formatDateRange, formatClearance } from '@/lib/utils/formatResume'
 import { getProficiencyLabel } from '@/lib/constants/federalEligibility'
 import { TemplateId, resolveTemplate } from '@/lib/templates'
 import { trimForFederalLimit } from '@/lib/resume/federalTrimmer'
+import { pdfFontUrl } from '@/lib/pdf/fontFiles'
 
 // =========================================
 // GOOGLE FONT REGISTRATION
@@ -25,18 +26,18 @@ import { trimForFederalLimit } from '@/lib/resume/federalTrimmer'
 Font.register({
   family: 'Source Serif 4',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/sourceserif4/v14/vEFy2_tTDB4M7-auWDN0ahZJW3IX2ih5nk3AucvUHf6OAVIJmeUDygwjihdqrhw.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/sourceserif4/v14/vEFy2_tTDB4M7-auWDN0ahZJW3IX2ih5nk3AucvUHf6OAVIJmeUDygwjivBtrhw.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/sourceserif4/v14/vEF02_tTDB4M7-auWDN0ahZJW1ge6NmXpVAHV83Bfb_US2D2QYxoUKIkn98pRl9dCw.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('sourceserif4-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('sourceserif4-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('sourceserif4-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
 Font.register({
   family: 'Source Sans 3',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/sourcesans3/v19/nwpBtKy2OAdR1K-IwhWudF-R9QMylBJAV3Bo8Ky461EN.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/sourcesans3/v19/nwpBtKy2OAdR1K-IwhWudF-R9QMylBJAV3Bo8Kxf7FEN.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/sourcesans3/v19/nwpDtKy2OAdR1K-IwhWudF-R3woAa8opPOrG97lwqLlO9C4.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('sourcesans3-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('sourcesans3-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('sourcesans3-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
@@ -44,18 +45,18 @@ Font.register({
 Font.register({
   family: 'Libre Baskerville',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/librebaskerville/v24/kmKUZrc3Hgbbcjq75U4uslyuy4kn0olVQ-LglH6T17uj8Q4SCQ.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/librebaskerville/v24/kmKUZrc3Hgbbcjq75U4uslyuy4kn0olVQ-LglH6T17ujFgkSCQ.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/librebaskerville/v24/kmKWZrc3Hgbbcjq75U4uslyuy4kn0qNccR04_RUJeby2OU36SgNK.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('librebaskerville-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('librebaskerville-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('librebaskerville-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
 Font.register({
   family: 'Lato',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/lato/v25/S6uyw4BMUTPHvxk.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/lato/v25/S6u9w4BMUTPHh6UVew8.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/lato/v25/S6u8w4BMUTPHjxswWw.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('lato-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('lato-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('lato-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
@@ -63,18 +64,18 @@ Font.register({
 Font.register({
   family: 'Merriweather',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/merriweather/v33/u-4D0qyriQwlOrhSvowK_l5UcA6zuSYEqOzpPe3HOZJ5eX1WtLaQwmYiScCmDxhtNOKl8yDr3icqEw.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/merriweather/v33/u-4D0qyriQwlOrhSvowK_l5UcA6zuSYEqOzpPe3HOZJ5eX1WtLaQwmYiScCmDxhtNOKl8yDrOSAqEw.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/merriweather/v33/u-4B0qyriQwlOrhSvowK_l5-eTxCVx0ZbwLvKH2Gk9hLmp0v5yA-xXPqCzLvPee1XYk_XSf-FmTCUF3w.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('merriweather-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('merriweather-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('merriweather-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
 Font.register({
   family: 'Open Sans',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/opensans/v44/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0C4n.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/opensans/v44/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsg-1y4n.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/opensans/v44/memQYaGs126MiZpBA-UFUIcVXSCEkx2cmqvXlWq8tWZ0Pw86hd0Rk8ZkaVc.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('opensans-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('opensans-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('opensans-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
@@ -82,16 +83,16 @@ Font.register({
 Font.register({
   family: 'DM Serif Display',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/dmserifdisplay/v17/-nFnOHM81r4j6k0gjAW3mujVU2B2K_c.ttf', fontWeight: 400 },
+    { src: pdfFontUrl('dmserifdisplay-400.ttf'), fontWeight: 400 },
   ],
 })
 
 Font.register({
   family: 'DM Sans',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAopxhTg.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/dmsans/v17/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwARZthTg.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/dmsans/v17/rP2rp2ywxg089UriCZaSExd86J3t9jz86Mvy4qCRAL19DksVat-JDW3z.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('dmsans-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('dmsans-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('dmsans-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
@@ -99,18 +100,18 @@ Font.register({
 Font.register({
   family: 'Cormorant Garamond',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhyjypVO7abI26QOD_v86GnM.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/cormorantgaramond/v21/co3umX5slCNuHLi8bLeY9MK7whWMhyjypVO7abI26QOD_hg9GnM.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/cormorantgaramond/v21/co3smX5slCNuHLi8bLeY9MK7whWMhyjYrGFEsdtdc62E6zd58jDOjw.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('cormorantgaramond-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('cormorantgaramond-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('cormorantgaramond-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
 Font.register({
   family: 'Nunito Sans',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/nunitosans/v19/pe1mMImSLYBIv1o4X1M8ce2xCx3yop4tQpF_MeTm0lfGWVpNn64CL7U8upHZIbMV51Q42ptCp5F5bxqqtQ1yiU4G1ilntA.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/nunitosans/v19/pe1mMImSLYBIv1o4X1M8ce2xCx3yop4tQpF_MeTm0lfGWVpNn64CL7U8upHZIbMV51Q42ptCp5F5bxqqtQ1yiU4GMS5ntA.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/nunitosans/v19/pe1kMImSLYBIv1o4X1M8cce4OdVisMz5nZRqy6cmmmU3t2FQWEAEOvV9wNvrwlNstMKW3Y6K5WMwXeVy3GboJ0kTHmqP91Ug.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('nunitosans-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('nunitosans-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('nunitosans-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
@@ -118,18 +119,18 @@ Font.register({
 Font.register({
   family: 'Bitter',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/bitter/v40/raxhHiqOu8IVPmnRc6SY1KXhnF_Y8fbfCL8.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/bitter/v40/raxhHiqOu8IVPmnRc6SY1KXhnF_Y8RHYCL8.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/bitter/v40/raxjHiqOu8IVPmn7epZnDMyKBvHf5D6c4PzOWA.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('bitter-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('bitter-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('bitter-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
 Font.register({
   family: 'Karla',
   fonts: [
-    { src: 'https://fonts.gstatic.com/s/karla/v33/qkBIXvYC6trAT55ZBi1ueQVIjQTD-JqqFA.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/karla/v33/qkBIXvYC6trAT55ZBi1ueQVIjQTDH52qFA.ttf', fontWeight: 700 },
-    { src: 'https://fonts.gstatic.com/s/karla/v33/qkBKXvYC6trAT7RQNNK2EG7SIwPWMNlCV0lP.ttf', fontWeight: 400, fontStyle: 'italic' },
+    { src: pdfFontUrl('karla-400.ttf'), fontWeight: 400 },
+    { src: pdfFontUrl('karla-700.ttf'), fontWeight: 700 },
+    { src: pdfFontUrl('karla-400i.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 

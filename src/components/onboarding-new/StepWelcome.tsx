@@ -3,8 +3,6 @@
 import { useState, useRef } from 'react'
 import { OnboardingData } from './NewOnboardingWizard'
 import { ResumeImportModal } from '@/components/profile/ResumeImportModal'
-import { KeySetupModal } from '@/components/settings/KeySetupModal'
-import { hasApiKey } from '@/lib/ai/client'
 import {
   newId,
   saveAllCertifications,
@@ -27,20 +25,16 @@ interface StepWelcomeProps {
 
 export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, saving, loadRelatedData }: StepWelcomeProps) {
   const [showResumeModal, setShowResumeModal] = useState(false)
-  const [showKeyModal, setShowKeyModal] = useState(false)
   const jumpToStepRef = useRef(jumpToStep)
   jumpToStepRef.current = jumpToStep
   const [importing, setImporting] = useState(false)
   const [importSuccess, setImportSuccess] = useState(false)
   const [importError, setImportError] = useState('')
 
-  // Resume import uses Claude to parse the file — needs the user's API key.
+  // Import works without a key (paste/DOCX use the dictionary engine;
+  // PDF reading offers an optional key inside the modal itself).
   const handleImportClick = () => {
-    if (hasApiKey()) {
-      setShowResumeModal(true)
-    } else {
-      setShowKeyModal(true)
-    }
+    setShowResumeModal(true)
   }
 
   const handleResumeImport = async (parsed: any) => {
@@ -257,8 +251,8 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
               <div>
                 <h3 className="font-semibold text-gold">I have an existing resume</h3>
                 <p className="text-sm text-text-muted mt-1">
-                  Upload a PDF or Word document and we&apos;ll extract your info automatically
-                  (uses your Anthropic API key)
+                  Upload a Word document or paste your resume text and we&apos;ll extract
+                  your info automatically
                 </p>
               </div>
             </button>
@@ -275,7 +269,7 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
               <div>
                 <h3 className="font-semibold text-gold">Start fresh</h3>
                 <p className="text-sm text-text-muted mt-1">
-                  Build your profile step by step - we&apos;ll guide you through it. No API key needed.
+                  Build your profile step by step - we&apos;ll guide you through it.
                 </p>
               </div>
             </button>
@@ -296,13 +290,6 @@ export function StepWelcome({ data, updateData, onNext, onSkip, jumpToStep, savi
           Skip setup — go straight to dashboard
         </button>
       </div>
-
-      <KeySetupModal
-        isOpen={showKeyModal}
-        onClose={() => setShowKeyModal(false)}
-        onKeySaved={() => setShowResumeModal(true)}
-        featureNote="Resume import uses Claude to read your existing resume."
-      />
 
       <ResumeImportModal
         isOpen={showResumeModal}
