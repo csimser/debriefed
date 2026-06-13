@@ -3,32 +3,22 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/Button'
 import { DownloadCelebration } from '@/components/resume/DownloadCelebration'
-import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
-import { useUpgradeModal } from '@/components/modals/UpgradeModal'
-import { trackEvent } from '@/lib/analytics'
+import { exportResume } from '@/lib/export/resumeExport'
 
 interface ExportMenuProps {
-  resumeId: string
   resumeName: string
-  userId: string
+  /** Resume content to export — generated entirely client-side. */
+  content: Record<string, unknown>
   template: string
   resumeType?: 'private' | 'federal'
-  onLimitReached?: (error: string, tier: string) => void
-  isTemplateLocked?: boolean
   isUntitled?: boolean
-  downloadRemaining?: number
-  downloadLimit?: number
   onBeforeExport?: () => Promise<void>
   compact?: boolean
 }
 
-export function ExportMenu({ resumeId, resumeName, userId, template, resumeType = 'private', onLimitReached, isTemplateLocked, isUntitled, downloadRemaining, downloadLimit, onBeforeExport, compact }: ExportMenuProps) {
-  const { triggerPostActionModal } = usePostActionModal()
-  const { openUpgradeModal } = useUpgradeModal()
+export function ExportMenu({ resumeName, content, template, resumeType = 'private', isUntitled, onBeforeExport, compact }: ExportMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [exporting, setExporting] = useState<'pdf' | 'docx' | null>(null)
-  const [limitError, setLimitError] = useState<string | null>(null)
-  const [downloadToast, setDownloadToast] = useState<string | null>(null)
   const [celebration, setCelebration] = useState<{ fileName: string; format: 'pdf' | 'docx' } | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -46,27 +36,11 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
   }, [])
 
   const handleExport = async (format: 'pdf' | 'docx') => {
-    // Block export for locked templates (belt-and-suspenders)
-    if (isTemplateLocked) return
     // Block export for untitled resumes
     if (isUntitled) return
 
-    // DEBUG logging
-    console.log('=== ExportMenu DEBUG ===')
-    console.log('Props received:', { resumeId, userId, resumeName, format, template })
-    console.log('resumeId type:', typeof resumeId, '| empty?:', !resumeId || resumeId === '')
-    console.log('userId type:', typeof userId, '| empty?:', !userId || userId === '')
-
-    // Validate props - check for empty strings too
-    if (!resumeId || resumeId === '' || resumeId === 'undefined' || resumeId === 'null') {
-      console.error('ExportMenu: resumeId is invalid:', resumeId)
+    if (!content) {
       alert('Cannot export: No resume selected')
-      return
-    }
-
-    if (!userId || userId === '' || userId === 'undefined' || userId === 'null') {
-      console.error('ExportMenu: userId is invalid:', userId)
-      alert('Cannot export: User not authenticated')
       return
     }
 
@@ -79,67 +53,17 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
         await onBeforeExport()
       }
 
-      const res = await fetch('/api/export-resume', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ resumeId, userId, format, template }),
+      // Generate and download the file entirely in the browser
+      await exportResume({
+        content,
+        resumeType,
+        format,
+        template,
+        fileName: resumeName || 'resume',
       })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        console.error('Export failed:', res.status, data)
-
-        // Handle limit reached errors
-        if (res.status === 403 && data.limitReached) {
-          setLimitError(data.error)
-          trackEvent('download_gate_shown', { feature: 'downloads', tier: data.tier || 'unknown', format, resumeType })
-          if (onLimitReached) {
-            onLimitReached(data.error, data.tier)
-          }
-          return
-        }
-
-        alert(data.error || `Export failed with status ${res.status}`)
-        return
-      }
-
-      // Clear any previous limit error on successful download
-      setLimitError(null)
-
-      // Read usage headers for free tier toast
-      const userTier = res.headers.get('X-User-Tier')
-      const dailyRemaining = res.headers.get('X-Daily-Remaining')
-      const dailyLimit = res.headers.get('X-Daily-Limit')
-
-      // Download the file
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${resumeName || 'resume'}.${format}`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
 
       // Trigger celebration animation
       setCelebration({ fileName: resumeName || 'resume', format })
-
-      // Show remaining export count toast for free tier users
-      if (userTier === 'free' && dailyRemaining !== null && dailyLimit !== null) {
-        const remaining = parseInt(dailyRemaining, 10)
-        if (remaining <= 0) {
-          setDownloadToast('Resume downloaded \u00B7 Daily export limit reached. Resets tomorrow.')
-        } else {
-          setDownloadToast(`Resume downloaded \u00B7 ${remaining} of ${dailyLimit} exports remaining today`)
-        }
-        setTimeout(() => setDownloadToast(null), 5000)
-      }
-
-      // Trigger post-action modal after successful download
-      setTimeout(() => {
-        triggerPostActionModal(resumeType === 'federal' ? 'federal-resume-download' : 'resume-download')
-      }, 500)
     } catch (error) {
       console.error('Export error:', error)
       alert('Failed to export')
@@ -159,68 +83,19 @@ export function ExportMenu({ resumeId, resumeName, userId, template, resumeType 
         />
       )}
 
-      {/* Download Success Toast */}
-      {downloadToast && (
-        <div className="absolute right-0 bottom-full mb-2 w-80 bg-status-green/10 border border-status-green/30 rounded-lg shadow-lg z-20 p-3">
-          <p className="text-sm text-status-green">{downloadToast}</p>
-          <button
-            onClick={() => setDownloadToast(null)}
-            className="absolute top-2 right-2 text-status-green/50 hover:text-status-green"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
-      {/* Limit Error Toast */}
-      {limitError && (
-        <div className="absolute right-0 bottom-full mb-2 w-72 bg-status-amber-dim border border-status-amber/30 rounded-lg shadow-lg z-20 p-3">
-          <p className="text-sm text-status-amber mb-2">{limitError}</p>
-          <Button
-            size="sm"
-            onClick={() => {
-              trackEvent('download_gate_upgrade_click', { feature: 'downloads', resumeType })
-              openUpgradeModal()
-            }}
-          >
-            Upgrade Now
-          </Button>
-          <button
-            onClick={() => setLimitError(null)}
-            className="absolute top-2 right-2 text-status-amber/50 hover:text-status-amber"
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
       <div className="flex flex-col items-end gap-1">
         <Button
           variant={compact ? 'primary' : 'secondary'}
           size={compact ? 'sm' : undefined}
           onClick={() => setIsOpen(!isOpen)}
-          disabled={exporting !== null || isTemplateLocked || isUntitled}
+          disabled={exporting !== null || isUntitled}
         >
           {exporting ? (compact ? '...' : `Exporting ${exporting.toUpperCase()}...`) : 'Export'}
         </Button>
-        {!compact && isTemplateLocked && (
-          <span className="text-[10px] text-status-amber whitespace-nowrap">
-            Switch to a free template or upgrade
-          </span>
-        )}
-        {!compact && isUntitled && !isTemplateLocked && (
+        {!compact && isUntitled && (
           <span className="text-[10px] text-gold whitespace-nowrap">
             Name your resume to export
           </span>
-        )}
-        {!compact && downloadRemaining !== undefined && downloadLimit !== undefined && !isTemplateLocked && !isUntitled && (
-          downloadLimit >= 999
-            ? <span className="text-[10px] text-text-dim whitespace-nowrap">Downloads: ∞</span>
-            : downloadRemaining <= 0
-              ? <span className="text-[10px] text-status-red whitespace-nowrap">Download limit reached</span>
-              : downloadRemaining <= 3
-                ? <span className="text-[10px] text-status-amber whitespace-nowrap">{downloadRemaining} of {downloadLimit} downloads left</span>
-                : <span className="text-[10px] text-text-dim whitespace-nowrap">{downloadRemaining} of {downloadLimit} downloads left</span>
         )}
       </div>
 

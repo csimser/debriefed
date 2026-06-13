@@ -1,42 +1,50 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+'use client'
+
+import { useCallback, useEffect, useState } from 'react'
 import { ProfileForm } from '@/components/profile/ProfileForm'
 import { EvalHistorySection } from '@/components/eval/EvalHistorySection'
-import { checkLimit } from '@/lib/usage-service'
+import { FullPageLoader } from '@/components/ui/FullPageLoader'
+import {
+  getProfile,
+  listExperiences,
+  listEducation,
+  listCertifications,
+  listSkills,
+  listEvalUploads,
+  type Profile,
+  type Experience,
+  type Education,
+  type Certification,
+  type Skill,
+  type EvalUpload,
+} from '@/lib/storage'
 
-export default async function ProfilePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export default function ProfilePage() {
+  const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [experiences, setExperiences] = useState<Experience[]>([])
+  const [education, setEducation] = useState<Education[]>([])
+  const [certifications, setCertifications] = useState<Certification[]>([])
+  const [skills, setSkills] = useState<Skill[]>([])
+  const [evalUploads, setEvalUploads] = useState<EvalUpload[]>([])
 
-  if (!user) {
-    redirect('/login')
+  const loadData = useCallback(() => {
+    setProfile(getProfile())
+    setExperiences(listExperiences())
+    setEducation(listEducation())
+    setCertifications(listCertifications())
+    setSkills(listSkills())
+    setEvalUploads(listEvalUploads())
+    setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  if (loading) {
+    return <FullPageLoader message="Loading profile..." />
   }
-
-  // Load all profile data + usage checks in one parallel batch
-  const [
-    { data: profile },
-    { data: experiences },
-    { data: education },
-    { data: certifications },
-    { data: skills },
-    { data: evalUploads },
-    resumeImportCheck,
-    bulletTranslationCheck,
-  ] = await Promise.all([
-    supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle(),
-    supabase.from('experience').select('*, experience_bullets(*)').eq('user_id', user.id).order('sort_order'),
-    supabase.from('education').select('*').eq('user_id', user.id).order('sort_order'),
-    supabase.from('certifications').select('*').eq('user_id', user.id).order('sort_order'),
-    supabase.from('skills').select('*').eq('user_id', user.id).order('sort_order'),
-    supabase.from('eval_uploads').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-    checkLimit(user.id, 'resume_imports'),
-    checkLimit(user.id, 'bullet_translations'),
-  ])
-
-  const mappedExperiences = (experiences || []).map(exp => ({
-    ...exp,
-    bullets: exp.experience_bullets || []
-  }))
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -47,28 +55,23 @@ export default async function ProfilePage() {
         </div>
       </div>
       <ProfileForm
-        userId={user.id}
         initialData={{
           profile: profile || {},
-          experiences: mappedExperiences,
-          education: education || [],
-          certifications: certifications || [],
-          skills: skills || []
+          experiences,
+          education,
+          certifications,
+          skills,
         }}
-        resumeImportUsage={resumeImportCheck.used}
-        resumeImportLimit={resumeImportCheck.limit}
-        bulletTranslationUsage={bulletTranslationCheck}
         userBranch={profile?.branch || ''}
-        userPlan={profile?.tier || 'free'}
       />
 
       {/* Eval Upload History — shows past uploads with re-import capability */}
-      {(evalUploads && evalUploads.length > 0) && (
+      {evalUploads.length > 0 && (
         <div className="mt-8">
           <EvalHistorySection
             uploads={evalUploads}
-            experiences={mappedExperiences}
-            userId={user.id}
+            experiences={experiences}
+            onImportComplete={loadData}
           />
         </div>
       )}

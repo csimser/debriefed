@@ -6,7 +6,6 @@ import remarkGfm from 'remark-gfm'
 import { getPostBySlug, getAllPosts, getRelatedPosts, CATEGORY_LABELS } from '@/lib/mdx'
 import { PostCard } from '@/components/blog/PostCard'
 import { mdxComponents } from '@/components/blog/MdxComponents'
-import { BlogPostTracker } from '@/components/blog/BlogPostTracker'
 import { MarketingNav } from '@/components/layout/MarketingNav'
 import { APP_URL } from '@/lib/site-config'
 
@@ -71,7 +70,6 @@ export default async function BlogPostPage({ params }: Props) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <div className="min-h-screen bg-bg-primary flex flex-col">
         <MarketingNav />
-        <BlogPostTracker slug={post.slug} category={post.category} />
 
         <main>
           {/* Post header */}

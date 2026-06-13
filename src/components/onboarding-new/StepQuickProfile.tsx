@@ -6,6 +6,7 @@ import { InternationalPhoneInput } from '@/components/ui/InternationalPhoneInput
 import { US_STATES } from '@/lib/constants/states'
 import { BRANCHES, PAYGRADES, getRankFromPaygrade } from '@/lib/constants/military'
 import { CLEARANCE_LEVELS } from '@/lib/constants/federalEligibility'
+import { getCivilianJobs } from '@/lib/debriefed-token-saver/jobCrosswalk'
 import { OnboardingData } from './NewOnboardingWizard'
 
 interface StepQuickProfileProps {
@@ -18,7 +19,6 @@ interface StepQuickProfileProps {
 }
 
 export function StepQuickProfile({ data, updateData, onNext, onBack, onSkip, saving }: StepQuickProfileProps) {
-  const [loadingCrosswalk, setLoadingCrosswalk] = useState(false)
   const [civilianTitles, setCivilianTitles] = useState<string[]>([])
   const [showOptional, setShowOptional] = useState(!!(data.phone || data.city || data.clearance))
 
@@ -32,8 +32,8 @@ export function StepQuickProfile({ data, updateData, onNext, onBack, onSkip, sav
     }
   }, [data.branch, data.paygrade, data.rank, updateData])
 
-  // Fetch O*NET crosswalk suggestions when MOS/rating changes
-  const fetchCrosswalk = useCallback(async (mosCode: string, branch: string) => {
+  // Look up crosswalk suggestions when MOS/rating changes — fully local data
+  const fetchCrosswalk = useCallback((mosCode: string, branch: string) => {
     if (!mosCode || mosCode.length < 2) {
       setCivilianTitles([])
       updateData({ suggested_titles: [], suggested_skills: [], suggested_certs: [] })
@@ -43,28 +43,17 @@ export function StepQuickProfile({ data, updateData, onNext, onBack, onSkip, sav
     const code = mosCode.split(/[\s(]/)[0].trim().toUpperCase()
     if (code.length < 2) return
 
-    setLoadingCrosswalk(true)
-    try {
-      const branchParam = branch || 'navy'
-      const response = await fetch(`/api/onet/crosswalk?code=${encodeURIComponent(code)}&branch=${encodeURIComponent(branchParam)}`)
-      if (response.ok) {
-        const responseData = await response.json()
-        if (responseData.crosswalk && responseData.crosswalk.length > 0) {
-          const titles = responseData.crosswalk.slice(0, 5).map((c: any) => c.title)
-          setCivilianTitles(titles)
-          updateData({
-            suggested_titles: titles,
-            suggested_skills: responseData.skills || [],
-            suggested_certs: responseData.certifications || [],
-          })
-        } else {
-          setCivilianTitles([])
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching crosswalk:', error)
-    } finally {
-      setLoadingCrosswalk(false)
+    const entry = getCivilianJobs(code, branch || undefined)
+    if (entry && entry.civilian_titles.length > 0) {
+      const titles = entry.civilian_titles.slice(0, 5)
+      setCivilianTitles(titles)
+      updateData({
+        suggested_titles: titles,
+        suggested_skills: [],
+        suggested_certs: [],
+      })
+    } else {
+      setCivilianTitles([])
     }
   }, [updateData])
 
@@ -167,12 +156,7 @@ export function StepQuickProfile({ data, updateData, onNext, onBack, onSkip, sav
                 We&apos;ll suggest civilian job titles based on this
               </p>
 
-              {loadingCrosswalk && (
-                <p className="text-xs text-text-muted mt-2 animate-pulse">
-                  Looking up civilian equivalents...
-                </p>
-              )}
-              {!loadingCrosswalk && civilianTitles.length > 0 && (
+              {civilianTitles.length > 0 && (
                 <div className="mt-3 p-3 bg-gold/10 border border-gold/30 rounded-lg">
                   <p className="text-xs text-gold font-semibold mb-2">
                     &#9733; Based on your {data.rating_mos}, you might target roles like:

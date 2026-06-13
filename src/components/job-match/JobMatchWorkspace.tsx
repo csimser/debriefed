@@ -5,29 +5,22 @@ import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { getUserTier, isPaidTier } from '@/lib/tier-utils'
-import { trackEvent } from '@/lib/analytics'
 import { TEMPLATES, TemplateId } from '@/lib/templates'
 import { ResumePreview } from '@/components/resume/ResumePreview'
-import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
-import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
-import { createClient } from '@/lib/supabase/client'
 import { extractKeywords } from '@/lib/dictionary/keywordExtractor'
 import { calculateMatch, buildUserProfile } from '@/lib/dictionary/matchScorer'
 import { translateBullet } from '@/lib/dictionary/bulletTranslator'
-import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import type { ExtractionResult, MatchResult, DictProfessionalSummary } from '@/lib/dictionary/types'
 import { TailoredPreviewModal, type PreviewChange } from './TailoredPreviewModal'
-import { UpgradeLink, useUpgradeModal } from '@/components/modals/UpgradeModal'
-import { FirstUseUpgradePrompt } from '@/components/paywall/FirstUseUpgradePrompt'
 import { ScoreGauge } from './ScoreGauge'
+import { analyzeJobMatch, getJobMatchSuggestions } from '@/lib/ai/jobMatch'
+import { classifyAIError, hasApiKey } from '@/lib/ai/client'
+import { KeySetupModal } from '@/components/settings/KeySetupModal'
+import { saveResume, newId } from '@/lib/storage'
+import { exportResume } from '@/lib/export/resumeExport'
 
 interface JobMatchWorkspaceProps {
-  userId: string
-  userPlan: string
   resumes: any[]
-  currentUsage: number
-  usageLimit: number
   userProfile: {
     first_name?: string | null
     last_name?: string | null
@@ -308,18 +301,13 @@ const CLEARANCE_DISPLAY: Record<string, string> = {
 }
 
 export function JobMatchWorkspace({
-  userId,
-  userPlan,
   resumes,
-  currentUsage,
-  usageLimit,
   userProfile,
   userSkills,
   userCertifications,
   userEducation,
 }: JobMatchWorkspaceProps) {
   const router = useRouter()
-  const { openUpgradeModal } = useUpgradeModal()
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(resumes[0]?.id || null)
   const [jobData, setJobData] = useState({
     company: '',
@@ -378,7 +366,7 @@ export function JobMatchWorkspace({
   const [downloading, setDownloading] = useState(false)
   const [savingResume, setSavingResume] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('classic_professional')
-  const [showLastUseWarning, setShowLastUseWarning] = useState(false)
+  const [keyModalOpen, setKeyModalOpen] = useState(false)
 
   // Fix 1: Selectable ATS keywords
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set())
@@ -398,11 +386,7 @@ export function JobMatchWorkspace({
   // Fix 2: Addressed gaps ("I already have this")
   const [addressedGaps, setAddressedGaps] = useState<Set<string>>(new Set())
 
-  const { triggerPostActionModal } = usePostActionModal()
-
   const selectedResume = resumes.find(r => r.id === selectedResumeId)
-  const remaining = usageLimit - currentUsage
-  const hasPaidAccess = isPaidTier(getUserTier({ tier: userPlan }))
 
   // Translate AI bullet suggestions through the dictionary engine
   useEffect(() => {
@@ -445,10 +429,10 @@ export function JobMatchWorkspace({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedKeywords])
 
-  // Translate resume bullets through dictionary for free tier users
+  // Translate resume bullets through the dictionary engine (no API call)
   // Passes top 8 selected keywords for job-specific synonym injection
   useEffect(() => {
-    if (!dictResult || !selectedResume || hasPaidAccess) return
+    if (!dictResult || !selectedResume) return
     const experiences = selectedResume.content?.experiences ?? []
     if (experiences.length === 0) return
 
@@ -481,7 +465,7 @@ export function JobMatchWorkspace({
 
     translateAllBullets()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dictResult, selectedResume, hasPaidAccess, userProfile?.branch])
+  }, [dictResult, selectedResume, userProfile?.branch])
 
   // Auto-extract keywords on paste (debounced)
   useEffect(() => {
@@ -533,6 +517,12 @@ export function JobMatchWorkspace({
       return
     }
 
+    // AI action — requires the user's Anthropic API key
+    if (!hasApiKey()) {
+      setKeyModalOpen(true)
+      return
+    }
+
     setAnalyzing(true)
     setError('')
     setAnalysis(null)
@@ -569,80 +559,42 @@ export function JobMatchWorkspace({
       // Non-blocking — continue to AI analysis even if dictionary fails
     }
 
-    if (remaining <= 0) {
-      setError('You have reached your analysis limit. Upgrade for more.')
-      setAnalyzing(false)
-      return
-    }
-
-    if (remaining === 1 && !showLastUseWarning) {
-      setShowLastUseWarning(true)
-      setAnalyzing(false)
-      return
-    }
-    setShowLastUseWarning(false)
-
     try {
-      const res = await fetch('/api/job-match', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resumeContent: selectedResume.content,
-          jobPosting: jobData,
-        }),
+      const data = await analyzeJobMatch({
+        resumeContent: selectedResume.content,
+        jobPosting: jobData,
       })
 
-      const data = await res.json()
+      setAnalysis(data.analysis)
+      setOriginalScore(data.analysis.overallScore)
+      setTailoredResume({
+        content: JSON.parse(JSON.stringify(selectedResume.content)),
+        appliedBullets: new Set(),
+        addedSkills: [],
+        removedSkills: [],
+        excludedBullets: new Set(),
+      })
 
-      if (res.status === 403) {
-        setError(data.details?.reason || data.error || 'Usage limit reached')
-        openUpgradeModal()
-        setAnalyzing(false)
-        return
-      }
-
-      if (data.error) {
-        setError(data.error)
-      } else {
-        setAnalysis(data.analysis)
-        setOriginalScore(data.analysis.overallScore)
-        trackEvent('feature_used', { feature: 'job_match', score: data.analysis.overallScore })
-        setTailoredResume({
-          content: JSON.parse(JSON.stringify(selectedResume.content)),
-          appliedBullets: new Set(),
-          addedSkills: [],
-          removedSkills: [],
-          excludedBullets: new Set(),
+      // Lazy-load bullet suggestions in background
+      setSuggestionsLoading(true)
+      getJobMatchSuggestions({
+        resumeContent: selectedResume.content,
+        jobPosting: jobData,
+        gaps: data.analysis.gaps,
+      })
+        .then(sugData => {
+          if (sugData.bulletSuggestions?.length || sugData.skillChanges) {
+            setAnalysis(prev => prev ? {
+              ...prev,
+              bulletSuggestions: sugData.bulletSuggestions || prev.bulletSuggestions,
+              skillChanges: sugData.skillChanges || prev.skillChanges,
+            } : prev)
+          }
         })
-        // Trigger post-action modal after results render
-        setTimeout(() => triggerPostActionModal('job-match-complete'), 800)
-
-        // Lazy-load bullet suggestions in background
-        setSuggestionsLoading(true)
-        fetch('/api/job-match/suggestions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            resumeContent: selectedResume.content,
-            jobPosting: jobData,
-            gaps: data.analysis.gaps,
-          }),
-        })
-          .then(sugRes => sugRes.json())
-          .then(sugData => {
-            if (sugData.bulletSuggestions?.length || sugData.skillChanges) {
-              setAnalysis(prev => prev ? {
-                ...prev,
-                bulletSuggestions: sugData.bulletSuggestions || prev.bulletSuggestions,
-                skillChanges: sugData.skillChanges || prev.skillChanges,
-              } : prev)
-            }
-          })
-          .catch(() => {}) // Non-critical, silently fail
-          .finally(() => setSuggestionsLoading(false))
-      }
+        .catch(() => {}) // Non-critical, silently fail
+        .finally(() => setSuggestionsLoading(false))
     } catch (err) {
-      setError('Analysis failed. Please try again.')
+      setError(classifyAIError(err).message)
     } finally {
       setAnalyzing(false)
     }
@@ -956,14 +908,9 @@ export function JobMatchWorkspace({
         setKeywordAddResult(`No new keywords to add to ${targetResume.title || 'resume'}`)
       } else {
         content.skills = existingSkills
-        const supabase = createClient()
-        const { error: updateError } = await supabase
-          .from('resumes')
-          .update({ content, updated_at: new Date().toISOString() })
-          .eq('id', previewTargetResumeId)
-          .eq('user_id', userId)
-
-        if (updateError) throw updateError
+        // Persist to local storage (strip the derived `name` alias before saving)
+        const { name: _name, ...resumeRecord } = targetResume
+        saveResume({ ...resumeRecord, content })
         setKeywordAddResult(`Added ${addedCount} keyword${addedCount !== 1 ? 's' : ''} to ${targetResume.title || 'resume'}`)
       }
 
@@ -977,7 +924,7 @@ export function JobMatchWorkspace({
       setPreviewMode(null)
       setPreviewTargetResumeId(null)
     }
-  }, [dictResult, resumes, userId, previewTargetResumeId])
+  }, [dictResult, resumes, previewTargetResumeId])
 
   // Reset all changes
   const resetChanges = useCallback(() => {
@@ -1229,50 +1176,15 @@ export function JobMatchWorkspace({
       // Skills already synced with selectedKeywords via useEffect
       const content = JSON.parse(JSON.stringify(tailoredResume?.content ?? selectedResume.content ?? {}))
 
-      const response = await fetch('/api/export-tailored', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content,
-          format: 'pdf',
-          resumeType: 'private',
-          template: selectedTemplate,
-        }),
-      })
-
-      if (response.status === 403) {
-        const errorData = await response.json().catch(() => ({}))
-        setError(errorData.error || 'Usage limit reached')
-        openUpgradeModal()
-        setDownloading(false)
-        return
-      }
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        let errorMessage = 'Export failed'
-        try {
-          const errorJson = JSON.parse(errorText)
-          errorMessage = errorJson.error || errorMessage
-        } catch {
-          errorMessage = errorText || errorMessage
-        }
-        throw new Error(errorMessage)
-      }
-
-      const blob = await response.blob()
-      if (blob.size === 0) throw new Error('Downloaded file is empty')
-
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
       const timestamp = new Date().toISOString().split('T')[0]
       const jobTitle = jobData.title?.replace(/[^a-zA-Z0-9]/g, '-') || 'tailored'
-      a.download = `tailored-resume-${jobTitle}-${timestamp}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
+      await exportResume({
+        content,
+        format: 'pdf',
+        resumeType: 'private',
+        template: selectedTemplate,
+        fileName: `tailored-resume-${jobTitle}-${timestamp}`,
+      })
     } catch (error: any) {
       alert(`Download failed: ${error.message || 'Unknown error'}`)
     } finally {
@@ -1300,52 +1212,15 @@ export function JobMatchWorkspace({
         })),
       }
 
-      const response = await fetch('/api/export-tailored', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: contentWithExclusions,
-          format: 'pdf',
-          resumeType: 'private',
-          template: selectedTemplate,
-        }),
-      })
-
-      if (response.status === 403) {
-        const errorData = await response.json().catch(() => ({}))
-        setError(errorData.error || 'Usage limit reached')
-        openUpgradeModal()
-        setDownloading(false)
-        return
-      }
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        let errorMessage = 'Export failed'
-        try {
-          const errorJson = JSON.parse(errorText)
-          errorMessage = errorJson.error || errorMessage
-        } catch {
-          errorMessage = errorText || errorMessage
-        }
-        throw new Error(errorMessage)
-      }
-
-      const blob = await response.blob()
-      if (blob.size === 0) {
-        throw new Error('Downloaded file is empty')
-      }
-
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
       const timestamp = new Date().toISOString().split('T')[0]
       const jobTitle = jobData.title?.replace(/[^a-zA-Z0-9]/g, '-') || 'tailored'
-      a.download = `tailored-resume-${jobTitle}-${timestamp}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
+      await exportResume({
+        content: contentWithExclusions,
+        format: 'pdf',
+        resumeType: 'private',
+        template: selectedTemplate,
+        fileName: `tailored-resume-${jobTitle}-${timestamp}`,
+      })
     } catch (error: any) {
       alert(`Download failed: ${error.message || 'Unknown error'}`)
     } finally {
@@ -1373,21 +1248,16 @@ export function JobMatchWorkspace({
       const jobTitle = jobData.title?.replace(/[^a-zA-Z0-9\s]/g, '').trim() || 'Tailored'
       const newName = `${selectedResume.name} - ${jobTitle}`
 
-      const res = await fetch('/api/resume/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newName,
-          template: selectedTemplate,
-          resume_type: 'private',
-          content: contentWithExclusions,
-        }),
+      saveResume({
+        id: newId(),
+        title: newName,
+        type: 'private',
+        template: selectedTemplate,
+        content: contentWithExclusions,
+        target_job_title: jobData.title || null,
+        target_job_description: jobData.description || null,
+        match_score: calculateTailoredScore(),
       })
-
-      const result = await res.json()
-      if (!res.ok) {
-        throw new Error(result.error || 'Failed to save resume')
-      }
 
       alert(`Saved as "${newName}". View it on your Resumes page.`)
     } catch (err: any) {
@@ -1395,7 +1265,7 @@ export function JobMatchWorkspace({
     } finally {
       setSavingResume(false)
     }
-  }, [tailoredResume, selectedResume, jobData.title, userId, selectedTemplate])
+  }, [tailoredResume, selectedResume, jobData.title, jobData.description, selectedTemplate, calculateTailoredScore])
 
   // Score display helpers - HARSHER thresholds
   const getScoreColor = (score: number) => {
@@ -1519,22 +1389,6 @@ export function JobMatchWorkspace({
           )}
         </div>
 
-        {/* Usage Warning */}
-        {!hasPaidAccess && remaining <= 2 && remaining > 0 && (
-          <div className="flex items-center gap-3 p-3 bg-status-amber/10 border-l-4 border-status-amber rounded-r-lg">
-            <svg className="w-5 h-5 text-status-amber flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/>
-              <line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-            <div className="flex-1">
-              <span className="text-sm font-semibold text-status-amber">{remaining} AI {remaining === 1 ? 'analysis' : 'analyses'} remaining</span>
-              <span className="text-xs text-text-muted ml-2">— dictionary match is always free</span>
-            </div>
-            <UpgradeLink className="text-status-amber text-sm font-semibold hover:underline whitespace-nowrap">Upgrade →</UpgradeLink>
-          </div>
-        )}
-
         {/* ═══ JOB DESCRIPTION — primary input, dominant ═══ */}
         <Card className="p-4 md:p-6">
           <label className="block font-heading text-sm font-bold uppercase tracking-wider text-gold mb-3">
@@ -1578,23 +1432,20 @@ export function JobMatchWorkspace({
           <p className="text-xs text-text-dim mt-2">Auto-extracted from job description when possible</p>
         </Card>
 
-        {/* ═══ Deep Analysis button — secondary, costs a credit ═══ */}
-        {dictResult && remaining > 0 && !analysis && (
+        {/* ═══ Deep Analysis button — secondary, runs on your API key ═══ */}
+        {dictResult && !analysis && (
           <div className="flex items-center justify-center gap-4">
             <Button
               variant="secondary"
               onClick={handleAnalyze}
-              disabled={analyzing || remaining <= 0}
+              disabled={analyzing}
             >
               {analyzing ? (
                 <><svg className="w-4 h-4 mr-2 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>Running AI Analysis...</>
               ) : (
-                <>Deep Analysis (uses 1 credit)</>
+                <>Deep Analysis</>
               )}
             </Button>
-            {remaining <= 0 && (
-              <span className="text-xs text-status-red">No credits remaining</span>
-            )}
           </div>
         )}
 
@@ -2174,17 +2025,6 @@ export function JobMatchWorkspace({
                     })
                   ).filter(Boolean)}
                 </div>
-                {!hasPaidAccess && (
-                  <div className="mt-4 p-3 rounded-lg bg-gold/5 border border-gold/20 flex items-center gap-3">
-                    <svg className="w-4 h-4 text-gold flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                    </svg>
-                    <p className="text-xs text-text-dim">
-                      <UpgradeLink className="text-gold hover:text-gold-bright hover:underline font-semibold">Upgrade to Core</UpgradeLink>
-                      {' '}for AI-powered bullet rewrites with apply-to-resume functionality.
-                    </p>
-                  </div>
-                )}
               </Card>
             )}
 
@@ -2210,14 +2050,11 @@ export function JobMatchWorkspace({
                       onChange={(e) => setSelectedTemplate(e.target.value as TemplateId)}
                       className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-gold"
                     >
-                      {Object.values(TEMPLATES).map((t) => {
-                        const isLocked = !t.free && !hasPaidAccess
-                        return (
-                          <option key={t.id} value={t.id} disabled={isLocked}>
-                            {t.name} {isLocked ? '(CORE+)' : ''}
-                          </option>
-                        )
-                      })}
+                      {Object.values(TEMPLATES).map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -2232,71 +2069,6 @@ export function JobMatchWorkspace({
                   </div>
                 </Card>
               </>
-            )}
-
-            {/* Blurred AI Preview (free users with no credits remaining) */}
-            {dictResult && !hasPaidAccess && !analyzing && !analysis && remaining <= 0 && (
-              <div className="relative">
-                {/* Blurred fake AI analysis */}
-                <Card className="p-6 select-none pointer-events-none" aria-hidden="true">
-                  <div className="blur-[6px] opacity-60">
-                    <div className="flex flex-col md:flex-row md:items-center gap-6 mb-6">
-                      <div className="flex flex-col items-center">
-                        <div className="w-24 h-24 rounded-full border-4 border-gold/40 flex items-center justify-center">
-                          <span className="font-heading text-3xl font-bold text-gold">78%</span>
-                        </div>
-                        <span className="text-xs text-text-muted mt-2">Overall Match</span>
-                      </div>
-                      <div className="flex-1 space-y-2">
-                        {['Skills Match', 'Experience', 'Education', 'Keywords'].map((cat) => (
-                          <div key={cat} className="flex items-center gap-3">
-                            <span className="text-xs text-text-muted w-24">{cat}</span>
-                            <div className="flex-1 h-2 bg-bg-tertiary rounded-full overflow-hidden">
-                              <div className="h-full bg-gold rounded-full" style={{ width: `${60 + Math.random() * 30}%` }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 bg-bg-tertiary rounded-lg">
-                        <p className="text-xs font-semibold mb-2">Priority Actions</p>
-                        <div className="space-y-1.5">
-                          <div className="h-3 bg-bg-secondary rounded w-full" />
-                          <div className="h-3 bg-bg-secondary rounded w-4/5" />
-                          <div className="h-3 bg-bg-secondary rounded w-3/4" />
-                        </div>
-                      </div>
-                      <div className="p-3 bg-bg-tertiary rounded-lg">
-                        <p className="text-xs font-semibold mb-2">AI Recommendations</p>
-                        <div className="space-y-1.5">
-                          <div className="h-3 bg-bg-secondary rounded w-full" />
-                          <div className="h-3 bg-bg-secondary rounded w-5/6" />
-                          <div className="h-3 bg-bg-secondary rounded w-2/3" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Overlay CTA */}
-                <div className="absolute inset-0 flex items-center justify-center bg-bg-primary/40 rounded-xl">
-                  <div className="text-center px-6 py-5 bg-bg-secondary border border-gold/30 rounded-xl shadow-lg max-w-sm">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-gold/20 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                      </svg>
-                    </div>
-                    <h3 className="font-heading text-base font-bold uppercase tracking-wider mb-1">Unlock AI Analysis</h3>
-                    <p className="text-xs text-text-muted mb-4">
-                      See skill gaps, get rewrite suggestions, and tailored recommendations to push your match score higher.
-                    </p>
-                    <Button onClick={openUpgradeModal} size="sm">
-                      View Plans
-                    </Button>
-                  </div>
-                </div>
-              </div>
             )}
 
             {/* ═══ AI ANALYSIS RESULTS ═══ */}
@@ -2449,29 +2221,6 @@ export function JobMatchWorkspace({
               )}
             </Card>
 
-            {/* Upgrade Prompt for Free Users */}
-            {!hasPaidAccess && (
-              <Card className="p-6 bg-gradient-to-r from-gold/5 to-transparent border-gold/20">
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 rounded-xl bg-gold/20 flex items-center justify-center flex-shrink-0">
-                    <svg className="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-heading text-lg font-bold mb-1">Unlock AI-Powered Rewrites</h3>
-                    <p className="text-text-muted text-sm">
-                      Your resume is {analysis.overallScore}% matched. Upgrade to Core or Full for AI-generated bullet point rewrites
-                      that can push your match score to 90%+.
-                    </p>
-                  </div>
-                  <Button onClick={openUpgradeModal}>
-                    View Plans
-                  </Button>
-                </div>
-              </Card>
-            )}
-
             {/* Section: Bullet Rewrites (AI) */}
             <div className="border-t border-border my-8" />
             <div>
@@ -2484,7 +2233,7 @@ export function JobMatchWorkspace({
             </div>
 
             {/* Loading state for suggestions */}
-            {hasPaidAccess && suggestionsLoading && !analysis.bulletSuggestions?.length && (
+            {suggestionsLoading && !analysis.bulletSuggestions?.length && (
               <Card className="p-6">
                 <div className="flex items-center gap-3 text-text-muted">
                   <div className="w-5 h-5 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
@@ -2493,8 +2242,8 @@ export function JobMatchWorkspace({
               </Card>
             )}
 
-            {/* Pro Features - Bullet Rewrites */}
-            {hasPaidAccess && analysis.bulletSuggestions?.filter(s => s.action === 'rewrite').length > 0 && (
+            {/* AI Bullet Rewrites */}
+            {analysis.bulletSuggestions?.filter(s => s.action === 'rewrite').length > 0 && (
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-heading text-sm font-bold uppercase tracking-wider flex items-center gap-2">
@@ -2593,14 +2342,11 @@ export function JobMatchWorkspace({
                     onChange={(e) => setSelectedTemplate(e.target.value as TemplateId)}
                     className="bg-bg-secondary border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-gold"
                   >
-                    {Object.values(TEMPLATES).map((t) => {
-                      const isLocked = !t.free && !hasPaidAccess
-                      return (
-                        <option key={t.id} value={t.id} disabled={isLocked}>
-                          {t.name} {isLocked ? '(CORE+)' : ''}
-                        </option>
-                      )
-                    })}
+                    {Object.values(TEMPLATES).map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 {changesSummary.length > 0 && (
@@ -2773,27 +2519,13 @@ export function JobMatchWorkspace({
 
       </div>
 
-      {/* First-use upgrade prompt for free users */}
-      {(analysis || dictResult) && (
-        <FirstUseUpgradePrompt
-          feature="job_match"
-          tier={hasPaidAccess ? (userPlan || 'core') : 'free'}
-          used={currentUsage}
-          limit={usageLimit}
-        />
-      )}
-
-      {showLastUseWarning && (
-        <LastUseWarningModal
-          featureName="Job Match Analysis"
-          tier={hasPaidAccess ? (userPlan === 'full' ? 'full' : 'core') : 'free'}
-          limitType="tier"
-          onContinue={() => {
-            setShowLastUseWarning(false)
-            handleAnalyze()
-          }}
-        />
-      )}
+      {/* API key setup — shown when an AI action is attempted without a key */}
+      <KeySetupModal
+        isOpen={keyModalOpen}
+        onClose={() => setKeyModalOpen(false)}
+        onKeySaved={handleAnalyze}
+        featureNote="Job match analysis uses Claude to score your resume against the posting."
+      />
 
       {/* Preview Modal */}
       {previewChanges && previewMode && (

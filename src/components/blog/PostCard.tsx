@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import type { PostMeta } from '@/lib/mdx'
-import { CATEGORY_LABELS } from '@/lib/mdx'
+import type { PostMeta } from '@/lib/mdx-shared'
+import { CATEGORY_LABELS } from '@/lib/mdx-shared'
 
 const CATEGORY_COLORS: Record<string, string> = {
   'mos-transition': 'text-status-green bg-status-green-dim border-status-green/20',

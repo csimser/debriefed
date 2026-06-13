@@ -1,10 +1,6 @@
 import type { Metadata } from 'next'
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { PRICING_TIERS, getFormattedPrice } from '@/lib/pricing-config'
 import { MarketingNav } from '@/components/layout/MarketingNav'
-import { TestimonialsSection } from '@/components/testimonials/TestimonialsSection'
 import { TranslationDemo } from '@/components/landing/TranslationDemo'
 import { APP_URL } from '@/lib/site-config'
 
@@ -19,33 +15,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
-  const supabase = await createClient()
-
-  // Handle auth code if present (fallback for email verification links that land here)
-  const params = await searchParams
-  const code = params.code as string | undefined
-
-  if (code) {
-    // Exchange the code for a session
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      // Successfully authenticated - redirect to dashboard
-      redirect('/dashboard')
-    }
-    // If error, continue to show landing page (they can try logging in manually)
-  }
-
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (user) {
-    redirect('/dashboard')
-  }
-
+export default function HomePage() {
   const orgJsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -54,8 +24,8 @@ export default async function HomePage({
         name: 'Debriefed',
         url: APP_URL,
         logo: `${APP_URL}/favicon.svg`,
-        description: 'Military-to-civilian resume translation for veterans.',
-        sameAs: [],
+        description: 'Free, open source military-to-civilian resume translation for veterans.',
+        sameAs: ['https://github.com/csimser/debriefed'],
       },
       {
         '@type': 'WebSite',
@@ -121,8 +91,9 @@ export default async function HomePage({
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
-            AI-powered resume translation, job matching, and LinkedIn optimization
-            built by a veteran in transition. Start free — no credit card needed.
+            Resume translation, job matching, and LinkedIn optimization built by a
+            veteran in transition. 100% free and open source — no accounts, and
+            your data never leaves your device.
           </p>
 
           {/* Feature Callouts - 3 columns */}
@@ -146,9 +117,9 @@ export default async function HomePage({
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            
-            <Link href="/signup" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all text-center">
-              Start Free →
+
+            <Link href="/onboarding/" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all text-center">
+              Get Started — Free →
             </Link>
             <a href="#translation-demo" className="px-8 py-4 font-heading text-base font-bold uppercase tracking-wider text-text-muted border border-border hover:border-border-bright hover:text-text rounded transition-all text-center">
               See How It Works
@@ -159,9 +130,6 @@ export default async function HomePage({
 
       {/* Interactive Translation Demo */}
       <TranslationDemo />
-
-      {/* Testimonials — right after value demo for maximum impact */}
-      <TestimonialsSection />
 
       {/* Features Section */}
       <section id="features" className="bg-bg-secondary border-t border-border px-4 md:px-20 py-16 md:py-24">
@@ -176,7 +144,7 @@ export default async function HomePage({
               <span className="text-gold">Get Debriefed</span>
             </h2>
             <p className="text-base md:text-lg text-text-muted max-w-2xl mx-auto">
-              AI-powered tools designed specifically for military-to-civilian transition.
+              Tools designed specifically for military-to-civilian transition.
             </p>
           </div>
 
@@ -231,7 +199,7 @@ export default async function HomePage({
               Why Is Debriefed <span className="text-gold">Free?</span>
             </h2>
             <p className="text-lg md:text-xl text-text-muted max-w-2xl mx-auto leading-relaxed">
-              Because we believe no veteran should pay to translate their service.
+              Because no veteran should pay to translate their service.
             </p>
           </div>
 
@@ -242,16 +210,18 @@ export default async function HomePage({
               <div className="text-4xl mb-4">📖</div>
               <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">The Dictionary</h3>
               <p className="text-sm text-text-muted leading-relaxed">
-                Our military-to-civilian translation dictionary powers every tool on Debriefed — resume building, job matching, cover letters, LinkedIn optimization. No expensive AI. No subscription wall. Just instant, accurate translations built by people who actually served.
+                A 33,000+ entry military-to-civilian dictionary powers translation across Debriefed — resume building, bullet translation, LinkedIn optimization. No expensive AI required. No subscription wall. Just instant, accurate translations built by people who actually served.
               </p>
             </div>
 
-            {/* Card 2: The Community */}
+            {/* Card 2: Open Source */}
             <div className="p-6 md:p-8 bg-bg-secondary/50 border border-border rounded-lg hover:border-gold/30 transition-all">
               <div className="text-4xl mb-4">🤝</div>
-              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">The Community</h3>
+              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">Open Source</h3>
               <p className="text-sm text-text-muted leading-relaxed">
-                Every veteran who uses Debriefed makes it better. Submit a translation, flag a bad one, or upvote a term — your contributions help the next veteran walking off base. 10,000+ translations and growing.
+                Debriefed is MIT licensed and the entire codebase lives on{' '}
+                <a href="https://github.com/csimser/debriefed" target="_blank" rel="noopener noreferrer" className="text-gold hover:text-gold-bright hover:underline">GitHub</a>.
+                Read the code, fork it, fix a translation, add a feature — pull requests welcome. Nothing hidden, nothing locked away.
               </p>
             </div>
 
@@ -260,7 +230,7 @@ export default async function HomePage({
               <div className="text-4xl mb-4">📢</div>
               <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">Spread the Word</h3>
               <p className="text-sm text-text-muted leading-relaxed">
-                Know someone PCSing out? Retiring? ETSing? Share Debriefed. The more veterans who use and contribute, the better the dictionary gets for everyone. No referral codes, no gimmicks — just help a shipmate out.
+                Know someone PCSing out? Retiring? ETSing? Share Debriefed — or star the repo so other veterans can find it. No referral codes, no upsells, nothing to buy. Just help a shipmate out.
               </p>
             </div>
           </div>
@@ -269,137 +239,80 @@ export default async function HomePage({
           <div className="text-center">
             <div className="max-w-3xl mx-auto mb-8 px-6 py-6 border-l-4 border-gold bg-gold/[0.04] rounded-r-lg">
               <p className="text-base md:text-lg text-text leading-relaxed font-medium">
-                Debriefed will always have a free tier. That&apos;s not a marketing gimmick — it&apos;s a commitment. The dictionary is what makes it possible, and your contributions are what keep it growing.
+                Debriefed is free — all of it, forever. That&apos;s not a marketing gimmick, it&apos;s how the project is built: open source, no backend, no accounts, nothing to sell you.
               </p>
             </div>
             <Link
-              href="/signup"
+              href="/onboarding/"
               className="inline-block px-8 py-4 font-heading text-base font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all"
             >
-              Join the Mission — Sign Up Free
+              Get Started — Free
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="bg-bg-secondary border-t border-border px-4 md:px-20 py-12 md:py-24">
-        {/* Pricing Header */}
-        <div className="text-center mb-10 md:mb-16">
-          <div className="inline-block font-mono text-[11px] uppercase tracking-wider text-gold bg-gold-dim px-4 py-2 mb-6">
-            Simple Pricing
-          </div>
-          <h2 className="font-heading text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4">
-            Start Building for Free
-          </h2>
-          <p className="text-base md:text-lg text-text-muted max-w-xl mx-auto">
-            Free dictionary-powered tools forever. Upgrade for AI features when you need them.
-          </p>
-        </div>
-
-        {/* Pricing Grid - 3 Tiers */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {/* Free Tier */}
-          <div className="bg-bg-primary border border-border p-8 flex flex-col hover:border-border-bright transition-all">
-            <div className="font-heading text-2xl font-bold uppercase mb-2">Free</div>
-            <div className="text-sm text-text-muted mb-6 min-h-[40px]">Dictionary-powered resume tools</div>
-            <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-status-green">$0</span>
-              <span className="text-sm text-text-muted ml-1">forever</span>
+      {/* How It Works / Truly Free Section */}
+      <section id="how-it-works" className="bg-bg-secondary border-t border-border px-4 md:px-20 py-12 md:py-24">
+        <div className="max-w-5xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-10 md:mb-16">
+            <div className="inline-block font-mono text-[11px] uppercase tracking-wider text-gold bg-gold-dim px-4 py-2 mb-6">
+              How It Works
             </div>
-            <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes" limit="5 total" />
-              <PricingFeature label="Federal Resumes" limit="2 total" />
-              <PricingFeature label="Dictionary Translations" limit="Unlimited (20/day)" />
-              <PricingFeature label="Job Analyses" limit="3 total" />
-              <PricingFeature label="Cover Letters" limit="3 total" />
-              <PricingFeature label="Cover Letter Exports" limit="5 total" />
-              <PricingFeature label="Resume Imports" limit="3" />
-              <PricingFeature label="Downloads" limit="5 total" />
-              <PricingFeature label="Smart Apply" />
-              <PricingFeature label="Templates" limit="All 6" />
-              <PricingFeature label="Eval Upload" limit="1" isLast />
-            </ul>
-            <p className="text-xs text-text-dim mb-4 text-center">*Daily rate limits apply</p>
-
-            <Link href="/signup" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
-              Get Started Free
-            </Link>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4">
+              Truly <span className="text-gold">Free</span>
+            </h2>
+            <p className="text-base md:text-lg text-text-muted max-w-xl mx-auto">
+              No tiers, no trials, no credit card. Here&apos;s how that works.
+            </p>
           </div>
 
-          {/* Core Tier - Most Popular */}
-          <div className="bg-bg-primary border border-gold p-8 flex flex-col relative shadow-[0_0_40px_rgba(212,168,75,0.15)]">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-bg-primary font-mono text-[10px] font-bold px-3 py-1 tracking-wider">
-              MOST POPULAR
+          {/* Three Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {/* Card 1: No Accounts */}
+            <div className="p-6 md:p-8 bg-bg-primary border border-border rounded-lg hover:border-gold/30 transition-all">
+              <div className="text-4xl mb-4">🔒</div>
+              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">No Accounts</h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                There&apos;s nothing to sign up for. Your profile, resumes, and cover letters live in your own browser — not on a server. Export everything to a file anytime, and import it on another device when you need to.
+              </p>
             </div>
-            <div className="font-heading text-2xl font-bold uppercase mb-2">Core</div>
-            <div className="text-sm text-text-muted mb-6 min-h-[40px]">AI-powered tools to land the job</div>
-            <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">{getFormattedPrice('core')}</span>
-              <span className="text-sm text-text-muted ml-1">/ {PRICING_TIERS.core.duration} days</span>
-            </div>
-            <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes" limit="10 / 30 days" tooltip="5/day" />
-              <PricingFeature label="Federal Resumes" limit="5 / 30 days" tooltip="3/day" />
-              <PricingFeature label="AI Cover Letters" limit="10 / 30 days" tooltip="10/day" />
-              <PricingFeature label="AI Summary Generation" limit="Unlimited" />
-              <PricingFeature label="AI Job Match Analysis" limit="10 / 30 days" tooltip="10/day" />
-              <PricingFeature label="AI LinkedIn Headlines & Summaries" limit="Unlimited" />
-              <PricingFeature label="Eval Uploads" limit="10 / 30 days" tooltip="5/day" />
-              <PricingFeature label="Cover Letter Exports" limit="10 / 30 days" />
-              <PricingFeature label="Downloads" limit="10 / 30 days" tooltip="5/day" />
-              <PricingFeature label="Resume Imports" limit="Unlimited" />
-              <PricingFeature label="Smart Apply" />
-              <PricingFeature label="Templates" limit="All 6" isLast />
-            </ul>
 
-            <Link href="/signup?plan=core" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center bg-gold border border-gold text-bg-primary hover:bg-gold-bright transition-all">
-              Get Core
-            </Link>
+            {/* Card 2: Bring Your Own AI */}
+            <div className="p-6 md:p-8 bg-bg-primary border border-border rounded-lg hover:border-gold/30 transition-all">
+              <div className="text-4xl mb-4">🔑</div>
+              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">Bring Your Own AI</h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                AI features — cover letters, job match, eval parsing — run on your own Anthropic API key, entered once in Settings. You pay Anthropic directly, and most actions cost under a cent. Dictionary translation needs no key at all.
+              </p>
+            </div>
+
+            {/* Card 3: Take It Anywhere */}
+            <div className="p-6 md:p-8 bg-bg-primary border border-border rounded-lg hover:border-gold/30 transition-all">
+              <div className="text-4xl mb-4">💾</div>
+              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-gold mb-3">Take It Anywhere</h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Install Debriefed as an app (PWA) straight from your browser, or download the single-file Debriefed.html from GitHub Releases and run it from a USB stick — no internet connection required for the dictionary tools.
+              </p>
+            </div>
           </div>
 
-          {/* Full Tier - Best Value */}
-          <div className="bg-bg-primary border border-border p-8 flex flex-col relative hover:border-border-bright transition-all">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-bg-tertiary text-gold font-mono text-[10px] font-bold px-3 py-1 tracking-wider border border-gold">
-              BEST VALUE
-            </div>
-            <div className="font-heading text-2xl font-bold uppercase mb-2">Full</div>
-            <div className="text-sm text-text-muted mb-6 min-h-[40px]">Unlimited AI for serious job searches</div>
-            <div className="mb-6">
-              <span className="font-heading text-3xl font-bold text-gold">{getFormattedPrice('full')}</span>
-              <span className="text-sm text-text-muted ml-1">/ {PRICING_TIERS.full.duration} days</span>
-            </div>
-            <ul className="flex-1 mb-8">
-              <PricingFeature label="Resumes" limit="Unlimited" tooltip="7/day" />
-              <PricingFeature label="Federal Resumes" limit="Unlimited" tooltip="7/day" />
-              <PricingFeature label="AI Cover Letters" limit="200 / 90 days" tooltip="15/day" />
-              <PricingFeature label="AI Summaries" limit="Unlimited" />
-              <PricingFeature label="AI Job Match Analysis" limit="200 / 90 days" tooltip="15/day" />
-              <PricingFeature label="LinkedIn Tools" limit="Unlimited" />
-              <PricingFeature label="LinkedIn Profile Analysis & Recommendations" />
-              <PricingFeature label="Eval Uploads" limit="30 / 90 days" tooltip="10/day" />
-              <PricingFeature label="Downloads" limit="Unlimited" tooltip="10/day" />
-              <PricingFeature label="Smart Apply" />
-              <PricingFeature label="Templates" limit="All 6" isLast />
-            </ul>
-
-            <Link href="/signup?plan=full" className="w-full py-3.5 font-heading text-sm font-bold uppercase tracking-wider text-center border border-border bg-bg-secondary text-text hover:border-gold hover:text-gold transition-all">
-              Get Full
-            </Link>
+          {/* Secondary GitHub link */}
+          <div className="text-center mt-8">
+            <p className="text-sm text-text-muted">
+              Want the details?{' '}
+              <a
+                href="https://github.com/csimser/debriefed"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gold hover:text-gold-bright hover:underline"
+              >
+                View the source on GitHub →
+              </a>
+            </p>
           </div>
         </div>
-
-        {/* Eval Pack Callout */}
-        <div className="text-center mt-8">
-          <p className="text-sm text-text-muted">
-            Need more eval uploads? <Link href="/pricing" className="text-gold hover:text-gold-bright hover:underline">Eval Credit Pack</Link> — $5 for 5 uploads, works with any tier.
-          </p>
-        </div>
-
-        {/* Footer Note */}
-        <p className="text-center text-sm text-text-muted mt-4 max-w-2xl mx-auto">
-          Dictionary features are always unlimited. Paid tiers include daily rate limits for fair usage.
-        </p>
       </section>
 
       {/* MilCalc Cross-Promo */}
@@ -438,52 +351,47 @@ export default async function HomePage({
             </div>
 
             <div className="flex items-center gap-6 text-sm">
-              <Link href="/about" className="text-text-muted hover:text-gold transition-colors">
+              <Link href="/about/" className="text-text-muted hover:text-gold transition-colors">
                 About
               </Link>
-              <Link href="/help" className="text-text-muted hover:text-gold transition-colors">
+              <Link href="/help/" className="text-text-muted hover:text-gold transition-colors">
                 Help
               </Link>
-              <Link href="/privacy" className="text-text-muted hover:text-gold transition-colors">
+              <Link href="/privacy/" className="text-text-muted hover:text-gold transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-text-muted hover:text-gold transition-colors">
+              <Link href="/terms/" className="text-text-muted hover:text-gold transition-colors">
                 Terms of Service
               </Link>
+              <a
+                href="https://github.com/csimser/debriefed"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-text-muted hover:text-gold transition-colors"
+              >
+                GitHub
+              </a>
             </div>
 
-            <p className="text-xs text-text-muted">
-              &copy; {new Date().getFullYear()} Debriefed. All rights reserved.
-            </p>
+            <div className="text-xs text-text-muted text-center md:text-right">
+              <p>
+                Built by Chris Simser &middot; Open source under MIT &middot;{' '}
+                <a
+                  href="https://github.com/csimser/debriefed"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-gold transition-colors underline-offset-2 hover:underline"
+                >
+                  github.com/csimser/debriefed
+                </a>
+              </p>
+              <p className="mt-1">&copy; {new Date().getFullYear()} Debriefed.</p>
+            </div>
           </div>
         </div>
       </footer>
     </div>
     </>
-  )
-}
-
-function PricingFeature({ label, limit, unavailable, isLast, tooltip }: { label: string; limit?: string; unavailable?: boolean; isLast?: boolean; tooltip?: string }) {
-  return (
-    <li className={`flex items-start gap-2.5 text-sm py-2 ${!isLast ? 'border-b border-border' : ''} ${unavailable ? 'text-text-dim' : 'text-text-muted'}`}>
-      <span className={unavailable ? 'text-text-dim font-bold' : 'text-status-green font-bold'}>
-        {unavailable ? '✗' : '✓'}
-      </span>
-      <span className="flex-1 flex items-center gap-1">
-        {label}
-        {tooltip && (
-          <span className="group relative cursor-help">
-            <svg className="w-3.5 h-3.5 text-text-dim hover:text-gold transition-colors" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-bg-tertiary border border-border rounded-md text-xs text-text-muted whitespace-pre-line w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 shadow-lg">
-              {tooltip}
-            </span>
-          </span>
-        )}
-      </span>
-      {limit && <span className="font-mono text-[11px] text-text-dim">{limit}</span>}
-    </li>
   )
 }
 

@@ -1,52 +1,31 @@
 'use client'
 
 import { useState } from 'react'
-import { submitTerm } from '@/lib/dictionary/communityQueries'
 
 interface HelpTranslatePromptProps {
   unmatchedPhrase: string
   branch?: string
   onDismiss: () => void
-  /** Called after successful submission with the military→civilian pair so the
-   *  parent can immediately apply the translation to the current bullet text. */
+  /** Called with the military→civilian pair so the parent can immediately
+   *  apply the translation to the current bullet text. */
   onApplyTranslation?: (militaryTerm: string, civilianEquiv: string) => void
 }
 
-const CATEGORIES = [
-  { value: '', label: 'Category (optional)' },
-  { value: 'leadership', label: 'Leadership' },
-  { value: 'operations', label: 'Operations' },
-  { value: 'logistics', label: 'Logistics' },
-  { value: 'training', label: 'Training' },
-  { value: 'admin', label: 'Administrative' },
-  { value: 'technical', label: 'Technical' },
-  { value: 'combat', label: 'Combat / Tactical' },
-  { value: 'medical', label: 'Medical' },
-  { value: 'other', label: 'Other' },
-]
-
+/**
+ * Shown when the dictionary couldn't fully translate a bullet. Lets the user
+ * type their own civilian wording and apply it to the bullet locally.
+ */
 export function HelpTranslatePrompt({
   unmatchedPhrase,
-  branch,
   onDismiss,
   onApplyTranslation,
 }: HelpTranslatePromptProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [civilianEquiv, setCivilianEquiv] = useState('')
-  const [category, setCategory] = useState('')
   const [submitted, setSubmitted] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = async () => {
+  const handleApply = () => {
     if (!civilianEquiv.trim()) return
-    setSubmitting(true)
-    await submitTerm({
-      submission_type: 'jargon',
-      military_term: unmatchedPhrase,
-      suggested_civilian: civilianEquiv.trim(),
-      branch: branch || 'general',
-      category: category || undefined,
-    })
 
     // Immediately apply the translation to the current bullet
     if (onApplyTranslation) {
@@ -54,14 +33,13 @@ export function HelpTranslatePrompt({
     }
 
     setSubmitted(true)
-    setSubmitting(false)
     setTimeout(() => onDismiss(), 2500)
   }
 
   if (submitted) {
     return (
       <div className="text-xs text-status-green mt-1.5 ml-6 py-1">
-        Translation applied! Every submission helps keep Debriefed free for all veterans.
+        Translation applied!
       </div>
     )
   }
@@ -75,7 +53,7 @@ export function HelpTranslatePrompt({
           onClick={() => setIsExpanded(true)}
           className="text-gold hover:text-gold-bright underline"
         >
-          Submit Translation
+          Translate It Yourself
         </button>
         <button
           onClick={onDismiss}
@@ -90,11 +68,8 @@ export function HelpTranslatePrompt({
   return (
     <div className="mt-1.5 ml-6 p-3 bg-bg-tertiary border border-border rounded-md space-y-2">
       <p className="text-xs text-text-muted">
-        Help us translate:{' '}
+        Translate:{' '}
         <span className="text-gold font-semibold">&ldquo;{unmatchedPhrase}&rdquo;</span>
-      </p>
-      <p className="text-[11px] text-text-dim">
-        Community translations keep Debriefed free for every veteran.
       </p>
       <input
         type="text"
@@ -105,25 +80,13 @@ export function HelpTranslatePrompt({
         autoFocus
         autoComplete="off"
       />
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        className="w-full bg-bg-secondary border border-border rounded px-3 py-2.5 text-base md:py-1.5 md:text-xs text-text focus:border-gold focus:ring-1 focus:ring-gold/25"
-        autoComplete="off"
-      >
-        {CATEGORIES.map((c) => (
-          <option key={c.value} value={c.value}>
-            {c.label}
-          </option>
-        ))}
-      </select>
       <div className="flex gap-2">
         <button
-          onClick={handleSubmit}
-          disabled={submitting || !civilianEquiv.trim()}
+          onClick={handleApply}
+          disabled={!civilianEquiv.trim()}
           className="px-3 py-1 bg-gold text-bg-primary text-xs font-heading font-bold uppercase rounded hover:bg-gold-bright disabled:opacity-50 transition-colors"
         >
-          {submitting ? 'Submitting...' : 'Submit'}
+          Apply
         </button>
         <button
           onClick={onDismiss}

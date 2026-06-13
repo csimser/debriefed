@@ -1,16 +1,41 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { EvalHistory } from './EvalHistory'
+import { listEvalUploads, listExperiences } from '@/lib/storage'
 
 interface EvalHistorySectionProps {
-  uploads: any[]
-  experiences: any[]
-  userId: string
+  /** Optional — falls back to local storage when omitted. */
+  uploads?: any[]
+  /** Optional — falls back to local storage when omitted. */
+  experiences?: any[]
+  /** Legacy prop, no longer used (data is local). Kept for compatibility. */
+  userId?: string
+  /** Called after bullets are imported so the parent can refresh its data. */
+  onImportComplete?: () => void
 }
 
-export function EvalHistorySection({ uploads, experiences, userId }: EvalHistorySectionProps) {
-  const router = useRouter()
+export function EvalHistorySection({ uploads, experiences, userId, onImportComplete }: EvalHistorySectionProps) {
+  const [localUploads, setLocalUploads] = useState<any[]>([])
+  const [localExperiences, setLocalExperiences] = useState<any[]>([])
+
+  // Storage fallback when props are omitted
+  useEffect(() => {
+    if (!uploads) setLocalUploads(listEvalUploads())
+    if (!experiences) setLocalExperiences(listExperiences())
+  }, [uploads, experiences])
+
+  const resolvedUploads = uploads ?? localUploads
+  const resolvedExperiences = experiences ?? localExperiences
+
+  const handleImportComplete = () => {
+    if (onImportComplete) {
+      onImportComplete()
+    } else {
+      setLocalUploads(listEvalUploads())
+      setLocalExperiences(listExperiences())
+    }
+  }
 
   return (
     <div>
@@ -21,10 +46,10 @@ export function EvalHistorySection({ uploads, experiences, userId }: EvalHistory
         Your past eval uploads and extracted bullets. Click &quot;Import&quot; to add bullets to an experience.
       </p>
       <EvalHistory
-        uploads={uploads}
-        experiences={experiences}
-        userId={userId}
-        onImportComplete={() => router.refresh()}
+        uploads={resolvedUploads}
+        experiences={resolvedExperiences}
+        userId={userId ?? ''}
+        onImportComplete={handleImportComplete}
       />
     </div>
   )

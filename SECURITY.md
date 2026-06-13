@@ -1,48 +1,53 @@
 # Debriefed — Security Notes
 
-## Penetration Test Remediation (Feb 28, 2026)
+## Current architecture (June 2026)
 
-Based on pentest report findings against preview deployment.
+Debriefed has **no backend**: no database, no accounts, no server-side API. The
+attack surface is correspondingly small, and the security model is:
 
-### Fixes Applied in Code
+- **User data** lives in the browser's localStorage only. Nothing is
+  transmitted to or stored on any Debriefed-operated server (there are none —
+  the site is static files on GitHub Pages).
+- **The Anthropic API key** is supplied by the user, stored under a dedicated
+  localStorage key, **excluded from data exports**, and sent only to
+  `api.anthropic.com` directly from the browser.
+- **Content-Security-Policy** is set via a `<meta>` tag (static hosting cannot
+  set headers): scripts self-only, `connect-src` restricted to self,
+  `api.anthropic.com`, `raw.githubusercontent.com` (data auto-update), and
+  Google Fonts. No third-party scripts, no analytics.
+- **PII screening** (SSN/DODID patterns) runs client-side before document text
+  is sent to Anthropic for AI parsing.
+- **Data auto-update** fetches JSON from this repo over HTTPS with an
+  all-or-nothing install; a compromised update could only alter dictionary
+  *data*, not code.
 
-| ID | Severity | Fix | File(s) |
-|----|----------|-----|---------|
-| M1 | Medium | Added Content-Security-Policy header | `next.config.ts` |
-| M2 | Medium | HTML/script tag stripping on feedback input + type checks | `src/app/api/feedback/route.ts` |
-| M3 | Medium | Fixed RLS recursion via `is_org_admin()` SECURITY DEFINER function | `supabase/migrations/20260228_fix_rls_recursion.sql` |
-| I2 | Info | Server-side 302 redirects for protected routes in middleware | `src/middleware.ts` |
+### Residual risks to be aware of
 
-### Requires Supabase Dashboard Action
+1. **XSS ⇒ key theft.** Any successful script injection could read the stored
+   API key. Mitigations: meta-CSP, zero third-party scripts, dependency review.
+   Users should only run builds from getdebriefed.co or official GitHub
+   Releases (the app says so in Settings).
+2. **Modified redistributions.** Anyone can fork and rebuild (MIT). The Terms
+   prohibit misrepresenting modified builds as official; users are pointed at
+   official sources.
+3. **Shared computers.** localStorage is per-browser-profile and unencrypted
+   at the application layer. The in-app guidance tells users on government or
+   shared machines to use private browsing and export/clear their data.
 
-**L2 — Restrict Supabase OpenAPI Schema Exposure**
+Report vulnerabilities via GitHub Issues or the support email.
 
-The Supabase REST API currently exposes the full OpenAPI schema (all table names and columns) to anyone with the anon key. To restrict this:
+---
 
-1. Go to **Supabase Dashboard → Settings → API**
-2. Under "Schema", ensure only the `public` schema is exposed (default)
-3. Consider creating a restricted `api` schema and moving only client-facing tables there
-4. Alternatively, revoke `USAGE` on the `public` schema from the `anon` role for tables that should not be browsable:
-   ```sql
-   -- Example: revoke direct API access to sensitive tables
-   REVOKE ALL ON public.email_logs FROM anon;
-   REVOKE ALL ON public.activity_log FROM anon;
-   REVOKE ALL ON public.api_usage FROM anon;
-   ```
+## Historical: Penetration Test Remediation (Feb 28, 2026)
 
-**Note:** RLS already blocks actual data access. Schema exposure is an information disclosure issue (Low severity), not a data breach risk.
+Findings against the old Supabase/Vercel deployment. Kept for the record; the
+components involved (Supabase RLS, API routes, middleware, server CSP headers)
+were all removed in the zero-backend migration of June 2026.
 
-### Intentional Decisions (No Fix Needed)
-
-**I3 — Dictionary tables are intentionally public.** The `dict_*` tables (`dict_onet_crosswalk`, `dict_acronyms`, `dict_soft_skills`, `dict_ats_keywords`, `dict_missing_terms_log`) are public reference data used by the MOS translation feature. They contain no user data or sensitive information.
-
-**L4 — robots.txt route disclosure.** The robots.txt `Disallow` entries reveal protected route paths. This is acceptable — security through obscurity is not worth the SEO/crawling tradeoffs, and all listed routes are auth-protected.
-
-**I1 — Supabase anon key in client JS.** Expected behavior for Supabase client-side auth. RLS enforces access control, and the service role key is never exposed.
-
-### Post-Launch Action Items
-
-- [ ] Re-run pentest against production deployment (preview may differ from prod config)
-- [ ] Apply Supabase dashboard schema restriction (L2) in production project
-- [ ] Monitor `is_org_admin()` function performance under load
-- [ ] Consider Redis-backed rate limiting for `/api/feedback` (current in-memory Map resets on cold starts)
+| ID | Severity | Fix at the time |
+|----|----------|-----------------|
+| M1 | Medium | CSP header in `next.config.ts` (now a meta tag) |
+| M2 | Medium | HTML stripping on `/api/feedback` (route removed) |
+| M3 | Medium | RLS recursion fix via `is_org_admin()` (Supabase removed) |
+| I2 | Info | Middleware auth redirects (middleware removed) |
+| L2/I3/I1/L4 | Low/Info | Supabase schema exposure & related (Supabase removed) |

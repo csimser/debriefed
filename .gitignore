@@ -58,3 +58,5 @@ next-env.d.ts
 # Claude Code local settings (per-machine, may contain user identifiers)
 .claude/settings.local.json
 .claude/plan-items-*.md
+public/data/
+dist-singlefile/

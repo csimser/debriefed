@@ -8,6 +8,7 @@ import { formatDateForDB, formatDateForInput } from '@/lib/military-titles'
 import { OnboardingData } from './NewOnboardingWizard'
 import { Toast } from '@/components/ui/Toast'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
+import { deleteExperience, newId, saveExperience } from '@/lib/storage'
 
 interface Experience {
   id?: string
@@ -27,8 +28,6 @@ interface StepExperienceProps {
   onBack: () => void
   onSkip: () => void
   saving: boolean
-  userId: string
-  supabase: any
 }
 
 const emptyExperience: Experience = {
@@ -41,7 +40,7 @@ const emptyExperience: Experience = {
   is_current: false,
 }
 
-export function StepExperience({ data, updateData, onNext, onBack, onSkip, saving, userId, supabase }: StepExperienceProps) {
+export function StepExperience({ data, updateData, onNext, onBack, onSkip, saving }: StepExperienceProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [formData, setFormData] = useState<Experience>(emptyExperience)
@@ -69,7 +68,6 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
       const isCivilian = formData.employment_type === 'civilian'
 
       const expData = {
-        user_id: userId,
         employment_type: formData.employment_type,
         job_title: formData.job_title,
         civilian_title: isCivilian ? formData.job_title : (formData.civilian_title || formData.job_title),
@@ -84,40 +82,16 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
 
       if (editingIndex !== null && data.experiences[editingIndex]?.id) {
         // Update existing
-        const expId = data.experiences[editingIndex].id
-        const { error } = await supabase
-          .from('experience')
-          .update(expData)
-          .eq('id', expId)
-
-        if (error) throw error
+        const existing = data.experiences[editingIndex]
+        const saved = saveExperience({ ...existing, ...expData, bullets: existing.bullets || [] })
 
         const updatedExperiences = [...data.experiences]
-        updatedExperiences[editingIndex] = { ...updatedExperiences[editingIndex], ...expData }
+        updatedExperiences[editingIndex] = saved
         updateData({ experiences: updatedExperiences })
       } else {
         // Insert new
-        const { error } = await supabase
-          .from('experience')
-          .insert(expData)
-          .select()
-          .single()
-
-        if (error) throw error
-
-        // Reload experiences
-        const { data: freshExperiences } = await supabase
-          .from('experience')
-          .select('*, experience_bullets(*)')
-          .eq('user_id', userId)
-          .order('sort_order')
-
-        updateData({
-          experiences: freshExperiences?.map((e: any) => ({
-            ...e,
-            bullets: e.experience_bullets || []
-          })) || []
-        })
+        const saved = saveExperience({ id: newId(), ...expData, bullets: [] })
+        updateData({ experiences: [...data.experiences, saved] })
       }
 
       // Reset form
@@ -155,15 +129,9 @@ export function StepExperience({ data, updateData, onNext, onBack, onSkip, savin
     setConfirmDialog({
       title: 'Delete Experience',
       message: 'Are you sure you want to delete this experience? This cannot be undone.',
-      onConfirm: async () => {
+      onConfirm: () => {
         try {
-          const { error } = await supabase
-            .from('experience')
-            .delete()
-            .eq('id', exp.id)
-
-          if (error) throw error
-
+          deleteExperience(exp.id)
           const updated = data.experiences.filter((_: any, i: number) => i !== index)
           updateData({ experiences: updated })
         } catch (error) {

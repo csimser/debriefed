@@ -1,94 +1,82 @@
-import { Suspense } from 'react'
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { CareerToolsHub } from '@/components/career-tools/CareerToolsHub'
-import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
 import { EvalHistorySection } from '@/components/eval/EvalHistorySection'
 import { DictionaryIntroModal } from '@/components/dictionary/DictionaryIntroModal'
-import { checkLimit } from '@/lib/usage-service'
+import {
+  getProfile,
+  listExperiences,
+  listEducation,
+  listCertifications,
+  listSkills,
+  listEvalUploads,
+  getSettings,
+  type Profile,
+  type Experience,
+  type Education,
+  type Certification,
+  type EvalUpload,
+} from '@/lib/storage'
 
-export default async function CareerToolsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export default function CareerToolsPage() {
+  const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [experiences, setExperiences] = useState<Experience[]>([])
+  const [skills, setSkills] = useState<string[]>([])
+  const [certifications, setCertifications] = useState<Certification[]>([])
+  const [education, setEducation] = useState<Education[]>([])
+  const [evalUploads, setEvalUploads] = useState<EvalUpload[]>([])
+  const [showDictionaryIntro, setShowDictionaryIntro] = useState(false)
 
-  // All data + usage checks in one parallel batch
-  const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
-  const [
-    { data: profile },
-    { data: experiences },
-    { data: skills },
-    { data: certifications },
-    { data: education },
-    { data: evalUploads },
-    coverLetterCheck,
-    linkedinCheck,
-    evalCheck,
-  ] = user?.id
-    ? await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', user.id).single(),
-        supabase.from('experience').select('*, experience_bullets(*)').eq('user_id', user.id).order('sort_order').limit(3),
-        supabase.from('skills').select('name').eq('user_id', user.id),
-        supabase.from('certifications').select('*').eq('user_id', user.id),
-        supabase.from('education').select('*').eq('user_id', user.id),
-        supabase.from('eval_uploads').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
-        checkLimit(user.id, 'cover_letters'),
-        checkLimit(user.id, 'linkedin_headline'),
-        checkLimit(user.id, 'eval_uploads'),
-      ])
-    : [
-        { data: null }, { data: null }, { data: null },
-        { data: null }, { data: null }, { data: null },
-        defaultUsage, defaultUsage, defaultUsage,
-      ]
+  const loadData = useCallback(() => {
+    setProfile(getProfile())
+    setExperiences(listExperiences().slice(0, 3))
+    setSkills(listSkills().map(s => s.name))
+    setCertifications(listCertifications())
+    setEducation(listEducation())
+    setEvalUploads(listEvalUploads())
+  }, [])
 
-  const tier = profile?.tier || 'free'
-  const coverLetterUsage = coverLetterCheck.used
-  const coverLetterLimit = coverLetterCheck.limit
+  useEffect(() => {
+    loadData()
+    setShowDictionaryIntro(getSettings().dictionary_intro_shown !== true)
+    setLoading(false)
+  }, [loadData])
 
-  const mappedExperiences = (experiences || []).map(exp => ({ ...exp, bullets: exp.experience_bullets || [] }))
+  if (loading) {
+    return (
+      <div className="animate-fade-in space-y-4">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-bg-card rounded w-1/3" />
+          <div className="h-40 bg-bg-card rounded-xl" />
+          <div className="h-64 bg-bg-card rounded-lg" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="animate-fade-in space-y-4">
-      {tier === 'free' && coverLetterUsage >= coverLetterLimit && (
-        <UpgradeBanner
-          feature="Cover Letters"
-          currentUsage={coverLetterUsage}
-          freeLimit={coverLetterLimit}
-          coreLimit={10}
-          tier={tier}
-          variant="inline"
-        />
-      )}
       <Suspense fallback={null}>
         <CareerToolsHub
-          userId={user?.id || ''}
-          userPlan={tier}
           userProfile={profile || {}}
-          experiences={mappedExperiences}
-          skills={skills?.map(s => s.name) || []}
-          certifications={certifications || []}
-          education={education || []}
-          coverLetterUsage={coverLetterUsage}
-          coverLetterLimit={coverLetterLimit}
-          linkedinUsage={linkedinCheck.used}
-          linkedinLimit={linkedinCheck.limit}
-          evalUsage={evalCheck.used}
-          evalLimit={evalCheck.limit}
-          evalUploads={evalUploads || []}
+          experiences={experiences}
+          skills={skills}
+          certifications={certifications}
+          education={education}
         />
       </Suspense>
 
-      {(evalUploads?.length ?? 0) > 0 && (
+      {evalUploads.length > 0 && (
         <EvalHistorySection
-          uploads={evalUploads || []}
-          experiences={mappedExperiences}
-          userId={user?.id || ''}
+          uploads={evalUploads}
+          onImportComplete={loadData}
         />
       )}
 
       {/* Dictionary Intro Modal — shown on first visit to career tools */}
-      {user?.id && profile?.dictionary_intro_shown !== true && (
-        <DictionaryIntroModal userId={user.id} />
-      )}
+      {showDictionaryIntro && <DictionaryIntroModal />}
     </div>
   )
 }

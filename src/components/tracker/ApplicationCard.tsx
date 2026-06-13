@@ -5,11 +5,11 @@ interface ApplicationCardProps {
     id: string
     company_name: string
     job_title: string
-    resume_name: string | null
+    resume_name?: string | null
     applied_date: string
     status: string
-    notes: string | null
-    salary_offered: number | null
+    notes?: string | null
+    salary_offered?: number | null
   }
   onEdit: (id: string) => void
   onDragStart: (e: React.DragEvent, id: string) => void

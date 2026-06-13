@@ -7,25 +7,30 @@ import { CivilianTitleSuggestions } from '../CivilianTitleSuggestions'
 import { EvalUploadModal } from '../EvalUploadModal'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { createClient } from '@/lib/supabase/client'
+import {
+  saveExperience,
+  deleteExperience as removeExperienceFromStorage,
+  listExperiences,
+  listEvalUploads,
+  newId,
+} from '@/lib/storage'
 import { formatDateForDB, formatDateForInput } from '@/lib/military-titles'
 import { US_STATES } from '@/lib/constants/states'
 import { formatSalary, parseSalary } from '@/lib/formatSalary'
 import { toE164 } from '@/lib/formatPhone'
 import { InternationalPhoneInput } from '@/components/ui/InternationalPhoneInput'
-import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
 import { BulletTemplateModal } from '../BulletTemplateModal'
 import { translateBullet as dictTranslateBullet } from '@/lib/dictionary/bulletTranslator'
 import { getDictionary } from '@/lib/dictionary/dictionaryQueries'
 import { parseAndTranslateEvalText } from '@/lib/dictionary/evalParser'
-import { UpgradeLink } from '@/components/modals/UpgradeModal'
+import { translateBullet as aiTranslateBullet } from '@/lib/ai/translate'
+import { classifyAIError, hasApiKey } from '@/lib/ai/client'
+import { KeySetupModal } from '@/components/settings/KeySetupModal'
 import { Toast } from '@/components/ui/Toast'
 import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { polishBullet } from '@/lib/dictionary/outputPolisher'
 import type { DictBulletPattern, DictionaryCache } from '@/lib/dictionary/types'
 import { HelpTranslatePrompt } from '@/components/dictionary/HelpTranslatePrompt'
-import { submitTerm } from '@/lib/dictionary/communityQueries'
-import { getUserTier, isPaidTier } from '@/lib/tier-utils'
 
 interface ExtractedBullet {
   original: string
@@ -41,15 +46,12 @@ function stripLeadingBulletChars(text: string): string {
 }
 
 interface ExperienceSectionProps {
-  userId: string
   experiences: any[]
   onUpdate: (experiences: any[]) => void
   pendingBullets?: ExtractedBullet[]
   onBulletsSaved?: () => void
-  bulletTranslationUsage?: { used: number; limit: number; remaining: number; allowed: boolean }
   userBranch?: string
   userPaygrade?: string
-  userPlan?: string
   isOpen?: boolean
   onToggle?: () => void
   summary?: string
@@ -57,21 +59,17 @@ interface ExperienceSectionProps {
 }
 
 export function ExperienceSection({
-  userId,
   experiences,
   onUpdate,
   pendingBullets = [],
   onBulletsSaved,
-  bulletTranslationUsage,
   userBranch,
   userPaygrade,
-  userPlan,
   isOpen,
   onToggle,
   summary,
   hint,
 }: ExperienceSectionProps) {
-  const isFreeUser = !isPaidTier(getUserTier({ tier: userPlan }))
   const [adding, setAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showBulletModal, setShowBulletModal] = useState(pendingBullets.length > 0)
@@ -108,11 +106,10 @@ export function ExperienceSection({
   const [translatingBulletId, setTranslatingBulletId] = useState<string | null>(null)
   const [translationResult, setTranslationResult] = useState<{ bulletId: string; original: string; translated: string; alreadyCivilian?: boolean; alreadyCivilianMessage?: string } | null>(null)
   const [translateError, setTranslateError] = useState<string | null>(null)
-  const [showTranslateWarning, setShowTranslateWarning] = useState(false)
+  // API key gating — remembers the blocked translation so it can re-run after key save
+  const [keyModalOpen, setKeyModalOpen] = useState(false)
   const [pendingTranslateBulletId, setPendingTranslateBulletId] = useState<string | null>(null)
   const [pendingTranslateExpId, setPendingTranslateExpId] = useState<string | null>(null)
-  const [localTranslationRemaining, setLocalTranslationRemaining] = useState(bulletTranslationUsage?.remaining ?? 0)
-  const [upgradeNudgeBulletId, setUpgradeNudgeBulletId] = useState<string | null>(null)
 
   // Bulk paste state
   const [showBulkPasteForExp, setShowBulkPasteForExp] = useState<string | null>(null)
@@ -134,13 +131,6 @@ export function ExperienceSection({
   const [helpPromptBulletId, setHelpPromptBulletId] = useState<string | null>(null)
   const [helpPromptPhrase, setHelpPromptPhrase] = useState<string>('')
 
-  // Suggest a correction state
-  const [correctionBulletId, setCorrectionBulletId] = useState<string | null>(null)
-  const [correctionMilitary, setCorrectionMilitary] = useState('')
-  const [correctionCivilian, setCorrectionCivilian] = useState('')
-  const [correctionSubmitting, setCorrectionSubmitting] = useState(false)
-  const [correctionSuccess, setCorrectionSuccess] = useState<string | null>(null)
-
   // Bullet suggestions from dict_bullet_patterns
   const [showSuggestForExp, setShowSuggestForExp] = useState<string | null>(null)
   const [suggestions, setSuggestions] = useState<{ pattern: DictBulletPattern; populated: string; score: number }[]>([])
@@ -160,7 +150,18 @@ export function ExperienceSection({
 
   const [formExp, setFormExp] = useState(emptyExp)
   const [showFederalFields, setShowFederalFields] = useState(false)
-  const supabase = createClient()
+
+  // Persist a bullets change for one experience and push the updated list to the parent
+  const updateExperienceBullets = (experienceId: string, computeBullets: (bullets: any[]) => any[]) => {
+    const updatedExperiences = experiences.map(exp => {
+      if (exp.id !== experienceId) return exp
+      return { ...exp, bullets: computeBullets([...(exp.bullets || [])]) }
+    })
+    const target = updatedExperiences.find(e => e.id === experienceId)
+    if (target) saveExperience(target as any)
+    onUpdate(updatedExperiences)
+    return target
+  }
 
   // Start editing an experience
   const handleEdit = (exp: any) => {
@@ -219,25 +220,10 @@ export function ExperienceSection({
       title: 'Delete Bullet',
       message: 'Are you sure you want to delete this bullet?',
       onConfirm: async () => {
-        const { error } = await supabase
-          .from('experience_bullets')
-          .delete()
-          .eq('id', bulletId)
-
-        if (error) {
-          setToast({ message: `Failed to delete: ${error.message}`, type: 'error' })
-        } else {
-          // Update local state
-          const updatedExperiences = experiences.map(exp => {
-            if (exp.id === experienceId) {
-              return {
-                ...exp,
-                bullets: exp.bullets?.filter((b: any) => b.id !== bulletId) || []
-              }
-            }
-            return exp
-          })
-          onUpdate(updatedExperiences)
+        try {
+          updateExperienceBullets(experienceId, bullets => bullets.filter((b: any) => b.id !== bulletId))
+        } catch (err: any) {
+          setToast({ message: `Failed to delete: ${err?.message || 'Unknown error'}`, type: 'error' })
         }
       },
     })
@@ -258,29 +244,14 @@ export function ExperienceSection({
       return
     }
 
-    const { error } = await supabase
-      .from('experience_bullets')
-      .update({ translated_text: cleanedText })
-      .eq('id', bulletId)
-
-    if (error) {
-      setToast({ message: `Failed to update: ${error.message}`, type: 'error' })
-    } else {
-      // Update local state
-      const updatedExperiences = experiences.map(exp => {
-        if (exp.id === experienceId) {
-          return {
-            ...exp,
-            bullets: exp.bullets?.map((b: any) =>
-              b.id === bulletId ? { ...b, translated_text: cleanedText } : b
-            ) || []
-          }
-        }
-        return exp
-      })
-      onUpdate(updatedExperiences)
+    try {
+      updateExperienceBullets(experienceId, bullets =>
+        bullets.map((b: any) => (b.id === bulletId ? { ...b, translated_text: cleanedText } : b))
+      )
       setEditingBulletId(null)
       setEditingBulletText('')
+    } catch (err: any) {
+      setToast({ message: `Failed to update: ${err?.message || 'Unknown error'}`, type: 'error' })
     }
   }
 
@@ -305,79 +276,51 @@ export function ExperienceSection({
     const currentBullet = sortedBullets[currentIndex]
     const targetBullet = sortedBullets[targetIndex]
 
-    // Swap sort_order values in database
+    // Swap sort_order values
     const currentOrder = currentBullet.sort_order ?? currentIndex
     const targetOrder = targetBullet.sort_order ?? targetIndex
 
-    const results = await Promise.all([
-      supabase.from('experience_bullets').update({ sort_order: targetOrder }).eq('id', currentBullet.id),
-      supabase.from('experience_bullets').update({ sort_order: currentOrder }).eq('id', targetBullet.id),
-    ])
-
-    if (results.some(r => r.error)) {
+    try {
+      updateExperienceBullets(experienceId, () =>
+        sortedBullets.map((b: any) => {
+          if (b.id === currentBullet.id) return { ...b, sort_order: targetOrder }
+          if (b.id === targetBullet.id) return { ...b, sort_order: currentOrder }
+          return b
+        })
+      )
+    } catch {
       setToast({ message: 'Failed to reorder bullets', type: 'error' })
-      return
+    }
+  }
+
+  // Insert a new bullet at the TOP of an experience, shifting existing sort_orders.
+  // Returns the new bullet, or null on failure.
+  const insertBulletAtTop = (experienceId: string, translatedText: string): any | null => {
+    const newBullet = {
+      id: newId(),
+      experience_id: experienceId,
+      original_text: '',
+      translated_text: translatedText,
+      sort_order: 0,
+      status: 'accepted',
     }
 
-    // Update local state
-    const updatedBullets = sortedBullets.map((b: any) => {
-      if (b.id === currentBullet.id) return { ...b, sort_order: targetOrder }
-      if (b.id === targetBullet.id) return { ...b, sort_order: currentOrder }
-      return b
-    })
-
-    const updatedExperiences = experiences.map(e => {
-      if (e.id === experienceId) {
-        return { ...e, bullets: updatedBullets }
-      }
-      return e
-    })
-    onUpdate(updatedExperiences)
+    try {
+      updateExperienceBullets(experienceId, bullets => [
+        newBullet,
+        ...bullets.map((b: any) => ({ ...b, sort_order: (b.sort_order ?? 0) + 1 })),
+      ])
+      return newBullet
+    } catch (err: any) {
+      setToast({ message: `Failed to add bullet: ${err?.message || 'Unknown error'}`, type: 'error' })
+      return null
+    }
   }
 
   // Add new bullet to experience (inserts at TOP)
   const addBulletToExperience = async (experienceId: string) => {
-    // Shift all existing bullets' sort_order up by 1
-    const exp = experiences.find(e => e.id === experienceId)
-    const existingBullets = exp?.bullets || []
-
-    if (existingBullets.length > 0) {
-      const shiftPromises = existingBullets.map((b: any) =>
-        supabase.from('experience_bullets').update({ sort_order: (b.sort_order ?? 0) + 1 }).eq('id', b.id)
-      )
-      await Promise.all(shiftPromises)
-    }
-
-    const { data, error } = await supabase
-      .from('experience_bullets')
-      .insert({
-        experience_id: experienceId,
-        original_text: '',
-        translated_text: 'New bullet - click to edit',
-        sort_order: 0,
-        status: 'accepted',
-      })
-      .select()
-      .single()
-
-    if (error) {
-      setToast({ message: `Failed to add bullet: ${error.message}`, type: 'error' })
-    } else if (data) {
-      // Update local state — prepend new bullet and shift existing sort_orders
-      const updatedExperiences = experiences.map(exp => {
-        if (exp.id === experienceId) {
-          const shiftedBullets = (exp.bullets || []).map((b: any) => ({
-            ...b,
-            sort_order: (b.sort_order ?? 0) + 1,
-          }))
-          return {
-            ...exp,
-            bullets: [data, ...shiftedBullets]
-          }
-        }
-        return exp
-      })
-      onUpdate(updatedExperiences)
+    const data = insertBulletAtTop(experienceId, 'New bullet - click to edit')
+    if (data) {
       // Auto-expand the experience so the new bullet is visible
       setExpandedExperiences(prev => new Set([...prev, experienceId]))
       startEditBullet(data.id, 'New bullet - click to edit')
@@ -398,13 +341,6 @@ export function ExperienceSection({
       ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
     )
   }, [])
-
-  // Sync local remaining counter with prop
-  useEffect(() => {
-    if (bulletTranslationUsage) {
-      setLocalTranslationRemaining(bulletTranslationUsage.remaining)
-    }
-  }, [bulletTranslationUsage])
 
   // Translate a bullet — dictionary first, AI fallback
   const translateBullet = async (bulletId: string, experienceId: string) => {
@@ -445,58 +381,24 @@ export function ExperienceSection({
         setHelpPromptPhrase(dictResult.unmatchedPhrases[0])
       }
 
-      // Free tier: use dictionary result as-is, skip AI
-      if (isFreeUser) {
-        setTranslationResult({
-          bulletId,
-          original: bulletText,
-          translated: dictResult.translatedText,
-        })
-        setBulletSources(prev => ({ ...prev, [bulletId]: 'dictionary' }))
-        setUpgradeNudgeBulletId(bulletId)
-        return
-      }
-
-      // Step 3: Dictionary coverage < 40% — fall back to AI
-      // Check remaining (only for AI calls)
-      if (localTranslationRemaining <= 0) {
-        setTranslateError('No translations remaining. Upgrade for more.')
-        return
-      }
-
-      // Show warning if last use
-      if (localTranslationRemaining === 1 && !showTranslateWarning) {
-        setShowTranslateWarning(true)
+      // Step 3: Dictionary coverage < 40% — fall back to AI.
+      // AI action — requires the user's Anthropic API key.
+      if (!hasApiKey()) {
         setPendingTranslateBulletId(bulletId)
         setPendingTranslateExpId(experienceId)
+        setKeyModalOpen(true)
         return
       }
 
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bullet: bulletText,
-          context: { branch: userBranch },
-        }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setTranslateError(data.error || 'Translation failed. Try again.')
-        return
-      }
-
-      const data = await res.json()
+      const data = await aiTranslateBullet(bulletText, { branch: userBranch })
       setTranslationResult({
         bulletId,
         original: bulletText,
         translated: data.translated,
       })
       setBulletSources(prev => ({ ...prev, [bulletId]: 'ai' }))
-      setLocalTranslationRemaining(prev => Math.max(0, prev - 1))
-    } catch {
-      setTranslateError('Translation failed. Check your connection.')
+    } catch (err) {
+      setTranslateError(classifyAIError(err).message)
     } finally {
       setTranslatingBulletId(null)
     }
@@ -506,26 +408,14 @@ export function ExperienceSection({
   const acceptTranslation = async (bulletId: string, experienceId: string) => {
     if (!translationResult) return
 
-    const { error } = await supabase
-      .from('experience_bullets')
-      .update({ translated_text: translationResult.translated })
-      .eq('id', bulletId)
-
-    if (error) {
-      setToast({ message: `Failed to update: ${error.message}`, type: 'error' })
-    } else {
-      const updatedExperiences = experiences.map(exp => {
-        if (exp.id === experienceId) {
-          return {
-            ...exp,
-            bullets: exp.bullets?.map((b: any) =>
-              b.id === bulletId ? { ...b, translated_text: translationResult.translated } : b
-            ) || []
-          }
-        }
-        return exp
-      })
-      onUpdate(updatedExperiences)
+    try {
+      updateExperienceBullets(experienceId, bullets =>
+        bullets.map((b: any) =>
+          b.id === bulletId ? { ...b, translated_text: translationResult.translated } : b
+        )
+      )
+    } catch (err: any) {
+      setToast({ message: `Failed to update: ${err?.message || 'Unknown error'}`, type: 'error' })
     }
     setTranslationResult(null)
   }
@@ -535,11 +425,9 @@ export function ExperienceSection({
     setTranslationResult(null)
   }
 
-  // Continue after last-use warning
-  const handleTranslateWarningContinue = () => {
-    setShowTranslateWarning(false)
+  // Re-run the blocked translation after the API key is saved
+  const handleKeySaved = () => {
     if (pendingTranslateBulletId && pendingTranslateExpId) {
-      // Call translate directly, bypassing the remaining===1 check this time
       const bulletId = pendingTranslateBulletId
       const expId = pendingTranslateExpId
       setPendingTranslateBulletId(null)
@@ -589,21 +477,19 @@ export function ExperienceSection({
 
       setSuggestions(scored)
 
-      // Fetch eval uploads for eval-derived suggestions
+      // Read eval uploads (local storage) for eval-derived suggestions
       try {
-        const { data: evalUploads } = await supabase
-          .from('eval_uploads')
-          .select('extracted_data')
-          .eq('user_id', userId)
-          .eq('status', 'complete')
-          .order('created_at', { ascending: false })
+        const evalUploads = listEvalUploads().filter(
+          u => u.status === 'complete' || u.status === 'completed'
+        )
 
-        if (evalUploads && evalUploads.length > 0) {
+        if (evalUploads.length > 0) {
           setHasEvalData(true)
           // Concatenate all eval text from uploads and run through new parser
           const allEvalText: string[] = []
           for (const upload of evalUploads) {
-            const bullets = upload.extracted_data as any[] | null
+            const extracted = upload.extracted_data as any
+            const bullets = Array.isArray(extracted) ? extracted : extracted?.bullets
             if (Array.isArray(bullets)) {
               for (const b of bullets) {
                 if (b.original && typeof b.original === 'string') {
@@ -668,43 +554,8 @@ export function ExperienceSection({
 
   // Insert eval-derived bullet into edit field for user to customize before saving
   const handleEditEvalBeforeUsing = async (experienceId: string, translatedText: string) => {
-    // Insert as a new bullet
-    const exp = experiences.find(e => e.id === experienceId)
-    const existingBullets = exp?.bullets || []
-
-    if (existingBullets.length > 0) {
-      const shiftPromises = existingBullets.map((b: any) =>
-        supabase.from('experience_bullets').update({ sort_order: (b.sort_order ?? 0) + 1 }).eq('id', b.id)
-      )
-      await Promise.all(shiftPromises)
-    }
-
-    const { data, error } = await supabase
-      .from('experience_bullets')
-      .insert({
-        experience_id: experienceId,
-        original_text: '',
-        translated_text: translatedText,
-        sort_order: 0,
-        status: 'accepted',
-      })
-      .select()
-      .single()
-
-    if (error) {
-      setToast({ message: `Failed to add bullet: ${error.message}`, type: 'error' })
-    } else if (data) {
-      const updatedExperiences = experiences.map(e => {
-        if (e.id === experienceId) {
-          const shiftedBullets = (e.bullets || []).map((b: any) => ({
-            ...b,
-            sort_order: (b.sort_order ?? 0) + 1,
-          }))
-          return { ...e, bullets: [data, ...shiftedBullets] }
-        }
-        return e
-      })
-      onUpdate(updatedExperiences)
+    const data = insertBulletAtTop(experienceId, translatedText)
+    if (data) {
       setExpandedExperiences(prev => new Set([...prev, experienceId]))
       setBulletSources(prev => ({ ...prev, [data.id]: 'dictionary' }))
       // Open the edit field for this bullet
@@ -715,43 +566,8 @@ export function ExperienceSection({
 
   // Use a dictionary suggestion as a new bullet
   const handleUseSuggestion = async (experienceId: string, populatedText: string) => {
-    // Shift existing bullets' sort_order up by 1
-    const exp = experiences.find(e => e.id === experienceId)
-    const existingBullets = exp?.bullets || []
-
-    if (existingBullets.length > 0) {
-      const shiftPromises = existingBullets.map((b: any) =>
-        supabase.from('experience_bullets').update({ sort_order: (b.sort_order ?? 0) + 1 }).eq('id', b.id)
-      )
-      await Promise.all(shiftPromises)
-    }
-
-    const { data, error } = await supabase
-      .from('experience_bullets')
-      .insert({
-        experience_id: experienceId,
-        original_text: '',
-        translated_text: populatedText,
-        sort_order: 0,
-        status: 'accepted',
-      })
-      .select()
-      .single()
-
-    if (error) {
-      setToast({ message: `Failed to add bullet: ${error.message}`, type: 'error' })
-    } else if (data) {
-      const updatedExperiences = experiences.map(e => {
-        if (e.id === experienceId) {
-          const shiftedBullets = (e.bullets || []).map((b: any) => ({
-            ...b,
-            sort_order: (b.sort_order ?? 0) + 1,
-          }))
-          return { ...e, bullets: [data, ...shiftedBullets] }
-        }
-        return e
-      })
-      onUpdate(updatedExperiences)
+    const data = insertBulletAtTop(experienceId, populatedText)
+    if (data) {
       setExpandedExperiences(prev => new Set([...prev, experienceId]))
       setBulletSources(prev => ({ ...prev, [data.id]: 'dictionary' }))
     }
@@ -775,6 +591,7 @@ export function ExperienceSection({
     const maxOrder = exp?.bullets?.reduce((max: number, b: any) => Math.max(max, b.sort_order || 0), -1) ?? -1
 
     const bulletsToInsert = lines.map((line, idx) => ({
+      id: newId(),
       experience_id: experienceId,
       original_text: '',
       translated_text: line,
@@ -782,21 +599,10 @@ export function ExperienceSection({
       status: 'accepted',
     }))
 
-    const { data, error } = await supabase
-      .from('experience_bullets')
-      .insert(bulletsToInsert)
-      .select()
-
-    if (error) {
-      setToast({ message: `Failed to add bullets: ${error.message}`, type: 'error' })
-    } else if (data) {
-      const updatedExperiences = experiences.map(e => {
-        if (e.id === experienceId) {
-          return { ...e, bullets: [...(e.bullets || []), ...data] }
-        }
-        return e
-      })
-      onUpdate(updatedExperiences)
+    try {
+      updateExperienceBullets(experienceId, bullets => [...bullets, ...bulletsToInsert])
+    } catch (err: any) {
+      setToast({ message: `Failed to add bullets: ${err?.message || 'Unknown error'}`, type: 'error' })
     }
 
     setShowBulkPasteForExp(null)
@@ -854,43 +660,8 @@ export function ExperienceSection({
     const experienceId = showTemplateForExp
     if (!experienceId) return
 
-    // Shift existing bullets' sort_order up by 1
-    const exp = experiences.find(e => e.id === experienceId)
-    const existingBullets = exp?.bullets || []
-
-    if (existingBullets.length > 0) {
-      const shiftPromises = existingBullets.map((b: any) =>
-        supabase.from('experience_bullets').update({ sort_order: (b.sort_order ?? 0) + 1 }).eq('id', b.id)
-      )
-      await Promise.all(shiftPromises)
-    }
-
-    const { data, error } = await supabase
-      .from('experience_bullets')
-      .insert({
-        experience_id: experienceId,
-        original_text: '',
-        translated_text: template,
-        sort_order: 0,
-        status: 'accepted',
-      })
-      .select()
-      .single()
-
-    if (error) {
-      setToast({ message: `Failed to add bullet: ${error.message}`, type: 'error' })
-    } else if (data) {
-      const updatedExperiences = experiences.map(exp => {
-        if (exp.id === experienceId) {
-          const shiftedBullets = (exp.bullets || []).map((b: any) => ({
-            ...b,
-            sort_order: (b.sort_order ?? 0) + 1,
-          }))
-          return { ...exp, bullets: [data, ...shiftedBullets] }
-        }
-        return exp
-      })
-      onUpdate(updatedExperiences)
+    const data = insertBulletAtTop(experienceId, template)
+    if (data) {
       setExpandedExperiences(prev => new Set([...prev, experienceId]))
       startEditBullet(data.id, template)
     }
@@ -938,41 +709,39 @@ export function ExperienceSection({
 
     if (editingId) {
       // Update existing experience
-      const { error } = await supabase
-        .from('experience')
-        .update(dataToSave)
-        .eq('id', editingId)
-
-      if (!error) {
+      try {
+        const existing = experiences.find(exp => exp.id === editingId)
+        const updated = { ...existing, ...dataToSave, id: editingId, bullets: existing?.bullets || [] }
+        saveExperience(updated as any)
         onUpdate(experiences.map(exp =>
           exp.id === editingId ? { ...exp, ...dataToSave } : exp
         ))
         handleCancelEdit()
-      } else {
-        console.error('Error updating experience:', error)
-        setToast({ message: `Failed to update experience: ${error.message}`, type: 'error' })
+      } catch (err: any) {
+        console.error('Error updating experience:', err)
+        setToast({ message: `Failed to update experience: ${err?.message || 'Unknown error'}`, type: 'error' })
       }
     } else {
       // Insert new experience
-      const { data, error } = await supabase
-        .from('experience')
-        .insert({ ...dataToSave, user_id: userId, sort_order: experiences.length })
-        .select()
-        .single()
-
-      if (!error && data) {
+      try {
+        const data = saveExperience({
+          ...dataToSave,
+          id: newId(),
+          sort_order: experiences.length,
+          bullets: [],
+        } as any)
         onUpdate([...experiences, { ...data, bullets: [] }])
         handleCancelEdit()
-      } else if (error) {
-        console.error('Error adding experience:', error)
-        setToast({ message: `Failed to add experience: ${error.message}`, type: 'error' })
+      } catch (err: any) {
+        console.error('Error adding experience:', err)
+        setToast({ message: `Failed to add experience: ${err?.message || 'Unknown error'}`, type: 'error' })
       }
     }
   }
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('experience').delete().eq('id', id)
-    if (!error) onUpdate(experiences.filter(e => e.id !== id))
+    removeExperienceFromStorage(id)
+    onUpdate(experiences.filter(e => e.id !== id))
   }
 
   // Move experience up or down in the list
@@ -987,22 +756,17 @@ export function ExperienceSection({
     const currentExp = experiences[currentIndex]
     const targetExp = experiences[targetIndex]
 
-    // Update sort_order in database
-    const updates = [
-      supabase.from('experience').update({ sort_order: targetIndex }).eq('id', currentExp.id),
-      supabase.from('experience').update({ sort_order: currentIndex }).eq('id', targetExp.id),
-    ]
+    try {
+      // Persist swapped sort_order values
+      saveExperience({ ...currentExp, sort_order: targetIndex } as any)
+      saveExperience({ ...targetExp, sort_order: currentIndex } as any)
 
-    const results = await Promise.all(updates)
-    const hasError = results.some(r => r.error)
-
-    if (!hasError) {
       // Swap in local state
       const newExperiences = [...experiences]
       newExperiences[currentIndex] = { ...targetExp, sort_order: currentIndex }
       newExperiences[targetIndex] = { ...currentExp, sort_order: targetIndex }
       onUpdate(newExperiences)
-    } else {
+    } catch {
       setToast({ message: 'Failed to reorder experiences', type: 'error' })
     }
   }
@@ -1012,18 +776,21 @@ export function ExperienceSection({
     setSavingBullets(true)
 
     try {
-      // Get current max sort_order for this experience
-      const { data: existingBullets } = await supabase
-        .from('experience_bullets')
-        .select('sort_order')
-        .eq('experience_id', experienceId)
-        .order('sort_order', { ascending: false })
-        .limit(1)
+      const exp = experiences.find(e => e.id === experienceId)
+      if (!exp) {
+        setToast({ message: 'Failed to save bullets', type: 'error' })
+        return
+      }
 
-      const startOrder = existingBullets?.[0]?.sort_order ?? -1
+      // Get current max sort_order for this experience
+      const startOrder = (exp.bullets || []).reduce(
+        (max: number, b: any) => Math.max(max, b.sort_order ?? -1),
+        -1,
+      )
 
       // Insert bullets (strip any leading bullet characters) with accepted status
       const bulletsToInsert = pendingBullets.map((b, idx) => ({
+        id: newId(),
         experience_id: experienceId,
         original_text: stripLeadingBulletChars(b.original),
         translated_text: stripLeadingBulletChars(b.translated),
@@ -1031,27 +798,13 @@ export function ExperienceSection({
         status: 'accepted',
       }))
 
-      const { error } = await supabase.from('experience_bullets').insert(bulletsToInsert)
-
-      if (error) {
-        console.error('Error saving bullets:', error)
-        setToast({ message: 'Failed to save bullets', type: 'error' })
-        return
-      }
-
-      // Refresh experiences with new bullets
-      const { data: updatedExp } = await supabase
-        .from('experience')
-        .select('*, experience_bullets(*)')
-        .eq('user_id', userId)
-        .order('sort_order')
-
-      if (updatedExp) {
-        onUpdate(updatedExp.map(exp => ({ ...exp, bullets: exp.experience_bullets })))
-      }
+      updateExperienceBullets(experienceId, bullets => [...bullets, ...bulletsToInsert])
 
       setShowBulletModal(false)
       onBulletsSaved?.()
+    } catch (err) {
+      console.error('Error saving bullets:', err)
+      setToast({ message: 'Failed to save bullets', type: 'error' })
     } finally {
       setSavingBullets(false)
     }
@@ -1068,62 +821,39 @@ export function ExperienceSection({
     setSavingBullets(true)
 
     try {
-      // Format dates for PostgreSQL (YYYY-MM -> YYYY-MM-DD)
+      // Normalize dates (YYYY-MM -> YYYY-MM-DD)
       const startDate = formatDateForDB(expData.start_date)
       const endDate = formatDateForDB(expData.end_date)
+      const experienceId = newId()
 
-      // Create the experience
-      const { data: formExperience, error: expError } = await supabase
-        .from('experience')
-        .insert({
-          user_id: userId,
-          job_title: expData.job_title,
-          civilian_title: expData.civilian_title || expData.job_title,
-          organization: expData.organization,
-          start_date: startDate,
-          end_date: endDate,
-          is_current: !endDate,
-          sort_order: experiences.length,
-        })
-        .select()
-        .single()
-
-      if (expError || !formExperience) {
-        console.error('Error creating experience:', expError)
-        setToast({ message: `Failed to create experience: ${expError?.message || 'Unknown error'}`, type: 'error' })
-        return
-      }
-
-      // Insert bullets (strip any leading bullet characters) with accepted status
-      const bulletsToInsert = pendingBullets.map((b, idx) => ({
-        experience_id: formExperience.id,
-        original_text: stripLeadingBulletChars(b.original),
-        translated_text: stripLeadingBulletChars(b.translated),
-        sort_order: idx,
-        status: 'accepted',
-      }))
-
-      const { error: bulletError } = await supabase.from('experience_bullets').insert(bulletsToInsert)
-
-      if (bulletError) {
-        console.error('Error saving bullets:', bulletError)
-        setToast({ message: 'Failed to save bullets', type: 'error' })
-        return
-      }
+      // Create the experience with bullets embedded (strip any leading bullet characters)
+      saveExperience({
+        id: experienceId,
+        job_title: expData.job_title,
+        civilian_title: expData.civilian_title || expData.job_title,
+        organization: expData.organization,
+        start_date: startDate,
+        end_date: endDate,
+        is_current: !endDate,
+        sort_order: experiences.length,
+        bullets: pendingBullets.map((b, idx) => ({
+          id: newId(),
+          experience_id: experienceId,
+          original_text: stripLeadingBulletChars(b.original),
+          translated_text: stripLeadingBulletChars(b.translated),
+          sort_order: idx,
+          status: 'accepted',
+        })),
+      } as any)
 
       // Refresh experiences
-      const { data: updatedExp } = await supabase
-        .from('experience')
-        .select('*, experience_bullets(*)')
-        .eq('user_id', userId)
-        .order('sort_order')
-
-      if (updatedExp) {
-        onUpdate(updatedExp.map(exp => ({ ...exp, bullets: exp.experience_bullets })))
-      }
+      onUpdate(listExperiences())
 
       setShowBulletModal(false)
       onBulletsSaved?.()
+    } catch (err: any) {
+      console.error('Error creating experience:', err)
+      setToast({ message: `Failed to create experience: ${err?.message || 'Unknown error'}`, type: 'error' })
     } finally {
       setSavingBullets(false)
     }
@@ -1947,13 +1677,11 @@ export function ExperienceSection({
                                 <div className="ml-6 mt-1.5">
                                   <button
                                     onClick={() => translateBullet(bullet.id, exp.id)}
-                                    disabled={translatingBulletId === bullet.id || localTranslationRemaining <= 0}
+                                    disabled={translatingBulletId === bullet.id}
                                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-xs font-semibold transition-all ${
-                                      localTranslationRemaining <= 0
-                                        ? 'bg-bg-secondary text-text-dim border border-border opacity-50 cursor-not-allowed'
-                                        : bullet.original_text && bullet.translated_text && bullet.original_text !== bullet.translated_text
-                                          ? 'bg-bg-secondary text-text-dim border border-border hover:text-status-amber hover:border-status-amber/30'
-                                          : 'bg-status-amber-dim text-status-amber border border-status-amber/30 hover:bg-status-amber/20'
+                                      bullet.original_text && bullet.translated_text && bullet.original_text !== bullet.translated_text
+                                        ? 'bg-bg-secondary text-text-dim border border-border hover:text-status-amber hover:border-status-amber/30'
+                                        : 'bg-status-amber-dim text-status-amber border border-status-amber/30 hover:bg-status-amber/20'
                                     }`}
                                     title="Convert military language to civilian-friendly wording"
                                   >
@@ -1965,8 +1693,6 @@ export function ExperienceSection({
                                         </svg>
                                         Translating...
                                       </>
-                                    ) : localTranslationRemaining <= 0 ? (
-                                      'Limit Reached'
                                     ) : (
                                       <>
                                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1983,10 +1709,10 @@ export function ExperienceSection({
 
                               {/* Translation suggestion */}
                               {translationResult?.bulletId === bullet.id && (
-                                <div className={`ml-6 mt-1.5 p-3 ${translationResult.alreadyCivilian ? 'bg-status-green/10 border border-status-green/30' : 'bg-status-green/10 border border-status-green/20'} rounded text-sm`}>
-                                  {translationResult.alreadyCivilian ? (
+                                <div className={`ml-6 mt-1.5 p-3 ${translationResult!.alreadyCivilian ? 'bg-status-green/10 border border-status-green/30' : 'bg-status-green/10 border border-status-green/20'} rounded text-sm`}>
+                                  {translationResult!.alreadyCivilian ? (
                                     <>
-                                      <p className="text-status-green font-medium">{translationResult.alreadyCivilianMessage || 'Already civilian-ready — no translation needed'}</p>
+                                      <p className="text-status-green font-medium">{translationResult!.alreadyCivilianMessage || 'Already civilian-ready — no translation needed'}</p>
                                       <div className="flex gap-2 mt-2">
                                         <button
                                           onClick={dismissTranslation}
@@ -2039,68 +1765,6 @@ export function ExperienceSection({
                                 </div>
                               )}
 
-                              {/* Suggest a correction — shown on dictionary-translated bullets */}
-                              {translationResult?.bulletId === bullet.id && !translationResult.alreadyCivilian && (
-                                <div className="ml-6 mt-1">
-                                  {correctionSuccess === bullet.id ? (
-                                    <p className="text-xs text-status-green">Thanks! Every correction helps keep Debriefed free for all veterans.</p>
-                                  ) : correctionBulletId === bullet.id ? (
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <input
-                                        type="text"
-                                        value={correctionMilitary}
-                                        onChange={(e) => setCorrectionMilitary(e.target.value)}
-                                        placeholder="e.g. CSMP"
-                                        className="px-2 py-1 text-xs bg-bg-secondary border border-border rounded w-32 focus:border-gold focus:ring-1 focus:ring-gold/25"
-                                        autoComplete="off"
-                                      />
-                                      <input
-                                        type="text"
-                                        value={correctionCivilian}
-                                        onChange={(e) => setCorrectionCivilian(e.target.value)}
-                                        placeholder="e.g. maintenance backlog"
-                                        className="px-2 py-1 text-xs bg-bg-secondary border border-border rounded w-44 focus:border-gold focus:ring-1 focus:ring-gold/25"
-                                        autoComplete="off"
-                                      />
-                                      <button
-                                        type="button"
-                                        disabled={correctionSubmitting || !correctionMilitary.trim() || !correctionCivilian.trim()}
-                                        onClick={async () => {
-                                          setCorrectionSubmitting(true)
-                                          await submitTerm({
-                                            submission_type: 'phrase',
-                                            military_term: correctionMilitary.trim(),
-                                            suggested_civilian: correctionCivilian.trim(),
-                                            branch: userBranch || 'general',
-                                            category: 'phrase_translation',
-                                          })
-                                          setCorrectionSubmitting(false)
-                                          setCorrectionBulletId(null)
-                                          setCorrectionMilitary('')
-                                          setCorrectionCivilian('')
-                                          setCorrectionSuccess(bullet.id)
-                                          setTimeout(() => setCorrectionSuccess(null), 3000)
-                                        }}
-                                        className="px-2 py-1 text-xs bg-gold text-bg-primary rounded hover:bg-gold-bright disabled:opacity-50"
-                                      >
-                                        {correctionSubmitting ? '...' : 'Submit'}
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => { setCorrectionBulletId(null); setCorrectionMilitary(''); setCorrectionCivilian('') }}
-                                        className="text-xs text-text-dim hover:text-text-muted"
-                                      >
-                                        Cancel
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <p className="text-xs text-gray-400 hover:text-gold cursor-pointer mt-1" onClick={() => setCorrectionBulletId(bullet.id)}>
-                                      See something wrong? <span className="underline">Suggest a correction</span>
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-
                               {/* Translation error */}
                               {translateError && translatingBulletId === null && !translationResult && (
                                 <div className="ml-6 mt-1 text-xs text-status-red">
@@ -2118,15 +1782,6 @@ export function ExperienceSection({
                                     setHelpPromptPhrase('')
                                   }}
                                 />
-                              )}
-
-                              {/* Upgrade nudge for free users after dictionary-only translation */}
-                              {upgradeNudgeBulletId === bullet.id && isFreeUser && (
-                                <p className="text-xs text-text-dim mt-1.5 ml-6">
-                                  Dictionary translation applied.{' '}
-                                  <UpgradeLink className="text-gold hover:text-gold-bright hover:underline">Upgrade to Core</UpgradeLink>
-                                  {' '}for AI-enhanced translations.
-                                </p>
                               )}
                             </div>
                           )}
@@ -2368,20 +2023,11 @@ export function ExperienceSection({
           onExtracted={() => {
             // This won't be called since we have an experience pre-selected
           }}
-          onBulletsSaved={async () => {
+          onBulletsSaved={() => {
             // Refresh experiences to show new bullets
-            const { data: updatedExp } = await supabase
-              .from('experience')
-              .select('*, experience_bullets(*)')
-              .eq('user_id', userId)
-              .order('sort_order')
-
-            if (updatedExp) {
-              onUpdate(updatedExp.map(exp => ({ ...exp, bullets: exp.experience_bullets })))
-            }
+            onUpdate(listExperiences())
             setShowEvalUploadForExp(null)
           }}
-          userId={userId}
           experiences={experiences.map(exp => ({
             id: exp.id,
             job_title: exp.job_title,
@@ -2468,15 +2114,13 @@ export function ExperienceSection({
         onSelect={handleTemplateSelect}
       />
 
-      {/* Last Use Warning for Translation */}
-      {showTranslateWarning && (
-        <LastUseWarningModal
-          featureName="Bullet Translation"
-          tier={(bulletTranslationUsage?.limit === 10 ? 'free' : bulletTranslationUsage?.limit === 50 ? 'core' : 'full') as any}
-          limitType="tier"
-          onContinue={handleTranslateWarningContinue}
-        />
-      )}
+      {/* API key setup — shown when an AI translation is attempted without a key */}
+      <KeySetupModal
+        isOpen={keyModalOpen}
+        onClose={() => setKeyModalOpen(false)}
+        onKeySaved={handleKeySaved}
+        featureNote="Bullet translation uses Claude to rewrite military language for civilian employers."
+      />
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       {confirmDialog && (

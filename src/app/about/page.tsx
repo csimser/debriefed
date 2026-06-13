@@ -75,9 +75,10 @@ export default function AboutPage() {
 
                 {/* Card 2 */}
                 <div className="bg-bg-tertiary border-l-2 border-gold p-6 rounded-r">
-                  <h3 className="text-gold font-heading font-semibold mb-2">Fair pricing.</h3>
+                  <h3 className="text-gold font-heading font-semibold mb-2">Free &amp; open source.</h3>
                   <p className="text-text-muted text-sm leading-relaxed">
-                    First resume is free. Paid tiers keep the site running. That's it.
+                    100% free, MIT licensed, and the full code is{' '}
+                    <a href="https://github.com/csimser/debriefed" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">on GitHub</a>. No accounts, no subscriptions, no catch. Your data stays on your device.
                   </p>
                 </div>
 
@@ -116,7 +117,7 @@ export default function AboutPage() {
 
               {/* CTA */}
               <Link
-                href="/signup"
+                href="/onboarding/"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-gold text-bg-primary font-heading font-bold uppercase tracking-wider rounded hover:bg-gold/90 transition-colors"
               >
                 Start Your Debrief →
@@ -156,9 +157,9 @@ export default function AboutPage() {
           </div>
           <div className="flex items-center gap-6 text-sm text-text-muted">
             <Link href="/" className="hover:text-gold transition-colors">Home</Link>
-            <Link href="/pricing" className="hover:text-gold transition-colors">Pricing</Link>
-            <Link href="/help" className="hover:text-gold transition-colors">Help</Link>
-            <Link href="/about" className="hover:text-gold transition-colors">About</Link>
+            <a href="https://github.com/csimser/debriefed" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">GitHub</a>
+            <Link href="/help/" className="hover:text-gold transition-colors">Help</Link>
+            <Link href="/about/" className="hover:text-gold transition-colors">About</Link>
           </div>
           <p className="text-sm text-text-dim">
             &copy; {new Date().getFullYear()} Debriefed. All rights reserved.

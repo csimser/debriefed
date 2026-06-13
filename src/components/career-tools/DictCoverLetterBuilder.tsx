@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils'
-import { trackEvent } from '@/lib/analytics'
 import { formatPhoneForDisplay } from '@/lib/formatPhone'
 import { fillTemplate } from '@/lib/dictionary/templateFiller'
 import { polishCoverLetter } from '@/lib/dictionary/outputPolisher'
@@ -18,11 +17,10 @@ import type {
   FilledTemplate,
   DictCoverLetterTemplate,
 } from '@/lib/dictionary/types'
-import { getUserTier, isPaidTier } from '@/lib/tier-utils'
-import { useUpgradeModal } from '@/components/modals/UpgradeModal'
-import { LastUseWarningModal } from '@/components/paywall/LastUseWarningModal'
-import { usePostActionModal } from '@/components/paywall/PostActionModalProvider'
-import { FirstUseUpgradePrompt } from '@/components/paywall/FirstUseUpgradePrompt'
+import { generateCoverLetter, refineCoverLetter } from '@/lib/ai/coverLetter'
+import { exportCoverLetter } from '@/lib/export/coverLetterExport'
+import { hasApiKey, classifyAIError } from '@/lib/ai/client'
+import { KeySetupModal } from '@/components/settings/KeySetupModal'
 
 interface DictCoverLetterBuilderProps {
   userProfile: any
@@ -31,11 +29,6 @@ interface DictCoverLetterBuilderProps {
   certifications?: any[]
   education?: any[]
   onBack: () => void
-  userId: string
-  currentUsage: number
-  usageLimit: number
-  userPlan?: string
-  onAIGenerated?: () => void
 }
 
 const SESSION_KEY = 'coverLetterJobData'
@@ -54,16 +47,14 @@ export function DictCoverLetterBuilder({
   certifications = [],
   education = [],
   onBack,
-  userId,
-  currentUsage,
-  usageLimit,
-  userPlan,
-  onAIGenerated,
 }: DictCoverLetterBuilderProps) {
-  const isFree = !isPaidTier(getUserTier({ tier: userPlan }))
-  const aiRemaining = usageLimit - currentUsage
-  const { openUpgradeModal } = useUpgradeModal()
-  const { triggerPostActionModal } = usePostActionModal()
+  // No tiers anymore — "free" mode means dictionary templates (no API key),
+  // AI mode unlocks when the user has connected their own Anthropic key.
+  const [hasKey, setHasKey] = useState(false)
+  useEffect(() => {
+    setHasKey(hasApiKey())
+  }, [])
+  const isFree = !hasKey
 
   // Context inputs (shared between template & AI modes)
   const [company, setCompany] = useState('')
@@ -103,9 +94,9 @@ export function DictCoverLetterBuilder({
   const [aiRefining, setAiRefining] = useState(false)
   const [validationWarnings, setValidationWarnings] = useState<string[]>([])
 
-  // Last-use warning modal
-  const [showLastUseWarning, setShowLastUseWarning] = useState(false)
-  const [pendingIsRegenerate, setPendingIsRegenerate] = useState(false)
+  // API key setup modal (shown when an AI action is attempted without a key)
+  const [keyModalOpen, setKeyModalOpen] = useState(false)
+  const pendingActionRef = useRef<(() => void) | null>(null)
 
   // NEW STATE: Single editor text source of truth
   const [editorText, setEditorText] = useState('')
@@ -398,13 +389,6 @@ export function DictCoverLetterBuilder({
         const rawLetter = `${greeting}\n\n${body}\n\nSincerely,\n\n${applicantName}`
         setEditorText(polishCoverLetter(rawLetter))
       }
-
-      // Track usage
-      fetch('/api/track-usage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feature: 'cover_letters' }),
-      }).catch(() => {})
     } finally {
       setIsGenerating(false)
     }
@@ -417,17 +401,11 @@ export function DictCoverLetterBuilder({
       return
     }
 
-    if (aiRemaining <= 0) {
-      setError('You have reached your cover letter limit. Upgrade for more.')
+    if (!hasApiKey()) {
+      pendingActionRef.current = () => handleAIGenerate(isRegenerate)
+      setKeyModalOpen(true)
       return
     }
-
-    if (aiRemaining === 1 && !showLastUseWarning) {
-      setPendingIsRegenerate(isRegenerate)
-      setShowLastUseWarning(true)
-      return
-    }
-    setShowLastUseWarning(false)
 
     if (isRegenerate) {
       setAiRefining(true)
@@ -474,14 +452,13 @@ export function DictCoverLetterBuilder({
         ? skills.filter(s => typeof s === 'string').slice(0, 20)
         : []
 
-      const requestBody = {
-        userId,
+      const data = await generateCoverLetter({
         jobData: {
           company,
           title: jobTitle,
           description: jobDescription,
         },
-        userProfile: safeProfile,
+        userProfile: safeProfile ?? undefined,
         experiences: safeExperiences,
         skills: safeSkills,
         hiringManagerName: hiringManager || '',
@@ -490,42 +467,21 @@ export function DictCoverLetterBuilder({
         targetIndustry,
         emphasisAreas: Array.isArray(emphasisAreas) ? emphasisAreas : [],
         openingStyle,
-        selectedAchievements: achievementTexts,
+        selectedAchievements: achievementTexts as string[],
         isRegenerate,
-      }
-
-      const res = await fetch('/api/generate-cover-letter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
       })
 
-      const data = await res.json()
-
-      if (res.status === 403) {
-        setError(data.details?.reason || data.error || 'Usage limit reached')
-        openUpgradeModal()
-        return
-      }
-
-      if (!res.ok || data.error) {
-        setError(data.error || `Server error (${res.status}). Please try again.`)
-      } else if (data.coverLetter) {
+      if (data.coverLetter) {
         setEditorText(data.coverLetter)
-        trackEvent('feature_used', { feature: 'cover_letter', is_regenerate: isRegenerate })
         if (data.validationIssues) {
           setValidationWarnings(data.validationIssues)
-        }
-        onAIGenerated?.()
-        if (!isRegenerate) {
-          setTimeout(() => triggerPostActionModal('cover-letter-complete'), 800)
         }
       } else {
         setError('No cover letter received. Please try again.')
       }
     } catch (err: any) {
       console.error('Cover letter generation error:', err)
-      setError(err.message || 'Failed to generate cover letter. Please check your connection and try again.')
+      setError(classifyAIError(err).message)
     } finally {
       setAiGenerating(false)
       setAiRefining(false)
@@ -536,33 +492,29 @@ export function DictCoverLetterBuilder({
   const handleQuickRefine = async (action: 'shorter' | 'stronger' | 'numbers') => {
     if (!editorText) return
 
+    if (!hasApiKey()) {
+      pendingActionRef.current = () => handleQuickRefine(action)
+      setKeyModalOpen(true)
+      return
+    }
+
     setAiRefining(true)
     setError('')
 
     try {
-      const res = await fetch('/api/refine-cover-letter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action,
-          currentLetter: editorText,
-          jobTitle,
-          companyName: company,
-        }),
+      const data = await refineCoverLetter({
+        action,
+        currentLetter: editorText,
+        jobTitle,
+        companyName: company,
       })
 
-      const data = await res.json()
-
-      if (data.error) {
-        setError(data.error)
-      } else {
-        setEditorText(data.refined)
-        if (data.validationIssues) {
-          setValidationWarnings(data.validationIssues)
-        }
+      setEditorText(data.refined)
+      if (data.validationIssues) {
+        setValidationWarnings(data.validationIssues)
       }
-    } catch {
-      setError('Failed to refine cover letter. Please try again.')
+    } catch (err) {
+      setError(classifyAIError(err).message)
     } finally {
       setAiRefining(false)
     }
@@ -608,62 +560,23 @@ export function DictCoverLetterBuilder({
         document.body.removeChild(a)
         window.URL.revokeObjectURL(url)
       } else {
-        const response = await fetch('/api/export-cover-letter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            content: editorText,
-            format,
-            applicantName,
-            applicantEmail,
-            applicantPhone,
-            applicantCity,
-            applicantState,
-            applicantLinkedIn,
-            companyName: company,
-            hiringManagerName: hiringManager || undefined,
-            jobTitle,
-          }),
+        // Exports are generated entirely in the browser \u2014 no server, no limits
+        await exportCoverLetter({
+          content: editorText,
+          format,
+          applicantName,
+          applicantEmail,
+          applicantPhone,
+          applicantCity,
+          applicantState,
+          applicantLinkedIn,
+          companyName: company,
+          hiringManagerName: hiringManager || undefined,
+          jobTitle,
         })
 
-        if (!response.ok) {
-          const contentType = response.headers.get('content-type')
-          if (contentType?.includes('application/json')) {
-            const errorData = await response.json()
-            if (response.status === 403 && errorData.limitReached) {
-              setError("You\u2019ve reached your daily cover letter export limit. Come back tomorrow or upgrade.")
-              return
-            }
-            throw new Error(errorData.error || 'Download failed')
-          }
-          throw new Error('Download failed')
-        }
-
-        // Read usage headers for remaining count toast
-        const userTier = response.headers.get('X-User-Tier')
-        const dailyRemaining = response.headers.get('X-Daily-Remaining')
-        const dailyLimit = response.headers.get('X-Daily-Limit')
-
-        const blob = await response.blob()
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `Cover-Letter-${safeCompanyName}.${format}`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        window.URL.revokeObjectURL(url)
-
-        // Show remaining export count toast for free tier
-        if (userTier === 'free' && dailyRemaining !== null && dailyLimit !== null) {
-          const rem = parseInt(dailyRemaining, 10)
-          if (rem <= 0) {
-            setDownloadToast('Downloaded \u2713 \u00B7 Daily export limit reached. Resets tomorrow.')
-          } else {
-            setDownloadToast(`Downloaded \u2713 \u00B7 ${rem} of ${dailyLimit} exports remaining today`)
-          }
-          setTimeout(() => setDownloadToast(null), 5000)
-        }
+        setDownloadToast('Downloaded \u2713')
+        setTimeout(() => setDownloadToast(null), 5000)
       }
     } catch (err: any) {
       setError('Failed to download: ' + (err.message || 'Unknown error'))
@@ -765,9 +678,7 @@ export function DictCoverLetterBuilder({
         {isFree ? (
           <Badge variant="green">Free</Badge>
         ) : (
-          <Badge variant={aiRemaining <= 1 ? 'red' : aiRemaining <= 2 ? 'amber' : 'default'}>
-            {aiRemaining >= 999 ? 'Unlimited' : `${aiRemaining} AI ${aiRemaining === 1 ? 'Credit' : 'Credits'}`}
-          </Badge>
+          <Badge variant="default">AI Mode</Badge>
         )}
       </div>
 
@@ -950,7 +861,7 @@ export function DictCoverLetterBuilder({
               disabled={
                 isFree
                   ? (!company || !jobTitle || isAnyGenerating)
-                  : (!company || !jobTitle || !jobDescription || isAnyGenerating || aiRemaining <= 0)
+                  : (!company || !jobTitle || !jobDescription || isAnyGenerating)
               }
               className="flex-1 py-2.5 bg-gold text-bg-primary font-heading font-bold uppercase tracking-wider rounded-lg disabled:bg-border disabled:text-text-dim disabled:cursor-not-allowed hover:bg-gold-bright transition-colors flex items-center justify-center gap-2 text-sm"
             >
@@ -960,9 +871,9 @@ export function DictCoverLetterBuilder({
                   Generating...
                 </>
               ) : editorText ? (
-                isFree ? '\u25C6 REGENERATE' : '\u2726 REGENERATE (1 credit)'
+                isFree ? '\u25C6 REGENERATE' : '\u2726 REGENERATE WITH AI'
               ) : (
-                isFree ? '\u25C6 GENERATE COVER LETTER' : '\u2726 GENERATE WITH AI (1 credit)'
+                isFree ? '\u25C6 GENERATE COVER LETTER' : '\u2726 GENERATE WITH AI'
               )}
             </button>
 
@@ -1579,31 +1490,18 @@ export function DictCoverLetterBuilder({
         </div>
       </div>
 
-      {/* First-use upgrade prompt for free users */}
-      {editorText && (
-        <FirstUseUpgradePrompt
-          feature="cover_letter"
-          tier={isFree ? 'free' : userPlan || 'free'}
-          used={currentUsage}
-          limit={usageLimit}
-        />
-      )}
-
-      {/* Last use warning modal */}
-      {showLastUseWarning && (
-        <LastUseWarningModal
-          featureName="Cover Letter"
-          tier={userPlan === 'full' ? 'full' : userPlan === 'core' ? 'core' : 'free'}
-          limitType="tier"
-          onContinue={() => {
-            setShowLastUseWarning(false)
-            handleAIGenerate(pendingIsRegenerate)
-          }}
-          onViewPricing={() => {
-            setShowLastUseWarning(false)
-          }}
-        />
-      )}
+      {/* API key setup modal — shown when an AI action needs a key */}
+      <KeySetupModal
+        isOpen={keyModalOpen}
+        onClose={() => setKeyModalOpen(false)}
+        onKeySaved={() => {
+          setHasKey(true)
+          const pending = pendingActionRef.current
+          pendingActionRef.current = null
+          pending?.()
+        }}
+        featureNote="Cover letter generation uses Claude to write a tailored draft."
+      />
     </div>
   )
 }

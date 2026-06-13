@@ -1,54 +1,64 @@
-import { createClient } from '@/lib/supabase/server'
+'use client'
+
+import { useEffect, useState } from 'react'
 import { JobMatchWorkspace } from '@/components/job-match/JobMatchWorkspace'
-import { UpgradeBanner } from '@/components/paywall/UpgradeBanner'
-import { checkLimit } from '@/lib/usage-service'
+import {
+  getProfile,
+  listResumes,
+  listSkills,
+  listCertifications,
+  listEducation,
+} from '@/lib/storage'
+import type { Profile } from '@/lib/storage'
 
-export default async function JobMatchPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+export default function JobMatchPage() {
+  const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [resumes, setResumes] = useState<any[]>([])
+  const [skills, setSkills] = useState<string[]>([])
+  const [certifications, setCertifications] = useState<{ name: string }[]>([])
+  const [education, setEducation] = useState<
+    { degree_type?: string | null; field_of_study?: string | null; school_name?: string | null }[]
+  >([])
 
-  const defaultUsage = { used: 0, limit: 1, remaining: 1, allowed: true }
+  useEffect(() => {
+    setProfile(getProfile())
+    // Local resumes use `title`; keep `name` populated for component compatibility
+    setResumes(listResumes().map((r) => ({ ...r, name: r.title })))
+    setSkills(listSkills().map((s) => s.name))
+    setCertifications(listCertifications().map((c) => ({ name: c.name })))
+    setEducation(
+      listEducation().map((e) => ({
+        degree_type: e.degree_type,
+        field_of_study: e.field_of_study,
+        school_name: e.school_name,
+      }))
+    )
+    setLoading(false)
+  }, [])
 
-  // Run all queries in parallel — they all only need user.id
-  const [{ data: profile }, { data: resumes }, usageCheck, { data: skills }, { data: certifications }, { data: education }] = user?.id
-    ? await Promise.all([
-        supabase.from('profiles').select('tier, first_name, last_name, branch, rank, paygrade, rating_mos, years_of_service, clearance, target_role, target_industry').eq('user_id', user.id).single(),
-        supabase.from('resumes').select('id, name, content').eq('user_id', user.id).order('updated_at', { ascending: false }),
-        checkLimit(user.id, 'job_match_analysis'),
-        supabase.from('skills').select('name').eq('user_id', user.id),
-        supabase.from('certifications').select('name').eq('user_id', user.id),
-        supabase.from('education').select('degree_type, field_of_study, school_name').eq('user_id', user.id),
-      ])
-    : [{ data: null }, { data: null }, defaultUsage, { data: null }, { data: null }, { data: null }]
-
-  const tier = profile?.tier || 'free'
-  const currentUsage = usageCheck.used
-  const limit = usageCheck.limit
+  if (loading) {
+    return (
+      <div className="h-full -m-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative w-12 h-12 mx-auto mb-4">
+            <div className="absolute inset-0 border-4 border-gold/20 rounded-full" />
+            <div className="absolute inset-0 border-4 border-gold border-t-transparent rounded-full animate-spin" />
+          </div>
+          <p className="text-sm text-text-muted">Loading your data...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="h-full -m-8">
-      {tier === 'free' && currentUsage >= limit && (
-        <div className="p-4 pb-0 m-8 mb-0">
-          <UpgradeBanner
-            feature="Job Match Analyses"
-            currentUsage={currentUsage}
-            freeLimit={limit}
-            coreLimit={10}
-            tier={tier}
-            variant="inline"
-          />
-        </div>
-      )}
       <JobMatchWorkspace
-        userId={user?.id || ''}
-        userPlan={tier}
-        resumes={resumes || []}
-        currentUsage={currentUsage}
-        usageLimit={limit}
-        userProfile={profile || null}
-        userSkills={(skills || []).map((s: any) => s.name)}
-        userCertifications={(certifications || []).map((c: any) => ({ name: c.name }))}
-        userEducation={(education || []).map((e: any) => ({ degree_type: e.degree_type, field_of_study: e.field_of_study, school_name: e.school_name }))}
+        resumes={resumes}
+        userProfile={profile}
+        userSkills={skills}
+        userCertifications={certifications}
+        userEducation={education}
       />
     </div>
   )

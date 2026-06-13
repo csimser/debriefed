@@ -8,23 +8,27 @@ import { SUPPORT_EMAIL } from '@/lib/site-config'
 // FAQ Data
 const FAQ_SECTIONS = [
   {
-    title: 'Account & Billing',
+    title: 'Your Data & API Key',
     questions: [
       {
-        q: 'How do I upgrade my account?',
-        a: 'Navigate to the Pricing page from your dashboard or visit /pricing. Choose between Core ($25 for a 30-day sprint) or Full ($50 for a 90-day campaign). Click the upgrade button and complete checkout through our secure Stripe payment system. Your new limits are available immediately after purchase.',
+        q: 'Do I need an account?',
+        a: 'No. Debriefed has no accounts, no sign-up, and no passwords. Everything — your profile, resumes, and application tracker — lives on your device, in your browser. Just open the app, create your profile in onboarding, and get to work.',
       },
       {
-        q: "What's the difference between Core and Full?",
-        a: 'Core ($25 / 30-day sprint) gives you 10 resumes, 10 AI cover letters, 10 job match analyses, 10 eval uploads, AI summaries, and all 6 templates — perfect for an active job search. Full ($50 / 90-day campaign) provides unlimited resumes, 200 cover letters, 200 job matches, LinkedIn profile analysis & recommendations, and 30 eval uploads — ideal for longer transition periods or career changers exploring multiple paths.',
+        q: 'Where is my data stored?',
+        a: 'All of your data is stored in your browser\'s localStorage on your own device. Nothing is uploaded to any server. You can back it up or move it anytime with Export and Import in Settings. One important caveat: clearing your browser data (or using a "clear site data" cleanup tool) erases everything — so export a backup regularly.',
       },
       {
-        q: 'How do I cancel or get a refund?',
-        a: `Debriefed uses one-time purchases, not recurring subscriptions - so there's nothing to cancel. If you're unsatisfied within 7 days of purchase and haven't used a significant portion of your limits, contact ${SUPPORT_EMAIL} for refund consideration.`,
+        q: 'What is the Anthropic API key and why do I need one?',
+        a: 'AI features (bullet translation, cover letters, job match analysis, eval parsing) call Anthropic\'s Claude API directly from your browser using your own API key. You pay Anthropic directly for what you use — most actions cost less than a cent. Create a key at console.anthropic.com, then paste it into Settings. No key? The 33,000+ entry military-to-civilian dictionary still works, completely offline.',
       },
       {
-        q: 'What happens when my access ends?',
-        a: 'When your Core or Full access ends, your account reverts to the Free tier. All your resumes and data are preserved — you just can\'t create new ones beyond Free limits until you purchase again.',
+        q: 'Is my API key safe?',
+        a: 'Your key is stored only in this browser, on this device. It is never sent anywhere except directly to Anthropic when you use an AI feature — there is no Debriefed server that could see it. To make sure you\'re running unmodified code, use the official builds from getdebriefed.co or the GitHub Releases page.',
+      },
+      {
+        q: 'How do I move to a new computer?',
+        a: 'Go to Settings → Export to download a single JSON file containing your profile, resumes, and tracker data. On the new computer (or new browser), open Debriefed and use Settings → Import to load that file. You\'ll need to re-enter your API key on the new device — it is never included in exports.',
       },
     ],
   },
@@ -58,7 +62,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: 'How does the LinkedIn Optimizer work?',
-        a: 'Free tier: Generate an optimized headline (120 chars) and professional summary (2600 chars) from your military background. Core/Full tiers: Upload your existing LinkedIn profile for comprehensive analysis including optimization suggestions, skills recommendations based on target roles, and keyword optimization for recruiter searches.',
+        a: 'Generate an optimized headline (120 chars) and professional summary (2600 chars) from your military background, or upload your existing LinkedIn profile for analysis including optimization suggestions, skills recommendations based on target roles, and keyword optimization for recruiter searches. These are AI features, so they use your Anthropic API key.',
       },
       {
         q: 'What is Smart Apply & Skills by Rank?',
@@ -75,11 +79,11 @@ const FAQ_SECTIONS = [
     questions: [
       {
         q: "Why isn't my data saving?",
-        a: `Check your internet connection first. Debriefed auto-saves your work, but requires connectivity. If issues persist, try refreshing the page. Your data is stored securely in our database, not just your browser. If you're still having trouble, contact ${SUPPORT_EMAIL} with your browser and device info.`,
+        a: `Debriefed saves everything to your browser's localStorage, so no internet connection is required. If data isn't saving, check that you're not in a private/incognito window (some browsers discard storage when the window closes) and that your browser isn't blocking site data for this page. If you're still having trouble, contact ${SUPPORT_EMAIL} with your browser and device info.`,
       },
       {
-        q: 'How do I reset my password?',
-        a: 'Click "Forgot Password" on the login page and enter your email. You\'ll receive a password reset link within a few minutes. Check your spam folder if you don\'t see it. The link expires after 1 hour for security.',
+        q: 'Does Debriefed work offline?',
+        a: 'Mostly, yes. Debriefed is a PWA, and the 33,000+ entry military-to-civilian dictionary is bundled with the app — translation lookups work with no internet and no API key. AI features (cover letters, job match, eval parsing) need a connection because they call Anthropic\'s API directly from your browser.',
       },
       {
         q: 'What browsers are supported?',
@@ -101,7 +105,7 @@ const FEATURES = [
     title: 'Resume Builder',
     description: 'Create professional private sector resumes from your military experience.',
     details: 'Our AI-powered resume builder understands military terminology and helps translate your service into civilian accomplishments. Choose from multiple professional templates, and our smart suggestions help you highlight transferable skills employers are looking for.',
-    link: '/resumes',
+    link: '/resumes/',
   },
   {
     id: 'federal-resume',
@@ -113,7 +117,7 @@ const FEATURES = [
     title: 'Federal Resume Builder',
     description: 'USAJOBS-compliant federal resumes with proper formatting.',
     details: 'Federal resumes require specific formatting and detailed information that private sector resumes don\'t. Our federal resume builder ensures you include all required elements: hours worked per week, supervisor contact information, salary history, and comprehensive duty descriptions - all formatted to USAJOBS standards.',
-    link: '/resumes',
+    link: '/resumes/',
   },
   {
     id: 'bullet-translator',
@@ -125,7 +129,7 @@ const FEATURES = [
     title: 'Bullet Translator',
     description: 'Convert military jargon to civilian language instantly.',
     details: 'Stop confusing hiring managers with acronyms and military-speak. Paste your military bullet points and our AI translates them into professional civilian language while preserving the impact of your achievements. Perfect for turning "Supervised 15 Sailors in DC Division" into "Led team of 15 in emergency response and safety operations."',
-    link: '/career-tools',
+    link: '/career-tools/',
   },
   {
     id: 'eval-upload',
@@ -137,7 +141,7 @@ const FEATURES = [
     title: 'Eval Upload & OCR',
     description: 'Upload FITREPs/evals and extract content automatically.',
     details: 'Upload your military evaluations (FITREPs, NCOERs, OERs, EPRs) as PDF or image files. Our OCR technology extracts the text, and AI identifies your key achievements, leadership examples, and quantifiable results. Import these directly into your resume with one click.',
-    link: '/career-tools',
+    link: '/career-tools/',
   },
   {
     id: 'job-match',
@@ -149,7 +153,7 @@ const FEATURES = [
     title: 'Job Match Analysis',
     description: 'Paste a job posting and see how your resume matches.',
     details: 'Get an instant compatibility score between your resume and any job posting. Our AI analyzes required skills, qualifications, and keywords, then provides specific recommendations for improving your match. See exactly which skills to highlight and what gaps to address before applying.',
-    link: '/job-match',
+    link: '/job-match/',
   },
   {
     id: 'cover-letter',
@@ -161,7 +165,7 @@ const FEATURES = [
     title: 'Cover Letter Generator',
     description: 'AI-generated cover letters tailored to each job.',
     details: 'Generate professional cover letters customized for each position you apply to. Our AI uses your military background, the specific job requirements, and the company information to create compelling cover letters that highlight relevant experience and demonstrate genuine interest.',
-    link: '/career-tools',
+    link: '/career-tools/',
   },
   {
     id: 'linkedin',
@@ -172,8 +176,8 @@ const FEATURES = [
     ),
     title: 'LinkedIn Optimizer',
     description: 'Optimize your LinkedIn profile for recruiters.',
-    details: 'Free: Generate optimized headlines and summaries from your military background. Premium: Upload your existing LinkedIn profile for comprehensive analysis with optimization suggestions, skills recommendations based on target roles, and keyword optimization to appear in more recruiter searches.',
-    link: '/career-tools',
+    details: 'Generate optimized headlines and summaries from your military background, or upload your existing LinkedIn profile for comprehensive analysis with optimization suggestions, skills recommendations based on target roles, and keyword optimization to appear in more recruiter searches.',
+    link: '/career-tools/',
   },
   {
     id: 'smart-apply',
@@ -185,7 +189,7 @@ const FEATURES = [
     title: 'Smart Apply & Skills by Rank',
     description: 'Skills recommendations based on your rank and experience.',
     details: 'Your rank represents specific leadership competencies and responsibilities. We map military ranks to equivalent civilian skills and experience levels, helping you articulate your qualifications appropriately. An E-7 Chief demonstrates different leadership than an E-4 - and employers should understand that.',
-    link: '/profile',
+    link: '/profile/',
   },
 ]
 
@@ -194,12 +198,12 @@ const TUTORIALS = [
   {
     id: 'getting-started',
     title: 'Getting Started',
-    description: 'From signup to your first resume in 15 minutes',
+    description: 'From first open to your first resume in 15 minutes',
     steps: [
-      { title: 'Create your account', description: 'Sign up with your email, select your military branch and paygrade.' },
-      { title: 'Verify your email', description: 'Check your inbox and click the confirmation link.' },
-      { title: 'Complete onboarding', description: 'Tell us about your military background, career goals, and transition timeline.' },
-      { title: 'Review your dashboard', description: 'See your usage limits, quick actions, and recommended next steps.' },
+      { title: 'Open Debriefed', description: 'Use the app at getdebriefed.co or the single-file download — no account or sign-up needed.' },
+      { title: 'Complete onboarding', description: 'Create your profile: military branch, paygrade, background, career goals, and transition timeline. It all stays on your device.' },
+      { title: 'Add your API key (optional)', description: 'For AI features, paste your Anthropic API key in Settings. Dictionary translation works without one.' },
+      { title: 'Review your dashboard', description: 'See your quick actions and recommended next steps.' },
       { title: 'Create your first resume', description: 'Click "Create Resume" and choose Private or Federal format.' },
     ],
   },
@@ -208,7 +212,7 @@ const TUTORIALS = [
     title: 'Building Your Profile',
     description: 'How to fill out your military background for best results',
     steps: [
-      { title: 'Enter basic info', description: 'Confirm your name, branch, rank, and paygrade from signup.' },
+      { title: 'Enter basic info', description: 'Confirm your name, branch, rank, and paygrade from onboarding.' },
       { title: 'Add your MOS/Rating/AFSC', description: 'Enter your military occupation code for accurate job matching.' },
       { title: 'List your duty stations', description: 'Add locations and dates - this helps with geographic preferences.' },
       { title: 'Enter education & certifications', description: 'Include military training, college degrees, and professional certifications.' },
@@ -324,12 +328,12 @@ export default function HelpPage() {
             <span className="font-heading text-xl font-bold tracking-wider uppercase">Debriefed</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="px-4 py-2 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text transition-colors">
+            <Link href="/dashboard/" className="px-4 py-2 font-heading text-sm font-bold uppercase tracking-wider text-text-muted hover:text-text transition-colors">
               Dashboard
             </Link>
-            <Link href="/pricing" className="px-4 py-2 font-heading text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
-              Pricing
-            </Link>
+            <a href="https://github.com/csimser/debriefed" target="_blank" rel="noopener noreferrer" className="px-4 py-2 font-heading text-sm font-bold uppercase tracking-wider bg-gold text-bg-primary hover:bg-gold-bright rounded transition-all">
+              GitHub
+            </a>
           </div>
         </nav>
       </header>
@@ -589,10 +593,10 @@ export default function HelpPage() {
           <Card className="p-8 md:p-12">
             <h2 className="font-heading text-xl font-bold uppercase tracking-wider mb-2">Still Need Help?</h2>
             <p className="text-text-muted mb-4">
-              Can't find what you're looking for? Our support team is here to help.
+              Can't find what you're looking for? Reach out — we're happy to help.
             </p>
             <p className="text-text-muted text-sm mb-6">
-              Found a bug? Use the Feedback button or email {SUPPORT_EMAIL}
+              Found a bug? Open an issue on GitHub or email {SUPPORT_EMAIL}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
@@ -604,12 +608,14 @@ export default function HelpPage() {
                 </svg>
                 Email Support
               </a>
-              <Link
-                href="/pricing"
+              <a
+                href="https://github.com/csimser/debriefed/issues"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-border bg-bg-secondary text-text font-heading text-sm font-bold uppercase tracking-wider rounded hover:border-gold hover:text-gold transition-colors"
               >
-                View Pricing
-              </Link>
+                Open a GitHub Issue
+              </a>
             </div>
           </Card>
         </section>
@@ -626,9 +632,9 @@ export default function HelpPage() {
           </div>
           <div className="flex items-center gap-6 text-sm text-text-muted">
             <Link href="/" className="hover:text-gold transition-colors">Home</Link>
-            <Link href="/pricing" className="hover:text-gold transition-colors">Pricing</Link>
-            <Link href="/help" className="hover:text-gold transition-colors">Help</Link>
-            <span className="text-text-dim">Feedback: Use the button in the corner</span>
+            <a href="https://github.com/csimser/debriefed" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">GitHub</a>
+            <Link href="/help/" className="hover:text-gold transition-colors">Help</Link>
+            <span className="text-text-dim">Open source under the MIT license</span>
           </div>
           <p className="text-sm text-text-dim">
             &copy; {new Date().getFullYear()} Debriefed. All rights reserved.

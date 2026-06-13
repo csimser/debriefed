@@ -3,15 +3,13 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { TailoredResume, AnalysisResult, BulletSuggestion } from './JobMatchWorkspace'
-import { TEMPLATES, SELECTABLE_TEMPLATES, TemplateId, resolveTemplate } from '@/lib/templates'
+import { TEMPLATES, SELECTABLE_TEMPLATES, TemplateId } from '@/lib/templates'
 import { ResumePreview } from '@/components/resume/ResumePreview'
-import { getUserTier, isPaidTier } from '@/lib/tier-utils'
-import { useUpgradeModal } from '@/components/modals/UpgradeModal'
+import { exportResume } from '@/lib/export/resumeExport'
 
 interface AnalysisPaneProps {
   analysis: AnalysisResult | null
   analyzing: boolean
-  userPlan: string
   tailoredResume: TailoredResume | null
   originalScore: number | null
   currentScore: number
@@ -26,7 +24,6 @@ interface AnalysisPaneProps {
 export function AnalysisPane({
   analysis,
   analyzing,
-  userPlan,
   tailoredResume,
   originalScore,
   currentScore,
@@ -37,8 +34,6 @@ export function AnalysisPane({
   jobData,
   suggestionsLoading,
 }: AnalysisPaneProps) {
-  const hasPaidAccess = isPaidTier(getUserTier({ tier: userPlan }))
-  const { openUpgradeModal } = useUpgradeModal()
   const [activeTab, setActiveTab] = useState<'overview' | 'details' | 'changes'>('overview')
   const [downloading, setDownloading] = useState(false)
   const [applySuccess, setApplySuccess] = useState(false)
@@ -73,7 +68,7 @@ export function AnalysisPane({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [showPreviewModal, previewTemplate, hasPaidAccess, templateList])
+  }, [showPreviewModal, previewTemplate, templateList])
 
   if (analyzing) {
     return (
@@ -177,8 +172,6 @@ export function AnalysisPane({
 
     setDownloading(true)
     try {
-      console.log('Starting tailored resume download...')
-
       // Mark excluded bullets in the content
       const contentWithExclusions = {
         ...tailoredResume.content,
@@ -195,53 +188,15 @@ export function AnalysisPane({
         })),
       }
 
-      console.log('Sending to export-tailored API...')
-
-      const response = await fetch('/api/export-tailored', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: contentWithExclusions,
-          format: 'pdf',
-          resumeType: 'private',
-          template: selectedTemplate,
-        }),
-      })
-
-      console.log('Response status:', response.status)
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Export API error:', errorText)
-        let errorMessage = 'Export failed'
-        try {
-          const errorJson = JSON.parse(errorText)
-          errorMessage = errorJson.error || errorMessage
-        } catch {
-          errorMessage = errorText || errorMessage
-        }
-        throw new Error(errorMessage)
-      }
-
-      // Get blob and trigger download
-      const blob = await response.blob()
-      console.log('Blob size:', blob.size, 'type:', blob.type)
-
-      if (blob.size === 0) {
-        throw new Error('Downloaded file is empty')
-      }
-
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
       const timestamp = new Date().toISOString().split('T')[0]
       const jobTitle = jobData.title?.replace(/[^a-zA-Z0-9]/g, '-') || 'tailored'
-      a.download = `tailored-resume-${jobTitle}-${timestamp}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-      console.log('Download triggered successfully')
+      await exportResume({
+        content: contentWithExclusions,
+        format: 'pdf',
+        resumeType: 'private',
+        template: selectedTemplate,
+        fileName: `tailored-resume-${jobTitle}-${timestamp}`,
+      })
     } catch (error: any) {
       console.error('Download failed:', error)
       alert(`Download failed: ${error.message || 'Unknown error'}. Check browser console for details.`)
@@ -470,7 +425,7 @@ export function AnalysisPane({
               )}
 
               {/* Bullet Suggestions Loading */}
-              {hasPaidAccess && suggestionsLoading && !analysis.bulletSuggestions?.length && (
+              {suggestionsLoading && !analysis.bulletSuggestions?.length && (
                 <div className="flex items-center gap-3 text-text-muted py-2">
                   <div className="w-4 h-4 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
                   <span className="text-xs">Loading suggestions...</span>
@@ -478,7 +433,7 @@ export function AnalysisPane({
               )}
 
               {/* Bullet Suggestions Preview */}
-              {hasPaidAccess && analysis.bulletSuggestions?.length > 0 && (
+              {analysis.bulletSuggestions?.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold uppercase tracking-wider">Suggested Rewrites</span>
@@ -526,25 +481,6 @@ export function AnalysisPane({
                 </div>
               )}
 
-              {/* Upgrade Prompt for Free Users */}
-              {!hasPaidAccess && (
-                <div className="p-4 bg-bg-tertiary rounded-lg border border-border">
-                  <div className="flex items-center gap-3">
-                    <svg className="w-8 h-8 text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                    </svg>
-                    <div>
-                      <div className="font-heading text-sm font-semibold mb-1">Unlock Smart Rewrites</div>
-                      <p className="text-xs text-text-muted">
-                        Your resume is {analysis.overallScore}% matched — rewrites could improve by up to 12%
-                      </p>
-                    </div>
-                  </div>
-                  <Button size="sm" className="mt-3 w-full" onClick={openUpgradeModal}>
-                    View Upgrade Options
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
           </div>
@@ -854,8 +790,7 @@ export function AnalysisPane({
       </div>
 
       {/* Action Buttons */}
-      {hasPaidAccess && (
-        <div className="px-4 py-3 border-t border-border bg-bg-tertiary">
+      <div className="px-4 py-3 border-t border-border bg-bg-tertiary">
           {/* Success Message */}
           {applySuccess && (
             <div className="mb-3 p-2 bg-status-green/10 border border-status-green/30 rounded text-center">
@@ -880,27 +815,22 @@ export function AnalysisPane({
               {showTemplateSelector && (
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   {Object.values(SELECTABLE_TEMPLATES).map((template) => {
-                    const isLocked = !template.free && !hasPaidAccess
                     const isSelected = selectedTemplate === template.id
 
                     return (
                       <button
                         key={template.id}
-                        onClick={() => !isLocked && setSelectedTemplate(template.id as TemplateId)}
+                        onClick={() => setSelectedTemplate(template.id as TemplateId)}
                         onDoubleClick={() => {
-                          if (!isLocked) {
-                            setPreviewTemplate(template.id as TemplateId)
-                            setShowPreviewModal(true)
-                          }
+                          setPreviewTemplate(template.id as TemplateId)
+                          setShowPreviewModal(true)
                         }}
-                        disabled={isLocked}
                         className={`
-                          relative p-2 rounded-lg border text-left transition-all group
+                          relative p-2 rounded-lg border text-left transition-all group cursor-pointer
                           ${isSelected
                             ? 'border-gold bg-gold/10'
                             : 'border-border bg-bg-secondary hover:border-gold/50'
                           }
-                          ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                         `}
                       >
                         {/* Template Preview Placeholder */}
@@ -920,30 +850,23 @@ export function AnalysisPane({
                           </div>
 
                           {/* Preview Expand Icon */}
-                          {!isLocked && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setPreviewTemplate(template.id as TemplateId)
-                                setShowPreviewModal(true)
-                              }}
-                              className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/50 transition-all opacity-0 group-hover:opacity-100"
-                              title="Preview full size"
-                            >
-                              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                              </svg>
-                            </button>
-                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setPreviewTemplate(template.id as TemplateId)
+                              setShowPreviewModal(true)
+                            }}
+                            className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/50 transition-all opacity-0 group-hover:opacity-100"
+                            title="Preview full size"
+                          >
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                            </svg>
+                          </button>
                         </div>
 
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-medium truncate">{template.name}</span>
-                          {isLocked && (
-                            <span className="text-[10px] px-1 py-0.5 bg-gold text-bg-primary rounded font-semibold">
-                              Core
-                            </span>
-                          )}
                         </div>
 
                         {isSelected && (
@@ -993,11 +916,7 @@ export function AnalysisPane({
               </Button>
             )}
           </div>
-          <p className="text-xs text-text-muted mt-2 text-center">
-            Saving tailored resume uses 1 of your resume downloads
-          </p>
-        </div>
-      )}
+      </div>
 
       {/* Full Preview Modal */}
       {showPreviewModal && tailoredResume && (
@@ -1023,14 +942,11 @@ export function AnalysisPane({
                   onChange={(e) => setPreviewTemplate(e.target.value as TemplateId)}
                   className="bg-bg-secondary border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-gold"
                 >
-                  {templateList.map((t) => {
-                    const isLocked = !t.free && !hasPaidAccess
-                    return (
-                      <option key={t.id} value={t.id} disabled={isLocked}>
-                        {t.name} {isLocked ? '(Core)' : ''}
-                      </option>
-                    )
-                  })}
+                  {templateList.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
                 </select>
 
                 <span className="text-xs text-text-muted">
