@@ -17,6 +17,8 @@ export default defineConfig({
       // onto the hash router.
       'next/link': path.join(__dirname, 'shims/link.tsx'),
       'next/navigation': path.join(__dirname, 'shims/navigation.ts'),
+      // file:// can't load /fonts/* — swap in the inlined UI fonts
+      [path.join(repoRoot, 'src/app/fonts.css')]: path.join(__dirname, 'src/fonts-embed.css'),
     },
     dedupe: ['react', 'react-dom', '@react-pdf/renderer'],
   },
@@ -29,6 +31,7 @@ export default defineConfig({
     postcss: repoRoot,
   },
   build: {
+    assetsInlineLimit: 100 * 1024 * 1024, // inline everything incl. fonts
     outDir: path.join(repoRoot, 'dist-singlefile'),
     emptyOutDir: true,
     chunkSizeWarningLimit: 20000,

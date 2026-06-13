@@ -1,4 +1,5 @@
 import './data-embed'
+import './fonts-embed'
 import React, { useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import '@/app/globals.css'
