@@ -19,8 +19,8 @@ const FAQ_SECTIONS = [
         a: 'All of your data is stored in your browser\'s localStorage on your own device. Nothing is uploaded to any server. You can back it up or move it anytime with Export and Import in Settings. One important caveat: clearing your browser data (or using a "clear site data" cleanup tool) erases everything — so export a backup regularly.',
       },
       {
-        q: 'What is the Anthropic API key and why do I need one?',
-        a: 'AI features (bullet translation, cover letters, job match analysis, eval parsing) call Anthropic\'s Claude API directly from your browser using your own API key. You pay Anthropic directly for what you use — most actions cost less than a cent. Create a key at console.anthropic.com, then paste it into Settings. No key? The 33,000+ entry military-to-civilian dictionary still works, completely offline.',
+        q: 'What is the Anthropic API key? Do I need one?',
+        a: 'No — everything works without one. The built-in 33,000+ entry dictionary engine handles translation, job matching, cover letters, and eval parsing, completely offline. Optionally, add an Anthropic API key (console.anthropic.com → Settings) and Claude enhances the dictionary output — about 2–6 cents per resume, paid to Anthropic directly. A key also unlocks reading PDFs (resume import, eval OCR).',
       },
       {
         q: 'Is my API key safe?',
@@ -62,7 +62,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: 'How does the LinkedIn Optimizer work?',
-        a: 'Generate an optimized headline (120 chars) and professional summary (2600 chars) from your military background, or upload your existing LinkedIn profile for analysis including optimization suggestions, skills recommendations based on target roles, and keyword optimization for recruiter searches. These are AI features, so they use your Anthropic API key.',
+        a: 'Generate an optimized headline (120 chars) and professional summary (2600 chars) from your military background — works with no API key using the dictionary templates. Run the profile checklist for instant scoring, or add an Anthropic key for the full AI analysis and Claude-polished writing.',
       },
       {
         q: 'What is Smart Apply & Skills by Rank?',
@@ -83,7 +83,7 @@ const FAQ_SECTIONS = [
       },
       {
         q: 'Does Debriefed work offline?',
-        a: 'Mostly, yes. Debriefed is a PWA, and the 33,000+ entry military-to-civilian dictionary is bundled with the app — translation lookups work with no internet and no API key. AI features (cover letters, job match, eval parsing) need a connection because they call Anthropic\'s API directly from your browser.',
+        a: 'Yes. Debriefed is a PWA — the app, fonts, and the full 33,000+ entry dictionary are cached on your device, so translation, job matching, cover letter templates, and PDF export all work with no internet. Only the optional AI enhancement needs a connection (it calls Anthropic\'s API directly from your browser).',
       },
       {
         q: 'What browsers are supported?',

@@ -201,7 +201,8 @@ export default function SettingsPage() {
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-text-muted">
-              AI features run on your own Anthropic API key, sent directly from your browser to
+              Optional — Debriefed works fully without a key. Add one and Claude enhances the
+              dictionary output (and unlocks PDF reading). It runs on your own Anthropic API key, sent directly from your browser to
               Anthropic — Debriefed has no servers and no subscriptions. Create a key at{' '}
               <a
                 href="https://console.anthropic.com/settings/keys"
