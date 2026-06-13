@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { ModalShell } from '@/components/ui/ModalShell'
 import { DEGREE_TYPES, matchDegreeType } from '@/lib/constants/education'
@@ -981,12 +982,12 @@ export function ResumeImportModal({
               <p className="text-text-muted mb-6">{importSummary} imported</p>
 
               <div className="flex flex-col gap-3 max-w-xs mx-auto">
-                <a
+                <Link
                   href="/resumes"
                   className="px-6 py-3 bg-gold text-bg-primary rounded font-heading font-bold uppercase tracking-wider hover:bg-gold-bright transition-all text-center"
                 >
                   Create a Resume
-                </a>
+                </Link>
                 <button
                   onClick={handleClose}
                   className="px-6 py-3 bg-bg-tertiary border border-border rounded font-heading font-bold uppercase tracking-wider hover:bg-bg-hover transition-all"

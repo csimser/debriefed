@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 interface ProfileProgressProps {
   completeness: number
   nextAction: { label: string; href: string } | null
@@ -43,12 +45,12 @@ export function ProfileProgress({ completeness, nextAction }: ProfileProgressPro
       </span>
 
       {nextAction && completeness < 100 && (
-        <a
+        <Link
           href={nextAction.href}
           className="text-xs text-gold hover:text-gold-bright transition-colors text-center leading-snug"
         >
           {nextAction.label} &rarr;
-        </a>
+        </Link>
       )}
     </div>
   )

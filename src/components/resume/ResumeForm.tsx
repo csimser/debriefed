@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -372,7 +373,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, onSummaryS
             />
           ))}
           {(!content.experiences || content.experiences.length === 0) && (
-            <p className="text-text-muted text-center py-4">No experience added. Add experience in your <a href="/profile" className="text-gold hover:underline">Profile</a> first.</p>
+            <p className="text-text-muted text-center py-4">No experience added. Add experience in your <Link href="/profile" className="text-gold hover:underline">Profile</Link> first.</p>
           )}
         </div>
       </CollapsibleSection>
@@ -406,7 +407,7 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, onSummaryS
             />
           ))}
           {(!content.education || content.education.length === 0) && (
-            <p className="text-text-muted text-center py-4">No education added. Add in your <a href="/profile" className="text-gold hover:underline">Profile</a>.</p>
+            <p className="text-text-muted text-center py-4">No education added. Add in your <Link href="/profile" className="text-gold hover:underline">Profile</Link>.</p>
           )}
         </div>
       </CollapsibleSection>
@@ -889,7 +890,7 @@ function SkillCertSelector({
   })
 
   if (allItems.length === 0) {
-    const emptyContent = <p className="text-text-muted">No {title.toLowerCase()} added. Add them in your <a href="/profile" className="text-gold hover:underline">Profile</a>.</p>
+    const emptyContent = <p className="text-text-muted">No {title.toLowerCase()} added. Add them in your <Link href="/profile" className="text-gold hover:underline">Profile</Link>.</p>
     if (headless) return emptyContent
     return (
       <FormSection title={title} icon={icon}>
