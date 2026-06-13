@@ -318,12 +318,10 @@ export default function HomePage() {
               Know Your Numbers Before You Separate
             </h3>
             <p className="text-sm md:text-base text-text-muted leading-relaxed max-w-xl mx-auto mb-5">
-              MilCalc runs the math on your military pay, benefits, and entitlements &mdash; so you&apos;re not guessing when it matters most.
+              Sister tool: MilCalc &mdash; military financial calculator for retirement, TSP, GI Bill, VA compensation, and cost of living comparisons.
             </p>
-            {/* MilCalc was a sister product (military pay calculator) deployed at milcalc.app.
-                Update this href to your own cross-promo URL, or remove this <section> entirely. */}
             <a
-              href="#"
+              href="https://milcalc.app"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block px-6 py-3 font-heading text-sm font-bold uppercase tracking-wider border border-gold text-gold hover:bg-gold hover:text-bg-primary rounded transition-all"
