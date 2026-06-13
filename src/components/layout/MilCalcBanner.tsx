@@ -29,12 +29,10 @@ export function MilCalcBanner() {
             Know Your Numbers Before You Separate
           </p>
           <p className="text-xs text-text-muted mt-1">
-            MilCalc runs the math on your military pay, benefits, and entitlements &mdash; so you&apos;re not guessing when it matters most.
+            Sister tool: MilCalc &mdash; military financial calculator for retirement, TSP, GI Bill, VA compensation, and cost of living comparisons.
           </p>
-          {/* MilCalc was a sister product (military pay calculator) deployed at milcalc.app.
-              Update this href to your own cross-promo URL, or delete this component. */}
           <a
-            href="#"
+            href="https://milcalc.app"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block mt-2 text-xs font-heading font-bold uppercase tracking-wider text-status-blue hover:text-status-blue/80 transition-colors"
