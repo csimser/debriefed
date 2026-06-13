@@ -183,35 +183,6 @@ export function ProfileForm({ initialData, userBranch }: ProfileFormProps) {
   // State for resume import modal
   const [showResumeImport, setShowResumeImport] = useState(false)
 
-  // Name recovery state — detect empty locked name fields
-  const [showNameRecovery, setShowNameRecovery] = useState(
-    !profileData?.first_name || !profileData?.last_name
-  )
-  const [recoveryFirstName, setRecoveryFirstName] = useState(profileData?.first_name || '')
-  const [recoveryLastName, setRecoveryLastName] = useState(profileData?.last_name || '')
-  const [savingRecovery, setSavingRecovery] = useState(false)
-
-  const handleNameRecoverySave = async () => {
-    if (!recoveryFirstName.trim() || !recoveryLastName.trim()) return
-    setSavingRecovery(true)
-    try {
-      persistProfile({
-        first_name: recoveryFirstName.trim(),
-        last_name: recoveryLastName.trim(),
-      })
-      setProfile(prev => ({
-        ...prev,
-        first_name: recoveryFirstName.trim(),
-        last_name: recoveryLastName.trim(),
-      }))
-      setShowNameRecovery(false)
-    } catch (err) {
-      console.error('Name recovery save failed:', err)
-    } finally {
-      setSavingRecovery(false)
-    }
-  }
-
   // Accordion state — only one section open at a time
   const [openSection, setOpenSection] = useState<SectionKey | null>(() => {
     // Auto-open the first incomplete section
@@ -247,6 +218,9 @@ export function ProfileForm({ initialData, userBranch }: ProfileFormProps) {
   // Autosave function
   const saveProfile = useCallback(async (data: typeof profile) => {
     const profilePayload = {
+      first_name: data.first_name || null,
+      last_name: data.last_name || null,
+      email: data.email || null,
       phone: data.phone || null,
       city: data.city || null,
       state: data.state || null,
@@ -304,7 +278,7 @@ export function ProfileForm({ initialData, userBranch }: ProfileFormProps) {
     // ─── Profile fields (only if currently empty) ────────────────
     const updates: any = {}
     if (data.contact) {
-      // Populate name fields if currently empty (fixes locked-empty bug)
+      // Populate name fields if currently empty
       if (!profile.first_name && data.contact.first_name) updates.first_name = data.contact.first_name
       if (!profile.last_name && data.contact.last_name) updates.last_name = data.contact.last_name
       if (!profile.phone && data.contact.phone) updates.phone = data.contact.phone
@@ -323,10 +297,6 @@ export function ProfileForm({ initialData, userBranch }: ProfileFormProps) {
     if (Object.keys(updates).length > 0) {
       persistProfile(updates)
       setProfile(prev => ({ ...prev, ...updates }))
-      // If names were updated, clear the recovery prompt
-      if (updates.first_name || updates.last_name) {
-        setShowNameRecovery(false)
-      }
     }
 
     // ─── Experiences (dedup by organization + approximate date) ───
@@ -505,47 +475,6 @@ export function ProfileForm({ initialData, userBranch }: ProfileFormProps) {
         )}
       </div>
 
-      {/* Name recovery prompt — shown when name fields are empty */}
-      {showNameRecovery && (
-        <div className="p-4 bg-status-amber/10 border border-status-amber/30 rounded-lg space-y-3">
-          <div className="flex items-start gap-2">
-            <svg className="w-5 h-5 text-status-amber flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
-            <div>
-              <p className="text-sm font-semibold text-status-amber">We couldn&apos;t read your name from signup</p>
-              <p className="text-xs text-text-muted mt-0.5">Please enter your name below. This will be used on your resume and cannot be changed later.</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input
-              type="text"
-              value={recoveryFirstName}
-              onChange={(e) => setRecoveryFirstName(e.target.value)}
-              placeholder="First Name"
-              className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
-              autoComplete="given-name"
-            />
-            <input
-              type="text"
-              value={recoveryLastName}
-              onChange={(e) => setRecoveryLastName(e.target.value)}
-              placeholder="Last Name"
-              className="w-full px-4 py-3 bg-bg-secondary border border-border rounded focus:border-gold focus:ring-1 focus:ring-gold/25"
-              autoComplete="family-name"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={handleNameRecoverySave}
-            disabled={!recoveryFirstName.trim() || !recoveryLastName.trim() || savingRecovery}
-            className="w-full px-5 py-3 bg-gold text-bg-primary rounded font-heading font-bold uppercase tracking-wider text-sm hover:bg-gold-bright disabled:opacity-50 transition-colors"
-          >
-            {savingRecovery ? 'Saving...' : 'Save Name'}
-          </button>
-        </div>
-      )}
-
       {/* Personal Information */}
       <CollapsibleSection
         title="Personal Information"
@@ -557,47 +486,38 @@ export function ProfileForm({ initialData, userBranch }: ProfileFormProps) {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>
-              First Name
-              <span className="text-text-dim font-normal ml-2">(Locked)</span>
-            </label>
+            <label className={labelClass}>First Name</label>
             <input
               type="text"
               name="first-name"
               autoComplete="given-name"
               value={profile.first_name}
-              disabled
-              className={`${inputClass} opacity-60 cursor-not-allowed`}
+              onChange={(e) => updateField('first_name', e.target.value)}
+              className={inputClass}
               placeholder="John"
             />
           </div>
           <div>
-            <label className={labelClass}>
-              Last Name
-              <span className="text-text-dim font-normal ml-2">(Locked)</span>
-            </label>
+            <label className={labelClass}>Last Name</label>
             <input
               type="text"
               name="last-name"
               autoComplete="family-name"
               value={profile.last_name}
-              disabled
-              className={`${inputClass} opacity-60 cursor-not-allowed`}
+              onChange={(e) => updateField('last_name', e.target.value)}
+              className={inputClass}
               placeholder="Smith"
             />
           </div>
           <div>
-            <label className={labelClass}>
-              Email
-              <span className="text-text-dim font-normal ml-2">(Contact support to change)</span>
-            </label>
+            <label className={labelClass}>Email</label>
             <input
               type="email"
               name="email"
               autoComplete="email"
               value={profile.email}
-              disabled
-              className={`${inputClass} opacity-60 cursor-not-allowed`}
+              onChange={(e) => updateField('email', e.target.value)}
+              className={inputClass}
               placeholder="john.smith@email.com"
             />
           </div>

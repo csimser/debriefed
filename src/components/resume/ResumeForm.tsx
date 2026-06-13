@@ -205,39 +205,25 @@ export function ResumeForm({ resumeId, content, resumeType, onChange, onSummaryS
       >
         {/* Stack vertically on mobile, 2 columns on desktop */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Name - Locked to profile */}
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-              Full Name
-              <svg className="w-3 h-3 inline ml-1 text-text-dim" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-            </label>
-            <div className="w-full bg-bg-tertiary/50 border border-border rounded-lg px-4 py-3 text-text-muted cursor-not-allowed">
-              {userProfile?.first_name || ''} {userProfile?.last_name || ''}
-            </div>
-            <p className="text-xs text-text-dim mt-1">
-              Edit in your <a href="/profile" className="text-gold hover:underline">Profile</a>
-            </p>
-          </div>
-
-          {/* Email - Locked to profile */}
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-              Email
-              <svg className="w-3 h-3 inline ml-1 text-text-dim" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-            </label>
-            <div className="w-full bg-bg-tertiary/50 border border-border rounded-lg px-4 py-3 text-text-muted cursor-not-allowed">
-              {userProfile?.email || ''}
-            </div>
-            <p className="text-xs text-text-dim mt-1">
-              Contact support to update
-            </p>
-          </div>
+          <Input
+            label="First Name"
+            value={content.contact?.first_name || ''}
+            onChange={(e) => updateContent('contact', { ...content.contact, first_name: e.target.value })}
+            autoComplete="given-name"
+          />
+          <Input
+            label="Last Name"
+            value={content.contact?.last_name || ''}
+            onChange={(e) => updateContent('contact', { ...content.contact, last_name: e.target.value })}
+            autoComplete="family-name"
+          />
+          <Input
+            label="Email"
+            type="email"
+            value={content.contact?.email || ''}
+            onChange={(e) => updateContent('contact', { ...content.contact, email: e.target.value })}
+            autoComplete="email"
+          />
 
           <InternationalPhoneInput
             label="Phone"
