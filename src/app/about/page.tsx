@@ -158,6 +158,7 @@ export default function AboutPage() {
           <div className="flex items-center gap-6 text-sm text-text-muted">
             <Link href="/" className="hover:text-gold transition-colors">Home</Link>
             <a href="https://github.com/csimser/debriefed" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">GitHub</a>
+            <a href="https://discord.gg/mfN7dqnsaY" target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors">Community</a>
             <Link href="/help/" className="hover:text-gold transition-colors">Help</Link>
             <Link href="/about/" className="hover:text-gold transition-colors">About</Link>
           </div>
