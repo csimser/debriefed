@@ -1,0 +1,43 @@
+name: Deploy landing page to GitHub Pages
+
+# Publishes only the static marketing page in landing/ to GitHub Pages at
+# https://csimser.github.io/debriefed/ . This is a fully independent landing
+# page served from this repo (no custom domain / CNAME). The Debriefed app
+# itself is distributed as Debriefed.html via Releases (see release.yml) and
+# is intentionally NOT hosted here.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'landing/**'
+      - '.github/workflows/deploy-landing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare Pages artifact
+        run: touch landing/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: landing
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
