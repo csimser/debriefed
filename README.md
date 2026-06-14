@@ -19,6 +19,10 @@ There are no accounts and no servers:
 - **Every feature works without a key**: bullet translation, eval parsing (paste text), job-match scoring, cover letter templates, LinkedIn headline/about generation, summaries — all run on the dictionary engine, fully offline.
 - **AI enhancement is optional**: add your own Anthropic API key (entered once in Settings, stored only in your browser) and Claude refines the dictionary output — plus unlocks document reading (PDF parsing/OCR). Calls go directly from your browser to `api.anthropic.com`; you pay Anthropic directly, about 2–6 cents per resume.
 
+## Community
+
+Join [The Debrief](https://discord.gg/mfN7dqnsaY) — a free community for service members and veterans working the transition. Resume help, VA claims talk, job search, tool support. Veterans helping veterans. No cost, no upsell.
+
 ## License
 
 [MIT](LICENSE) © Chris Simser

@@ -379,6 +379,27 @@ export default function SettingsPage() {
         </div>
       </Card>
 
+      {/* Community */}
+      <Card className="p-6">
+        <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4">Community</h2>
+
+        <div className="space-y-4">
+          <p className="text-sm text-text-muted">
+            Join The Debrief — a free community for service members and veterans working the
+            transition. Resume help, VA claims talk, job search, tool support. Veterans helping
+            veterans. No cost, no upsell.
+          </p>
+          <a
+            href="https://discord.gg/mfN7dqnsaY"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-heading font-bold uppercase tracking-wider transition-all duration-150 inline-flex items-center justify-center gap-2 min-h-[44px] bg-gold text-bg-primary hover:bg-gold-bright active:bg-gold-bright px-6 py-3 text-sm rounded-md"
+          >
+            Join The Debrief on Discord
+          </a>
+        </div>
+      </Card>
+
       {/* Danger Zone */}
       <Card className="p-6 border-status-red/20">
         <h2 className="font-heading text-lg font-bold uppercase tracking-wider mb-4 text-status-red">Danger Zone</h2>

@@ -38,9 +38,9 @@ inlines fonts as data URLs so the result works from `file://` with no network.
   `Debriefed.html` and attaches it to the GitHub Release. The latest build is
   always at
   `https://github.com/csimser/debriefed/releases/latest/download/Debriefed.html`.
-- **Marketing page:** `landing/` is a static, dependency-free page deployed to
-  `getdebriefed.co` on every push to `main` via
-  `.github/workflows/deploy-landing.yml`.
+- **Marketing page:** `getdebriefed.co` is served from the separate
+  [`csimser/debriefed-landing`](https://github.com/csimser/debriefed-landing)
+  repository.
 
 ## Repository layout
 
@@ -54,7 +54,6 @@ src/lib/dictionary/ translation engines (dictionary-driven, no AI required)
 src/lib/export/     client-side PDF/DOCX/TXT generation
 public-data/        bundled dictionary + O*NET data (served raw for auto-update)
 singlefile/         Vite entry + Next.js shims for the single-file build
-landing/            static marketing page for getdebriefed.co
 content/blog/       MDX source for transition guides (not currently routed)
 ```
 
