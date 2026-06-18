@@ -26,7 +26,7 @@ export default defineConfig({
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
     'process.env.NEXT_PUBLIC_APP_URL': JSON.stringify('https://getdebriefed.co'),
-    'process.env.NEXT_PUBLIC_SUPPORT_EMAIL': JSON.stringify('support@getdebriefed.co'),
+    'process.env.NEXT_PUBLIC_SUPPORT_EMAIL': JSON.stringify('chris@getdebriefed.co'),
   },
   css: {
     postcss: repoRoot,
